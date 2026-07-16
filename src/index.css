@@ -1,7 +1,13 @@
 @import "tailwindcss";
 
+@theme {
+  --font-sans: "Plus Jakarta Sans", sans-serif;
+  --font-display: "Outfit", sans-serif;
+}
+
 @layer base {
   body {
-    @apply bg-gray-900 text-white font-sans;
+    @apply bg-[#0c101d] text-gray-100 font-sans antialiased selection:bg-teal-500/30;
   }
 }
+
