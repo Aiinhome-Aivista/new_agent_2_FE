@@ -2,6 +2,7 @@ import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import type { UserRole } from '../types';
+import { Loader } from '../components/Loader';
 
 interface RoleProtectedRouteProps {
   children: React.ReactNode;
@@ -12,8 +13,9 @@ export const RoleProtectedRoute: React.FC<RoleProtectedRouteProps> = ({ children
   const { user, loading } = useAuth();
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <Loader message="Checking permissions..." />;
   }
+
 
   if (!user) {
     return <Navigate to="/login" replace />;

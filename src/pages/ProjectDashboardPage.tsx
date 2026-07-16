@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import apiClient from '../api/apiClient';
 import type { Project } from '../types';
+import { Loader } from '../components/Loader';
 
 export const ProjectDashboardPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -51,11 +52,11 @@ export const ProjectDashboardPage: React.FC = () => {
     }
   };
 
-  if (!project) return <div className="p-8 text-white">Loading...</div>;
+  if (!project) return <Loader message="Loading project cockpit details..." />;
 
   return (
-    <div className="min-h-[calc(100vh-73px)] bg-gray-900 text-white p-8">
-      <div className="max-w-7xl mx-auto">
+    <div className="flex-1 bg-transparent p-6 md:p-10 relative overflow-hidden">
+      <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-2">
           <h1 className="text-3xl font-bold">{project.project_name}</h1>
           <div className="flex gap-4">

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import apiClient from '../api/apiClient';
+import { Loader } from '../components/Loader';
 
 export const TrackerPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -58,11 +59,11 @@ export const TrackerPage: React.FC = () => {
     }
   };
 
-  if (loading) return <div className="p-8 text-white">Loading...</div>;
+  if (loading) return <Loader message="Loading risk tracker & audits..." />;
 
   return (
-    <div className="min-h-[calc(100vh-73px)] bg-gray-900 text-white p-8">
-      <div className="max-w-7xl mx-auto">
+    <div className="flex-1 bg-transparent p-6 md:p-10 relative overflow-hidden">
+      <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div className="flex gap-4 items-center">
             <h1 className="text-3xl font-bold">Risk Tracker & Audit</h1>

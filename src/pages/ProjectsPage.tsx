@@ -3,9 +3,11 @@ import type { Project } from '../types';
 import apiClient from '../api/apiClient';
 import { useAuth } from '../auth/AuthContext';
 import { Link } from 'react-router-dom';
+import { Loader } from '../components/Loader';
 
 export const ProjectsPage: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
   const { user } = useAuth();
 
   const fetchProjects = async () => {
@@ -16,6 +18,8 @@ export const ProjectsPage: React.FC = () => {
       }
     } catch (error) {
       console.error("Failed to fetch projects");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -47,6 +51,10 @@ export const ProjectsPage: React.FC = () => {
       console.error("Failed to create project");
     }
   };
+
+  if (loading) {
+    return <Loader message="Fetching projects directory..." />;
+  }
 
   return (
     <div className="flex-1 bg-transparent p-6 md:p-10 relative overflow-hidden">
