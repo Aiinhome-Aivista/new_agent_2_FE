@@ -5,43 +5,51 @@ import { LandingPage } from './pages/LandingPage';
 import { LoginPage } from './pages/LoginPage';
 import { UnauthorizedPage } from './pages/UnauthorizedPage';
 import { DashboardPage } from './pages/DashboardPage';
-import { CreateProjectPage } from './pages/CreateProjectPage';
 import { ProjectsPage } from './pages/ProjectsPage';
 import { ProjectDashboardPage } from './pages/ProjectDashboardPage';
 import { BaselineReviewPage } from './pages/BaselineReviewPage';
 import { TrackerPage } from './pages/TrackerPage';
 import { ProtectedRoute } from './routes/ProtectedRoute';
-import { RoleProtectedRoute } from './routes/RoleProtectedRoute';
-import { Navbar } from './components/Navbar';
+import { Sidebar } from './components/Sidebar';
+
+const ProtectedLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  return (
+    <div className="min-h-screen bg-[#080b14] flex flex-col md:flex-row text-white">
+      <Sidebar />
+      <div className="flex-1 md:pl-64 min-h-screen pt-16 md:pt-0 flex flex-col">
+        {children}
+      </div>
+    </div>
+  );
+};
 
 const App: React.FC = () => {
   return (
     <AuthProvider>
       <Router>
-        <Navbar />
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/unauthorized" element={<UnauthorizedPage />} />
           <Route 
             path="/dashboard" 
-            element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} 
+            element={<ProtectedRoute><ProtectedLayout><DashboardPage /></ProtectedLayout></ProtectedRoute>} 
           />
           <Route 
             path="/projects" 
-            element={<ProtectedRoute><ProjectsPage /></ProtectedRoute>} 
+            element={<ProtectedRoute><ProtectedLayout><ProjectsPage /></ProtectedLayout></ProtectedRoute>} 
           />
           <Route 
             path="/projects/:id" 
-            element={<ProtectedRoute><ProjectDashboardPage /></ProtectedRoute>} 
+            element={<ProtectedRoute><ProtectedLayout><ProjectDashboardPage /></ProtectedLayout></ProtectedRoute>} 
           />
           <Route 
             path="/projects/:id/baseline" 
-            element={<ProtectedRoute><BaselineReviewPage /></ProtectedRoute>} 
+            element={<ProtectedRoute><ProtectedLayout><BaselineReviewPage /></ProtectedLayout></ProtectedRoute>} 
           />
           <Route 
             path="/projects/:id/tracker" 
-            element={<ProtectedRoute><TrackerPage /></ProtectedRoute>} 
+            element={<ProtectedRoute><ProtectedLayout><TrackerPage /></ProtectedLayout></ProtectedRoute>} 
           />
         </Routes>
       </Router>
@@ -50,3 +58,4 @@ const App: React.FC = () => {
 };
 
 export default App;
+
