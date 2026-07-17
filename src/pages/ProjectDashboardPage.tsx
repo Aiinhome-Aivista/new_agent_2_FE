@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import apiClient from '../api/apiClient';
 import type { Project } from '../types';
 import { Loader } from '../components/Loader';
-import { UploadCloud, X, FileText } from 'lucide-react';
+import { UploadCloud, X, FileText, Play, Trash2 } from 'lucide-react';
 
 export const ProjectDashboardPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -101,6 +101,34 @@ export const ProjectDashboardPage: React.FC = () => {
 
   const triggerFileSelect = () => {
     fileInputRef.current?.click();
+  };
+
+  const handleProcessDocument = async (docId: number) => {
+    try {
+      setDocuments(prev => prev.map(d => d.id === docId ? { ...d, processing_status: 'PROCESSING' } : d));
+      const res = await apiClient.post(`/projects/${id}/documents/${docId}/process`);
+      if (res.data.success) {
+        const docsRes = await apiClient.get(`/projects/${id}/documents/`);
+        if (docsRes.data.success) setDocuments(docsRes.data.data);
+      }
+    } catch (error) {
+      alert("Failed to process document");
+      const docsRes = await apiClient.get(`/projects/${id}/documents/`);
+      if (docsRes.data.success) setDocuments(docsRes.data.data);
+    }
+  };
+
+  const handleDeleteDocument = async (docId: number) => {
+    if (!confirm("Are you sure you want to delete this document? This will remove all associated scope findings and RAG vectors.")) return;
+    try {
+      const res = await apiClient.delete(`/projects/${id}/documents/${docId}`);
+      if (res.data.success) {
+        const docsRes = await apiClient.get(`/projects/${id}/documents/`);
+        if (docsRes.data.success) setDocuments(docsRes.data.data);
+      }
+    } catch (error) {
+      alert("Failed to delete document");
+    }
   };
 
   const handleUpload = async (e: React.FormEvent) => {
@@ -234,12 +262,48 @@ export const ProjectDashboardPage: React.FC = () => {
               <ul className="space-y-2">
                 {documents.map(doc => (
                   <li key={doc.id} className="flex justify-between items-center p-3 bg-gray-700 rounded-md">
-                    <span><span className="text-gray-400 text-sm mr-2">ID: {doc.id}</span> {doc.document_name}</span>
-                    <div className="flex items-center gap-3">
-                      <span className="text-xs px-2 py-1 bg-gray-600 rounded">{doc.document_type}</span>
-                      <span className={`text-xs px-2 py-1 rounded ${doc.processing_status === 'COMPLETED' ? 'bg-green-600' : 'bg-yellow-600'}`}>
+                    <div className="flex flex-col min-w-0">
+                      <span className="truncate font-medium text-sm text-gray-200">
+                        {doc.document_name}
+                      </span>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-[10px] px-1.5 py-0.5 bg-gray-600 text-gray-300 rounded font-semibold uppercase">{doc.document_type}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 ml-4 flex-shrink-0">
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded font-semibold ${
+                        doc.processing_status === 'COMPLETED' 
+                          ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
+                          : doc.processing_status === 'PROCESSING' || doc.processing_status === 'PARSING'
+                            ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 animate-pulse'
+                            : doc.processing_status === 'FAILED'
+                              ? 'bg-red-500/20 text-red-400 border border-red-500/30'
+                              : 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+                      }`}>
                         {doc.processing_status}
                       </span>
+
+                      {/* Process button (shows when status is UPLOADED or FAILED) */}
+                      {(doc.processing_status === 'UPLOADED' || doc.processing_status === 'FAILED') && (
+                        <button 
+                          onClick={() => handleProcessDocument(doc.id)}
+                          title="Process document (chunk and embed into AI)"
+                          className="p-1.5 bg-green-600/20 hover:bg-green-600 border border-green-500/30 hover:border-green-500 text-green-400 hover:text-white rounded-md transition-all duration-150"
+                        >
+                          <Play className="h-3 w-3" />
+                        </button>
+                      )}
+                      
+                      {/* Delete button (shows only for UPLOADED or FAILED documents) */}
+                      {(doc.processing_status === 'UPLOADED' || doc.processing_status === 'FAILED') && (
+                        <button 
+                          onClick={() => handleDeleteDocument(doc.id)}
+                          title="Delete document"
+                          className="p-1.5 bg-red-600/20 hover:bg-red-600 border border-red-500/30 hover:border-red-500 text-red-400 hover:text-white rounded-md transition-all duration-150"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </button>
+                      )}
                     </div>
                   </li>
                 ))}
