@@ -8,7 +8,7 @@ const personas = [
   {
     role: "Engagement Manager / Partner",
     email: "manager@example.com",
-    password: "Password123",
+    password: "password123",
     initial: "EM",
     bg: "hover:bg-teal-500/5 hover:border-teal-500/30",
     badgeBg: "bg-teal-500/10 text-teal-300 border-teal-500/20",
@@ -16,7 +16,7 @@ const personas = [
   {
     role: "Project Lead / Delivery Manager",
     email: "lead@example.com",
-    password: "Password123",
+    password: "password123",
     initial: "PL",
     bg: "hover:bg-blue-500/5 hover:border-blue-500/30",
     badgeBg: "bg-blue-500/10 text-blue-300 border-blue-500/20",
@@ -24,7 +24,7 @@ const personas = [
   {
     role: "PMO / Quality Reviewer",
     email: "reviewer@example.com",
-    password: "Password123",
+    password: "password123",
     initial: "QR",
     bg: "hover:bg-purple-500/5 hover:border-purple-500/30",
     badgeBg: "bg-purple-500/10 text-purple-300 border-purple-500/20",
@@ -32,7 +32,7 @@ const personas = [
   {
     role: "Finance / Commercial",
     email: "finance@example.com",
-    password: "Password123",
+    password: "password123",
     initial: "FC",
     bg: "hover:bg-amber-500/5 hover:border-amber-500/30",
     badgeBg: "bg-amber-500/10 text-amber-300 border-amber-500/20",
