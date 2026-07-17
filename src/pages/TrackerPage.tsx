@@ -23,16 +23,24 @@ export const TrackerPage: React.FC = () => {
     fetchTracker();
   }, [id]);
 
-  const handleResolve = async (itemId: number) => {
-    const resolution = prompt("Enter resolution notes:");
-    if (!resolution) return;
+  const [resolveModalState, setResolveModalState] = useState<{ isOpen: boolean; itemId: number | null }>({ isOpen: false, itemId: null });
+  const [resolutionText, setResolutionText] = useState("");
+
+  const openResolveModal = (itemId: number) => {
+    setResolveModalState({ isOpen: true, itemId });
+    setResolutionText("");
+  };
+
+  const submitResolve = async () => {
+    if (!resolutionText.trim() || resolveModalState.itemId === null) return;
     try {
-      const res = await apiClient.post(`/projects/${id}/tracker/${itemId}/resolve`, {
-        resolution,
+      const res = await apiClient.post(`/projects/${id}/tracker/${resolveModalState.itemId}/resolve`, {
+        resolution: resolutionText,
         status: 'RESOLVED'
       });
       if (res.data.success) {
-        setItems(items.map(i => i.id === itemId ? { ...i, status: 'RESOLVED', resolution } : i));
+        setItems(items.map(i => i.id === resolveModalState.itemId ? { ...i, status: 'RESOLVED', resolution: resolutionText } : i));
+        setResolveModalState({ isOpen: false, itemId: null });
       }
     } catch (error) {
       alert("Failed to resolve item");
@@ -104,7 +112,7 @@ export const TrackerPage: React.FC = () => {
                     <p className="text-sm text-green-300"><span className="font-bold">Resolution:</span> {item.resolution}</p>
                   </div>
                 ) : (
-                  <button onClick={() => handleResolve(item.id)} className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-md text-sm transition-colors">
+                  <button onClick={() => openResolveModal(item.id)} className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-md text-sm transition-colors">
                     Mark as Resolved
                   </button>
                 )}
@@ -113,6 +121,37 @@ export const TrackerPage: React.FC = () => {
           </div>
         )}
       </div>
+
+      {resolveModalState.isOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-[#111827] border border-gray-700 rounded-2xl p-6 w-full max-w-lg shadow-2xl">
+            <h2 className="text-2xl font-bold mb-4 text-white">Resolve Risk Item</h2>
+            <p className="text-gray-400 text-sm mb-4">Please provide official notes detailing how this scope deviation is being handled.</p>
+            <textarea
+              className="w-full bg-gray-900 border border-gray-700 rounded-xl p-4 text-white focus:outline-none focus:ring-2 focus:ring-[#00e5ff] transition-all resize-none mb-6"
+              rows={4}
+              placeholder="e.g. Discussed with client. Added as Change Request #102..."
+              value={resolutionText}
+              onChange={(e) => setResolutionText(e.target.value)}
+            />
+            <div className="flex justify-end gap-3">
+              <button 
+                onClick={() => setResolveModalState({ isOpen: false, itemId: null })}
+                className="px-5 py-2.5 rounded-lg font-medium text-gray-300 hover:bg-gray-800 transition-colors"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={submitResolve}
+                disabled={!resolutionText.trim()}
+                className={`px-5 py-2.5 rounded-lg font-medium transition-colors ${!resolutionText.trim() ? 'bg-green-900/50 text-green-700 cursor-not-allowed' : 'bg-[#00e5ff] text-black hover:bg-[#00cce5]'}`}
+              >
+                Confirm Resolution
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
