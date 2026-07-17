@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAuth } from '../auth/AuthContext';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { 
   Briefcase, 
   ScrollText, 
@@ -14,7 +14,6 @@ import {
 
 export const DashboardPage: React.FC = () => {
   const { user } = useAuth();
-  const navigate = useNavigate();
 
   // Mock statistics for presentation
   const stats = [
