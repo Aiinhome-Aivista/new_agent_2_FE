@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../api/apiClient';
 
@@ -6,7 +6,23 @@ export const CreateProjectPage: React.FC = () => {
   const [projectName, setProjectName] = useState('');
   const [clientName, setClientName] = useState('');
   const [description, setDescription] = useState('');
+  const [projectLeads, setProjectLeads] = useState<any[]>([]);
+  const [assignedLeadId, setAssignedLeadId] = useState('');
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchLeads = async () => {
+      try {
+        const res = await apiClient.get('/users/?role=PROJECT_LEAD');
+        if (res.data.success) {
+          setProjectLeads(res.data.data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch project leads", err);
+      }
+    };
+    fetchLeads();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -14,7 +30,8 @@ export const CreateProjectPage: React.FC = () => {
       const res = await apiClient.post('/projects/', {
         project_name: projectName,
         client_name: clientName,
-        description
+        description,
+        assigned_lead_id: assignedLeadId ? parseInt(assignedLeadId) : null
       });
       if (res.data.success) {
         navigate('/projects');
@@ -36,6 +53,19 @@ export const CreateProjectPage: React.FC = () => {
           <div>
             <label className="block text-gray-400 mb-1">Client Name</label>
             <input type="text" value={clientName} onChange={e => setClientName(e.target.value)} className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2" />
+          </div>
+          <div>
+            <label className="block text-gray-400 mb-1">Assign Project Lead</label>
+            <select 
+              value={assignedLeadId} 
+              onChange={e => setAssignedLeadId(e.target.value)} 
+              className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white"
+            >
+              <option value="">-- Select Project Lead --</option>
+              {projectLeads.map((lead) => (
+                <option key={lead.id} value={lead.id}>{lead.name} ({lead.email})</option>
+              ))}
+            </select>
           </div>
           <div>
             <label className="block text-gray-400 mb-1">Description</label>

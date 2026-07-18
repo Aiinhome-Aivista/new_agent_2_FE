@@ -10,6 +10,13 @@ export const ProjectsPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
 
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [projectName, setProjectName] = useState('');
+  const [clientName, setClientName] = useState('');
+  const [description, setDescription] = useState('');
+  const [projectLeads, setProjectLeads] = useState<any[]>([]);
+  const [assignedLeadId, setAssignedLeadId] = useState('');
+
   const fetchProjects = async () => {
     try {
       const res = await apiClient.get('/projects/');
@@ -23,14 +30,21 @@ export const ProjectsPage: React.FC = () => {
     }
   };
 
+  const fetchLeads = async () => {
+    try {
+      const res = await apiClient.get('/users/?role=PROJECT_LEAD');
+      if (res.data.success) {
+        setProjectLeads(res.data.data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch project leads", err);
+    }
+  };
+
   useEffect(() => {
     fetchProjects();
+    fetchLeads();
   }, []);
-
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [projectName, setProjectName] = useState('');
-  const [clientName, setClientName] = useState('');
-  const [description, setDescription] = useState('');
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,13 +52,15 @@ export const ProjectsPage: React.FC = () => {
       const res = await apiClient.post('/projects/', {
         project_name: projectName,
         client_name: clientName,
-        description
+        description,
+        assigned_lead_id: assignedLeadId ? parseInt(assignedLeadId) : null
       });
       if (res.data.success) {
         setIsModalOpen(false);
         setProjectName('');
         setClientName('');
         setDescription('');
+        setAssignedLeadId('');
         fetchProjects(); // Refresh the list
       }
     } catch (error) {
@@ -146,6 +162,21 @@ export const ProjectsPage: React.FC = () => {
                   className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 text-white placeholder-gray-500 text-sm transition-all"
                   placeholder="e.g. Acme Corp"
                 />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-400 mb-1.5">Assign Project Lead</label>
+                <select 
+                  value={assignedLeadId} 
+                  onChange={e => setAssignedLeadId(e.target.value)} 
+                  className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 text-white text-sm transition-all"
+                >
+                  <option value="" className="bg-[#0b0e17] text-gray-400">-- Select Project Lead --</option>
+                  {projectLeads.map((lead) => (
+                    <option key={lead.id} value={lead.id} className="bg-[#0b0e17] text-white">
+                      {lead.name} ({lead.email})
+                    </option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label className="block text-xs font-medium text-gray-400 mb-1.5">Description</label>
