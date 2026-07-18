@@ -17,6 +17,7 @@ export const ProjectDashboardPage: React.FC = () => {
   const [showCustomModal, setShowCustomModal] = useState(false);
   const [customName, setCustomName] = useState("");
   const [customDesc, setCustomDesc] = useState("");
+  const [addingCustomType, setAddingCustomType] = useState(false);
 
   const [deletingDocId, setDeletingDocId] = useState<number | null>(null);
   const [deleteReason, setDeleteReason] = useState("");
@@ -74,6 +75,7 @@ export const ProjectDashboardPage: React.FC = () => {
 
   const handleAddCustomType = async () => {
     if (!customName.trim()) return;
+    setAddingCustomType(true);
     try {
       const payload = {
         name: customName.toUpperCase().replace(/\s+/g, "_"),
@@ -95,6 +97,8 @@ export const ProjectDashboardPage: React.FC = () => {
       showNotification("Custom document type added successfully!", "success");
     } catch (error) {
       showNotification("Failed to add custom type", "error");
+    } finally {
+      setAddingCustomType(false);
     }
   };
 
@@ -511,16 +515,24 @@ export const ProjectDashboardPage: React.FC = () => {
                   setShowCustomModal(false);
                   setDocType("EL"); // Reset to default
                 }}
-                className="px-4 py-2 rounded-lg font-medium text-gray-300 hover:bg-gray-800 transition-colors text-sm"
+                disabled={addingCustomType}
+                className={`px-4 py-2 rounded-lg font-medium text-gray-300 hover:bg-gray-800 transition-colors text-sm ${addingCustomType ? "opacity-50 cursor-not-allowed" : ""}`}
               >
                 Cancel
               </button>
               <button
                 onClick={handleAddCustomType}
-                disabled={!customName.trim()}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors text-sm ${!customName.trim() ? "bg-blue-900/50 text-blue-700 cursor-not-allowed" : "bg-[#00e5ff] text-black hover:bg-[#00cce5]"}`}
+                disabled={addingCustomType || !customName.trim()}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors text-sm flex items-center justify-center ${addingCustomType || !customName.trim() ? "bg-blue-900/50 text-blue-700 cursor-not-allowed" : "bg-[#00e5ff] text-black hover:bg-[#00cce5]"}`}
               >
-                Add Type
+                {addingCustomType ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Adding...
+                  </>
+                ) : (
+                  "Add Type"
+                )}
               </button>
             </div>
           </div>
