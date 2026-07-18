@@ -27,6 +27,20 @@ export const BaselineReviewPage: React.FC = () => {
     };
     fetchBaseline();
   }, [id]);
+  const [notification, setNotification] = useState<{ message: string; type: 'info' | 'error' | 'success' } | null>(null);
+
+  useEffect(() => {
+    if (notification) {
+      const timer = setTimeout(() => {
+        setNotification(null);
+      }, 15000);
+      return () => clearTimeout(timer);
+    }
+  }, [notification]);
+
+  const showNotification = (message: string, type: 'info' | 'error' | 'success' = 'info') => {
+    setNotification({ message, type });
+  };
 
   const [eligibleDocs, setEligibleDocs] = useState<any[]>([]);
   const [showExtractModal, setShowExtractModal] = useState(false);
@@ -38,11 +52,13 @@ export const BaselineReviewPage: React.FC = () => {
     try {
       const res = await apiClient.post(`/projects/${id}/baseline/approve`);
       if (res.data.success) {
-        alert("Baseline Approved!");
-        window.location.reload();
+        showNotification("Baseline Approved!", "success");
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
       }
     } catch (error: any) {
-      alert("Approval failed: " + error.response?.data?.detail);
+      showNotification("Approval failed: " + (error.response?.data?.detail || "Server error"), "error");
     }
   };
 
@@ -56,7 +72,7 @@ export const BaselineReviewPage: React.FC = () => {
         );
         
         if (contracts.length === 0) {
-          alert("Please upload and process an Engagement Letter (EL) or Inter-Firm Approval (IFA) first.");
+          showNotification("Please upload and process an Engagement Letter (EL) or Inter-Firm Approval (IFA) first.", "info");
           return;
         }
         
@@ -64,7 +80,7 @@ export const BaselineReviewPage: React.FC = () => {
         setShowExtractModal(true);
       }
     } catch (error) {
-      alert("Failed to fetch project documents");
+      showNotification("Failed to fetch project documents", "error");
     }
   };
 
@@ -84,8 +100,9 @@ export const BaselineReviewPage: React.FC = () => {
         setBaseline(baselineRes.data.data);
       }
       setShowExtractModal(false);
+      showNotification("Baseline extraction completed successfully!", "success");
     } catch (error: any) {
-      alert("Extraction failed: " + error.response?.data?.detail);
+      showNotification("Extraction failed: " + (error.response?.data?.detail || "Server error"), "error");
     } finally {
       setExtractingDocId(null);
       setExtracting(false);
@@ -219,6 +236,24 @@ export const BaselineReviewPage: React.FC = () => {
               </button>
             </div>
           </div>
+        </div>
+      )}
+      {notification && (
+        <div className="fixed top-6 right-6 z-50 max-w-sm w-full bg-[#111827] border border-white/10 rounded-2xl p-4 shadow-2xl flex gap-3 animate-slideIn select-none">
+          <div className="flex-1">
+            <p className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${
+              notification.type === 'success' ? 'text-emerald-400' : notification.type === 'error' ? 'text-rose-400' : 'text-cyan-400'
+            }`}>
+              {notification.type === 'success' ? 'Success' : notification.type === 'error' ? 'Error' : 'Notice'}
+            </p>
+            <p className="text-sm text-gray-200">{notification.message}</p>
+          </div>
+          <button 
+            onClick={() => setNotification(null)}
+            className="text-gray-400 hover:text-white transition-colors text-lg font-bold self-start leading-none"
+          >
+            &times;
+          </button>
         </div>
       )}
     </div>

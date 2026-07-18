@@ -17,6 +17,9 @@ export const ProjectsPage: React.FC = () => {
   const [projectLeads, setProjectLeads] = useState<any[]>([]);
   const [assignedLeadId, setAssignedLeadId] = useState('');
 
+  const [isGeneratingDesc, setIsGeneratingDesc] = useState(false);
+  const [isDescriptionManuallyEdited, setIsDescriptionManuallyEdited] = useState(false);
+
   const fetchProjects = async () => {
     try {
       const res = await apiClient.get('/projects/');
@@ -46,6 +49,29 @@ export const ProjectsPage: React.FC = () => {
     fetchLeads();
   }, []);
 
+  useEffect(() => {
+    if (!projectName.trim() || !clientName.trim() || isDescriptionManuallyEdited) return;
+
+    const timer = setTimeout(async () => {
+      setIsGeneratingDesc(true);
+      try {
+        const res = await apiClient.post('/projects/generate-description', {
+          project_name: projectName,
+          client_name: clientName
+        });
+        if (res.data.success && !isDescriptionManuallyEdited) {
+          setDescription(res.data.description);
+        }
+      } catch (error) {
+        console.error("Failed to auto-generate description", error);
+      } finally {
+        setIsGeneratingDesc(false);
+      }
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [projectName, clientName, isDescriptionManuallyEdited]);
+
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -61,6 +87,7 @@ export const ProjectsPage: React.FC = () => {
         setClientName('');
         setDescription('');
         setAssignedLeadId('');
+        setIsDescriptionManuallyEdited(false);
         fetchProjects(); // Refresh the list
       }
     } catch (error) {
@@ -133,7 +160,14 @@ export const ProjectsPage: React.FC = () => {
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
           <div className="max-w-md w-full bg-[#0b0e17] p-8 rounded-2xl border border-white/5 shadow-2xl relative">
             <button 
-              onClick={() => setIsModalOpen(false)} 
+              onClick={() => {
+                setIsModalOpen(false);
+                setProjectName('');
+                setClientName('');
+                setDescription('');
+                setAssignedLeadId('');
+                setIsDescriptionManuallyEdited(false);
+              }} 
               className="absolute top-4 right-4 text-gray-400 hover:text-white text-xl transition-colors"
             >
               &times;
@@ -179,10 +213,18 @@ export const ProjectsPage: React.FC = () => {
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-400 mb-1.5">Description</label>
+                <label className="block text-xs font-medium text-gray-400 mb-1.5 flex justify-between items-center">
+                  <span>Description</span>
+                  {isGeneratingDesc && (
+                    <span className="text-[10px] text-teal-400 animate-pulse font-semibold">AI Generating...</span>
+                  )}
+                </label>
                 <textarea 
                   value={description} 
-                  onChange={e => setDescription(e.target.value)} 
+                  onChange={e => {
+                    setDescription(e.target.value);
+                    setIsDescriptionManuallyEdited(true);
+                  }} 
                   className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 text-white placeholder-gray-500 text-sm transition-all"
                   placeholder="Summarize project requirements..."
                   rows={4}
@@ -191,14 +233,22 @@ export const ProjectsPage: React.FC = () => {
               <div className="flex gap-4 pt-4">
                 <button 
                   type="button" 
-                  onClick={() => setIsModalOpen(false)} 
+                  onClick={() => {
+                    setIsModalOpen(false);
+                    setProjectName('');
+                    setClientName('');
+                    setDescription('');
+                    setAssignedLeadId('');
+                    setIsDescriptionManuallyEdited(false);
+                  }} 
                   className="flex-1 py-2.5 bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 rounded-xl text-xs font-semibold transition-all"
                 >
                   Cancel
                 </button>
                 <button 
                   type="submit" 
-                  className="flex-1 py-2.5 bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-400 hover:to-blue-500 text-white font-semibold rounded-xl text-xs transition-all shadow-md shadow-teal-500/10"
+                  disabled={!projectName.trim() || !clientName.trim() || !assignedLeadId || !description.trim() || isGeneratingDesc}
+                  className="flex-1 py-2.5 bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-400 hover:to-blue-500 text-white font-semibold rounded-xl text-xs transition-all shadow-md shadow-teal-500/10 disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   Create
                 </button>
