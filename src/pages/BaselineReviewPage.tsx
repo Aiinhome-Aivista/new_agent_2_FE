@@ -47,8 +47,18 @@ export const BaselineReviewPage: React.FC = () => {
   const [extractingDocId, setExtractingDocId] = useState<number | null>(null);
   const [extracting, setExtracting] = useState(false);
   const [completedDocIds, setCompletedDocIds] = useState<number[]>([]);
+  const [selectedDocIds, setSelectedDocIds] = useState<number[]>([]);
+
+  const toggleDocSelection = (docId: number) => {
+    setSelectedDocIds(prev => 
+      prev.includes(docId) ? prev.filter(id => id !== docId) : [...prev, docId]
+    );
+  };
+
+  const [isApproving, setIsApproving] = useState(false);
 
   const handleApprove = async () => {
+    setIsApproving(true);
     try {
       const res = await apiClient.post(`/projects/${id}/baseline/approve`);
       if (res.data.success) {
@@ -59,6 +69,8 @@ export const BaselineReviewPage: React.FC = () => {
       }
     } catch (error: any) {
       showNotification("Approval failed: " + (error.response?.data?.detail || "Server error"), "error");
+    } finally {
+      setIsApproving(false);
     }
   };
 
@@ -77,6 +89,7 @@ export const BaselineReviewPage: React.FC = () => {
         }
         
         setEligibleDocs(contracts);
+        setSelectedDocIds(contracts.map((d: any) => d.id));
         setShowExtractModal(true);
       }
     } catch (error) {
@@ -85,10 +98,12 @@ export const BaselineReviewPage: React.FC = () => {
   };
 
   const confirmExtractAll = async () => {
+    if (selectedDocIds.length === 0) return;
     setExtracting(true);
     setCompletedDocIds([]);
     try {
-      for (const doc of eligibleDocs) {
+      const docsToExtract = eligibleDocs.filter(d => selectedDocIds.includes(d.id));
+      for (const doc of docsToExtract) {
         setExtractingDocId(doc.id);
         await apiClient.post(`/projects/${id}/baseline/extract?document_id=${doc.id}`);
         setCompletedDocIds(prev => [...prev, doc.id]);
@@ -120,11 +135,24 @@ export const BaselineReviewPage: React.FC = () => {
           </div>
           <div className="flex gap-4">
             <button onClick={() => navigate(`/projects/${id}`)} className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-md">Back to Dashboard</button>
-            {(!baseline || baseline.status !== 'APPROVED') && (
+            {(!baseline || baseline.status !== 'APPROVED') && user?.role !== 'PROJECT_LEAD' && (
               <button onClick={handleExtractClick} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-md">Extract Baseline</button>
             )}
             {baseline && baseline.status === 'DRAFT' && (user?.role === 'ENGAGEMENT_MANAGER' || user?.role === 'ADMIN') && (
-              <button onClick={handleApprove} className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-md">Approve Baseline</button>
+              <button 
+                onClick={handleApprove} 
+                disabled={isApproving}
+                className="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-green-800 disabled:opacity-70 rounded-md flex items-center gap-2 cursor-pointer disabled:cursor-not-allowed transition-colors"
+              >
+                {isApproving ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Approving...
+                  </>
+                ) : (
+                  "Approve Baseline"
+                )}
+              </button>
             )}
           </div>
         </div>
@@ -144,9 +172,19 @@ export const BaselineReviewPage: React.FC = () => {
               {baseline.scope_items?.map((item: any) => (
                 <div key={item.id} className="p-4 bg-gray-800 rounded-lg border border-gray-700">
                   <h3 className="font-bold text-lg mb-2">{item.name}</h3>
-                  <p className="text-gray-400 mb-2">{item.description}</p>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-blue-400">{item.scope_type}</span>
+                  <p className="text-gray-400 mb-3">{item.description}</p>
+                  
+                  {item.evidence_text && (
+                    <div className="mb-4 p-3 bg-gray-900/50 rounded-lg border border-gray-700/50">
+                      <h4 className="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wider">AI Reasoning</h4>
+                      <p className="text-gray-300 text-sm italic">"{item.evidence_text}"</p>
+                    </div>
+                  )}
+
+                  <div className="flex justify-between text-sm mt-auto">
+                    <span className={`font-semibold ${item.scope_type === 'IN_SCOPE' ? 'text-green-400' : item.scope_type === 'OUT_OF_SCOPE' ? 'text-rose-400' : 'text-blue-400'}`}>
+                      {item.scope_type}
+                    </span>
                     <span className="text-gray-500">Conf: {(item.confidence * 100).toFixed(0)}%</span>
                   </div>
                 </div>
@@ -183,11 +221,21 @@ export const BaselineReviewPage: React.FC = () => {
               {eligibleDocs.map((doc) => {
                 const isExtractingThis = extractingDocId === doc.id;
                 const isCompletedThis = completedDocIds.includes(doc.id);
+                const isChecked = selectedDocIds.includes(doc.id);
                 return (
                   <div key={doc.id} className="flex justify-between items-center bg-gray-800 p-3 rounded-lg border border-gray-700 gap-4">
-                    <div className="flex flex-col min-w-0">
-                      <span className="text-sm font-medium text-gray-200 truncate">{doc.document_name}</span>
-                      <span className="text-[10px] text-cyan-400 font-semibold uppercase">{doc.document_type}</span>
+                    <div className="flex items-center gap-3 min-w-0">
+                      <input 
+                        type="checkbox" 
+                        checked={isChecked}
+                        onChange={() => toggleDocSelection(doc.id)}
+                        disabled={extracting}
+                        className="w-4 h-4 rounded border-gray-600 text-[#00e5ff] focus:ring-[#00e5ff] bg-gray-700 cursor-pointer"
+                      />
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-sm font-medium text-gray-200 truncate">{doc.document_name}</span>
+                        <span className="text-[10px] text-cyan-400 font-semibold uppercase">{doc.document_type}</span>
+                      </div>
                     </div>
                     <div className="flex items-center gap-2 flex-shrink-0">
                       {isExtractingThis ? (
@@ -222,7 +270,7 @@ export const BaselineReviewPage: React.FC = () => {
               </button>
               <button 
                 onClick={confirmExtractAll}
-                disabled={extracting}
+                disabled={extracting || selectedDocIds.length === 0}
                 className="flex items-center gap-2 px-4 py-2 bg-[#00e5ff] hover:bg-[#00cce5] disabled:bg-cyan-900/50 text-black disabled:text-cyan-700 font-semibold rounded-lg transition-colors cursor-pointer disabled:cursor-not-allowed"
               >
                 {extracting ? (

@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '../auth/AuthContext';
 import { Link } from 'react-router-dom';
+import apiClient from '../api/apiClient';
 import { 
   Briefcase, 
   ScrollText, 
@@ -9,25 +10,52 @@ import {
   ArrowRight,
   TrendingUp,
   ShieldAlert,
-  Clock
+  Clock,
+  CheckCircle,
+  Info
 } from 'lucide-react';
 
 export const DashboardPage: React.FC = () => {
   const { user } = useAuth();
+  
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState({
+    unresolved_risks: 0,
+    active_projects: 0,
+    contract_baselines: { total: 0, approved: 0 },
+    scope_creep_risks: { total: 0, high_severity: 0 },
+    system_alerts: 0,
+    recent_activities: [] as any[]
+  });
 
-  // Mock statistics for presentation
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await apiClient.get('/dashboard/stats');
+        if (response.data.success) {
+          setData(response.data.data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch dashboard stats", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchStats();
+  }, []);
+
   const stats = [
-    { label: 'Active Projects', value: '4', change: '+1 this week', icon: <Briefcase className="w-5 h-5 text-teal-400" />, bg: 'from-teal-500/10 to-teal-400/5' },
-    { label: 'Contract Baselines', value: '12', change: '8 Approved', icon: <ScrollText className="w-5 h-5 text-blue-400" />, bg: 'from-blue-500/10 to-blue-400/5' },
-    { label: 'Scope Creep Risks', value: '3', change: '2 High severity', icon: <AlertTriangle className="w-5 h-5 text-amber-400" />, bg: 'from-amber-500/10 to-amber-400/5' },
-    { label: 'System Alerts Sent', value: '15', change: 'All delivered', icon: <Bell className="w-5 h-5 text-rose-400" />, bg: 'from-rose-500/10 to-rose-400/5' },
+    { label: 'Active Projects', value: data.active_projects.toString(), change: 'Total tracked', icon: <Briefcase className="w-5 h-5 text-teal-400" />, bg: 'from-teal-500/10 to-teal-400/5' },
+    { label: 'Contract Baselines', value: data.contract_baselines.total.toString(), change: `${data.contract_baselines.approved} Approved`, icon: <ScrollText className="w-5 h-5 text-blue-400" />, bg: 'from-blue-500/10 to-blue-400/5' },
+    { label: 'Scope Creep Risks', value: data.scope_creep_risks.total.toString(), change: `${data.scope_creep_risks.high_severity} High severity`, icon: <AlertTriangle className="w-5 h-5 text-amber-400" />, bg: 'from-amber-500/10 to-amber-400/5' },
+    { label: 'System Alerts Sent', value: data.system_alerts.toString(), change: 'All delivered', icon: <Bell className="w-5 h-5 text-rose-400" />, bg: 'from-rose-500/10 to-rose-400/5' },
   ];
 
-  const recentActivities = [
-    { project: 'Acme Corp Engagement', action: 'Baseline scope finalized and approved', time: '2 hours ago', type: 'success' },
-    { project: 'Global Tech IFA', action: 'Weekly Status Report ingested & analyzed', time: '5 hours ago', type: 'info' },
-    { project: 'Stark Industries Lease', action: 'Out-of-scope tasks detected in MoM details', time: '1 day ago', type: 'warning' },
-  ];
+  const getLogIcon = (type: string) => {
+    if (type.includes('FAIL') || type.includes('ERROR')) return <AlertTriangle className="w-4 h-4 text-rose-400" />;
+    if (type.includes('SUCCESS') || type.includes('APPROVE')) return <CheckCircle className="w-4 h-4 text-teal-400" />;
+    return <Info className="w-4 h-4 text-blue-400" />;
+  };
 
   return (
     <div className="flex-1 bg-[#080b14] text-white p-6 md:p-10 relative overflow-hidden">
@@ -54,7 +82,7 @@ export const DashboardPage: React.FC = () => {
               Welcome back, <span className="bg-clip-text text-transparent bg-gradient-to-r from-teal-300 to-blue-400">{user?.name}</span>!
             </h2>
             <p className="text-gray-300 text-sm leading-relaxed mb-6">
-              The AI autonomous systems are currently monitoring contract scope parameters across all active pipelines. There are currently <span className="text-teal-300 font-semibold">3 unresolved risk warnings</span> that require evaluation review.
+              The AI autonomous systems are currently monitoring contract scope parameters across all active pipelines. There are currently <span className="text-teal-300 font-semibold">{loading ? '...' : data.unresolved_risks} unresolved risk warnings</span> that require evaluation review.
             </p>
             <div className="flex flex-wrap gap-4">
               <Link 
@@ -82,7 +110,9 @@ export const DashboardPage: React.FC = () => {
                 </div>
               </div>
               <div>
-                <p className="text-3xl font-black tracking-tight text-white mb-1">{stat.value}</p>
+                <p className="text-3xl font-black tracking-tight text-white mb-1">
+                  {loading ? '...' : stat.value}
+                </p>
                 <div className="flex items-center gap-1 text-[10px] text-gray-500 font-medium">
                   <TrendingUp className="w-3 h-3 text-teal-400" />
                   {stat.change}
@@ -98,25 +128,36 @@ export const DashboardPage: React.FC = () => {
           <div className="lg:col-span-2 p-6 rounded-2xl bg-white/[0.02] border border-white/5 flex flex-col justify-between">
             <div>
               <h3 className="text-lg font-bold mb-4 text-white flex items-center gap-2">
-                <Clock className="w-4 h-4 text-teal-400" />
+                <Clock className="w-5 h-5 text-teal-400" />
                 Pipeline Event Logs
               </h3>
               <div className="space-y-4">
-                {recentActivities.map((act, index) => (
-                  <div 
-                    key={index} 
-                    className="flex items-start gap-4 p-4 rounded-xl bg-white/[0.01] hover:bg-white/[0.03] border border-white/5 transition-colors"
-                  >
-                    <div className={`w-2 h-2 rounded-full mt-2 shrink-0 ${
-                      act.type === 'success' ? 'bg-emerald-400' : act.type === 'warning' ? 'bg-amber-400' : 'bg-blue-400'
-                    }`} />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-bold text-white mb-0.5 truncate">{act.project}</p>
-                      <p className="text-xs text-gray-400 leading-normal">{act.action}</p>
+                {loading ? (
+                  <p className="text-gray-500 text-sm">Loading logs...</p>
+                ) : data.recent_activities.length === 0 ? (
+                  <p className="text-gray-500 text-sm">No recent activity found.</p>
+                ) : (
+                  data.recent_activities.map((log, idx) => (
+                    <div key={idx} className="flex gap-4 p-3 rounded-xl hover:bg-white/[0.02] transition-colors group">
+                      <div className="mt-1">
+                        {getLogIcon(log.action)}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex justify-between items-start mb-1">
+                          <p className="text-sm font-semibold text-white group-hover:text-teal-300 transition-colors">
+                            {log.project_name || 'System Action'}
+                          </p>
+                          <span className="text-[10px] text-gray-500 font-mono">
+                            {new Date(log.created_at).toLocaleDateString()} {new Date(log.created_at).toLocaleTimeString()}
+                          </span>
+                        </div>
+                        <p className="text-xs text-gray-400 leading-relaxed">
+                          <span className="text-gray-300 font-medium">[{log.agent_name}]</span> {log.action}
+                        </p>
+                      </div>
                     </div>
-                    <span className="text-[10px] text-gray-500 shrink-0 self-start">{act.time}</span>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </div>
             <Link 

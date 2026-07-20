@@ -1,16 +1,19 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import apiClient from "../api/apiClient";
 import type { Project } from "../types";
 import { Loader } from "../components/Loader";
-import { UploadCloud, X, FileText, Play, Trash2, Loader2 } from "lucide-react";
+import { useAuth } from "../auth/AuthContext";
+import { UploadCloud, X, FileText, Play, Trash2, Loader2, Lock } from "lucide-react";
 
 export const ProjectDashboardPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const { user } = useAuth();
   const [project, setProject] = useState<Project | null>(null);
   const [documents, setDocuments] = useState<any[]>([]);
   const [file, setFile] = useState<File | null>(null);
-  const [docType, setDocType] = useState<string>("EL");
+  const isProjectLead = user?.role === "PROJECT_LEAD";
+  const [docType, setDocType] = useState<string>(isProjectLead ? "MOM" : "EL");
   const [documentTypes, setDocumentTypes] = useState<any[]>([]);
   const [uploading, setUploading] = useState(false);
 
@@ -284,9 +287,20 @@ export const ProjectDashboardPage: React.FC = () => {
         <p className="text-gray-400 mb-8">{project.description}</p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div className="bg-gray-800 p-6 rounded-xl border border-gray-700">
-            <h2 className="text-xl font-bold mb-4">Upload Document</h2>
-            <form onSubmit={handleUpload} className="space-y-4">
+          {isProjectLead && project.monitoring_status !== 'ACTIVE' ? (
+            <div className="bg-gray-800 p-6 rounded-xl border border-gray-700 flex flex-col items-center justify-center text-center">
+              <div className="w-16 h-16 rounded-full bg-amber-500/10 flex items-center justify-center mb-4">
+                <Lock className="w-8 h-8 text-amber-500" />
+              </div>
+              <h2 className="text-xl font-bold mb-3">Upload Locked</h2>
+              <p className="text-gray-400 text-sm leading-relaxed max-w-sm">
+                The Engagement Manager must extract and approve the <strong>Scope Baseline</strong> for this project before you can upload execution documents (like MOMs or Status Reports).
+              </p>
+            </div>
+          ) : (
+            <div className="bg-gray-800 p-6 rounded-xl border border-gray-700">
+              <h2 className="text-xl font-bold mb-4">Upload Document</h2>
+              <form onSubmit={handleUpload} className="space-y-4">
               <div>
                 <label className="block text-gray-400 mb-1">
                   Document Type
@@ -297,7 +311,13 @@ export const ProjectDashboardPage: React.FC = () => {
                   onChange={handleDocTypeChange}
                   className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {documentTypes.map((type, idx) => (
+                  {documentTypes
+                    .filter((type) => {
+                      // Project Lead cannot upload EL or IFA
+                      if (isProjectLead && (type.name === "EL" || type.name === "IFA")) return false;
+                      return true;
+                    })
+                    .map((type, idx) => (
                     <option
                       key={idx}
                       value={type.name}
@@ -405,6 +425,7 @@ export const ProjectDashboardPage: React.FC = () => {
               </button>
             </form>
           </div>
+          )}
 
           <div className="bg-gray-800 p-6 rounded-xl border border-gray-700">
             <h2 className="text-xl font-bold mb-4">Documents</h2>
