@@ -104,6 +104,18 @@ export const Sidebar: React.FC = () => {
               </Link>
             </div>
 
+             <Link
+              to={`/projects/${projectId}`}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+                isActive(`/projects/${projectId}`)
+                  ? "bg-gradient-to-r from-teal-500/10 to-blue-600/10 border border-teal-500/20 text-teal-400 font-semibold"
+                  : "hover:bg-white/[0.03] text-gray-400 hover:text-white border border-transparent"
+              }`}
+            >
+              <LayoutGrid className="w-5 h-5" />
+              Overview
+            </Link>
+
             <Link
               to={`/projects/${projectId}/members`}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
@@ -116,17 +128,7 @@ export const Sidebar: React.FC = () => {
               Project Members
             </Link>
 
-            <Link
-              to={`/projects/${projectId}`}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
-                isActive(`/projects/${projectId}`)
-                  ? "bg-gradient-to-r from-teal-500/10 to-blue-600/10 border border-teal-500/20 text-teal-400 font-semibold"
-                  : "hover:bg-white/[0.03] text-gray-400 hover:text-white border border-transparent"
-              }`}
-            >
-              <LayoutGrid className="w-5 h-5" />
-              Overview
-            </Link>
+           
 
             <Link
               to={`/projects/${projectId}/cockpit`}
