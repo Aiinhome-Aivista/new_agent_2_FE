@@ -126,6 +126,9 @@ export const BaselineReviewPage: React.FC = () => {
 
   if (loading) return <Loader message="Loading contract scope baseline..." />;
 
+  const inScopeItems = baseline?.scope_items?.filter((item: any) => item.scope_type === 'IN_SCOPE') || [];
+  const outOfScopeItems = baseline?.scope_items?.filter((item: any) => item.scope_type !== 'IN_SCOPE') || [];
+
   return (
     <div className="flex-1 bg-transparent p-6 md:p-10 relative overflow-hidden">
       <div className="max-w-6xl mx-auto">
@@ -167,28 +170,107 @@ export const BaselineReviewPage: React.FC = () => {
               </span>
             </div>
             
-            <h2 className="text-2xl font-bold mb-4">Scope Items</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-              {baseline.scope_items?.map((item: any) => (
-                <div key={item.id} className="p-4 bg-gray-800 rounded-lg border border-gray-700">
-                  <h3 className="font-bold text-lg mb-2">{item.name}</h3>
-                  <p className="text-gray-400 mb-3">{item.description}</p>
-                  
-                  {item.evidence_text && (
-                    <div className="mb-4 p-3 bg-gray-900/50 rounded-lg border border-gray-700/50">
-                      <h4 className="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wider">AI Reasoning</h4>
-                      <p className="text-gray-300 text-sm italic">"{item.evidence_text}"</p>
-                    </div>
-                  )}
-
-                  <div className="flex justify-between text-sm mt-auto">
-                    <span className={`font-semibold ${item.scope_type === 'IN_SCOPE' ? 'text-green-400' : item.scope_type === 'OUT_OF_SCOPE' ? 'text-rose-400' : 'text-blue-400'}`}>
-                      {item.scope_type}
+            <h2 className="text-2xl font-bold mb-6">Scope Items Baseline</h2>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
+              
+              {/* Left Column - In Scope */}
+              <div className="flex flex-col bg-gray-900/30 backdrop-blur-md rounded-2xl p-6 border border-gray-800/80 shadow-2xl">
+                <div className="flex items-center justify-between pb-4 mb-5 border-b border-gray-800">
+                  <div className="flex items-center gap-3">
+                    <span className="relative flex h-3.5 w-3.5">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500"></span>
                     </span>
-                    <span className="text-gray-500">Conf: {(item.confidence * 100).toFixed(0)}%</span>
+                    <h3 className="text-lg font-bold text-gray-100 tracking-tight">In Scope</h3>
                   </div>
+                  <span className="px-3 py-1 text-xs font-semibold bg-emerald-500/10 text-emerald-400 rounded-full border border-emerald-500/20 shadow-sm">
+                    {inScopeItems.length} {inScopeItems.length === 1 ? 'item' : 'items'}
+                  </span>
                 </div>
-              ))}
+
+                {inScopeItems.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-12 px-4 text-center border border-dashed border-gray-850 rounded-xl bg-gray-850/10">
+                    <p className="text-gray-500 text-sm">No in-scope items identified.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4 flex-1">
+                    {inScopeItems.map((item: any) => (
+                      <div key={item.id} className="group p-5 bg-gray-800/60 hover:bg-gray-800/90 rounded-xl border border-gray-700/60 hover:border-emerald-500/30 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col justify-between min-h-[160px]">
+                        <div>
+                          <h4 className="font-bold text-lg mb-2 text-white group-hover:text-emerald-300 transition-colors">{item.name}</h4>
+                          <p className="text-gray-400 text-sm mb-4 leading-relaxed">{item.description}</p>
+                          
+                          {item.evidence_text && (
+                            <div className="mb-4 p-3 bg-gray-900/60 rounded-lg border border-gray-700/40">
+                              <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">AI Reasoning</h5>
+                              <p className="text-gray-300 text-xs italic leading-relaxed">"{item.evidence_text}"</p>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex justify-between items-center text-xs mt-auto pt-3 border-t border-gray-700/20">
+                          <span className="font-semibold text-emerald-400 px-2.5 py-0.5 bg-emerald-950/40 rounded border border-emerald-800/30">
+                            {item.scope_type}
+                          </span>
+                          <span className="text-gray-500 font-medium">Confidence: {(item.confidence * 100).toFixed(0)}%</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Right Column - Out of Scope */}
+              <div className="flex flex-col bg-gray-900/30 backdrop-blur-md rounded-2xl p-6 border border-gray-800/80 shadow-2xl">
+                <div className="flex items-center justify-between pb-4 mb-5 border-b border-gray-800">
+                  <div className="flex items-center gap-3">
+                    <span className="relative flex h-3.5 w-3.5">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-rose-500"></span>
+                    </span>
+                    <h3 className="text-lg font-bold text-gray-100 tracking-tight">Out of Scope</h3>
+                  </div>
+                  <span className="px-3 py-1 text-xs font-semibold bg-rose-500/10 text-rose-400 rounded-full border border-rose-500/20 shadow-sm">
+                    {outOfScopeItems.length} {outOfScopeItems.length === 1 ? 'item' : 'items'}
+                  </span>
+                </div>
+
+                {outOfScopeItems.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-12 px-4 text-center border border-dashed border-gray-850 rounded-xl bg-gray-850/10">
+                    <p className="text-gray-500 text-sm">No out-of-scope items identified.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4 flex-1">
+                    {outOfScopeItems.map((item: any) => (
+                      <div key={item.id} className="group p-5 bg-gray-800/60 hover:bg-gray-800/90 rounded-xl border border-gray-700/60 hover:border-rose-500/30 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col justify-between min-h-[160px]">
+                        <div>
+                          <h4 className="font-bold text-lg mb-2 text-white group-hover:text-rose-300 transition-colors">{item.name}</h4>
+                          <p className="text-gray-400 text-sm mb-4 leading-relaxed">{item.description}</p>
+                          
+                          {item.evidence_text && (
+                            <div className="mb-4 p-3 bg-gray-900/60 rounded-lg border border-gray-700/40">
+                              <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">AI Reasoning</h5>
+                              <p className="text-gray-300 text-xs italic leading-relaxed">"{item.evidence_text}"</p>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex justify-between items-center text-xs mt-auto pt-3 border-t border-gray-700/20">
+                          <span className={`font-semibold px-2.5 py-0.5 rounded border ${
+                            item.scope_type === 'OUT_OF_SCOPE' 
+                              ? 'text-rose-400 bg-rose-950/40 border-rose-800/30' 
+                              : 'text-blue-400 bg-blue-950/40 border-blue-800/30'
+                          }`}>
+                            {item.scope_type}
+                          </span>
+                          <span className="text-gray-500 font-medium">Confidence: {(item.confidence * 100).toFixed(0)}%</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
             </div>
 
             <h2 className="text-2xl font-bold mb-4">Deliverables & IFA Allocations</h2>
