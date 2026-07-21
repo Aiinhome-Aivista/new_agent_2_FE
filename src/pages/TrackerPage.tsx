@@ -2,32 +2,257 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import apiClient from '../api/apiClient';
 import { Loader } from '../components/Loader';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Info } from 'lucide-react';
+import { useAuth } from '../auth/AuthContext';
 
 export const TrackerPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  
   const [items, setItems] = useState<any[]>([]);
+  const [project, setProject] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'ACTIVE' | 'RESOLVED'>('ACTIVE');
+  const [selectedItemIds, setSelectedItemIds] = useState<number[]>([]);
 
   const activeItems = items.filter(item => item.status !== 'RESOLVED');
   const resolvedItems = items.filter(item => item.status === 'RESOLVED');
   const currentTabItems = activeTab === 'ACTIVE' ? activeItems : resolvedItems;
 
   useEffect(() => {
-    const fetchTracker = async () => {
+    const fetchTrackerAndProject = async () => {
       try {
-        const res = await apiClient.get(`/projects/${id}/tracker/`);
-        if (res.data.success) setItems(res.data.data);
+        const [trackerRes, projectRes] = await Promise.all([
+          apiClient.get(`/projects/${id}/tracker/`),
+          apiClient.get(`/projects/${id}`)
+        ]);
+        if (trackerRes.data.success) setItems(trackerRes.data.data);
+        if (projectRes.data.success) setProject(projectRes.data.data);
       } catch (error) {
-        console.error("Failed to fetch tracker items");
+        console.error("Failed to fetch tracker items or project details:", error);
       } finally {
         setLoading(false);
       }
     };
-    fetchTracker();
+    fetchTrackerAndProject();
   }, [id]);
+
+  useEffect(() => {
+    setSelectedItemIds([]);
+  }, [activeTab]);
+
+  const toggleSelectItem = (itemId: number) => {
+    setSelectedItemIds(prev =>
+      prev.includes(itemId) ? prev.filter(id => id !== itemId) : [...prev, itemId]
+    );
+  };
+
+  const generateExportHtml = (itemsToExport: any[], title: string) => {
+    const projectName = project?.project_name || 'Project Details';
+    const userName = user?.name || 'System User';
+    const userEmail = user?.email || '';
+    const exportTime = new Date().toLocaleString();
+
+    return `
+      <html>
+        <head>
+          <title>${projectName} - ${title}</title>
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; padding: 40px; color: #1f2937; line-height: 1.5; background-color: #ffffff; }
+            .header { border-bottom: 2px solid #0891b2; padding-bottom: 16px; margin-bottom: 24px; }
+            h1 { font-size: 24px; font-weight: 800; color: #0f172a; margin: 0 0 8px 0; }
+            .header-meta { font-size: 13px; color: #4b5563; display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; }
+            .meta-item { display: flex; gap: 6px; }
+            .meta-label { font-weight: 600; color: #374151; }
+            h2 { font-size: 18px; font-weight: bold; color: #1f2937; margin-top: 30px; margin-bottom: 15px; border-bottom: 1px solid #e5e7eb; padding-bottom: 6px; }
+            .cards-list { display: flex; flex-direction: column; gap: 16px; }
+            .card { border: 1px solid #e5e7eb; padding: 18px; border-radius: 12px; background-color: #f8fafc; page-break-inside: avoid; margin-bottom: 16px; }
+            .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+            .card-title { font-weight: 700; font-size: 16px; color: #0f172a; margin: 0; }
+            .badges { display: flex; gap: 8px; align-items: center; }
+            .badge { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 12px; text-transform: uppercase; }
+            .badge-low { background-color: #d1fae5; color: #065f46; }
+            .badge-medium { background-color: #fef3c7; color: #92400e; }
+            .badge-high { background-color: #ffedd5; color: #9a3412; }
+            .badge-critical { background-color: #fee2e2; color: #991b1b; }
+            .badge-resolved { background-color: #e0f2fe; color: #0369a1; border: 1px solid #7dd3fc; }
+            .badge-type { background-color: #f1f5f9; color: #475569; font-weight: 600; text-transform: none; }
+            .card-meta-line { font-size: 12px; color: #64748b; margin-bottom: 12px; display: flex; gap: 16px; }
+            .reason-box { background-color: #f1f5f9; padding: 12px; border-left: 4px solid #0891b2; font-size: 12px; border-radius: 6px; color: #334155; line-height: 1.6; }
+            .reason-title { font-weight: bold; margin-bottom: 4px; color: #0f172a; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; }
+            .resolution-box { background-color: #f0fdf4; padding: 12px; border-left: 4px solid #16a34a; font-size: 12px; border-radius: 6px; color: #14532d; line-height: 1.6; margin-top: 12px; }
+            .resolution-meta { font-size: 11px; color: #166534; margin-top: 6px; padding-top: 6px; border-top: 1px dashed #bbf7d0; display: flex; gap: 16px; }
+            @media print {
+              body { padding: 0; }
+              @page { margin: 1.5cm; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>${projectName} &mdash; ${title}</h1>
+            <div class="header-meta">
+              <div class="meta-item"><span class="meta-label">Project Name:</span> <span>${projectName}</span></div>
+              <div class="meta-item"><span class="meta-label">Exported By:</span> <span>${userName} ${userEmail ? `(${userEmail})` : ''}</span></div>
+              <div class="meta-item"><span class="meta-label">Exported At:</span> <span>${exportTime}</span></div>
+              <div class="meta-item"><span class="meta-label">Total Risks:</span> <span>${itemsToExport.length}</span></div>
+            </div>
+          </div>
+          
+          <div class="cards-list">
+            ${itemsToExport.length === 0 ? `
+              <p style="color: #64748b; font-style: italic; text-align: center; margin-top: 40px; font-size: 14px;">No risk items found matching this filter.</p>
+            ` : itemsToExport.map(item => {
+              const level = item.risk_level || 'LOW';
+              const levelClass = level.toLowerCase();
+              const categoryLabels: Record<string, string> = {
+                SCOPE_CREEP: 'Scope Creep',
+                DELAY: 'Delay Risk',
+                MISSING_DELIVERABLE: 'Missing Deliverable',
+                DEPENDENCY: 'Dependency Risk',
+                STAKEHOLDER: 'Stakeholder Risk',
+                GENERAL: 'General Risk',
+              };
+              const categoryLabel = categoryLabels[item.risk_category] || categoryLabels.GENERAL;
+              const typeLabels: Record<string, string> = {
+                ACTIVITY: 'Activity',
+                NEW_REQUEST: 'New Request',
+                ACTION_ITEM: 'Action Item'
+              };
+              const typeLabel = typeLabels[item.item_type] || item.item_type;
+
+              // Extract description & reasoning splits
+              const reasoningText = item.reasoning || '';
+              const hasSplit = reasoningText.includes('\nReasoning:\n') || reasoningText.includes('\nReasoning:\r\n');
+              let description = reasoningText;
+              let detailedReasoning = '';
+              if (hasSplit) {
+                const parts = reasoningText.split(/\nReasoning:\r?\n/);
+                description = parts[0].replace(/Description:\r?\n/, '').trim();
+                detailedReasoning = parts[1].trim();
+              } else if (reasoningText.startsWith('Description:\n') || reasoningText.startsWith('Description:\r\n')) {
+                description = reasoningText.replace(/Description:\r?\n/, '').trim();
+              }
+
+              return `
+                <div class="card">
+                  <div class="card-header">
+                    <h3 class="card-title">${item.name}</h3>
+                    <div class="badges">
+                      <span class="badge badge-type">${typeLabel}</span>
+                      <span class="badge badge-${levelClass}">${level} (${item.risk_score}/100)</span>
+                      ${item.status === 'RESOLVED' ? `<span class="badge badge-resolved">Resolved</span>` : ''}
+                    </div>
+                  </div>
+                  
+                  <div class="card-meta-line">
+                    <span><strong>Category:</strong> ${categoryLabel}</span>
+                    <span><strong>Source Document:</strong> ${item.document_name || 'N/A'}</span>
+                  </div>
+
+                  ${description ? `
+                    <div class="reason-box">
+                      <div class="reason-title">Risk Description</div>
+                      <div>${description}</div>
+                      ${detailedReasoning ? `
+                        <div class="reason-title" style="margin-top: 10px; color: #475569;">Detailed AI Reasoning</div>
+                        <div style="font-size: 11.5px; color: #475569;">${detailedReasoning}</div>
+                      ` : ''}
+                    </div>
+                  ` : ''}
+
+                  ${item.status === 'RESOLVED' ? `
+                    <div class="resolution-box">
+                      <div class="reason-title" style="color: #14532d;">Resolution Details</div>
+                      <div>${item.resolution}</div>
+                      ${(item.resolved_by_name || item.resolved_at) ? `
+                        <div class="resolution-meta">
+                          ${item.resolved_by_name ? `<span><strong>Resolved By:</strong> ${item.resolved_by_name} ${item.resolved_by_email ? `(${item.resolved_by_email})` : ''}</span>` : ''}
+                          ${item.resolved_at ? `<span><strong>Resolved At:</strong> ${new Date(item.resolved_at).toLocaleString()}</span>` : ''}
+                        </div>
+                      ` : ''}
+                    </div>
+                  ` : ''}
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </body>
+      </html>
+    `;
+  };
+
+  const handleExportSingle = (item: any, format: 'pdf' | 'docx') => {
+    const title = `${item.name} Report`;
+    const htmlContent = generateExportHtml([item], title);
+    
+    if (format === 'pdf') {
+      const printWindow = window.open("", "_blank");
+      if (!printWindow) {
+        alert("Pop-up blocked! Please allow pop-ups to export PDF.");
+        return;
+      }
+      const scriptToAdd = `
+        <script>
+          window.onload = function() {
+            window.print();
+            setTimeout(function() { window.close(); }, 500);
+          };
+        </script>
+      `;
+      const completeHtml = htmlContent.replace('</body>', `${scriptToAdd}</body>`);
+      printWindow.document.write(completeHtml);
+      printWindow.document.close();
+    } else {
+      const blob = new Blob(["\ufeff" + htmlContent], { type: "application/msword" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${item.name.replace(/\s+/g, '_')}_Risk_Report.doc`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+  };
+
+  const handleExportBatch = (itemsToExport: any[], format: 'pdf' | 'docx', reportTitle: string) => {
+    if (itemsToExport.length === 0) {
+      alert("No items selected to export.");
+      return;
+    }
+    const htmlContent = generateExportHtml(itemsToExport, reportTitle);
+    
+    if (format === 'pdf') {
+      const printWindow = window.open("", "_blank");
+      if (!printWindow) {
+        alert("Pop-up blocked! Please allow pop-ups to export PDF.");
+        return;
+      }
+      const scriptToAdd = `
+        <script>
+          window.onload = function() {
+            window.print();
+            setTimeout(function() { window.close(); }, 500);
+          };
+        </script>
+      `;
+      const completeHtml = htmlContent.replace('</body>', `${scriptToAdd}</body>`);
+      printWindow.document.write(completeHtml);
+      printWindow.document.close();
+    } else {
+      const blob = new Blob(["\ufeff" + htmlContent], { type: "application/msword" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${reportTitle.replace(/\s+/g, '_')}_Report.doc`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+  };
 
   const [resolveModalState, setResolveModalState] = useState<{ isOpen: boolean; itemId: number | null }>({ isOpen: false, itemId: null });
   const [resolutionText, setResolutionText] = useState("");
@@ -45,13 +270,17 @@ export const TrackerPage: React.FC = () => {
         status: 'RESOLVED'
       });
       if (res.data.success) {
-        setItems(items.map(i => i.id === resolveModalState.itemId ? { ...i, status: 'RESOLVED', resolution: resolutionText } : i));
+        const updatedItem = res.data.data;
+        setItems(items.map(i => i.id === resolveModalState.itemId ? { ...i, ...updatedItem } : i));
         setResolveModalState({ isOpen: false, itemId: null });
       }
     } catch (error) {
       alert("Failed to resolve item");
     }
   };
+
+  const [showExportDropdown, setShowExportDropdown] = useState(false);
+  const [openExportCardId, setOpenExportCardId] = useState<number | null>(null);
 
   // ---- Process Status Document Modal State ----
   const [processing, setProcessing] = useState(false);
@@ -133,14 +362,96 @@ export const TrackerPage: React.FC = () => {
     <div className="flex-1 bg-transparent p-6 md:p-10 relative overflow-hidden">
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-8">
-          <div className="flex gap-4 items-center">
+          <div className="flex gap-3 items-center">
             <h1 className="text-3xl font-bold">Risk Tracker & Audit</h1>
+            <div className="relative group flex items-center cursor-help text-gray-400 hover:text-cyan-400 transition-colors pt-1">
+              <Info className="w-5.5 h-5.5" />
+              
+              {/* Tooltip Content */}
+              <div className="absolute left-1/2 -translate-x-1/2 md:left-0 md:translate-x-0 top-full mt-3 w-80 p-4 bg-gray-950/98 border border-gray-800 rounded-xl shadow-2xl backdrop-blur-md opacity-0 translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 z-50 text-left">
+                <h4 className="font-bold text-sm text-[#00e5ff] mb-2.5 border-b border-gray-850 pb-1.5 flex items-center gap-1.5">
+                  🛡️ Item Risk Scoring Rules
+                </h4>
+                <div className="space-y-3 text-xs text-gray-300">
+                  <p className="text-gray-400 leading-relaxed font-medium">Individual item scores (out of 100) are determined by these rules in the code:</p>
+                  
+                  <div>
+                    <span className="font-semibold text-white block mb-1">🔄 Scope Creep (OutOfScope Agent)</span>
+                    <ul className="list-disc pl-4 space-y-1 text-gray-400 font-medium">
+                      <li><strong className="text-white">80/100</strong> for direct baseline violations (out of scope).</li>
+                      <li><strong className="text-white">50/100</strong> for warnings or borderline review items.</li>
+                    </ul>
+                  </div>
+
+                  <div>
+                    <span className="font-semibold text-white block mb-1">⏰ Timeline Delays & Risks (Timeline Agent)</span>
+                    <ul className="list-disc pl-4 space-y-1 text-gray-400 font-medium">
+                      <li><strong className="text-white">85/100</strong> for critical delays or active blockers.</li>
+                      <li><strong className="text-white">65/100</strong> for high timeline risk deliverables.</li>
+                      <li><strong className="text-white">45/100</strong> for medium timeline risk.</li>
+                      <li><strong className="text-white">15/100</strong> for low timeline risk.</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
           <div className="flex gap-4">
             <button onClick={() => navigate(`/projects/${id}`)} className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-md">Back to Dashboard</button>
             <button onClick={handleOpenProcessModal} disabled={processing} className={`px-4 py-2 rounded-md ${processing ? 'bg-gray-600 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}>
               {processing ? 'Processing AI...' : 'Process Status Document'}
             </button>
+
+            {/* Global Export Dropdown */}
+            <div className="relative">
+              <button onClick={() => setShowExportDropdown(!showExportDropdown)} className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white font-medium rounded-md flex items-center gap-2 cursor-pointer transition-colors shadow-md hover:shadow-lg">
+                <span>📤 Export Report</span>
+                <span className="text-[10px]">▼</span>
+              </button>
+              
+              {showExportDropdown && (
+                <>
+                  {/* Backdrop overlay to close when clicking outside */}
+                  <div className="fixed inset-0 z-40" onClick={() => setShowExportDropdown(false)} />
+                  
+                  <div className="absolute right-0 top-full mt-2 w-56 bg-gray-950 border border-gray-800 rounded-xl shadow-2xl backdrop-blur-md z-50 text-left p-2 space-y-1 animate-fade-in-up">
+                    <div className="px-2.5 py-1 text-[10px] font-bold text-gray-500 uppercase tracking-wider border-b border-gray-850 mb-1">
+                      Active Risks
+                    </div>
+                    <button onClick={() => { handleExportBatch(activeItems, 'pdf', 'All Active Risks'); setShowExportDropdown(false); }} className="w-full text-left px-2.5 py-2 text-xs hover:bg-gray-900 text-gray-300 hover:text-white rounded-lg flex items-center gap-2 cursor-pointer transition-colors">
+                      <span>📄</span> <span>All Active Risks (PDF)</span>
+                    </button>
+                    <button onClick={() => { handleExportBatch(activeItems, 'docx', 'All Active Risks'); setShowExportDropdown(false); }} className="w-full text-left px-2.5 py-2 text-xs hover:bg-gray-900 text-gray-300 hover:text-white rounded-lg flex items-center gap-2 cursor-pointer transition-colors mb-2">
+                      <span>📝</span> <span>All Active Risks (Word)</span>
+                    </button>
+                    
+                    {selectedItemIds.length > 0 && (
+                      <>
+                        <div className="px-2.5 py-1 text-[10px] font-bold text-cyan-500 uppercase tracking-wider border-b border-gray-850 mb-1">
+                          Selected Risks ({selectedItemIds.length})
+                        </div>
+                        <button onClick={() => { handleExportBatch(activeItems.filter(i => selectedItemIds.includes(i.id)), 'pdf', 'Selected Active Risks'); setShowExportDropdown(false); }} className="w-full text-left px-2.5 py-2 text-xs bg-cyan-950/20 hover:bg-cyan-950/40 text-cyan-300 hover:text-cyan-200 rounded-lg flex items-center gap-2 cursor-pointer transition-colors">
+                          <span>📄</span> <span>Selected Risks (PDF)</span>
+                        </button>
+                        <button onClick={() => { handleExportBatch(activeItems.filter(i => selectedItemIds.includes(i.id)), 'docx', 'Selected Active Risks'); setShowExportDropdown(false); }} className="w-full text-left px-2.5 py-2 text-xs bg-cyan-950/20 hover:bg-cyan-950/40 text-cyan-300 hover:text-cyan-200 rounded-lg flex items-center gap-2 cursor-pointer transition-colors mb-2">
+                          <span>📝</span> <span>Selected Risks (Word)</span>
+                        </button>
+                      </>
+                    )}
+
+                    <div className="px-2.5 py-1 text-[10px] font-bold text-gray-500 uppercase tracking-wider border-b border-gray-850 mb-1">
+                      Resolved Risks
+                    </div>
+                    <button onClick={() => { handleExportBatch(resolvedItems, 'pdf', 'All Resolved Risks'); setShowExportDropdown(false); }} className="w-full text-left px-2.5 py-2 text-xs hover:bg-gray-900 text-gray-300 hover:text-white rounded-lg flex items-center gap-2 cursor-pointer transition-colors">
+                      <span>📄</span> <span>All Resolved Risks (PDF)</span>
+                    </button>
+                    <button onClick={() => { handleExportBatch(resolvedItems, 'docx', 'All Resolved Risks'); setShowExportDropdown(false); }} className="w-full text-left px-2.5 py-2 text-xs hover:bg-gray-900 text-gray-300 hover:text-white rounded-lg flex items-center gap-2 cursor-pointer transition-colors">
+                      <span>📝</span> <span>All Resolved Risks (Word)</span>
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </div>
 
@@ -258,8 +569,19 @@ export const TrackerPage: React.FC = () => {
                     >
                       {/* Header Row */}
                       <div className="flex justify-between items-start mb-3">
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-bold text-xl truncate">{item.name}</h3>
+                        <div className="flex items-start gap-3 flex-1 min-w-0">
+                          {activeTab === 'ACTIVE' && (
+                            <div className="pt-1.5 flex-shrink-0">
+                              <input
+                                type="checkbox"
+                                checked={selectedItemIds.includes(item.id)}
+                                onChange={() => toggleSelectItem(item.id)}
+                                className="w-4 h-4 rounded border-gray-700 bg-gray-900 text-cyan-600 focus:ring-cyan-500/50 cursor-pointer accent-cyan-500"
+                              />
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-bold text-xl truncate">{item.name}</h3>
                           <div className="flex items-center gap-2 mt-1 flex-wrap">
                             <span className="text-xs text-gray-400 bg-gray-700/50 px-2 py-0.5 rounded">
                               {typeLabels[item.item_type] || item.item_type}
@@ -267,6 +589,7 @@ export const TrackerPage: React.FC = () => {
                             <span className="text-xs text-gray-500">Doc: {item.document_name}</span>
                           </div>
                         </div>
+                      </div>
                         <div className="flex items-center gap-2 flex-shrink-0 ml-4 flex-wrap justify-end">
                           {/* Risk Level Badge */}
                           <span className={`px-3 py-1 rounded-full text-xs font-bold border ${levelStyle.bg} ${levelStyle.text} ${levelStyle.border}`}>
@@ -317,13 +640,55 @@ export const TrackerPage: React.FC = () => {
                       )}
 
                       {item.status === 'RESOLVED' ? (
-                        <div className="mt-4 p-3 bg-green-950/30 border border-green-500/20 rounded-lg">
+                        <div className="mt-4 p-4 bg-green-950/20 border border-green-500/20 rounded-xl space-y-2.5 animate-fade-in-up">
                           <p className="text-sm text-green-300"><span className="font-bold">Resolution:</span> {item.resolution}</p>
+                          {(item.resolved_by_name || item.resolved_at) && (
+                            <div className="pt-2.5 border-t border-green-500/10 flex flex-wrap gap-x-4 gap-y-1 text-xs text-green-400/80 font-medium">
+                              {item.resolved_by_name && (
+                                <span className="flex items-center gap-1">
+                                  <span>👤</span>
+                                  <span className="font-semibold">Resolved By:</span> {item.resolved_by_name} {item.resolved_by_email ? `(${item.resolved_by_email})` : ''}
+                                </span>
+                              )}
+                              {item.resolved_at && (
+                                <span className="flex items-center gap-1">
+                                  <span>📅</span>
+                                  <span className="font-semibold">Resolved At:</span> {new Date(item.resolved_at).toLocaleString()}
+                                </span>
+                              )}
+                            </div>
+                          )}
                         </div>
                       ) : (
-                        <button onClick={() => openResolveModal(item.id)} className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-md text-sm transition-colors cursor-pointer font-medium shadow-md hover:shadow-lg active:scale-[0.98]">
-                          Mark as Resolved
-                        </button>
+                        <div className="flex flex-wrap gap-3">
+                          <button onClick={() => openResolveModal(item.id)} className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-md text-sm transition-colors cursor-pointer font-medium shadow-md hover:shadow-lg active:scale-[0.98]">
+                            Mark as Resolved
+                          </button>
+                          
+                          {/* Single Card Export */}
+                          <div className="relative">
+                            <button onClick={(e) => { e.stopPropagation(); setOpenExportCardId(openExportCardId === item.id ? null : item.id); }} className="px-3 py-2 bg-gray-700 hover:bg-gray-650 rounded-md text-sm transition-colors cursor-pointer font-medium flex items-center gap-1.5 border border-gray-600/50">
+                              <span>📤 Export</span>
+                              <span className="text-[10px] text-gray-400">▼</span>
+                            </button>
+                            
+                            {openExportCardId === item.id && (
+                              <>
+                                {/* Click outside handler for card export */}
+                                <div className="fixed inset-0 z-20" onClick={(e) => { e.stopPropagation(); setOpenExportCardId(null); }} />
+                                
+                                <div className="absolute left-0 bottom-full mb-1 w-32 bg-gray-950 border border-gray-800 rounded-lg shadow-xl z-30 overflow-hidden animate-fade-in-up">
+                                  <button onClick={() => { handleExportSingle(item, 'pdf'); setOpenExportCardId(null); }} className="w-full text-left px-3 py-2 text-xs hover:bg-gray-900 text-gray-300 hover:text-white flex items-center gap-1.5 cursor-pointer">
+                                    <span>📄</span> <span>PDF</span>
+                                  </button>
+                                  <button onClick={() => { handleExportSingle(item, 'docx'); setOpenExportCardId(null); }} className="w-full text-left px-3 py-2 text-xs hover:bg-gray-900 text-gray-305 hover:text-white flex items-center gap-1.5 border-t border-gray-900 cursor-pointer">
+                                    <span>📝</span> <span>Word</span>
+                                  </button>
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        </div>
                       )}
                     </div>
                   );
