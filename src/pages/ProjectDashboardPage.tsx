@@ -864,7 +864,7 @@ export const ProjectDashboardPage: React.FC = () => {
             <div className="space-y-4 mb-6">
               <div>
                 <label className="block text-gray-400 text-sm mb-1">
-                  Type Name
+                 Document Type Name
                 </label>
                 <input
                   type="text"
