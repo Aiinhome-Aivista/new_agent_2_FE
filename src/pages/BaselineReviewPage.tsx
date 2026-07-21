@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import apiClient from '../api/apiClient';
 import { useAuth } from '../auth/AuthContext';
 import { Loader } from '../components/Loader';
-import { Loader2, CheckCircle2, Clock, Download, FileText } from 'lucide-react';
+import { Loader2, CheckCircle2, Clock, Download, FileText, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export const BaselineReviewPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -41,6 +41,28 @@ export const BaselineReviewPage: React.FC = () => {
 
   const showNotification = (message: string, type: 'info' | 'error' | 'success' = 'info') => {
     setNotification({ message, type });
+  };
+
+  const [selectedDeliverableId, setSelectedDeliverableId] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (baseline?.deliverables?.length > 0 && selectedDeliverableId === null) {
+      setSelectedDeliverableId(baseline.deliverables[0].id);
+    }
+  }, [baseline, selectedDeliverableId]);
+
+  const activeIndex = baseline?.deliverables?.findIndex((d: any) => d.id === selectedDeliverableId) ?? -1;
+
+  const handlePrev = () => {
+    if (baseline?.deliverables && activeIndex > 0) {
+      setSelectedDeliverableId(baseline.deliverables[activeIndex - 1].id);
+    }
+  };
+
+  const handleNext = () => {
+    if (baseline?.deliverables && activeIndex < baseline.deliverables.length - 1) {
+      setSelectedDeliverableId(baseline.deliverables[activeIndex + 1].id);
+    }
   };
 
   const [eligibleDocs, setEligibleDocs] = useState<any[]>([]);
@@ -476,21 +498,124 @@ export const BaselineReviewPage: React.FC = () => {
 
             </div>
 
-            <h2 className="text-2xl font-bold mb-4">Deliverables & IFA Allocations</h2>
+            <h2 className="text-2xl font-bold mb-6">Deliverables & IFA Allocations</h2>
             {baseline.deliverables?.length === 0 ? (
               <p className="text-gray-400 mb-8">No deliverables or budget allocations found.</p>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-                {baseline.deliverables?.map((item: any) => (
-                  <div key={item.id} className="p-4 bg-gray-800 rounded-lg border border-gray-700">
-                    <h3 className="font-bold text-lg mb-2">{item.name}</h3>
-                    <p className="text-gray-400 mb-2">{item.description}</p>
-                    <div className="flex justify-between text-sm mt-3 pt-2 border-t border-gray-700/50">
-                      <span className="text-purple-400 font-medium">Owner: {item.owner || "Unassigned"}</span>
-                      <span className="text-gray-500">Deadline: {item.deadline || "None"}</span>
+              <div>
+                {/* Horizontal Timeline Container */}
+                <div className="flex items-center gap-4 my-10 relative">
+                  {/* Left navigation arrow */}
+                  <button 
+                    onClick={handlePrev} 
+                    disabled={activeIndex <= 0}
+                    className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-900 border border-gray-700 text-gray-400 hover:text-white hover:bg-gray-800 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-colors cursor-pointer z-10 shadow-md"
+                  >
+                    <ChevronLeft className="w-5 h-5" />
+                  </button>
+
+                  {/* Horizontal Timeline Track */}
+                  <div className="flex-1 relative py-6 overflow-hidden">
+                    {/* Horizontal Track Line */}
+                    <div className="absolute top-[44px] left-8 right-8 h-1 bg-gray-800 rounded-full z-0"></div>
+                    
+                    {/* Nodes wrapper */}
+                    <div className="flex justify-between items-center z-10 relative overflow-x-auto pb-4 pl-4 pr-4 scrollbar-thin scrollbar-thumb-gray-800 scrollbar-track-transparent">
+                      {baseline.deliverables?.map((item: any, index: number) => {
+                        const isSelected = selectedDeliverableId === item.id;
+                        const displayName = item.deadline || `Item ${index + 1}`;
+                        
+                        return (
+                          <div 
+                            key={item.id} 
+                            className="flex flex-col items-center flex-shrink-0 cursor-pointer group mx-6 first:ml-0 last:mr-0"
+                            onClick={() => setSelectedDeliverableId(item.id)}
+                          >
+                            {/* Date Label bubble with down caret */}
+                            <div className="relative mb-3 flex flex-col items-center">
+                              <div className={`px-3 py-1 rounded text-xs font-semibold shadow-md transition-all duration-300 border ${
+                                isSelected 
+                                  ? 'bg-purple-650 text-white border-purple-500 scale-105' 
+                                  : 'bg-[#1e293b] text-gray-300 border-gray-750'
+                              }`}>
+                                {displayName}
+                              </div>
+                              <div className={`w-2 h-2 rotate-45 -mt-1 border-r border-b transition-colors ${
+                                isSelected 
+                                  ? 'bg-purple-650 border-purple-500' 
+                                  : 'bg-[#1e293b] border-gray-750'
+                              }`}></div>
+                            </div>
+                            
+                            {/* Node Circle */}
+                            <div className={`w-5 h-5 rounded-full flex items-center justify-center transition-all duration-300 border-2 z-10 bg-gray-900 ${
+                              isSelected 
+                                ? 'border-purple-500 scale-125 bg-gray-100 shadow-lg shadow-purple-500/20' 
+                                : 'border-gray-600 group-hover:border-gray-450'
+                            }`}>
+                              {isSelected && (
+                                <span className="w-1.5 h-1.5 rounded-full bg-purple-600 animate-pulse"></span>
+                              )}
+                            </div>
+
+                            {/* Mini label below */}
+                            <span className={`text-[10px] mt-2.5 transition-colors max-w-[90px] truncate text-center ${
+                              isSelected ? 'text-purple-300 font-semibold' : 'text-gray-500 group-hover:text-gray-400'
+                            }`} title={item.name}>
+                              {item.name}
+                            </span>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
-                ))}
+
+                  {/* Right navigation arrow */}
+                  <button 
+                    onClick={handleNext} 
+                    disabled={activeIndex >= baseline.deliverables.length - 1}
+                    className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-900 border border-gray-700 text-gray-400 hover:text-white hover:bg-gray-800 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-colors cursor-pointer z-10 shadow-md"
+                  >
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
+                </div>
+
+                {/* Selected Item Detail View */}
+                {(() => {
+                  const selectedItem = baseline.deliverables.find((d: any) => d.id === selectedDeliverableId) || baseline.deliverables[0];
+                  if (!selectedItem) return null;
+                  
+                  const caretLeft = baseline.deliverables.length > 1
+                    ? `calc(72px + (${activeIndex} / ${baseline.deliverables.length - 1}) * (100% - 144px))`
+                    : '50%';
+                  
+                  return (
+                    <div className="relative p-6 bg-gray-900/90 backdrop-blur-sm rounded-2xl border border-gray-850 shadow-2xl animate-fadeIn mb-12">
+                      {/* Caret pointing up to selected node */}
+                      <div 
+                        className="absolute -top-[9px] w-4 h-4 bg-gray-900 border-l border-t border-gray-850 z-10 transition-all duration-300"
+                        style={{ left: caretLeft, transform: 'translateX(-50%) rotate(45deg)' }}
+                      ></div>
+
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-purple-400">Selected Deliverable Details</span>
+                          <h3 className="font-bold text-xl text-white mt-0.5">{selectedItem.name}</h3>
+                        </div>
+                        <div className="flex flex-wrap gap-2.5">
+                          {selectedItem.deadline && (
+                            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-purple-950/40 text-purple-300 border border-purple-800/25 shadow-sm">
+                              Date: {selectedItem.deadline}
+                            </span>
+                          )}
+                          <span className="inline-flex items-center px-3 py-1 rounded bg-gray-850/60 border border-gray-700/60 text-gray-300 text-xs font-medium">
+                            Owner: {selectedItem.owner || "Unassigned"}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
             )}
           </div>
