@@ -23,6 +23,8 @@ export interface Project {
   client_name: string;
   description: string;
   monitoring_status: MonitoringStatus;
+  start_date?: string | null;
+  end_date?: string | null;
 }
 
 export interface ProjectMember {

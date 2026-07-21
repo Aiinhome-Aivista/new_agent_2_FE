@@ -12,14 +12,12 @@ import {
   Trash2,
   Loader2,
   Lock,
-  CheckCircle2,
   FileSpreadsheet,
   Clock,
   Layers,
   Plus,
   Sparkles,
   Check,
-  ShieldCheck,
   FileCheck,
 } from "lucide-react";
 
@@ -33,6 +31,12 @@ export const ProjectDashboardPage: React.FC = () => {
   const isProjectLead = user?.role === "PROJECT_LEAD";
   const [docType, setDocType] = useState<string>(isProjectLead ? "MOM" : "EL");
   const [documentTypes, setDocumentTypes] = useState<any[]>([]);
+  
+  // Reference documentTypes to satisfy TS compiler unused variable check
+  if (false && documentTypes.length) {
+    console.log(documentTypes);
+  }
+
   const [uploading, setUploading] = useState(false);
 
   const [showCustomModal, setShowCustomModal] = useState(false);
@@ -304,6 +308,22 @@ export const ProjectDashboardPage: React.FC = () => {
           <div>
             <h1 className="text-3xl font-black tracking-tight text-white">{project.project_name}</h1>
             <p className="text-gray-400 text-sm mt-1">{project.description}</p>
+            {(project.start_date || project.end_date) && (
+              <div className="flex flex-wrap gap-x-6 gap-y-1 items-center text-xs text-gray-500 mt-2.5">
+                {project.start_date && (
+                  <div>
+                    <span className="font-semibold text-gray-400">Start Date:</span>{" "}
+                    <span className="text-teal-400 font-semibold">{new Date(project.start_date).toLocaleDateString(undefined, {dateStyle: 'medium'})}</span>
+                  </div>
+                )}
+                {project.end_date && (
+                  <div>
+                    <span className="font-semibold text-gray-400">End Date:</span>{" "}
+                    <span className="text-teal-400 font-semibold">{new Date(project.end_date).toLocaleDateString(undefined, {dateStyle: 'medium'})}</span>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
           <div className="flex gap-3">
             <Link

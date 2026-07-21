@@ -20,6 +20,36 @@ export const ProjectsPage: React.FC = () => {
   const [isGeneratingDesc, setIsGeneratingDesc] = useState(false);
   const [isDescriptionManuallyEdited, setIsDescriptionManuallyEdited] = useState(false);
 
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [formError, setFormError] = useState('');
+
+  const [editingProjectId, setEditingProjectId] = useState<number | null>(null);
+  const [editingEndDate, setEditingEndDate] = useState('');
+
+  const handleSaveEndDate = async (projectId: number) => {
+    const proj = projects.find(p => p.id === projectId);
+    if (proj && proj.start_date && editingEndDate) {
+      const startStr = proj.start_date.split('T')[0];
+      const endStr = editingEndDate.split('T')[0];
+      if (startStr > endStr) {
+        alert("Validation Error: End date cannot be before start date.");
+        return;
+      }
+    }
+    try {
+      const res = await apiClient.put(`/projects/${projectId}`, {
+        end_date: editingEndDate || null
+      });
+      if (res.data.success) {
+        setEditingProjectId(null);
+        fetchProjects(); // Refresh the list
+      }
+    } catch (error) {
+      console.error("Failed to update end date", error);
+    }
+  };
+
   const fetchProjects = async () => {
     try {
       const res = await apiClient.get('/projects/');
@@ -74,12 +104,19 @@ export const ProjectsPage: React.FC = () => {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (startDate && endDate && startDate > endDate) {
+      setFormError("Start Date cannot be after End Date");
+      return;
+    }
+    setFormError('');
     try {
       const res = await apiClient.post('/projects/', {
         project_name: projectName,
         client_name: clientName,
         description,
-        assigned_lead_id: assignedLeadId ? parseInt(assignedLeadId) : null
+        assigned_lead_id: assignedLeadId ? parseInt(assignedLeadId) : null,
+        start_date: startDate || null,
+        end_date: endDate || null
       });
       if (res.data.success) {
         setIsModalOpen(false);
@@ -87,6 +124,9 @@ export const ProjectsPage: React.FC = () => {
         setClientName('');
         setDescription('');
         setAssignedLeadId('');
+        setStartDate('');
+        setEndDate('');
+        setFormError('');
         setIsDescriptionManuallyEdited(false);
         fetchProjects(); // Refresh the list
       }
@@ -130,7 +170,55 @@ export const ProjectsPage: React.FC = () => {
               >
                 <div>
                   <h3 className="font-display text-lg font-bold mb-1 text-white group-hover:text-teal-300 transition-colors duration-300">{p.project_name}</h3>
-                  <p className="text-gray-400 text-xs mb-4">{p.client_name || 'No Client Name'}</p>
+                  <p className="text-gray-400 text-xs mb-3">{p.client_name || 'No Client Name'}</p>
+                  
+                  {/* Project Dates */}
+                  <div className="text-gray-400 text-xs mt-3 mb-4 space-y-1.5 border-t border-white/5 pt-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-500 font-medium">Start Date:</span>
+                      <span className="text-gray-300 font-semibold">{p.start_date ? new Date(p.start_date).toLocaleDateString(undefined, {dateStyle: 'medium'}) : 'Not Specified'}</span>
+                    </div>
+                    <div className="flex items-center justify-between min-h-[24px]">
+                      <span className="text-gray-500 font-medium">End Date:</span>
+                      {editingProjectId === p.id ? (
+                        <div className="flex items-center gap-1">
+                          <input
+                            type="date"
+                            value={editingEndDate}
+                            onChange={(e) => setEditingEndDate(e.target.value)}
+                            className="bg-gray-800 border border-gray-700 rounded px-1.5 py-0.5 text-[11px] text-white focus:outline-none focus:border-teal-500"
+                          />
+                          <button
+                            onClick={() => handleSaveEndDate(p.id)}
+                            className="px-2 py-0.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-[10px] font-bold cursor-pointer"
+                          >
+                            Save
+                          </button>
+                          <button
+                            onClick={() => setEditingProjectId(null)}
+                            className="px-1.5 py-0.5 bg-gray-750 hover:bg-gray-700 text-gray-300 rounded text-[10px] font-bold cursor-pointer"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <span className="text-gray-300 font-semibold">{p.end_date ? new Date(p.end_date).toLocaleDateString(undefined, {dateStyle: 'medium'}) : 'Not Specified'}</span>
+                          {(user?.role === 'ADMIN' || user?.role === 'ENGAGEMENT_MANAGER') && (
+                            <button
+                              onClick={() => {
+                                setEditingProjectId(p.id);
+                                setEditingEndDate(p.end_date ? p.end_date.split('T')[0] : '');
+                              }}
+                              className="text-[10px] text-teal-400 hover:text-teal-300 underline font-medium cursor-pointer"
+                            >
+                              Edit
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
                 <div className="flex justify-between items-center border-t border-white/5 pt-4 mt-2">
                   <span className={`text-[10px] font-semibold px-2.5 py-1 rounded-full uppercase tracking-wider ${
@@ -166,6 +254,9 @@ export const ProjectsPage: React.FC = () => {
                 setClientName('');
                 setDescription('');
                 setAssignedLeadId('');
+                setStartDate('');
+                setEndDate('');
+                setFormError('');
                 setIsDescriptionManuallyEdited(false);
               }} 
               className="absolute top-4 right-4 text-gray-400 hover:text-white text-xl transition-colors"
@@ -175,6 +266,11 @@ export const ProjectsPage: React.FC = () => {
             <h2 className="font-display text-2xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-teal-300 to-blue-400">
               Create New Project
             </h2>
+            {formError && (
+              <div className="mb-4 p-3 bg-rose-950/40 border border-rose-800/30 text-rose-400 rounded-xl text-xs font-semibold">
+                {formError}
+              </div>
+            )}
             <form onSubmit={handleCreate} className="space-y-4">
               <div>
                 <label className="block text-xs font-medium text-gray-400 mb-1.5">Project Name</label>
@@ -196,6 +292,26 @@ export const ProjectsPage: React.FC = () => {
                   className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 text-white placeholder-gray-500 text-sm transition-all"
                   placeholder="e.g. Acme Corp"
                 />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-gray-400 mb-1.5">Start Date</label>
+                  <input 
+                    type="date" 
+                    value={startDate} 
+                    onChange={e => setStartDate(e.target.value)} 
+                    className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 text-white text-xs transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-400 mb-1.5">End Date</label>
+                  <input 
+                    type="date" 
+                    value={endDate} 
+                    onChange={e => setEndDate(e.target.value)} 
+                    className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 text-white text-xs transition-all"
+                  />
+                </div>
               </div>
               <div>
                 <label className="block text-xs font-medium text-gray-400 mb-1.5">Assign Project Lead</label>
@@ -239,6 +355,9 @@ export const ProjectsPage: React.FC = () => {
                     setClientName('');
                     setDescription('');
                     setAssignedLeadId('');
+                    setStartDate('');
+                    setEndDate('');
+                    setFormError('');
                     setIsDescriptionManuallyEdited(false);
                   }} 
                   className="flex-1 py-2.5 bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 rounded-xl text-xs font-semibold transition-all"
