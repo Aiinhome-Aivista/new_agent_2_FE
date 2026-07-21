@@ -31,7 +31,9 @@ export const ProjectDashboardPage: React.FC = () => {
   const [file, setFile] = useState<File | null>(null);
 
   const isProjectLead = user?.role === "PROJECT_LEAD";
-  const [docType, setDocType] = useState<string>(isProjectLead ? "MOM" : "EL");
+  const [baselineDocType, setBaselineDocType] = useState<string>("EL");
+  const [monitoringDocType, setMonitoringDocType] = useState<string>(isProjectLead ? "MOM" : "STATUS_REPORT");
+  const [uploadTarget, setUploadTarget] = useState<"BASELINE" | "MONITORING">("BASELINE");
   const [documentTypes, setDocumentTypes] = useState<any[]>([]);
   const [uploading, setUploading] = useState(false);
 
@@ -108,7 +110,8 @@ export const ProjectDashboardPage: React.FC = () => {
       const typesRes = await apiClient.get(`/projects/${id}/documents/types`);
       if (typesRes.data.success) {
         setDocumentTypes(typesRes.data.data);
-        setDocType(payload.name);
+        setMonitoringDocType(payload.name);
+        setUploadTarget("MONITORING");
       }
 
       setShowCustomModal(false);
@@ -155,8 +158,8 @@ export const ProjectDashboardPage: React.FC = () => {
     }
   };
 
-  const triggerFileSelect = () => {
-    if (uploading) return;
+  const triggerFileSelect = (target: "BASELINE" | "MONITORING") => {
+    setUploadTarget(target);
     fileInputRef.current?.click();
   };
 
@@ -212,7 +215,7 @@ export const ProjectDashboardPage: React.FC = () => {
 
     const formData = new FormData();
     formData.append("file", file);
-    formData.append("document_type", docType);
+    formData.append("document_type", uploadTarget === "BASELINE" ? baselineDocType : monitoringDocType);
 
     setUploading(true);
     try {
@@ -249,7 +252,7 @@ export const ProjectDashboardPage: React.FC = () => {
         `/projects/${id}/documents/confirm-upload`,
         {
           temp_key: relevanceCheckResult.temp_key,
-          document_type: docType,
+          document_type: uploadTarget === "BASELINE" ? baselineDocType : monitoringDocType,
           original_name: relevanceCheckResult.original_name,
         },
       );
@@ -273,7 +276,6 @@ export const ProjectDashboardPage: React.FC = () => {
 
   if (!project) return <Loader message="Loading project cockpit details..." />;
 
-  // Separate uploaded documents into Section 1 (Initiation) and Section 2 (Tracker)
   const initiationDocs = documents.filter(
     (d) => d.document_type === "EL" || d.document_type === "IFA",
   );
@@ -299,7 +301,6 @@ export const ProjectDashboardPage: React.FC = () => {
   return (
     <div className="flex-1 bg-transparent p-6 md:p-10 relative overflow-hidden">
       <div className="max-w-6xl mx-auto space-y-8">
-        {/* Header Navigation */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h1 className="text-3xl font-black tracking-tight text-white">{project.project_name}</h1>
@@ -327,7 +328,6 @@ export const ProjectDashboardPage: React.FC = () => {
           </div>
         </div>
 
-        {/* SECTION 1: PROJECT INITIATION / BASELINE SETUP */}
         <div className="bg-gray-900/40 border border-gray-800 rounded-2xl p-6 md:p-8 backdrop-blur-md shadow-xl">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-6 border-b border-gray-800 mb-6">
             <div>
@@ -354,19 +354,17 @@ export const ProjectDashboardPage: React.FC = () => {
             </Link>
           </div>
 
-          {/* Section 1 Document Selection Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            {/* Engagement Letter Card */}
             <div
-              onClick={() => setDocType("EL")}
+              onClick={() => { setBaselineDocType("EL"); setUploadTarget("BASELINE"); }}
               className={`p-4 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
-                docType === "EL"
+                baselineDocType === "EL"
                   ? "bg-gradient-to-r from-emerald-950/50 to-teal-950/40 border-emerald-500/60 shadow-lg shadow-emerald-500/10 ring-1 ring-emerald-500/30"
                   : "bg-gray-800/40 border-gray-700/60 hover:bg-gray-800/80"
               }`}
             >
               <div className="flex items-center gap-3">
-                <div className={`p-2.5 rounded-xl ${docType === "EL" ? "bg-emerald-500/20 text-emerald-400" : "bg-gray-700/50 text-gray-400"}`}>
+                <div className={`p-2.5 rounded-xl ${baselineDocType === "EL" ? "bg-emerald-500/20 text-emerald-400" : "bg-gray-700/50 text-gray-400"}`}>
                   <FileText className="w-5 h-5" />
                 </div>
                 <div>
@@ -386,17 +384,16 @@ export const ProjectDashboardPage: React.FC = () => {
               )}
             </div>
 
-            {/* Independence & Financial Assessment Card */}
             <div
-              onClick={() => setDocType("IFA")}
+              onClick={() => { setBaselineDocType("IFA"); setUploadTarget("BASELINE"); }}
               className={`p-4 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
-                docType === "IFA"
+                baselineDocType === "IFA"
                   ? "bg-gradient-to-r from-emerald-950/50 to-teal-950/40 border-emerald-500/60 shadow-lg shadow-emerald-500/10 ring-1 ring-emerald-500/30"
                   : "bg-gray-800/40 border-gray-700/60 hover:bg-gray-800/80"
               }`}
             >
               <div className="flex items-center gap-3">
-                <div className={`p-2.5 rounded-xl ${docType === "IFA" ? "bg-emerald-500/20 text-emerald-400" : "bg-gray-700/50 text-gray-400"}`}>
+                <div className={`p-2.5 rounded-xl ${baselineDocType === "IFA" ? "bg-emerald-500/20 text-emerald-400" : "bg-gray-700/50 text-gray-400"}`}>
                   <FileSpreadsheet className="w-5 h-5" />
                 </div>
                 <div>
@@ -417,15 +414,13 @@ export const ProjectDashboardPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Section 1 Upload Dropzone & Document Table Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Upload Dropzone for Section 1 */}
             <div className="bg-gray-800/50 p-5 rounded-xl border border-gray-700/70 flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="text-xs font-semibold text-gray-300 uppercase tracking-wider flex items-center gap-2">
                     <UploadCloud className="w-4 h-4 text-emerald-400" />
-                    Target Category: <span className="text-emerald-300 font-bold">{getDocTypeLabel(docType)}</span>
+                    Target Category: <span className="text-emerald-300 font-bold">{getDocTypeLabel(baselineDocType)}</span>
                   </h4>
                 </div>
 
@@ -433,14 +428,14 @@ export const ProjectDashboardPage: React.FC = () => {
                   <div
                     onDragOver={handleDragOver}
                     onDragLeave={handleDragLeave}
-                    onDrop={handleDrop}
-                    onClick={uploading ? undefined : triggerFileSelect}
+                    onDrop={(e) => { setUploadTarget("BASELINE"); handleDrop(e); }}
+                    onClick={uploading ? undefined : () => triggerFileSelect("BASELINE")}
                     className={`border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center transition-all duration-200 ${
                       uploading
                         ? "border-gray-700 bg-gray-900/10 cursor-not-allowed opacity-50"
                         : isDragging
                           ? "border-emerald-400 bg-emerald-950/20 cursor-pointer"
-                          : file
+                          : file && uploadTarget === "BASELINE"
                             ? "border-green-500 bg-green-950/10 cursor-pointer"
                             : "border-gray-600 hover:border-gray-400 bg-gray-900/40 hover:bg-gray-900/60 cursor-pointer"
                     }`}
@@ -458,7 +453,7 @@ export const ProjectDashboardPage: React.FC = () => {
                       className="hidden"
                     />
 
-                    {file ? (
+                    {file && uploadTarget === "BASELINE" ? (
                       <div className="flex flex-col items-center w-full">
                         <div className="flex items-center justify-between bg-gray-800/80 border border-gray-700 rounded-lg p-3 w-full max-w-xs">
                           <div className="flex items-center gap-2 overflow-hidden mr-2">
@@ -482,15 +477,17 @@ export const ProjectDashboardPage: React.FC = () => {
                         )}
                       </div>
                     ) : (
-                      <div className="flex flex-col items-center text-center">
-                        <UploadCloud
-                          className={`h-10 w-10 mb-3 transition-colors ${isDragging ? "text-emerald-400" : "text-gray-400"}`}
-                        />
-                        <p className="text-sm text-gray-300 font-medium">
-                          Upload <strong className="text-emerald-300">{getDocTypeLabel(docType)}</strong>
-                        </p>
-                        <p className="text-xs text-gray-500 mt-1">Drag & drop (.pdf, .docx, .txt) or click to browse</p>
-                      </div>
+                      <>
+                        <div className="bg-emerald-500/10 p-4 rounded-full mb-4 ring-8 ring-emerald-500/5">
+                          <UploadCloud className="w-8 h-8 text-emerald-400" />
+                        </div>
+                        <div className="text-center">
+                          <p className="text-sm text-gray-300 font-medium">
+                            Upload <strong className="text-emerald-300">{getDocTypeLabel(baselineDocType)}</strong>
+                          </p>
+                          <p className="text-xs text-gray-500 mt-1">Drag & drop (.pdf, .docx, .txt) or click to browse</p>
+                        </div>
+                      </>
                     )}
                   </div>
 
@@ -499,13 +496,12 @@ export const ProjectDashboardPage: React.FC = () => {
                     disabled={!file || uploading}
                     className="w-full py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-semibold rounded-xl text-xs transition-all shadow-md shadow-emerald-500/20 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                   >
-                    {uploading ? "Uploading Document..." : `Upload ${getDocTypeLabel(docType)}`}
+                    {uploading ? "Uploading Document..." : `Upload ${getDocTypeLabel(baselineDocType)}`}
                   </button>
                 </form>
               </div>
             </div>
 
-            {/* Section 1 Uploaded Documents List */}
             <div className="bg-gray-800/50 p-5 rounded-xl border border-gray-700/70 flex flex-col justify-between">
               <div>
                 <h4 className="text-xs font-semibold text-gray-300 uppercase tracking-wider mb-3">
@@ -580,7 +576,6 @@ export const ProjectDashboardPage: React.FC = () => {
           </div>
         </div>
 
-        {/* SECTION 2: PROGRESS TRACKER (RECURRING DOCUMENTS) */}
         <div className="bg-gray-900/40 border border-gray-800 rounded-2xl p-6 md:p-8 backdrop-blur-md shadow-xl">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-6 border-b border-gray-800 mb-6">
             <div>
@@ -607,7 +602,6 @@ export const ProjectDashboardPage: React.FC = () => {
             </Link>
           </div>
 
-          {/* Locked Overlay if Project Lead & Baseline NOT Active */}
           {isProjectLead && project.monitoring_status !== "ACTIVE" ? (
             <div className="bg-amber-950/20 border border-amber-500/30 rounded-xl p-8 flex flex-col items-center justify-center text-center">
               <div className="w-12 h-12 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center mb-3">
@@ -620,19 +614,17 @@ export const ProjectDashboardPage: React.FC = () => {
             </div>
           ) : (
             <>
-              {/* Document Selection Cards for Section 2 */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                {/* Minutes of Meeting Card */}
                 <div
-                  onClick={() => setDocType("MOM")}
+                  onClick={() => { setMonitoringDocType("MOM"); setUploadTarget("MONITORING"); }}
                   className={`p-4 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
-                    docType === "MOM"
+                    monitoringDocType === "MOM"
                       ? "bg-gradient-to-r from-indigo-950/50 to-blue-950/40 border-indigo-500/60 shadow-lg shadow-indigo-500/10 ring-1 ring-indigo-500/30"
                       : "bg-gray-800/40 border-gray-700/60 hover:bg-gray-800/80"
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <div className={`p-2.5 rounded-xl ${docType === "MOM" ? "bg-indigo-500/20 text-indigo-400" : "bg-gray-700/50 text-gray-400"}`}>
+                    <div className={`p-2.5 rounded-xl ${monitoringDocType === "MOM" ? "bg-indigo-500/20 text-indigo-400" : "bg-gray-700/50 text-gray-400"}`}>
                       <Clock className="w-5 h-5" />
                     </div>
                     <div>
@@ -642,17 +634,16 @@ export const ProjectDashboardPage: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Status Report Card */}
                 <div
-                  onClick={() => setDocType("STATUS_REPORT")}
+                  onClick={() => { setMonitoringDocType("STATUS_REPORT"); setUploadTarget("MONITORING"); }}
                   className={`p-4 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
-                    docType === "STATUS_REPORT"
+                    monitoringDocType === "STATUS_REPORT"
                       ? "bg-gradient-to-r from-indigo-950/50 to-blue-950/40 border-indigo-500/60 shadow-lg shadow-indigo-500/10 ring-1 ring-indigo-500/30"
                       : "bg-gray-800/40 border-gray-700/60 hover:bg-gray-800/80"
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <div className={`p-2.5 rounded-xl ${docType === "STATUS_REPORT" ? "bg-indigo-500/20 text-indigo-400" : "bg-gray-700/50 text-gray-400"}`}>
+                    <div className={`p-2.5 rounded-xl ${monitoringDocType === "STATUS_REPORT" ? "bg-indigo-500/20 text-indigo-400" : "bg-gray-700/50 text-gray-400"}`}>
                       <Layers className="w-5 h-5" />
                     </div>
                     <div>
@@ -662,7 +653,6 @@ export const ProjectDashboardPage: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Add Custom Type Card */}
                 <div
                   onClick={() => setShowCustomModal(true)}
                   className="p-4 rounded-xl border border-dashed border-gray-700 hover:border-indigo-500/50 bg-gray-800/20 hover:bg-gray-800/60 transition-all cursor-pointer flex items-center justify-between"
@@ -679,15 +669,13 @@ export const ProjectDashboardPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Section 2 Upload Dropzone & Documents Log Grid */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Upload Dropzone for Section 2 */}
                 <div className="bg-gray-800/50 p-5 rounded-xl border border-gray-700/70 flex flex-col justify-between">
                   <div>
                     <div className="flex items-center justify-between mb-3">
                       <h4 className="text-xs font-semibold text-gray-300 uppercase tracking-wider flex items-center gap-2">
                         <UploadCloud className="w-4 h-4 text-indigo-400" />
-                        Target Category: <span className="text-indigo-300 font-bold">{getDocTypeLabel(docType)}</span>
+                        Target Category: <span className="text-indigo-300 font-bold">{getDocTypeLabel(monitoringDocType)}</span>
                       </h4>
                     </div>
 
@@ -695,14 +683,14 @@ export const ProjectDashboardPage: React.FC = () => {
                       <div
                         onDragOver={handleDragOver}
                         onDragLeave={handleDragLeave}
-                        onDrop={handleDrop}
-                        onClick={uploading ? undefined : triggerFileSelect}
+                        onDrop={(e) => { setUploadTarget("MONITORING"); handleDrop(e); }}
+                        onClick={uploading ? undefined : () => triggerFileSelect("MONITORING")}
                         className={`border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center transition-all duration-200 ${
                           uploading
                             ? "border-gray-700 bg-gray-900/10 cursor-not-allowed opacity-50"
                             : isDragging
                               ? "border-indigo-400 bg-indigo-950/20 cursor-pointer"
-                              : file
+                              : file && uploadTarget === "MONITORING"
                                 ? "border-green-500 bg-green-950/10 cursor-pointer"
                                 : "border-gray-600 hover:border-gray-400 bg-gray-900/40 hover:bg-gray-900/60 cursor-pointer"
                         }`}
@@ -720,7 +708,7 @@ export const ProjectDashboardPage: React.FC = () => {
                           className="hidden"
                         />
 
-                        {file ? (
+                        {file && uploadTarget === "MONITORING" ? (
                           <div className="flex flex-col items-center w-full">
                             <div className="flex items-center justify-between bg-gray-800/80 border border-gray-700 rounded-lg p-3 w-full max-w-xs">
                               <div className="flex items-center gap-2 overflow-hidden mr-2">
@@ -744,15 +732,17 @@ export const ProjectDashboardPage: React.FC = () => {
                             )}
                           </div>
                         ) : (
-                          <div className="flex flex-col items-center text-center">
-                            <UploadCloud
-                              className={`h-10 w-10 mb-3 transition-colors ${isDragging ? "text-indigo-400" : "text-gray-400"}`}
-                            />
-                            <p className="text-sm text-gray-300 font-medium">
-                              Upload <strong className="text-indigo-300">{getDocTypeLabel(docType)}</strong>
-                            </p>
-                            <p className="text-xs text-gray-500 mt-1">Drag & drop (.pdf, .docx, .txt) or click to browse</p>
-                          </div>
+                          <>
+                            <div className="bg-indigo-500/10 p-4 rounded-full mb-4 ring-8 ring-indigo-500/5">
+                              <UploadCloud className="w-8 h-8 text-indigo-400" />
+                            </div>
+                            <div className="text-center">
+                              <p className="text-sm text-gray-300 font-medium">
+                                Upload <strong className="text-indigo-300">{getDocTypeLabel(monitoringDocType)}</strong>
+                              </p>
+                              <p className="text-xs text-gray-500 mt-1">Drag & drop (.pdf, .docx, .txt) or click to browse</p>
+                            </div>
+                          </>
                         )}
                       </div>
 
@@ -761,13 +751,12 @@ export const ProjectDashboardPage: React.FC = () => {
                         disabled={!file || uploading}
                         className="w-full py-2.5 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white font-semibold rounded-xl text-xs transition-all shadow-md shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                       >
-                        {uploading ? "Uploading Document..." : `Upload ${getDocTypeLabel(docType)}`}
+                        {uploading ? "Uploading Document..." : `Upload ${getDocTypeLabel(monitoringDocType)}`}
                       </button>
                     </form>
                   </div>
                 </div>
 
-                {/* Section 2 Uploaded Progress Documents Log */}
                 <div className="bg-gray-800/50 p-5 rounded-xl border border-gray-700/70 flex flex-col justify-between">
                   <div>
                     <h4 className="text-xs font-semibold text-gray-300 uppercase tracking-wider mb-3">
@@ -845,7 +834,6 @@ export const ProjectDashboardPage: React.FC = () => {
         </div>
       </div>
 
-      {/* CUSTOM TYPE MODAL */}
       {showCustomModal && (
         <div className="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-[#111827] border border-gray-700 rounded-2xl p-6 w-full max-w-md shadow-2xl">
@@ -884,7 +872,6 @@ export const ProjectDashboardPage: React.FC = () => {
               <button
                 onClick={() => {
                   setShowCustomModal(false);
-                  setDocType("EL");
                 }}
                 disabled={addingCustomType}
                 className={`px-4 py-2 rounded-lg font-medium text-gray-300 hover:bg-gray-800 transition-colors text-sm ${addingCustomType ? "opacity-50 cursor-not-allowed" : ""}`}
@@ -910,7 +897,6 @@ export const ProjectDashboardPage: React.FC = () => {
         </div>
       )}
 
-      {/* DELETE CONFIRMATION MODAL */}
       {deletingDocId !== null && (
         <div className="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-[#111827] border border-gray-700 rounded-2xl p-6 w-full max-w-md shadow-2xl">
@@ -965,7 +951,6 @@ export const ProjectDashboardPage: React.FC = () => {
         </div>
       )}
 
-      {/* AI RELEVANCE CHECK POPUP */}
       {showRelevancePopup && relevanceCheckResult && (
         <div className="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-[#111827] border border-gray-700 rounded-2xl p-6 w-full max-w-md shadow-2xl">
@@ -978,7 +963,7 @@ export const ProjectDashboardPage: React.FC = () => {
                 {relevanceCheckResult.original_name}
               </span>{" "}
               against document type{" "}
-              <span className="text-white font-medium">{docType}</span>.
+              <span className="text-white font-medium">{uploadTarget === "BASELINE" ? baselineDocType : monitoringDocType}</span>.
             </p>
 
             <div className="space-y-4 mb-6">
