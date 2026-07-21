@@ -30,8 +30,8 @@ export const Sidebar: React.FC = () => {
     return null;
 
   const handleLogout = () => {
+    // navigate("/");
     logout();
-    navigate("/");
   };
 
   // Parse project ID if we are inside a project-specific route
