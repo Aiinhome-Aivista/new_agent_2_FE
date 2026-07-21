@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import apiClient from '../api/apiClient';
 import { Loader } from '../components/Loader';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Info } from 'lucide-react';
 
 export const TrackerPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -133,8 +133,39 @@ export const TrackerPage: React.FC = () => {
     <div className="flex-1 bg-transparent p-6 md:p-10 relative overflow-hidden">
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-8">
-          <div className="flex gap-4 items-center">
+          <div className="flex gap-3 items-center">
             <h1 className="text-3xl font-bold">Risk Tracker & Audit</h1>
+            <div className="relative group flex items-center cursor-help text-gray-400 hover:text-cyan-400 transition-colors pt-1">
+              <Info className="w-5.5 h-5.5" />
+              
+              {/* Tooltip Content */}
+              <div className="absolute left-1/2 -translate-x-1/2 md:left-0 md:translate-x-0 top-full mt-3 w-80 p-4 bg-gray-950/98 border border-gray-800 rounded-xl shadow-2xl backdrop-blur-md opacity-0 translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 z-50 text-left">
+                <h4 className="font-bold text-sm text-[#00e5ff] mb-2.5 border-b border-gray-850 pb-1.5 flex items-center gap-1.5">
+                  🛡️ Item Risk Scoring Rules
+                </h4>
+                <div className="space-y-3 text-xs text-gray-300">
+                  <p className="text-gray-400 leading-relaxed font-medium">Individual item scores (out of 100) are determined by these rules in the code:</p>
+                  
+                  <div>
+                    <span className="font-semibold text-white block mb-1">🔄 Scope Creep (OutOfScope Agent)</span>
+                    <ul className="list-disc pl-4 space-y-1 text-gray-400 font-medium">
+                      <li><strong className="text-white">80/100</strong> for direct baseline violations (out of scope).</li>
+                      <li><strong className="text-white">50/100</strong> for warnings or borderline review items.</li>
+                    </ul>
+                  </div>
+
+                  <div>
+                    <span className="font-semibold text-white block mb-1">⏰ Timeline Delays & Risks (Timeline Agent)</span>
+                    <ul className="list-disc pl-4 space-y-1 text-gray-400 font-medium">
+                      <li><strong className="text-white">85/100</strong> for critical delays or active blockers.</li>
+                      <li><strong className="text-white">65/100</strong> for high timeline risk deliverables.</li>
+                      <li><strong className="text-white">45/100</strong> for medium timeline risk.</li>
+                      <li><strong className="text-white">15/100</strong> for low timeline risk.</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
           <div className="flex gap-4">
             <button onClick={() => navigate(`/projects/${id}`)} className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-md">Back to Dashboard</button>
