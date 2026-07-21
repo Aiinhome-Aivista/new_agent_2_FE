@@ -14,6 +14,7 @@ import {
   Activity,
   User,
   Users,
+  LayoutGrid,
 } from "lucide-react";
 
 export const Sidebar: React.FC = () => {
@@ -123,8 +124,20 @@ export const Sidebar: React.FC = () => {
                   : "hover:bg-white/[0.03] text-gray-400 hover:text-white border border-transparent"
               }`}
             >
+              <LayoutGrid className="w-5 h-5" />
+              Overview
+            </Link>
+
+            <Link
+              to={`/projects/${projectId}/cockpit`}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+                isProjectActive("cockpit")
+                  ? "bg-gradient-to-r from-teal-500/10 to-blue-600/10 border border-teal-500/20 text-teal-400 font-semibold"
+                  : "hover:bg-white/[0.03] text-gray-400 hover:text-white border border-transparent"
+              }`}
+            >
               <Briefcase className="w-5 h-5" />
-              Cockpit
+              Document Cockpit
             </Link>
 
             <Link

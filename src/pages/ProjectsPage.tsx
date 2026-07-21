@@ -234,7 +234,7 @@ export const ProjectsPage: React.FC = () => {
                     to={`/projects/${p.id}`} 
                     className="text-xs font-semibold text-teal-400 hover:text-teal-300 flex items-center gap-1 group/btn transition-colors"
                   >
-                    View Cockpit
+                    Open Dashboard
                     <span className="group-hover/btn:translate-x-1 transition-transform">&rarr;</span>
                   </Link>
                 </div>
