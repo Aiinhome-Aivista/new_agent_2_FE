@@ -13,6 +13,7 @@ import {
   ScrollText,
   Activity,
   User,
+  Users,
 } from "lucide-react";
 
 export const Sidebar: React.FC = () => {
@@ -101,6 +102,18 @@ export const Sidebar: React.FC = () => {
                 <ArrowLeft className="w-3 h-3" /> List
               </Link>
             </div>
+
+            <Link
+              to={`/projects/${projectId}/members`}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+                isProjectActive("members")
+                  ? "bg-gradient-to-r from-teal-500/10 to-blue-600/10 border border-teal-500/20 text-teal-400 font-semibold"
+                  : "hover:bg-white/[0.03] text-gray-400 hover:text-white border border-transparent"
+              }`}
+            >
+              <Users className="w-5 h-5" />
+              Project Members
+            </Link>
 
             <Link
               to={`/projects/${projectId}`}
