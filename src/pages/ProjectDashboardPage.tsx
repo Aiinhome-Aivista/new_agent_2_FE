@@ -392,16 +392,6 @@ export const ProjectDashboardPage: React.FC = () => {
                   <p className="text-xs text-gray-400">Official signed client engagement contract</p>
                 </div>
               </div>
-
-              {initiationDocs.some((d) => d.document_type === "EL") ? (
-                <span className="flex items-center gap-1 text-[11px] font-semibold text-emerald-400 bg-emerald-500/15 px-2.5 py-1 rounded-full border border-emerald-500/30">
-                  <Check className="w-3 h-3" /> Uploaded
-                </span>
-              ) : (
-                <span className="text-[11px] font-medium text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-full border border-amber-500/20">
-                  Pending
-                </span>
-              )}
             </div>
 
             <div
@@ -421,16 +411,6 @@ export const ProjectDashboardPage: React.FC = () => {
                   <p className="text-xs text-gray-400">Inter-firm approval & financial budget document</p>
                 </div>
               </div>
-
-              {initiationDocs.some((d) => d.document_type === "IFA") ? (
-                <span className="flex items-center gap-1 text-[11px] font-semibold text-emerald-400 bg-emerald-500/15 px-2.5 py-1 rounded-full border border-emerald-500/30">
-                  <Check className="w-3 h-3" /> Uploaded
-                </span>
-              ) : (
-                <span className="text-[11px] font-medium text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-full border border-amber-500/20">
-                  Pending
-                </span>
-              )}
             </div>
           </div>
 

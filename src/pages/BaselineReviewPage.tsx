@@ -15,6 +15,7 @@ import {
   Plus,
   Trash2,
   X,
+  AlertTriangle,
 } from "lucide-react";
 
 export const BaselineReviewPage: React.FC = () => {
@@ -132,7 +133,9 @@ export const BaselineReviewPage: React.FC = () => {
   const [showAddItemModal, setShowAddItemModal] = useState(false);
   const [newItemName, setNewItemName] = useState("");
   const [newItemDescription, setNewItemDescription] = useState("");
-  const [newItemScopeType, setNewItemScopeType] = useState<"IN_SCOPE" | "OUT_OF_SCOPE">("IN_SCOPE");
+  const [newItemScopeType, setNewItemScopeType] = useState<
+    "IN_SCOPE" | "OUT_OF_SCOPE"
+  >("IN_SCOPE");
   const [newItemEvidence, setNewItemEvidence] = useState("");
   const [addingItem, setAddingItem] = useState(false);
 
@@ -151,7 +154,10 @@ export const BaselineReviewPage: React.FC = () => {
         evidence_text: newItemEvidence.trim() || "Manually added scope item",
         confidence: 1.0,
       };
-      const res = await apiClient.post(`/projects/${id}/baseline/items`, payload);
+      const res = await apiClient.post(
+        `/projects/${id}/baseline/items`,
+        payload,
+      );
       if (res.data.success) {
         showNotification("Scope item added successfully!", "success");
         setShowAddItemModal(false);
@@ -159,14 +165,18 @@ export const BaselineReviewPage: React.FC = () => {
         setNewItemDescription("");
         setNewItemScopeType("IN_SCOPE");
         setNewItemEvidence("");
-        
+
         const baselineRes = await apiClient.get(`/projects/${id}/baseline/`);
         if (baselineRes.data.success) {
           setBaseline(baselineRes.data.data);
         }
       }
     } catch (error: any) {
-      showNotification("Failed to add item: " + (error.response?.data?.detail || "Server error"), "error");
+      showNotification(
+        "Failed to add item: " +
+          (error.response?.data?.detail || "Server error"),
+        "error",
+      );
     } finally {
       setAddingItem(false);
     }
@@ -175,18 +185,24 @@ export const BaselineReviewPage: React.FC = () => {
   const handleDeleteItem = async (itemId: number) => {
     setDeletingItem(true);
     try {
-      const res = await apiClient.delete(`/projects/${id}/baseline/items/${itemId}`);
+      const res = await apiClient.delete(
+        `/projects/${id}/baseline/items/${itemId}`,
+      );
       if (res.data.success) {
         showNotification("Scope item deleted successfully!", "success");
         setDeletingItemId(null);
-        
+
         const baselineRes = await apiClient.get(`/projects/${id}/baseline/`);
         if (baselineRes.data.success) {
           setBaseline(baselineRes.data.data);
         }
       }
     } catch (error: any) {
-      showNotification("Failed to delete item: " + (error.response?.data?.detail || "Server error"), "error");
+      showNotification(
+        "Failed to delete item: " +
+          (error.response?.data?.detail || "Server error"),
+        "error",
+      );
     } finally {
       setDeletingItem(false);
     }
@@ -526,7 +542,8 @@ export const BaselineReviewPage: React.FC = () => {
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold">Scope Items Baseline</h2>
               <div className="flex items-center gap-3">
-                {(user?.role === "ADMIN" || user?.role === "ENGAGEMENT_MANAGER") && (
+                {(user?.role === "ADMIN" ||
+                  user?.role === "ENGAGEMENT_MANAGER") && (
                   <button
                     onClick={() => setShowAddItemModal(true)}
                     className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-md flex items-center gap-2 cursor-pointer transition-all shadow-md text-xs font-semibold"
@@ -615,7 +632,8 @@ export const BaselineReviewPage: React.FC = () => {
                             <h4 className="font-bold text-lg text-white group-hover:text-emerald-300 transition-colors">
                               {item.name}
                             </h4>
-                            {(user?.role === "ADMIN" || user?.role === "ENGAGEMENT_MANAGER") && (
+                            {(user?.role === "ADMIN" ||
+                              user?.role === "ENGAGEMENT_MANAGER") && (
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -639,6 +657,15 @@ export const BaselineReviewPage: React.FC = () => {
                               </h5>
                               <p className="text-gray-300 text-xs italic leading-relaxed">
                                 "{item.evidence_text}"
+                              </p>
+                            </div>
+                          )}
+
+                          {item.status_change_tag && (
+                            <div className="mb-4 p-2 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+                              <p className="text-amber-400 text-xs font-semibold flex items-center gap-1.5">
+                                <AlertTriangle className="w-3.5 h-3.5" />
+                                {item.status_change_tag}
                               </p>
                             </div>
                           )}
@@ -694,7 +721,8 @@ export const BaselineReviewPage: React.FC = () => {
                             <h4 className="font-bold text-lg text-white group-hover:text-rose-300 transition-colors">
                               {item.name}
                             </h4>
-                            {(user?.role === "ADMIN" || user?.role === "ENGAGEMENT_MANAGER") && (
+                            {(user?.role === "ADMIN" ||
+                              user?.role === "ENGAGEMENT_MANAGER") && (
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -718,6 +746,15 @@ export const BaselineReviewPage: React.FC = () => {
                               </h5>
                               <p className="text-gray-300 text-xs italic leading-relaxed">
                                 "{item.evidence_text}"
+                              </p>
+                            </div>
+                          )}
+
+                          {item.status_change_tag && (
+                            <div className="mb-4 p-2 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+                              <p className="text-amber-400 text-xs font-semibold flex items-center gap-1.5">
+                                <AlertTriangle className="w-3.5 h-3.5" />
+                                {item.status_change_tag}
                               </p>
                             </div>
                           )}
@@ -984,140 +1021,164 @@ export const BaselineReviewPage: React.FC = () => {
           </div>
         )}
         {/* ADD SCOPE ITEM MODAL */}
-        {showAddItemModal && createPortal(
-          <div className="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center z-[9999] p-4 overflow-y-auto animate-fadeIn">
-            <div className="bg-[#0b0e17] border border-gray-700/80 rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 md:p-8 shadow-2xl relative my-auto">
-              <button
-                onClick={() => setShowAddItemModal(false)}
-                className="absolute top-4 right-4 text-gray-400 hover:text-white p-1"
-              >
-                <X className="w-5 h-5" />
-              </button>
+        {showAddItemModal &&
+          createPortal(
+            <div className="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center z-[9999] p-4 overflow-y-auto animate-fadeIn">
+              <div className="bg-[#0b0e17] border border-gray-700/80 rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 md:p-8 shadow-2xl relative my-auto">
+                <button
+                  onClick={() => setShowAddItemModal(false)}
+                  className="absolute top-4 right-4 text-gray-400 hover:text-white p-1"
+                >
+                  <X className="w-5 h-5" />
+                </button>
 
-              <h3 className="text-xl font-bold text-white mb-1">Add Scope Item</h3>
-              <p className="text-xs text-gray-400 mb-6">
-                Manually add an in-scope or out-of-scope clause item to this baseline.
-              </p>
+                <h3 className="text-xl font-bold text-white mb-1">
+                  Add Scope Item
+                </h3>
+                <p className="text-xs text-gray-400 mb-6">
+                  Manually add an in-scope or out-of-scope clause item to this
+                  baseline.
+                </p>
 
-              <form onSubmit={handleAddItem} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-medium text-gray-400 mb-1.5">Scope Classification *</label>
-                  <div className="grid grid-cols-2 gap-2">
+                <form onSubmit={handleAddItem} className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-400 mb-1.5">
+                      Scope Classification *
+                    </label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setNewItemScopeType("IN_SCOPE")}
+                        className={`py-2 px-3 rounded-xl border text-xs font-semibold flex items-center justify-center gap-2 ${
+                          newItemScopeType === "IN_SCOPE"
+                            ? "bg-emerald-500/20 border-emerald-500 text-emerald-300"
+                            : "bg-gray-900 border-gray-700 text-gray-400"
+                        }`}
+                      >
+                        In Scope
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setNewItemScopeType("OUT_OF_SCOPE")}
+                        className={`py-2 px-3 rounded-xl border text-xs font-semibold flex items-center justify-center gap-2 ${
+                          newItemScopeType === "OUT_OF_SCOPE"
+                            ? "bg-rose-500/20 border-rose-500 text-rose-300"
+                            : "bg-gray-900 border-gray-700 text-gray-400"
+                        }`}
+                      >
+                        Out of Scope
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-gray-400 mb-1.5">
+                      Item Title / Name *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. SOC 2 Type II Audit Compliance"
+                      value={newItemName}
+                      onChange={(e) => setNewItemName(e.target.value)}
+                      className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-2.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-teal-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-gray-400 mb-1.5">
+                      Description & Scope Details
+                    </label>
+                    <textarea
+                      rows={3}
+                      placeholder="Summarize the scope requirement or exclusion details..."
+                      value={newItemDescription}
+                      onChange={(e) => setNewItemDescription(e.target.value)}
+                      className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-2.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-teal-500 resize-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-gray-400 mb-1.5">
+                      Reasoning / Reference Notes
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Manually added during EM baseline review"
+                      value={newItemEvidence}
+                      onChange={(e) => setNewItemEvidence(e.target.value)}
+                      className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-2.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-teal-500"
+                    />
+                  </div>
+
+                  <div className="flex gap-3 pt-4 border-t border-gray-800">
                     <button
                       type="button"
-                      onClick={() => setNewItemScopeType('IN_SCOPE')}
-                      className={`py-2 px-3 rounded-xl border text-xs font-semibold flex items-center justify-center gap-2 ${
-                        newItemScopeType === 'IN_SCOPE'
-                          ? 'bg-emerald-500/20 border-emerald-500 text-emerald-300'
-                          : 'bg-gray-900 border-gray-700 text-gray-400'
-                      }`}
+                      onClick={() => setShowAddItemModal(false)}
+                      disabled={addingItem}
+                      className="flex-1 py-2.5 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-xl text-xs font-semibold transition-all"
                     >
-                      In Scope
+                      Cancel
                     </button>
                     <button
-                      type="button"
-                      onClick={() => setNewItemScopeType('OUT_OF_SCOPE')}
-                      className={`py-2 px-3 rounded-xl border text-xs font-semibold flex items-center justify-center gap-2 ${
-                        newItemScopeType === 'OUT_OF_SCOPE'
-                          ? 'bg-rose-500/20 border-rose-500 text-rose-300'
-                          : 'bg-gray-900 border-gray-700 text-gray-400'
-                      }`}
+                      type="submit"
+                      disabled={addingItem || !newItemName.trim()}
+                      className="flex-1 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl text-xs font-semibold transition-all shadow-md shadow-emerald-500/20 disabled:opacity-50 flex items-center justify-center gap-2"
                     >
-                      Out of Scope
+                      {addingItem ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        "Save Scope Item"
+                      )}
                     </button>
                   </div>
+                </form>
+              </div>
+            </div>,
+            document.body,
+          )}
+
+        {/* DELETE SCOPE ITEM MODAL */}
+        {deletingItemId !== null &&
+          createPortal(
+            <div className="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center z-[9999] p-4 overflow-y-auto animate-fadeIn">
+              <div className="bg-[#0b0e17] border border-gray-700/80 rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl text-center my-auto">
+                <div className="w-12 h-12 rounded-full bg-rose-500/10 border border-rose-500/30 flex items-center justify-center mx-auto mb-4 text-rose-400">
+                  <Trash2 className="w-6 h-6" />
                 </div>
 
-                <div>
-                  <label className="block text-xs font-medium text-gray-400 mb-1.5">Item Title / Name *</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. SOC 2 Type II Audit Compliance"
-                    value={newItemName}
-                    onChange={(e) => setNewItemName(e.target.value)}
-                    className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-2.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-teal-500"
-                  />
-                </div>
+                <h3 className="text-lg font-bold text-white mb-2">
+                  Remove Scope Item
+                </h3>
+                <p className="text-xs text-gray-400 mb-6">
+                  Are you sure you want to delete this scope item from the
+                  baseline?
+                </p>
 
-                <div>
-                  <label className="block text-xs font-medium text-gray-400 mb-1.5">Description & Scope Details</label>
-                  <textarea
-                    rows={3}
-                    placeholder="Summarize the scope requirement or exclusion details..."
-                    value={newItemDescription}
-                    onChange={(e) => setNewItemDescription(e.target.value)}
-                    className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-2.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-teal-500 resize-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-medium text-gray-400 mb-1.5">Reasoning / Reference Notes</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Manually added during EM baseline review"
-                    value={newItemEvidence}
-                    onChange={(e) => setNewItemEvidence(e.target.value)}
-                    className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-2.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-teal-500"
-                  />
-                </div>
-
-                <div className="flex gap-3 pt-4 border-t border-gray-800">
+                <div className="flex gap-3">
                   <button
-                    type="button"
-                    onClick={() => setShowAddItemModal(false)}
-                    disabled={addingItem}
+                    onClick={() => setDeletingItemId(null)}
+                    disabled={deletingItem}
                     className="flex-1 py-2.5 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-xl text-xs font-semibold transition-all"
                   >
                     Cancel
                   </button>
                   <button
-                    type="submit"
-                    disabled={addingItem || !newItemName.trim()}
-                    className="flex-1 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl text-xs font-semibold transition-all shadow-md shadow-emerald-500/20 disabled:opacity-50 flex items-center justify-center gap-2"
+                    onClick={() => handleDeleteItem(deletingItemId)}
+                    disabled={deletingItem}
+                    className="flex-1 py-2.5 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-semibold transition-all shadow-md shadow-rose-600/20 disabled:opacity-50 flex items-center justify-center gap-2"
                   >
-                    {addingItem ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Save Scope Item'}
+                    {deletingItem ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      "Confirm Delete"
+                    )}
                   </button>
                 </div>
-              </form>
-            </div>
-          </div>,
-          document.body
-        )}
-
-        {/* DELETE SCOPE ITEM MODAL */}
-        {deletingItemId !== null && createPortal(
-          <div className="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center z-[9999] p-4 overflow-y-auto animate-fadeIn">
-            <div className="bg-[#0b0e17] border border-gray-700/80 rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl text-center my-auto">
-              <div className="w-12 h-12 rounded-full bg-rose-500/10 border border-rose-500/30 flex items-center justify-center mx-auto mb-4 text-rose-400">
-                <Trash2 className="w-6 h-6" />
               </div>
-
-              <h3 className="text-lg font-bold text-white mb-2">Remove Scope Item</h3>
-              <p className="text-xs text-gray-400 mb-6">
-                Are you sure you want to delete this scope item from the baseline?
-              </p>
-
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setDeletingItemId(null)}
-                  disabled={deletingItem}
-                  className="flex-1 py-2.5 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-xl text-xs font-semibold transition-all"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => handleDeleteItem(deletingItemId)}
-                  disabled={deletingItem}
-                  className="flex-1 py-2.5 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-semibold transition-all shadow-md shadow-rose-600/20 disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                  {deletingItem ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Confirm Delete'}
-                </button>
-              </div>
-            </div>
-          </div>,
-          document.body
-        )}
+            </div>,
+            document.body,
+          )}
 
         {notification && (
           <div className="fixed top-6 right-6 z-50 max-w-sm w-full bg-[#111827] border border-white/10 rounded-2xl p-4 shadow-2xl flex gap-3 animate-slideIn select-none">
