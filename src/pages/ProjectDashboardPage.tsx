@@ -271,14 +271,20 @@ export const ProjectDashboardPage: React.FC = () => {
           <h1 className="text-3xl font-bold">{project.project_name}</h1>
           <div className="flex gap-4">
             <Link
+              to={`/projects/${id}/members`}
+              className="px-4 py-2 bg-teal-600 hover:bg-teal-700 rounded-md text-sm font-medium"
+            >
+              Project Members
+            </Link>
+            <Link
               to={`/projects/${id}/baseline`}
-              className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-md"
+              className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-md text-sm font-medium"
             >
               Baseline Review
             </Link>
             <Link
               to={`/projects/${id}/tracker`}
-              className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-md"
+              className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-md text-sm font-medium"
             >
               Risk Tracker
             </Link>

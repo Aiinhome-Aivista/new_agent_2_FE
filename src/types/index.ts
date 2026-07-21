@@ -24,3 +24,15 @@ export interface Project {
   description: string;
   monitoring_status: MonitoringStatus;
 }
+
+export interface ProjectMember {
+  id: number;
+  project_id: number;
+  name: string;
+  email?: string;
+  role: string;
+  responsibility?: string;
+  user_id?: number;
+  created_at?: string;
+  updated_at?: string;
+}
