@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import apiClient from '../api/apiClient';
 import { useAuth } from '../auth/AuthContext';
 import { Loader } from '../components/Loader';
-import { Loader2, CheckCircle2, Clock } from 'lucide-react';
+import { Loader2, CheckCircle2, Clock, Download, FileText } from 'lucide-react';
 
 export const BaselineReviewPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -28,6 +28,7 @@ export const BaselineReviewPage: React.FC = () => {
     fetchBaseline();
   }, [id]);
   const [notification, setNotification] = useState<{ message: string; type: 'info' | 'error' | 'success' } | null>(null);
+  const [showExportDropdown, setShowExportDropdown] = useState(false);
 
   useEffect(() => {
     if (notification) {
@@ -124,6 +125,167 @@ export const BaselineReviewPage: React.FC = () => {
     }
   };
 
+  const handleExportWord = () => {
+    if (!baseline) return;
+    
+    const content = `
+      <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+      <head>
+        <title>Baseline Review Export</title>
+        <!--[if gte mso 9]>
+        <xml>
+          <w:WordDocument>
+            <w:View>Print</w:View>
+            <w:Zoom>100</w:Zoom>
+          </w:WordDocument>
+        </xml>
+        <![endif]-->
+        <style>
+          body { font-family: 'Segoe UI', Arial, sans-serif; margin: 40px; color: #333333; }
+          h1 { color: #002D62; border-bottom: 2px solid #002D62; padding-bottom: 5px; font-size: 24px; font-weight: bold; margin-bottom: 20px; }
+          h2 { color: #111111; margin-top: 30px; font-size: 18px; border-bottom: 1px solid #dddddd; padding-bottom: 5px; }
+          .item-card { border: 1px solid #dddddd; padding: 12px; margin-bottom: 15px; border-radius: 4px; background-color: #f9f9f9; }
+          .item-title { font-weight: bold; color: #111111; font-size: 14px; margin-bottom: 4px; }
+          .item-desc { color: #555555; font-size: 12px; margin-bottom: 8px; line-height: 1.4; }
+          .evidence { font-style: italic; color: #444444; background-color: #f0f4f8; padding: 8px; border-left: 3px solid #005A9C; margin: 8px 0; font-size: 11px; }
+          .meta { font-size: 11px; color: #777777; margin-top: 8px; border-top: 1px solid #eeeeee; padding-top: 4px; }
+          .in-scope-badge { font-weight: bold; color: #2e7d32; }
+          .out-scope-badge { font-weight: bold; color: #c62828; }
+          .other-badge { font-weight: bold; color: #1565c0; }
+        </style>
+      </head>
+      <body>
+        <h1>Contract Scope Baseline Review Report</h1>
+        <p><strong>Baseline Status:</strong> ${baseline.status}</p>
+        <p><strong>Export Date:</strong> ${new Date().toLocaleDateString()}</p>
+        <hr style="border: 0; border-top: 1px solid #dddddd; margin-bottom: 20px;" />
+        
+        <h2>In Scope Items (${inScopeItems.length})</h2>
+        ${inScopeItems.length === 0 ? '<p>No in-scope items identified.</p>' : inScopeItems.map((item: any) => `
+          <div class="item-card">
+            <div class="item-title">${item.name}</div>
+            <div class="item-desc">${item.description}</div>
+            ${item.evidence_text ? `<div class="evidence"><strong>AI Reasoning:</strong> "${item.evidence_text}"</div>` : ''}
+            <div class="meta">
+              <span class="in-scope-badge">IN SCOPE</span> &bull; 
+              <strong>Confidence:</strong> ${(item.confidence * 100).toFixed(0)}%
+            </div>
+          </div>
+        `).join('')}
+
+        <h2>Out of Scope Items (${outOfScopeItems.length})</h2>
+        ${outOfScopeItems.length === 0 ? '<p>No out-of-scope items identified.</p>' : outOfScopeItems.map((item: any) => `
+          <div class="item-card">
+            <div class="item-title">${item.name}</div>
+            <div class="item-desc">${item.description}</div>
+            ${item.evidence_text ? `<div class="evidence"><strong>AI Reasoning:</strong> "${item.evidence_text}"</div>` : ''}
+            <div class="meta">
+              <span class="${item.scope_type === 'OUT_OF_SCOPE' ? 'out-scope-badge' : 'other-badge'}">${item.scope_type}</span> &bull; 
+              <strong>Confidence:</strong> ${(item.confidence * 100).toFixed(0)}%
+            </div>
+          </div>
+        `).join('')}
+      </body>
+      </html>
+    `;
+
+    const blob = new Blob(['\ufeff' + content], { type: 'application/msword' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Project_${id}_Baseline_Review.doc`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showNotification("Exported to Word Document successfully!", "success");
+  };
+
+  const handleExportPDF = () => {
+    if (!baseline) return;
+
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      showNotification("Pop-up blocked! Please allow pop-ups to export PDF.", "error");
+      return;
+    }
+
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Project_${id}_Baseline_Review_Report</title>
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; padding: 40px; color: #1f2937; line-height: 1.5; }
+            h1 { font-size: 26px; font-weight: bold; color: #111827; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px; margin-bottom: 8px; }
+            .header-meta { font-size: 13px; color: #6b7280; margin-bottom: 30px; }
+            h2 { font-size: 18px; font-weight: bold; color: #374151; margin-top: 30px; margin-bottom: 15px; border-bottom: 1px solid #e5e7eb; padding-bottom: 6px; }
+            .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+            .column { display: flex; flex-direction: column; gap: 16px; }
+            .item-card { border: 1px solid #e5e7eb; padding: 16px; border-radius: 8px; background-color: #f9fafb; page-break-inside: avoid; }
+            .item-title { font-weight: bold; font-size: 15px; color: #111827; margin-bottom: 6px; }
+            .item-desc { color: #4b5563; font-size: 13px; margin-bottom: 12px; }
+            .evidence { font-style: italic; background-color: #f3f4f6; color: #374151; padding: 10px; border-left: 3px solid #2563eb; font-size: 11.5px; border-radius: 4px; margin-bottom: 12px; }
+            .meta { display: flex; justify-content: space-between; font-size: 11.5px; color: #6b7280; border-top: 1px solid #f3f4f6; padding-top: 8px; }
+            .badge-in { color: #059669; font-weight: 600; }
+            .badge-out { color: #dc2626; font-weight: 600; }
+            .badge-other { color: #2563eb; font-weight: 600; }
+            @media print {
+              body { padding: 0; }
+              @page { margin: 1.5cm; }
+            }
+          </style>
+        </head>
+        <body>
+          <h1>Contract Scope Baseline Review Report</h1>
+          <div class="header-meta">
+            <span><strong>Baseline Status:</strong> ${baseline.status}</span> &bull; 
+            <span><strong>Export Date:</strong> ${new Date().toLocaleDateString()}</span>
+          </div>
+          
+          <div class="grid">
+            <div class="column">
+              <h2>In Scope (${inScopeItems.length})</h2>
+              ${inScopeItems.length === 0 ? '<p style="color: #9ca3af; font-style: italic; font-size: 13px;">No in-scope items identified.</p>' : inScopeItems.map((item: any) => `
+                <div class="item-card">
+                  <div class="item-title">${item.name}</div>
+                  <div class="item-desc">${item.description}</div>
+                  ${item.evidence_text ? `<div class="evidence"><strong>AI Reasoning:</strong> "${item.evidence_text}"</div>` : ''}
+                  <div class="meta">
+                    <span class="badge-in">IN SCOPE</span>
+                    <span>Confidence: ${(item.confidence * 100).toFixed(0)}%</span>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+            
+            <div class="column">
+              <h2>Out of Scope (${outOfScopeItems.length})</h2>
+              ${outOfScopeItems.length === 0 ? '<p style="color: #9ca3af; font-style: italic; font-size: 13px;">No out-of-scope items identified.</p>' : outOfScopeItems.map((item: any) => `
+                <div class="item-card">
+                  <div class="item-title">${item.name}</div>
+                  <div class="item-desc">${item.description}</div>
+                  ${item.evidence_text ? `<div class="evidence"><strong>AI Reasoning:</strong> "${item.evidence_text}"</div>` : ''}
+                  <div class="meta">
+                    <span class="${item.scope_type === 'OUT_OF_SCOPE' ? 'badge-out' : 'badge-other'}">${item.scope_type}</span>
+                    <span>Confidence: ${(item.confidence * 100).toFixed(0)}%</span>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+          <script>
+            window.onload = function() {
+              window.print();
+              setTimeout(function() { window.close(); }, 500);
+            };
+          </script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+    showNotification("Opened print view to export to PDF.", "success");
+  };
+
   if (loading) return <Loader message="Loading contract scope baseline..." />;
 
   const inScopeItems = baseline?.scope_items?.filter((item: any) => item.scope_type === 'IN_SCOPE') || [];
@@ -136,8 +298,9 @@ export const BaselineReviewPage: React.FC = () => {
           <div className="flex gap-4 items-center">
             <h1 className="text-3xl font-bold">Baseline Review</h1>
           </div>
-          <div className="flex gap-4">
+          <div className="flex gap-4 items-center">
             <button onClick={() => navigate(`/projects/${id}`)} className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-md">Back to Dashboard</button>
+
             {(!baseline || baseline.status !== 'APPROVED') && user?.role !== 'PROJECT_LEAD' && (
               <button onClick={handleExtractClick} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-md">Extract Baseline</button>
             )}
@@ -170,7 +333,47 @@ export const BaselineReviewPage: React.FC = () => {
               </span>
             </div>
             
-            <h2 className="text-2xl font-bold mb-6">Scope Items Baseline</h2>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold">Scope Items Baseline</h2>
+              {baseline && (
+                <div className="relative">
+                  <button 
+                    onClick={() => setShowExportDropdown(!showExportDropdown)}
+                    className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-200 border border-gray-700 hover:border-gray-600 rounded-md flex items-center gap-2 cursor-pointer transition-colors"
+                  >
+                    <Download className="w-4 h-4" />
+                    <span>Export</span>
+                  </button>
+                  {showExportDropdown && (
+                    <>
+                      <div className="fixed inset-0 z-10" onClick={() => setShowExportDropdown(false)}></div>
+                      <div className="absolute right-0 mt-2 w-48 bg-gray-900 border border-gray-700 rounded-lg shadow-xl py-1 z-25 animate-fadeIn">
+                        <button 
+                          onClick={() => {
+                            handleExportWord();
+                            setShowExportDropdown(false);
+                          }}
+                          className="w-full text-left px-4 py-2.5 text-sm text-gray-200 hover:bg-gray-800 hover:text-white transition-colors flex items-center gap-2.5 cursor-pointer"
+                        >
+                          <FileText className="w-4 h-4 text-blue-400" />
+                          <span>Word Document (.doc)</span>
+                        </button>
+                        <button 
+                          onClick={() => {
+                            handleExportPDF();
+                            setShowExportDropdown(false);
+                          }}
+                          className="w-full text-left px-4 py-2.5 text-sm text-gray-200 hover:bg-gray-800 hover:text-white transition-colors flex items-center gap-2.5 cursor-pointer"
+                        >
+                          <FileText className="w-4 h-4 text-rose-400" />
+                          <span>PDF Report</span>
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
               
               {/* Left Column - In Scope */}
