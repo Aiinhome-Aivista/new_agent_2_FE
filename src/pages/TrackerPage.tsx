@@ -45,7 +45,8 @@ export const TrackerPage: React.FC = () => {
         status: 'RESOLVED'
       });
       if (res.data.success) {
-        setItems(items.map(i => i.id === resolveModalState.itemId ? { ...i, status: 'RESOLVED', resolution: resolutionText } : i));
+        const updatedItem = res.data.data;
+        setItems(items.map(i => i.id === resolveModalState.itemId ? { ...i, ...updatedItem } : i));
         setResolveModalState({ isOpen: false, itemId: null });
       }
     } catch (error) {
@@ -348,8 +349,24 @@ export const TrackerPage: React.FC = () => {
                       )}
 
                       {item.status === 'RESOLVED' ? (
-                        <div className="mt-4 p-3 bg-green-950/30 border border-green-500/20 rounded-lg">
+                        <div className="mt-4 p-4 bg-green-950/20 border border-green-500/20 rounded-xl space-y-2.5 animate-fade-in-up">
                           <p className="text-sm text-green-300"><span className="font-bold">Resolution:</span> {item.resolution}</p>
+                          {(item.resolved_by_name || item.resolved_at) && (
+                            <div className="pt-2.5 border-t border-green-500/10 flex flex-wrap gap-x-4 gap-y-1 text-xs text-green-400/80 font-medium">
+                              {item.resolved_by_name && (
+                                <span className="flex items-center gap-1">
+                                  <span>👤</span>
+                                  <span className="font-semibold">Resolved By:</span> {item.resolved_by_name} {item.resolved_by_email ? `(${item.resolved_by_email})` : ''}
+                                </span>
+                              )}
+                              {item.resolved_at && (
+                                <span className="flex items-center gap-1">
+                                  <span>📅</span>
+                                  <span className="font-semibold">Resolved At:</span> {new Date(item.resolved_at).toLocaleString()}
+                                </span>
+                              )}
+                            </div>
+                          )}
                         </div>
                       ) : (
                         <button onClick={() => openResolveModal(item.id)} className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-md text-sm transition-colors cursor-pointer font-medium shadow-md hover:shadow-lg active:scale-[0.98]">
