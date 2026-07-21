@@ -9,6 +9,11 @@ export const TrackerPage: React.FC = () => {
   const navigate = useNavigate();
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<'ACTIVE' | 'RESOLVED'>('ACTIVE');
+
+  const activeItems = items.filter(item => item.status !== 'RESOLVED');
+  const resolvedItems = items.filter(item => item.status === 'RESOLVED');
+  const currentTabItems = activeTab === 'ACTIVE' ? activeItems : resolvedItems;
 
   useEffect(() => {
     const fetchTracker = async () => {
@@ -138,132 +143,194 @@ export const TrackerPage: React.FC = () => {
             </button>
           </div>
         </div>
-        
+
         {items.length === 0 ? (
-          <p className="text-gray-400">No tracker items found.</p>
-        ) : (
-          <div className="space-y-4">
-            {items.map(item => {
-              // Risk level color mapping
-              const riskLevelConfig: Record<string, { bg: string; text: string; border: string }> = {
-                LOW: { bg: 'bg-green-900/50', text: 'text-green-300', border: 'border-green-500/30' },
-                MEDIUM: { bg: 'bg-yellow-900/50', text: 'text-yellow-300', border: 'border-yellow-500/30' },
-                HIGH: { bg: 'bg-orange-900/50', text: 'text-orange-300', border: 'border-orange-500/30' },
-                CRITICAL: { bg: 'bg-red-900/50', text: 'text-red-300', border: 'border-red-500/30' },
-              };
-              const level = item.risk_level || 'LOW';
-              const levelStyle = riskLevelConfig[level] || riskLevelConfig.LOW;
-
-              // Risk category display
-              const categoryLabels: Record<string, string> = {
-                SCOPE_CREEP: '🔄 Scope Creep',
-                DELAY: '⏰ Delay Risk',
-                MISSING_DELIVERABLE: '📋 Missing Deliverable',
-                DEPENDENCY: '🔗 Dependency Risk',
-                STAKEHOLDER: '👥 Stakeholder Risk',
-                GENERAL: '📌 General',
-              };
-              const categoryLabel = categoryLabels[item.risk_category] || categoryLabels.GENERAL;
-
-              // Item type labels
-              const typeLabels: Record<string, string> = {
-                ACTIVITY: 'Activity',
-                NEW_REQUEST: 'New Request',
-                BLOCKER: 'Blocker',
-                ACTION_ITEM: 'Action Item',
-                DECISION: 'Decision',
-                RISK_MENTIONED: 'Risk Mentioned',
-              };
-
-              // Border color based on risk level
-              const borderColor = item.status === 'RESOLVED' 
-                ? 'border-gray-700' 
-                : level === 'CRITICAL' ? 'border-red-500/50' 
-                : level === 'HIGH' ? 'border-orange-500/50'
-                : level === 'MEDIUM' ? 'border-yellow-500/50'
-                : 'border-gray-700';
-
-              // Split reasoning into description and detailed reasoning
-              const reasoningParts = (item.reasoning || '').split('\n\n');
-              const description = reasoningParts[0] || '';
-              const detailedReasoning = reasoningParts.slice(1).join('\n\n') || '';
-
-              return (
-                <div key={item.id} className={`p-6 rounded-xl border bg-gray-800 ${borderColor}`}>
-                  {/* Header Row */}
-                  <div className="flex justify-between items-start mb-3">
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-bold text-xl truncate">{item.name}</h3>
-                      <div className="flex items-center gap-2 mt-1 flex-wrap">
-                        <span className="text-xs text-gray-400 bg-gray-700/50 px-2 py-0.5 rounded">
-                          {typeLabels[item.item_type] || item.item_type}
-                        </span>
-                        <span className="text-xs text-gray-500">Doc: {item.document_name}</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2 flex-shrink-0 ml-4 flex-wrap justify-end">
-                      {/* Risk Level Badge */}
-                      <span className={`px-3 py-1 rounded-full text-xs font-bold border ${levelStyle.bg} ${levelStyle.text} ${levelStyle.border}`}>
-                        {level}
-                      </span>
-                      {/* Risk Score */}
-                      <span className={`px-2 py-1 rounded text-xs font-mono font-bold ${
-                        item.risk_score >= 71 ? 'bg-red-900/60 text-red-200' :
-                        item.risk_score >= 41 ? 'bg-orange-900/60 text-orange-200' :
-                        item.risk_score >= 21 ? 'bg-yellow-900/60 text-yellow-200' :
-                        'bg-green-900/60 text-green-200'
-                      }`}>
-                        {item.risk_score}/100
-                      </span>
-                      {item.is_out_of_scope ? <span className="px-2 py-1 bg-red-900/50 text-red-300 rounded text-xs border border-red-500/30">OOS</span> : null}
-                      {item.requires_escalation ? <span className="px-2 py-1 bg-orange-900/50 text-orange-300 rounded text-xs border border-orange-500/30">⚠ Escalated</span> : null}
-                    </div>
-                  </div>
-
-                  {/* Risk Category */}
-                  <div className="mb-3">
-                    <span className="text-xs text-gray-400 font-medium">{categoryLabel}</span>
-                  </div>
-
-                  {/* Description (WHY this risk score) */}
-                  {description && (
-                    <div className="mb-3 p-3 bg-gray-900/80 border border-gray-700/50 rounded-lg">
-                      <h4 className="text-xs font-semibold text-gray-400 mb-1 uppercase tracking-wide">Risk Description</h4>
-                      <p className="text-gray-200 text-sm leading-relaxed">{description}</p>
-                    </div>
-                  )}
-                  
-                  {/* Detailed AI Reasoning (collapsible) */}
-                  {detailedReasoning && (
-                    <details className="mb-4 group">
-                      <summary className="text-xs font-semibold text-gray-500 cursor-pointer hover:text-gray-300 transition-colors">
-                        ▸ View Detailed AI Reasoning
-                      </summary>
-                      <p className="text-gray-400 text-xs bg-gray-900/50 p-3 rounded mt-2 leading-relaxed">{detailedReasoning}</p>
-                    </details>
-                  )}
-
-                  {/* If no split (legacy data), show full reasoning */}
-                  {!description && !detailedReasoning && item.reasoning && (
-                    <div className="mb-4">
-                      <h4 className="text-sm font-semibold text-gray-400 mb-1">AI Reasoning:</h4>
-                      <p className="text-gray-300 text-sm bg-gray-900 p-3 rounded">{item.reasoning}</p>
-                    </div>
-                  )}
-                  
-                  {item.status === 'RESOLVED' ? (
-                    <div className="mt-4 p-3 bg-green-900/20 border border-green-500/30 rounded">
-                      <p className="text-sm text-green-300"><span className="font-bold">Resolution:</span> {item.resolution}</p>
-                    </div>
-                  ) : (
-                    <button onClick={() => openResolveModal(item.id)} className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-md text-sm transition-colors">
-                      Mark as Resolved
-                    </button>
-                  )}
-                </div>
-              );
-            })}
+          <div className="text-center py-16 bg-gray-900/30 border border-gray-800 rounded-2xl animate-fade-in-up">
+            <p className="text-gray-400 text-lg">No tracker items found.</p>
+            <p className="text-gray-500 text-sm mt-1">Select a processed document to analyze for risk and audit items.</p>
           </div>
+        ) : (
+          <>
+            {/* Animated Capsule Tab Control */}
+            <div className="relative flex p-1 bg-gray-950/80 border border-gray-850 rounded-xl max-w-md mb-8 shadow-inner backdrop-blur-md">
+              {/* Sliding Background Indicator */}
+              <div
+                className="absolute top-1 bottom-1 rounded-lg bg-gradient-to-r from-blue-600/20 to-cyan-500/20 border border-blue-500/30 shadow-lg shadow-blue-500/5 transition-all duration-300 ease-out"
+                style={{
+                  width: 'calc(50% - 4px)',
+                  left: activeTab === 'ACTIVE' ? '4px' : 'calc(50%)',
+                }}
+              />
+
+              {/* Active Risks Tab */}
+              <button
+                onClick={() => setActiveTab('ACTIVE')}
+                className={`relative z-10 flex-1 flex items-center justify-center gap-2 py-2 text-sm font-semibold tracking-wide transition-all duration-300 cursor-pointer ${activeTab === 'ACTIVE' ? 'text-white' : 'text-gray-400 hover:text-gray-200'
+                  }`}
+              >
+                <span>Active Risks</span>
+                <span className={`px-2 py-0.5 text-xs rounded-full border transition-all duration-300 font-bold ${activeTab === 'ACTIVE'
+                  ? 'bg-red-550/20 text-red-300 border-red-500/30 shadow-md'
+                  : 'bg-gray-900 text-gray-400 border-gray-805'
+                  }`}>
+                  {activeItems.length}
+                </span>
+              </button>
+
+              {/* Resolved Risks Tab */}
+              <button
+                onClick={() => setActiveTab('RESOLVED')}
+                className={`relative z-10 flex-1 flex items-center justify-center gap-2 py-2 text-sm font-semibold tracking-wide transition-all duration-300 cursor-pointer ${activeTab === 'RESOLVED' ? 'text-white' : 'text-gray-400 hover:text-gray-200'
+                  }`}
+              >
+                <span>Resolved</span>
+                <span className={`px-2 py-0.5 text-xs rounded-full border transition-all duration-300 font-bold ${activeTab === 'RESOLVED'
+                  ? 'bg-green-550/20 text-green-300 border-green-500/30 shadow-md'
+                  : 'bg-gray-900 text-gray-400 border-gray-805'
+                  }`}>
+                  {resolvedItems.length}
+                </span>
+              </button>
+            </div>
+
+            {/* Filtered items list */}
+            {currentTabItems.length === 0 ? (
+              <div className="text-center py-16 bg-gray-900/30 border border-gray-800 rounded-2xl animate-fade-in-up">
+                <p className="text-gray-400 text-lg">No {activeTab === 'ACTIVE' ? 'active' : 'resolved'} risks found.</p>
+                <p className="text-gray-500 text-sm mt-1">
+                  {activeTab === 'ACTIVE'
+                    ? 'All items are resolved! You have a clean board.'
+                    : 'Resolved items will appear here.'}
+                </p>
+              </div>
+            ) : (
+              <div key={activeTab} className="space-y-4">
+                {currentTabItems.map((item, index) => {
+                  // Risk level color mapping
+                  const riskLevelConfig: Record<string, { bg: string; text: string; border: string }> = {
+                    LOW: { bg: 'bg-green-900/50', text: 'text-green-300', border: 'border-green-500/30' },
+                    MEDIUM: { bg: 'bg-yellow-900/50', text: 'text-yellow-300', border: 'border-yellow-500/30' },
+                    HIGH: { bg: 'bg-orange-900/50', text: 'text-orange-300', border: 'border-orange-500/30' },
+                    CRITICAL: { bg: 'bg-red-900/50', text: 'text-red-300', border: 'border-red-500/30' },
+                  };
+                  const level = item.risk_level || 'LOW';
+                  const levelStyle = riskLevelConfig[level] || riskLevelConfig.LOW;
+
+                  // Risk category display
+                  const categoryLabels: Record<string, string> = {
+                    SCOPE_CREEP: '🔄 Scope Creep',
+                    DELAY: '⏰ Delay Risk',
+                    MISSING_DELIVERABLE: '📋 Missing Deliverable',
+                    DEPENDENCY: '🔗 Dependency Risk',
+                    STAKEHOLDER: '👥 Stakeholder Risk',
+                    GENERAL: '📌 General',
+                  };
+                  const categoryLabel = categoryLabels[item.risk_category] || categoryLabels.GENERAL;
+
+                  // Item type labels
+                  const typeLabels: Record<string, string> = {
+                    ACTIVITY: 'Activity',
+                    NEW_REQUEST: 'New Request',
+                    BLOCKER: 'Blocker',
+                    ACTION_ITEM: 'Action Item',
+                    DECISION: 'Decision',
+                    RISK_MENTIONED: 'Risk Mentioned',
+                  };
+
+                  // Border color based on risk level
+                  const borderColor = item.status === 'RESOLVED'
+                    ? 'border-gray-705'
+                    : level === 'CRITICAL' ? 'border-red-500/50'
+                      : level === 'HIGH' ? 'border-orange-500/50'
+                        : level === 'MEDIUM' ? 'border-yellow-500/50'
+                          : 'border-gray-700';
+
+                  // Split reasoning into description and detailed reasoning
+                  const reasoningParts = (item.reasoning || '').split('\n\n');
+                  const description = reasoningParts[0] || '';
+                  const detailedReasoning = reasoningParts.slice(1).join('\n\n') || '';
+
+                  return (
+                    <div
+                      key={item.id}
+                      className={`p-6 rounded-xl border bg-gray-800 ${borderColor} animate-fade-in-up hover:shadow-xl hover:shadow-black/20 hover:border-gray-700 transition-all duration-300`}
+                      style={{ animationDelay: `${index * 50}ms` }}
+                    >
+                      {/* Header Row */}
+                      <div className="flex justify-between items-start mb-3">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-bold text-xl truncate">{item.name}</h3>
+                          <div className="flex items-center gap-2 mt-1 flex-wrap">
+                            <span className="text-xs text-gray-400 bg-gray-700/50 px-2 py-0.5 rounded">
+                              {typeLabels[item.item_type] || item.item_type}
+                            </span>
+                            <span className="text-xs text-gray-500">Doc: {item.document_name}</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 flex-shrink-0 ml-4 flex-wrap justify-end">
+                          {/* Risk Level Badge */}
+                          <span className={`px-3 py-1 rounded-full text-xs font-bold border ${levelStyle.bg} ${levelStyle.text} ${levelStyle.border}`}>
+                            {level}
+                          </span>
+                          {/* Risk Score */}
+                          <span className={`px-2 py-1 rounded text-xs font-mono font-bold ${item.risk_score >= 71 ? 'bg-red-900/60 text-red-200' :
+                            item.risk_score >= 41 ? 'bg-orange-900/60 text-orange-200' :
+                              item.risk_score >= 21 ? 'bg-yellow-900/60 text-yellow-200' :
+                                'bg-green-900/60 text-green-200'
+                            }`}>
+                            {item.risk_score}/100
+                          </span>
+                          {item.is_out_of_scope ? <span className="px-2 py-1 bg-red-900/50 text-red-300 rounded text-xs border border-red-500/30">OOS</span> : null}
+                          {item.requires_escalation ? <span className="px-2 py-1 bg-orange-900/50 text-orange-300 rounded text-xs border border-orange-500/30">⚠ Escalated</span> : null}
+                        </div>
+                      </div>
+
+                      {/* Risk Category */}
+                      <div className="mb-3">
+                        <span className="text-xs text-gray-400 font-medium">{categoryLabel}</span>
+                      </div>
+
+                      {/* Description (WHY this risk score) */}
+                      {description && (
+                        <div className="mb-3 p-3 bg-gray-900/80 border border-gray-700/50 rounded-lg">
+                          <h4 className="text-xs font-semibold text-gray-400 mb-1 uppercase tracking-wide">Risk Description</h4>
+                          <p className="text-gray-200 text-sm leading-relaxed">{description}</p>
+                        </div>
+                      )}
+
+                      {/* Detailed AI Reasoning (collapsible) */}
+                      {detailedReasoning && (
+                        <details className="mb-4 group">
+                          <summary className="text-xs font-semibold text-gray-500 cursor-pointer hover:text-gray-300 transition-colors">
+                            ▸ View Detailed AI Reasoning
+                          </summary>
+                          <p className="text-gray-400 text-xs bg-gray-900/50 p-3 rounded mt-2 leading-relaxed">{detailedReasoning}</p>
+                        </details>
+                      )}
+
+                      {/* If no split (legacy data), show full reasoning */}
+                      {!description && !detailedReasoning && item.reasoning && (
+                        <div className="mb-4">
+                          <h4 className="text-sm font-semibold text-gray-400 mb-1">AI Reasoning:</h4>
+                          <p className="text-gray-300 text-sm bg-gray-900 p-3 rounded">{item.reasoning}</p>
+                        </div>
+                      )}
+
+                      {item.status === 'RESOLVED' ? (
+                        <div className="mt-4 p-3 bg-green-950/30 border border-green-500/20 rounded-lg">
+                          <p className="text-sm text-green-300"><span className="font-bold">Resolution:</span> {item.resolution}</p>
+                        </div>
+                      ) : (
+                        <button onClick={() => openResolveModal(item.id)} className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-md text-sm transition-colors cursor-pointer font-medium shadow-md hover:shadow-lg active:scale-[0.98]">
+                          Mark as Resolved
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </>
         )}
       </div>
 
@@ -281,13 +348,13 @@ export const TrackerPage: React.FC = () => {
               onChange={(e) => setResolutionText(e.target.value)}
             />
             <div className="flex justify-end gap-3">
-              <button 
+              <button
                 onClick={() => setResolveModalState({ isOpen: false, itemId: null })}
                 className="px-5 py-2.5 rounded-lg font-medium text-gray-300 hover:bg-gray-800 transition-colors"
               >
                 Cancel
               </button>
-              <button 
+              <button
                 onClick={submitResolve}
                 disabled={!resolutionText.trim()}
                 className={`px-5 py-2.5 rounded-lg font-medium transition-colors ${!resolutionText.trim() ? 'bg-green-900/50 text-green-700 cursor-not-allowed' : 'bg-[#00e5ff] text-black hover:bg-[#00cce5]'}`}
@@ -354,11 +421,10 @@ export const TrackerPage: React.FC = () => {
               <button
                 onClick={handleConfirmProcess}
                 disabled={processing || !selectedDocId || eligibleDocs.length === 0}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors text-sm flex items-center ${
-                  processing || !selectedDocId || eligibleDocs.length === 0
-                    ? "bg-blue-900/50 text-blue-700 cursor-not-allowed"
-                    : "bg-[#00e5ff] text-black hover:bg-[#00cce5]"
-                }`}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors text-sm flex items-center ${processing || !selectedDocId || eligibleDocs.length === 0
+                  ? "bg-blue-900/50 text-blue-700 cursor-not-allowed"
+                  : "bg-[#00e5ff] text-black hover:bg-[#00cce5]"
+                  }`}
               >
                 {processing ? (
                   <>
@@ -378,13 +444,12 @@ export const TrackerPage: React.FC = () => {
       {notification && (
         <div className="fixed top-6 right-6 z-50 animate-in fade-in slide-in-from-right duration-300">
           <div
-            className={`px-5 py-4 rounded-xl shadow-2xl border backdrop-blur-sm max-w-sm ${
-              notification.type === "success"
-                ? "bg-green-900/80 border-green-500/50 text-green-200"
-                : notification.type === "error"
-                  ? "bg-red-900/80 border-red-500/50 text-red-200"
-                  : "bg-blue-900/80 border-blue-500/50 text-blue-200"
-            }`}
+            className={`px-5 py-4 rounded-xl shadow-2xl border backdrop-blur-sm max-w-sm ${notification.type === "success"
+              ? "bg-green-900/80 border-green-500/50 text-green-200"
+              : notification.type === "error"
+                ? "bg-red-900/80 border-red-500/50 text-red-200"
+                : "bg-blue-900/80 border-blue-500/50 text-blue-200"
+              }`}
           >
             <div className="flex items-start gap-3">
               <p className="text-sm font-medium flex-1">{notification.message}</p>
