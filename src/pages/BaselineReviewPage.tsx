@@ -660,7 +660,7 @@ export const BaselineReviewPage: React.FC = () => {
                   {/* Horizontal Timeline Track */}
                   <div className="flex-1 relative py-6 overflow-visible">
                     {/* Horizontal Track Line */}
-                    <div className="absolute top-[60px] left-8 right-8 h-1 bg-gray-800 rounded-full z-0"></div>
+                    <div className="absolute top-[96px] left-8 right-8 h-1 bg-gray-800 rounded-full z-0"></div>
 
                     {/* Nodes wrapper */}
                     <div className="flex justify-between items-center z-10 relative overflow-x-auto pt-4 pb-4 pl-4 pr-4 scrollbar-thin scrollbar-thumb-gray-800 scrollbar-track-transparent">
@@ -673,11 +673,11 @@ export const BaselineReviewPage: React.FC = () => {
                           return (
                             <div
                               key={item.id}
-                              className="flex flex-col items-center flex-shrink-0 cursor-pointer group mx-6 first:ml-0 last:mr-0"
+                              className="flex flex-col items-center flex-shrink-0 cursor-pointer group mx-6 first:ml-0 last:mr-0 relative pt-12"
                               onClick={() => setSelectedDeliverableId(item.id)}
                             >
                               {/* Date Label bubble with down caret */}
-                              <div className="relative mb-3 flex flex-col items-center">
+                              <div className="absolute top-0 flex flex-col items-center pointer-events-none">
                                 <div
                                   className={`px-3 py-1 rounded text-xs font-semibold shadow-md transition-all duration-300 border ${
                                     isSelected
