@@ -12,6 +12,7 @@ import {
   FileText,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   Plus,
   Trash2,
   X,
@@ -25,13 +26,16 @@ export const BaselineReviewPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [versions, setVersions] = useState<any[]>([]);
+  const [expandedVersions, setExpandedVersions] = useState<Record<number, boolean>>({});
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [baselineRes, projectRes] = await Promise.all([
+        const [baselineRes, projectRes, versionsRes] = await Promise.all([
           apiClient.get(`/projects/${id}/baseline/`),
           apiClient.get(`/projects/${id}`),
+          apiClient.get(`/projects/${id}/baseline/versions`),
         ]);
         if (baselineRes.data.success) {
           setBaseline(baselineRes.data.data);
@@ -39,8 +43,11 @@ export const BaselineReviewPage: React.FC = () => {
         if (projectRes.data.success) {
           setProject(projectRes.data.data);
         }
+        if (versionsRes.data.success) {
+          setVersions(versionsRes.data.data);
+        }
       } catch (error) {
-        console.error("Failed to fetch baseline or project details");
+        console.error("Failed to fetch baseline, project details, or versions history");
       } finally {
         setLoading(false);
       }
@@ -114,6 +121,12 @@ export const BaselineReviewPage: React.FC = () => {
     ) {
       setSelectedDeliverableId(baseline.deliverables[activeIndex + 1].id);
     }
+  };
+
+  const getItemVersion = (sourceDocId: number) => {
+    if (!sourceDocId || !versions) return null;
+    const foundVer = versions.find((v: any) => v.source_document_id === sourceDocId);
+    return foundVer ? `v${foundVer.version}` : null;
   };
 
   const [eligibleDocs, setEligibleDocs] = useState<any[]>([]);
@@ -190,9 +203,15 @@ export const BaselineReviewPage: React.FC = () => {
         setNewItemScopeType("IN_SCOPE");
         setNewItemEvidence("");
 
-        const baselineRes = await apiClient.get(`/projects/${id}/baseline/`);
+        const [baselineRes, versionsRes] = await Promise.all([
+          apiClient.get(`/projects/${id}/baseline/`),
+          apiClient.get(`/projects/${id}/baseline/versions`),
+        ]);
         if (baselineRes.data.success) {
           setBaseline(baselineRes.data.data);
+        }
+        if (versionsRes.data.success) {
+          setVersions(versionsRes.data.data);
         }
       }
     } catch (error: any) {
@@ -216,9 +235,15 @@ export const BaselineReviewPage: React.FC = () => {
         showNotification("Scope item deleted successfully!", "success");
         setDeletingItemId(null);
 
-        const baselineRes = await apiClient.get(`/projects/${id}/baseline/`);
+        const [baselineRes, versionsRes] = await Promise.all([
+          apiClient.get(`/projects/${id}/baseline/`),
+          apiClient.get(`/projects/${id}/baseline/versions`),
+        ]);
         if (baselineRes.data.success) {
           setBaseline(baselineRes.data.data);
+        }
+        if (versionsRes.data.success) {
+          setVersions(versionsRes.data.data);
         }
       }
     } catch (error: any) {
@@ -277,9 +302,15 @@ export const BaselineReviewPage: React.FC = () => {
       }
 
       // Fetch baseline data in the background to update page
-      const baselineRes = await apiClient.get(`/projects/${id}/baseline/`);
+      const [baselineRes, versionsRes] = await Promise.all([
+        apiClient.get(`/projects/${id}/baseline/`),
+        apiClient.get(`/projects/${id}/baseline/versions`),
+      ]);
       if (baselineRes.data.success) {
         setBaseline(baselineRes.data.data);
+      }
+      if (versionsRes.data.success) {
+        setVersions(versionsRes.data.data);
       }
       setShowExtractModal(false);
       showNotification(
@@ -529,302 +560,9 @@ export const BaselineReviewPage: React.FC = () => {
   return (
     <div className="flex-1 bg-transparent p-6 md:p-10 relative overflow-hidden">
       <div className="max-w-6xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <div className="flex gap-4 items-center">
-            <h1 className="text-3xl font-bold">Baseline Review</h1>
-          </div>
-          <div className="flex gap-4 items-center">
-            <button
-              onClick={() => navigate(`/projects/${id}`)}
-              className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-md"
-            >
-              Back to Dashboard
-            </button>
-
-            {user?.role !== "PROJECT_LEAD" && (
-                <button
-                  onClick={handleExtractClick}
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-md"
-                >
-                  Extract Baseline
-                </button>
-              )}
-            {baseline &&
-              baseline.status === "DRAFT" &&
-              (user?.role === "ENGAGEMENT_MANAGER" ||
-                user?.role === "ADMIN") && (
-                <button
-                  onClick={handleApprove}
-                  disabled={isApproving}
-                  className="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-green-800 disabled:opacity-70 rounded-md flex items-center gap-2 cursor-pointer disabled:cursor-not-allowed transition-colors"
-                >
-                  {isApproving ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Approving...
-                    </>
-                  ) : (
-                    "Approve Baseline"
-                  )}
-                </button>
-              )}
-          </div>
-        </div>
-
-        {!baseline ? (
-          <p className="text-gray-400">No baseline exists yet.</p>
-        ) : (
-          <div>
-            <div className="mb-6">
-              <span
-                className={`px-3 py-1 rounded text-sm ${baseline.status === "APPROVED" ? "bg-green-600" : "bg-yellow-600"}`}
-              >
-                Status: {baseline.status}
-              </span>
-            </div>
-
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold">Scope Items Baseline</h2>
-              <div className="flex items-center gap-3">
-                {(user?.role === "ADMIN" ||
-                  user?.role === "ENGAGEMENT_MANAGER") && (
-                  <button
-                    onClick={() => setShowAddItemModal(true)}
-                    className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-md flex items-center gap-2 cursor-pointer transition-all shadow-md text-xs font-semibold"
-                  >
-                    <Plus className="w-4 h-4" />
-                    <span>Add Scope Item</span>
-                  </button>
-                )}
-                {baseline && (
-                  <div className="relative">
-                    <button
-                      onClick={() => setShowExportDropdown(!showExportDropdown)}
-                      className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-200 border border-gray-700 hover:border-gray-600 rounded-md flex items-center gap-2 cursor-pointer transition-colors"
-                    >
-                      <Download className="w-4 h-4" />
-                      <span>Export</span>
-                    </button>
-                    {showExportDropdown && (
-                      <>
-                        <div
-                          className="fixed inset-0 z-10"
-                          onClick={() => setShowExportDropdown(false)}
-                        ></div>
-                        <div className="absolute right-0 mt-2 w-48 bg-gray-900 border border-gray-700 rounded-lg shadow-xl py-1 z-25 animate-fadeIn">
-                          <button
-                            onClick={() => {
-                              handleExportWord();
-                              setShowExportDropdown(false);
-                            }}
-                            className="w-full text-left px-4 py-2.5 text-sm text-gray-200 hover:bg-gray-800 hover:text-white transition-colors flex items-center gap-2.5 cursor-pointer"
-                          >
-                            <FileText className="w-4 h-4 text-blue-400" />
-                            <span>Word Document (.doc)</span>
-                          </button>
-                          <button
-                            onClick={() => {
-                              handleExportPDF();
-                              setShowExportDropdown(false);
-                            }}
-                            className="w-full text-left px-4 py-2.5 text-sm text-gray-200 hover:bg-gray-800 hover:text-white transition-colors flex items-center gap-2.5 cursor-pointer"
-                          >
-                            <FileText className="w-4 h-4 text-rose-400" />
-                            <span>PDF Report</span>
-                          </button>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
-              {/* Left Column - In Scope */}
-              <div className="flex flex-col bg-gray-900/30 backdrop-blur-md rounded-2xl p-6 border border-gray-800/80 shadow-2xl">
-                <div className="flex items-center justify-between pb-4 mb-5 border-b border-gray-800">
-                  <div className="flex items-center gap-3">
-                    <span className="relative flex h-3.5 w-3.5">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500"></span>
-                    </span>
-                    <h3 className="text-lg font-bold text-gray-100 tracking-tight">
-                      In Scope
-                    </h3>
-                  </div>
-                  <span className="px-3 py-1 text-xs font-semibold bg-emerald-500/10 text-emerald-400 rounded-full border border-emerald-500/20 shadow-sm">
-                    {inScopeItems.length}{" "}
-                    {inScopeItems.length === 1 ? "item" : "items"}
-                  </span>
-                </div>
-
-                {inScopeItems.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-12 px-4 text-center border border-dashed border-gray-850 rounded-xl bg-gray-850/10">
-                    <p className="text-gray-500 text-sm">
-                      No in-scope items identified.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-4 flex-1 max-h-[750px] overflow-y-auto pr-2 custom-scrollbar">
-                    {inScopeItems.map((item: any) => (
-                      <div
-                        key={item.id}
-                        className="group p-5 bg-gray-800/60 hover:bg-gray-800/90 rounded-xl border border-gray-700/60 hover:border-emerald-500/30 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col justify-between min-h-[160px]"
-                      >
-                        <div>
-                          <div className="flex justify-between items-start gap-2 mb-2">
-                            <h4 className="font-bold text-lg text-white group-hover:text-emerald-300 transition-colors">
-                              {item.name}
-                            </h4>
-                            {(user?.role === "ADMIN" ||
-                              user?.role === "ENGAGEMENT_MANAGER") && (
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setDeletingItemId(item.id);
-                                }}
-                                title="Delete scope item"
-                                className="p-1.5 text-rose-400 hover:text-white bg-rose-950/30 hover:bg-rose-900/50 border border-rose-500/20 rounded-lg transition-colors cursor-pointer flex-shrink-0"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
-                            )}
-                          </div>
-                          <p className="text-gray-400 text-sm mb-4 leading-relaxed">
-                            {item.description}
-                          </p>
-
-                          {item.evidence_text && (
-                            <div className="mb-4 p-3 bg-gray-900/60 rounded-lg border border-gray-700/40">
-                              <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">
-                                AI Reasoning
-                              </h5>
-                              <p className="text-gray-300 text-xs italic leading-relaxed">
-                                "{item.evidence_text}"
-                              </p>
-                            </div>
-                          )}
-
-                          {item.status_change_tag && (
-                            <div className="mb-4 p-2 bg-amber-500/10 border border-amber-500/30 rounded-lg">
-                              <p className="text-amber-400 text-xs font-semibold flex items-center gap-1.5">
-                                <AlertTriangle className="w-3.5 h-3.5" />
-                                {item.status_change_tag}
-                              </p>
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="flex justify-between items-center text-xs mt-auto pt-3 border-t border-gray-700/20">
-                          <span className="font-semibold text-emerald-400 px-2.5 py-0.5 bg-emerald-950/40 rounded border border-emerald-800/30">
-                            {item.scope_type}
-                          </span>
-                          <span className="text-gray-500 font-medium">
-                            Confidence: {(item.confidence * 100).toFixed(0)}%
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Right Column - Out of Scope */}
-              <div className="flex flex-col bg-gray-900/30 backdrop-blur-md rounded-2xl p-6 border border-gray-800/80 shadow-2xl">
-                <div className="flex items-center justify-between pb-4 mb-5 border-b border-gray-800">
-                  <div className="flex items-center gap-3">
-                    <span className="relative flex h-3.5 w-3.5">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-rose-500"></span>
-                    </span>
-                    <h3 className="text-lg font-bold text-gray-100 tracking-tight">
-                      Out of Scope
-                    </h3>
-                  </div>
-                  <span className="px-3 py-1 text-xs font-semibold bg-rose-500/10 text-rose-400 rounded-full border border-rose-500/20 shadow-sm">
-                    {outOfScopeItems.length}{" "}
-                    {outOfScopeItems.length === 1 ? "item" : "items"}
-                  </span>
-                </div>
-
-                {outOfScopeItems.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-12 px-4 text-center border border-dashed border-gray-850 rounded-xl bg-gray-850/10">
-                    <p className="text-gray-500 text-sm">
-                      No out-of-scope items identified.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-4 flex-1 max-h-[750px] overflow-y-auto pr-2 custom-scrollbar">
-                    {outOfScopeItems.map((item: any) => (
-                      <div
-                        key={item.id}
-                        className="group p-5 bg-gray-800/60 hover:bg-gray-800/90 rounded-xl border border-gray-700/60 hover:border-rose-500/30 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col justify-between min-h-[160px]"
-                      >
-                        <div>
-                          <div className="flex justify-between items-start gap-2 mb-2">
-                            <h4 className="font-bold text-lg text-white group-hover:text-rose-300 transition-colors">
-                              {item.name}
-                            </h4>
-                            {(user?.role === "ADMIN" ||
-                              user?.role === "ENGAGEMENT_MANAGER") && (
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setDeletingItemId(item.id);
-                                }}
-                                title="Delete scope item"
-                                className="p-1.5 text-rose-400 hover:text-white bg-rose-950/30 hover:bg-rose-900/50 border border-rose-500/20 rounded-lg transition-colors cursor-pointer flex-shrink-0"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
-                            )}
-                          </div>
-                          <p className="text-gray-400 text-sm mb-4 leading-relaxed">
-                            {item.description}
-                          </p>
-
-                          {item.evidence_text && (
-                            <div className="mb-4 p-3 bg-gray-900/60 rounded-lg border border-gray-700/40">
-                              <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">
-                                AI Reasoning
-                              </h5>
-                              <p className="text-gray-300 text-xs italic leading-relaxed">
-                                "{item.evidence_text}"
-                              </p>
-                            </div>
-                          )}
-
-                          {item.status_change_tag && (
-                            <div className="mb-4 p-2 bg-amber-500/10 border border-amber-500/30 rounded-lg">
-                              <p className="text-amber-400 text-xs font-semibold flex items-center gap-1.5">
-                                <AlertTriangle className="w-3.5 h-3.5" />
-                                {item.status_change_tag}
-                              </p>
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="flex justify-between items-center text-xs mt-auto pt-3 border-t border-gray-700/20">
-                          <span
-                            className={`font-semibold px-2.5 py-0.5 rounded border ${
-                              item.scope_type === "OUT_OF_SCOPE"
-                                ? "text-rose-400 bg-rose-950/40 border-rose-800/30"
-                                : "text-blue-400 bg-blue-950/40 border-blue-800/30"
-                            }`}
-                          >
-                            {item.scope_type}
-                          </span>
-                          <span className="text-gray-500 font-medium">
-                            Confidence: {(item.confidence * 100).toFixed(0)}%
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-
+        {/* Deliverables timeline moved to the very top */}
+        {baseline && (
+          <div className="mb-8">
             <h2 className="text-xl font-bold mb-4">
               Deliverables & IFA Allocations
             </h2>
@@ -945,7 +683,7 @@ export const BaselineReviewPage: React.FC = () => {
                       : "50%";
 
                   return (
-                    <div className="relative p-6 bg-gray-900/90 backdrop-blur-sm rounded-2xl border border-gray-850 shadow-2xl animate-fadeIn mb-12">
+                    <div className="relative p-6 bg-gray-900/90 backdrop-blur-sm rounded-2xl border border-gray-850 shadow-2xl animate-fadeIn mb-6">
                       {/* Caret pointing up to selected node */}
                       <div
                         className="absolute -top-[9px] w-4 h-4 bg-gray-900 border-l border-t border-gray-850 z-10 transition-all duration-300"
@@ -980,8 +718,482 @@ export const BaselineReviewPage: React.FC = () => {
                 })()}
               </div>
             )}
+            <div className="mb-12 border-b border-gray-800"></div>
           </div>
         )}
+
+        {/* Page header and action buttons */}
+        <div className="flex justify-between items-center mb-8">
+          <div className="flex gap-4 items-center">
+            <h1 className="text-3xl font-bold">Baseline Review</h1>
+          </div>
+          <div className="flex gap-4 items-center">
+            <button
+              onClick={() => navigate(`/projects/${id}`)}
+              className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-md"
+            >
+              Back to Dashboard
+            </button>
+
+            {user?.role !== "PROJECT_LEAD" && (
+              <button
+                onClick={handleExtractClick}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-md"
+              >
+                Extract Baseline
+              </button>
+            )}
+            {baseline &&
+              baseline.status === "DRAFT" &&
+              (user?.role === "ENGAGEMENT_MANAGER" ||
+                user?.role === "ADMIN") && (
+                <button
+                  onClick={handleApprove}
+                  disabled={isApproving}
+                  className="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-green-800 disabled:opacity-70 rounded-md flex items-center gap-2 cursor-pointer disabled:cursor-not-allowed transition-colors"
+                >
+                  {isApproving ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Approving...
+                    </>
+                  ) : (
+                    "Approve Baseline"
+                  )}
+                </button>
+              )}
+          </div>
+        </div>
+
+        {/* Status display section */}
+        {!baseline ? (
+          <p className="text-gray-400">No baseline exists yet.</p>
+        ) : (
+          <div className="mb-6">
+            <span
+              className={`px-3 py-1 rounded text-sm ${baseline.status === "APPROVED" ? "bg-green-600" : "bg-yellow-600"}`}
+            >
+              Status: {baseline.status}
+            </span>
+          </div>
+        )}
+            <div className="mb-12 border-b border-gray-800"></div>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold">Scope Items Baseline</h2>
+              <div className="flex items-center gap-3">
+                {(user?.role === "ADMIN" ||
+                  user?.role === "ENGAGEMENT_MANAGER") && (
+                  <button
+                    onClick={() => setShowAddItemModal(true)}
+                    className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-md flex items-center gap-2 cursor-pointer transition-all shadow-md text-xs font-semibold"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Add Scope Item</span>
+                  </button>
+                )}
+                {baseline && (
+                  <div className="relative">
+                    <button
+                      onClick={() => setShowExportDropdown(!showExportDropdown)}
+                      className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-200 border border-gray-700 hover:border-gray-600 rounded-md flex items-center gap-2 cursor-pointer transition-colors"
+                    >
+                      <Download className="w-4 h-4" />
+                      <span>Export</span>
+                    </button>
+                    {showExportDropdown && (
+                      <>
+                        <div
+                          className="fixed inset-0 z-10"
+                          onClick={() => setShowExportDropdown(false)}
+                        ></div>
+                        <div className="absolute right-0 mt-2 w-48 bg-gray-900 border border-gray-700 rounded-lg shadow-xl py-1 z-25 animate-fadeIn">
+                          <button
+                            onClick={() => {
+                              handleExportWord();
+                              setShowExportDropdown(false);
+                            }}
+                            className="w-full text-left px-4 py-2.5 text-sm text-gray-200 hover:bg-gray-800 hover:text-white transition-colors flex items-center gap-2.5 cursor-pointer"
+                          >
+                            <FileText className="w-4 h-4 text-blue-400" />
+                            <span>Word Document (.doc)</span>
+                          </button>
+                          <button
+                            onClick={() => {
+                              handleExportPDF();
+                              setShowExportDropdown(false);
+                            }}
+                            className="w-full text-left px-4 py-2.5 text-sm text-gray-200 hover:bg-gray-800 hover:text-white transition-colors flex items-center gap-2.5 cursor-pointer"
+                          >
+                            <FileText className="w-4 h-4 text-rose-400" />
+                            <span>PDF Report</span>
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
+              {/* Left Column - In Scope */}
+              <div className="flex flex-col bg-gray-900/30 backdrop-blur-md rounded-2xl p-6 border border-gray-800/80 shadow-2xl">
+                <div className="flex items-center justify-between pb-4 mb-5 border-b border-gray-800">
+                  <div className="flex items-center gap-3">
+                    <span className="relative flex h-3.5 w-3.5">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500"></span>
+                    </span>
+                    <h3 className="text-lg font-bold text-gray-100 tracking-tight">
+                      In Scope
+                    </h3>
+                  </div>
+                  <span className="px-3 py-1 text-xs font-semibold bg-emerald-500/10 text-emerald-400 rounded-full border border-emerald-500/20 shadow-sm">
+                    {inScopeItems.length}{" "}
+                    {inScopeItems.length === 1 ? "item" : "items"}
+                  </span>
+                </div>
+
+                {inScopeItems.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-12 px-4 text-center border border-dashed border-gray-850 rounded-xl bg-gray-850/10">
+                    <p className="text-gray-500 text-sm">
+                      No in-scope items identified.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4 flex-1 max-h-[750px] overflow-y-auto pr-2 custom-scrollbar">
+                    {inScopeItems.map((item: any) => (
+                      <div
+                        key={item.id}
+                        className="group p-5 bg-gray-800/60 hover:bg-gray-800/90 rounded-xl border border-gray-700/60 hover:border-emerald-500/30 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col justify-between min-h-[160px]"
+                      >
+                        <div>
+                          <div className="flex justify-between items-start gap-2 mb-2">
+                            <h4 className="font-bold text-lg text-white group-hover:text-emerald-300 transition-colors">
+                              {item.name}
+                            </h4>
+                            <div className="flex items-center gap-2 flex-shrink-0">
+                              {(() => {
+                                const versionLabel = getItemVersion(item.source_document_id);
+                                if (!versionLabel) return null;
+                                return (
+                                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-950/40 text-purple-300 border border-purple-800/30">
+                                    {versionLabel}
+                                  </span>
+                                );
+                              })()}
+                              {(user?.role === "ADMIN" ||
+                                user?.role === "ENGAGEMENT_MANAGER") && (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setDeletingItemId(item.id);
+                                  }}
+                                  title="Delete scope item"
+                                  className="p-1.5 text-rose-400 hover:text-white bg-rose-950/30 hover:bg-rose-900/50 border border-rose-500/20 rounded-lg transition-colors cursor-pointer flex-shrink-0"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                          <p className="text-gray-400 text-sm mb-4 leading-relaxed">
+                            {item.description}
+                          </p>
+
+                          {item.evidence_text && (
+                            <div className="mb-4 p-3 bg-gray-900/60 rounded-lg border border-gray-700/40">
+                              <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">
+                                AI Reasoning
+                              </h5>
+                              <p className="text-gray-300 text-xs italic leading-relaxed">
+                                "{item.evidence_text}"
+                              </p>
+                            </div>
+                          )}
+
+                          {item.status_change_tag && (
+                            <div className="mb-4 p-2 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+                              <p className="text-amber-400 text-xs font-semibold flex items-center gap-1.5">
+                                <AlertTriangle className="w-3.5 h-3.5" />
+                                {item.status_change_tag}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex justify-between items-center text-xs mt-auto pt-3 border-t border-gray-700/20">
+                          <span className="font-semibold text-emerald-400 px-2.5 py-0.5 bg-emerald-950/40 rounded border border-emerald-800/30">
+                            {item.scope_type}
+                          </span>
+                          <span className="text-gray-500 font-medium">
+                            Confidence: {(item.confidence * 100).toFixed(0)}%
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Right Column - Out of Scope */}
+              <div className="flex flex-col bg-gray-900/30 backdrop-blur-md rounded-2xl p-6 border border-gray-800/80 shadow-2xl">
+                <div className="flex items-center justify-between pb-4 mb-5 border-b border-gray-800">
+                  <div className="flex items-center gap-3">
+                    <span className="relative flex h-3.5 w-3.5">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-rose-500"></span>
+                    </span>
+                    <h3 className="text-lg font-bold text-gray-100 tracking-tight">
+                      Out of Scope
+                    </h3>
+                  </div>
+                  <span className="px-3 py-1 text-xs font-semibold bg-rose-500/10 text-rose-400 rounded-full border border-rose-500/20 shadow-sm">
+                    {outOfScopeItems.length}{" "}
+                    {outOfScopeItems.length === 1 ? "item" : "items"}
+                  </span>
+                </div>
+
+                {outOfScopeItems.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-12 px-4 text-center border border-dashed border-gray-850 rounded-xl bg-gray-850/10">
+                    <p className="text-gray-500 text-sm">
+                      No out-of-scope items identified.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4 flex-1 max-h-[750px] overflow-y-auto pr-2 custom-scrollbar">
+                    {outOfScopeItems.map((item: any) => (
+                      <div
+                        key={item.id}
+                        className="group p-5 bg-gray-800/60 hover:bg-gray-800/90 rounded-xl border border-gray-700/60 hover:border-rose-500/30 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col justify-between min-h-[160px]"
+                      >
+                        <div>
+                          <div className="flex justify-between items-start gap-2 mb-2">
+                            <h4 className="font-bold text-lg text-white group-hover:text-rose-300 transition-colors">
+                              {item.name}
+                            </h4>
+                            <div className="flex items-center gap-2 flex-shrink-0">
+                              {(() => {
+                                const versionLabel = getItemVersion(item.source_document_id);
+                                if (!versionLabel) return null;
+                                return (
+                                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-950/40 text-purple-300 border border-purple-800/30">
+                                    {versionLabel}
+                                  </span>
+                                );
+                              })()}
+                              {(user?.role === "ADMIN" ||
+                                user?.role === "ENGAGEMENT_MANAGER") && (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setDeletingItemId(item.id);
+                                  }}
+                                  title="Delete scope item"
+                                  className="p-1.5 text-rose-400 hover:text-white bg-rose-950/30 hover:bg-rose-900/50 border border-rose-500/20 rounded-lg transition-colors cursor-pointer flex-shrink-0"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                          <p className="text-gray-400 text-sm mb-4 leading-relaxed">
+                            {item.description}
+                          </p>
+
+                          {item.evidence_text && (
+                            <div className="mb-4 p-3 bg-gray-900/60 rounded-lg border border-gray-700/40">
+                              <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">
+                                AI Reasoning
+                              </h5>
+                              <p className="text-gray-300 text-xs italic leading-relaxed">
+                                "{item.evidence_text}"
+                              </p>
+                            </div>
+                          )}
+
+                          {item.status_change_tag && (
+                            <div className="mb-4 p-2 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+                              <p className="text-amber-400 text-xs font-semibold flex items-center gap-1.5">
+                                <AlertTriangle className="w-3.5 h-3.5" />
+                                {item.status_change_tag}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex justify-between items-center text-xs mt-auto pt-3 border-t border-gray-700/20">
+                          <span
+                            className={`font-semibold px-2.5 py-0.5 rounded border ${
+                              item.scope_type === "OUT_OF_SCOPE"
+                                ? "text-rose-400 bg-rose-950/40 border-rose-800/30"
+                                : "text-blue-400 bg-blue-950/40 border-blue-800/30"
+                            }`}
+                          >
+                            {item.scope_type}
+                          </span>
+                          <span className="text-gray-500 font-medium">
+                            Confidence: {(item.confidence * 100).toFixed(0)}%
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+        {/* Baseline Version History */}
+        {versions && versions.length > 0 && (
+          <div className="mt-16">
+            <div className="mb-12 border-b border-gray-800"></div>
+            <h2 className="text-2xl font-bold mb-6">Baseline Version History</h2>
+            <div className="space-y-4">
+              {versions.map((ver) => {
+                const isExpanded = !!expandedVersions[ver.id];
+                const displayVersion = `Version ${ver.version} (v${ver.version})`;
+                
+                // Filtering scope items for version history:
+                // If version === 1, show all items.
+                // If version > 1, show only items where source_document_id === ver.source_document_id.
+                const rawItems = ver.scope_items || [];
+                const filteredItems = ver.version === 1
+                  ? rawItems
+                  : rawItems.filter((item: any) => item.source_document_id === ver.source_document_id);
+                  
+                const inScope = filteredItems.filter((i: any) => i.scope_type === "IN_SCOPE");
+                const outOfScope = filteredItems.filter((i: any) => i.scope_type === "OUT_OF_SCOPE");
+                const uncertain = filteredItems.filter((i: any) => i.scope_type === "UNCERTAIN");
+                
+                const approvedDate = ver.approved_at 
+                  ? new Date(ver.approved_at).toLocaleDateString(undefined, { dateStyle: "medium" }) 
+                  : "N/A";
+                const createdDate = ver.created_at 
+                  ? new Date(ver.created_at).toLocaleDateString(undefined, { dateStyle: "medium" }) 
+                  : "N/A";
+
+                return (
+                  <div 
+                    key={ver.id} 
+                    className="border border-gray-800 rounded-xl bg-gray-900/30 backdrop-blur-md overflow-hidden transition-all duration-300"
+                  >
+                    {/* Header */}
+                    <button
+                      onClick={() => setExpandedVersions(prev => ({ ...prev, [ver.id]: !isExpanded }))}
+                      className="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-gray-850/50 transition-colors cursor-pointer select-none"
+                    >
+                      <div className="flex flex-wrap items-center gap-4">
+                        <span className="text-lg font-bold text-white">
+                          {displayVersion}
+                        </span>
+                        <span className={`px-2.5 py-0.5 rounded text-xs font-bold ${
+                          ver.status === "APPROVED" 
+                            ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" 
+                            : ver.status === "SUPERSEDED"
+                            ? "bg-gray-500/10 text-gray-400 border border-gray-500/20"
+                            : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                        }`}>
+                          {ver.status}
+                        </span>
+                        {ver.document_name && (
+                          <span className="text-xs text-cyan-400 font-medium">
+                            Doc: {ver.document_name}
+                          </span>
+                        )}
+                        <span className="text-xs text-gray-400">
+                          {ver.status === "APPROVED" ? `Approved on: ${approvedDate}` : `Created on: ${createdDate}`}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-xs text-gray-500 font-semibold bg-gray-850 px-2.5 py-1 rounded-full">
+                          {filteredItems.length} {filteredItems.length === 1 ? "item" : "items"}
+                        </span>
+                        <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`} />
+                      </div>
+                    </button>
+
+                    {/* Collapsible Content */}
+                    {isExpanded && (
+                      <div className="px-6 pb-6 pt-2 border-t border-gray-850 animate-fadeIn bg-gray-950/20">
+                        {filteredItems.length === 0 ? (
+                          <p className="text-gray-500 text-sm py-4 italic text-center">
+                            No scope items found for this baseline version.
+                          </p>
+                        ) : (
+                          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-4">
+                            {/* In Scope */}
+                            <div className="bg-gray-900/40 p-5 rounded-lg border border-gray-800/80">
+                              <h4 className="text-sm font-bold text-emerald-400 uppercase tracking-wider mb-4 border-b border-gray-800 pb-2">
+                                In Scope ({inScope.length})
+                              </h4>
+                              {inScope.length === 0 ? (
+                                <p className="text-gray-600 text-xs italic">No in-scope items.</p>
+                              ) : (
+                                <div className="space-y-3">
+                                  {inScope.map((item: any) => (
+                                    <div key={item.id} className="p-3 bg-gray-850/40 rounded-lg border border-gray-800/50">
+                                      <p className="text-xs font-semibold text-gray-200">{item.name}</p>
+                                      {item.description && (
+                                        <p className="text-[11px] text-gray-500 mt-1">{item.description}</p>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Out of Scope & Uncertain */}
+                            <div className="space-y-6">
+                              {/* Out of Scope */}
+                              <div className="bg-gray-900/40 p-5 rounded-lg border border-gray-800/80">
+                                <h4 className="text-sm font-bold text-rose-400 uppercase tracking-wider mb-4 border-b border-gray-800 pb-2">
+                                  Out of Scope ({outOfScope.length})
+                                </h4>
+                                {outOfScope.length === 0 ? (
+                                  <p className="text-gray-600 text-xs italic">No out-of-scope items.</p>
+                                ) : (
+                                  <div className="space-y-3">
+                                    {outOfScope.map((item: any) => (
+                                      <div key={item.id} className="p-3 bg-gray-850/40 rounded-lg border border-gray-800/50">
+                                        <p className="text-xs font-semibold text-gray-200">{item.name}</p>
+                                        {item.description && (
+                                          <p className="text-[11px] text-gray-500 mt-1">{item.description}</p>
+                                        )}
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Uncertain */}
+                              {uncertain.length > 0 && (
+                                <div className="bg-gray-900/40 p-5 rounded-lg border border-gray-800/80">
+                                  <h4 className="text-sm font-bold text-amber-400 uppercase tracking-wider mb-4 border-b border-gray-800 pb-2">
+                                    Uncertain ({uncertain.length})
+                                  </h4>
+                                  <div className="space-y-3">
+                                    {uncertain.map((item: any) => (
+                                      <div key={item.id} className="p-3 bg-gray-850/40 rounded-lg border border-gray-800/50">
+                                        <p className="text-xs font-semibold text-gray-200">{item.name}</p>
+                                        {item.description && (
+                                          <p className="text-[11px] text-gray-500 mt-1">{item.description}</p>
+                                        )}
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
 
         {showExtractModal && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
