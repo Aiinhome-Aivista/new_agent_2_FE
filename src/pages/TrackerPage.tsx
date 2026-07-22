@@ -370,13 +370,13 @@ export const TrackerPage: React.FC = () => {
               {/* Tooltip Content */}
               <div className="absolute left-1/2 -translate-x-1/2 md:left-0 md:translate-x-0 top-full mt-3 w-80 p-4 bg-gray-950/98 border border-gray-800 rounded-xl shadow-2xl backdrop-blur-md opacity-0 translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 z-50 text-left">
                 <h4 className="font-bold text-sm text-[#00e5ff] mb-2.5 border-b border-gray-850 pb-1.5 flex items-center gap-1.5">
-                  🛡️ Item Risk Scoring Rules
+                  Item Risk Scoring Rules
                 </h4>
                 <div className="space-y-3 text-xs text-gray-300">
                   <p className="text-gray-400 leading-relaxed font-medium">Individual item scores (out of 100) are determined by these rules in the code:</p>
                   
                   <div>
-                    <span className="font-semibold text-white block mb-1">🔄 Scope Creep (OutOfScope Agent)</span>
+                    <span className="font-semibold text-white block mb-1">Scope Creep (OutOfScope Agent)</span>
                     <ul className="list-disc pl-4 space-y-1 text-gray-400 font-medium">
                       <li><strong className="text-white">80/100</strong> for direct baseline violations (out of scope).</li>
                       <li><strong className="text-white">50/100</strong> for warnings or borderline review items.</li>
@@ -384,7 +384,7 @@ export const TrackerPage: React.FC = () => {
                   </div>
 
                   <div>
-                    <span className="font-semibold text-white block mb-1">⏰ Timeline Delays & Risks (Timeline Agent)</span>
+                    <span className="font-semibold text-white block mb-1">Timeline Delays & Risks (Timeline Agent)</span>
                     <ul className="list-disc pl-4 space-y-1 text-gray-400 font-medium">
                       <li><strong className="text-white">85/100</strong> for critical delays or active blockers.</li>
                       <li><strong className="text-white">65/100</strong> for high timeline risk deliverables.</li>
@@ -405,7 +405,7 @@ export const TrackerPage: React.FC = () => {
             {/* Global Export Dropdown */}
             <div className="relative">
               <button onClick={() => setShowExportDropdown(!showExportDropdown)} className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white font-medium rounded-md flex items-center gap-2 cursor-pointer transition-colors shadow-md hover:shadow-lg">
-                <span>📤 Export Report</span>
+                <span>Export Report</span>
                 <span className="text-[10px]">▼</span>
               </button>
               
@@ -419,10 +419,10 @@ export const TrackerPage: React.FC = () => {
                       Active Risks
                     </div>
                     <button onClick={() => { handleExportBatch(activeItems, 'pdf', 'All Active Risks'); setShowExportDropdown(false); }} className="w-full text-left px-2.5 py-2 text-xs hover:bg-gray-900 text-gray-300 hover:text-white rounded-lg flex items-center gap-2 cursor-pointer transition-colors">
-                      <span>📄</span> <span>All Active Risks (PDF)</span>
+                      <span>All Active Risks (PDF)</span>
                     </button>
                     <button onClick={() => { handleExportBatch(activeItems, 'docx', 'All Active Risks'); setShowExportDropdown(false); }} className="w-full text-left px-2.5 py-2 text-xs hover:bg-gray-900 text-gray-300 hover:text-white rounded-lg flex items-center gap-2 cursor-pointer transition-colors mb-2">
-                      <span>📝</span> <span>All Active Risks (Word)</span>
+                      <span>All Active Risks (Word)</span>
                     </button>
                     
                     {selectedItemIds.length > 0 && (
@@ -431,10 +431,10 @@ export const TrackerPage: React.FC = () => {
                           Selected Risks ({selectedItemIds.length})
                         </div>
                         <button onClick={() => { handleExportBatch(activeItems.filter(i => selectedItemIds.includes(i.id)), 'pdf', 'Selected Active Risks'); setShowExportDropdown(false); }} className="w-full text-left px-2.5 py-2 text-xs bg-cyan-950/20 hover:bg-cyan-950/40 text-cyan-300 hover:text-cyan-200 rounded-lg flex items-center gap-2 cursor-pointer transition-colors">
-                          <span>📄</span> <span>Selected Risks (PDF)</span>
+                          <span>Selected Risks (PDF)</span>
                         </button>
                         <button onClick={() => { handleExportBatch(activeItems.filter(i => selectedItemIds.includes(i.id)), 'docx', 'Selected Active Risks'); setShowExportDropdown(false); }} className="w-full text-left px-2.5 py-2 text-xs bg-cyan-950/20 hover:bg-cyan-950/40 text-cyan-300 hover:text-cyan-200 rounded-lg flex items-center gap-2 cursor-pointer transition-colors mb-2">
-                          <span>📝</span> <span>Selected Risks (Word)</span>
+                          <span>Selected Risks (Word)</span>
                         </button>
                       </>
                     )}
@@ -443,10 +443,10 @@ export const TrackerPage: React.FC = () => {
                       Resolved Risks
                     </div>
                     <button onClick={() => { handleExportBatch(resolvedItems, 'pdf', 'All Resolved Risks'); setShowExportDropdown(false); }} className="w-full text-left px-2.5 py-2 text-xs hover:bg-gray-900 text-gray-300 hover:text-white rounded-lg flex items-center gap-2 cursor-pointer transition-colors">
-                      <span>📄</span> <span>All Resolved Risks (PDF)</span>
+                      <span>All Resolved Risks (PDF)</span>
                     </button>
                     <button onClick={() => { handleExportBatch(resolvedItems, 'docx', 'All Resolved Risks'); setShowExportDropdown(false); }} className="w-full text-left px-2.5 py-2 text-xs hover:bg-gray-900 text-gray-300 hover:text-white rounded-lg flex items-center gap-2 cursor-pointer transition-colors">
-                      <span>📝</span> <span>All Resolved Risks (Word)</span>
+                      <span>All Resolved Risks (Word)</span>
                     </button>
                   </div>
                 </>
@@ -529,12 +529,12 @@ export const TrackerPage: React.FC = () => {
 
                   // Risk category display
                   const categoryLabels: Record<string, string> = {
-                    SCOPE_CREEP: '🔄 Scope Creep',
-                    DELAY: '⏰ Delay Risk',
-                    MISSING_DELIVERABLE: '📋 Missing Deliverable',
-                    DEPENDENCY: '🔗 Dependency Risk',
-                    STAKEHOLDER: '👥 Stakeholder Risk',
-                    GENERAL: '📌 General',
+                    SCOPE_CREEP: 'Scope Creep',
+                    DELAY: 'Delay Risk',
+                    MISSING_DELIVERABLE: 'Missing Deliverable',
+                    DEPENDENCY: 'Dependency Risk',
+                    STAKEHOLDER: 'Stakeholder Risk',
+                    GENERAL: 'General',
                   };
                   const categoryLabel = categoryLabels[item.risk_category] || categoryLabels.GENERAL;
 
@@ -604,7 +604,7 @@ export const TrackerPage: React.FC = () => {
                             {item.risk_score}/100
                           </span>
                           {item.is_out_of_scope ? <span className="px-2 py-1 bg-red-900/50 text-red-300 rounded text-xs border border-red-500/30">OOS</span> : null}
-                          {item.requires_escalation ? <span className="px-2 py-1 bg-orange-900/50 text-orange-300 rounded text-xs border border-orange-500/30">⚠ Escalated</span> : null}
+                          {item.requires_escalation ? <span className="px-2 py-1 bg-orange-900/50 text-orange-300 rounded text-xs border border-orange-500/30">Escalated</span> : null}
                         </div>
                       </div>
 
@@ -646,13 +646,11 @@ export const TrackerPage: React.FC = () => {
                             <div className="pt-2.5 border-t border-green-500/10 flex flex-wrap gap-x-4 gap-y-1 text-xs text-green-400/80 font-medium">
                               {item.resolved_by_name && (
                                 <span className="flex items-center gap-1">
-                                  <span>👤</span>
                                   <span className="font-semibold">Resolved By:</span> {item.resolved_by_name} {item.resolved_by_email ? `(${item.resolved_by_email})` : ''}
                                 </span>
                               )}
                               {item.resolved_at && (
                                 <span className="flex items-center gap-1">
-                                  <span>📅</span>
                                   <span className="font-semibold">Resolved At:</span> {new Date(item.resolved_at).toLocaleString()}
                                 </span>
                               )}
@@ -668,7 +666,7 @@ export const TrackerPage: React.FC = () => {
                           {/* Single Card Export */}
                           <div className="relative">
                             <button onClick={(e) => { e.stopPropagation(); setOpenExportCardId(openExportCardId === item.id ? null : item.id); }} className="px-3 py-2 bg-gray-700 hover:bg-gray-650 rounded-md text-sm transition-colors cursor-pointer font-medium flex items-center gap-1.5 border border-gray-600/50">
-                              <span>📤 Export</span>
+                              <span>Export</span>
                               <span className="text-[10px] text-gray-400">▼</span>
                             </button>
                             
@@ -679,10 +677,10 @@ export const TrackerPage: React.FC = () => {
                                 
                                 <div className="absolute left-0 bottom-full mb-1 w-32 bg-gray-950 border border-gray-800 rounded-lg shadow-xl z-30 overflow-hidden animate-fade-in-up">
                                   <button onClick={() => { handleExportSingle(item, 'pdf'); setOpenExportCardId(null); }} className="w-full text-left px-3 py-2 text-xs hover:bg-gray-900 text-gray-300 hover:text-white flex items-center gap-1.5 cursor-pointer">
-                                    <span>📄</span> <span>PDF</span>
+                                    <span>PDF</span>
                                   </button>
                                   <button onClick={() => { handleExportSingle(item, 'docx'); setOpenExportCardId(null); }} className="w-full text-left px-3 py-2 text-xs hover:bg-gray-900 text-gray-305 hover:text-white flex items-center gap-1.5 border-t border-gray-900 cursor-pointer">
-                                    <span>📝</span> <span>Word</span>
+                                    <span>Word</span>
                                   </button>
                                 </div>
                               </>
