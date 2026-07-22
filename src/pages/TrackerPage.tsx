@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import apiClient from '../api/apiClient';
 import { Loader } from '../components/Loader';
-import { Loader2, Info } from 'lucide-react';
+import { Loader2, Info, Download } from 'lucide-react';
 import { useAuth } from '../auth/AuthContext';
 
 export const TrackerPage: React.FC = () => {
@@ -280,6 +280,26 @@ export const TrackerPage: React.FC = () => {
       }
     } catch (error) {
       alert("Failed to resolve item");
+    }
+  };
+
+  const handleDownloadDocument = async (documentId: number, documentName: string) => {
+    try {
+      const response = await apiClient.get(`/projects/${id}/documents/${documentId}/download`, {
+        responseType: 'blob',
+      });
+      const blob = new Blob([response.data], { type: response.headers['content-type'] || 'application/octet-stream' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', documentName);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode?.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Failed to download document:", error);
+      alert("Failed to download document");
     }
   };
 
@@ -590,7 +610,19 @@ export const TrackerPage: React.FC = () => {
                             <span className="text-xs text-gray-400 bg-gray-700/50 px-2 py-0.5 rounded">
                               {typeLabels[item.item_type] || item.item_type}
                             </span>
-                            <span className="text-xs text-gray-500">Doc: {item.document_name}</span>
+                            <span className="text-xs text-gray-300 font-medium flex items-center gap-1.5 bg-gray-900/50 px-2 py-1 rounded border border-gray-700/40">
+                              <span className="text-gray-500 font-semibold">Doc:</span>
+                              <span className="text-gray-200 truncate max-w-[200px]" title={item.document_name}>
+                                {item.document_name}
+                              </span>
+                              <button
+                                onClick={() => handleDownloadDocument(item.source_document_id, item.document_name)}
+                                title="Download Document"
+                                className="p-0.5 text-gray-400 hover:text-cyan-400 hover:bg-gray-800 rounded transition-all cursor-pointer flex-shrink-0"
+                              >
+                                <Download className="w-3.5 h-3.5" />
+                              </button>
+                            </span>
                           </div>
                         </div>
                       </div>
