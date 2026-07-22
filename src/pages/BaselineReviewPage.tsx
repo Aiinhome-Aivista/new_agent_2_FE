@@ -541,8 +541,7 @@ export const BaselineReviewPage: React.FC = () => {
               Back to Dashboard
             </button>
 
-            {(!baseline || baseline.status !== "APPROVED") &&
-              user?.role !== "PROJECT_LEAD" && (
+            {user?.role !== "PROJECT_LEAD" && (
                 <button
                   onClick={handleExtractClick}
                   className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-md"
