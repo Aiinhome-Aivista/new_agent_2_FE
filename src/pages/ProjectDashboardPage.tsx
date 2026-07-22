@@ -17,7 +17,7 @@ import {
   Layers,
   Plus,
   Sparkles,
-  Check,
+  // Check,
   FileCheck,
   AlertTriangle,
 } from "lucide-react";
@@ -32,10 +32,14 @@ export const ProjectDashboardPage: React.FC = () => {
 
   const isProjectLead = user?.role === "PROJECT_LEAD";
   const [baselineDocType, setBaselineDocType] = useState<string>("EL");
-  const [monitoringDocType, setMonitoringDocType] = useState<string>(isProjectLead ? "MOM" : "STATUS_REPORT");
-  const [uploadTarget, setUploadTarget] = useState<"BASELINE" | "MONITORING">("BASELINE");
+  const [monitoringDocType, setMonitoringDocType] = useState<string>(
+    isProjectLead ? "MOM" : "STATUS_REPORT",
+  );
+  const [uploadTarget, setUploadTarget] = useState<"BASELINE" | "MONITORING">(
+    "BASELINE",
+  );
   const [documentTypes, setDocumentTypes] = useState<any[]>([]);
-  
+
   // Reference documentTypes to satisfy TS compiler unused variable check
   if (false && documentTypes.length) {
     console.log(documentTypes);
@@ -61,14 +65,14 @@ export const ProjectDashboardPage: React.FC = () => {
     type: "info" | "error" | "success";
   } | null>(null);
 
-  const [relevanceCheckResult, setRelevanceCheckResult] = useState<{
-    score: number;
-    reasoning: string;
-    temp_key: string;
-    original_name: string;
-  } | null>(null);
-  const [showRelevancePopup, setShowRelevancePopup] = useState(false);
-  const [confirmingUpload, setConfirmingUpload] = useState(false);
+  // const [relevanceCheckResult, setRelevanceCheckResult] = useState<{
+  //   score: number;
+  //   reasoning: string;
+  //   temp_key: string;
+  //   original_name: string;
+  // } | null>(null);
+  // const [showRelevancePopup, setShowRelevancePopup] = useState(false);
+  // const [confirmingUpload, setConfirmingUpload] = useState(false);
 
   useEffect(() => {
     if (notification) {
@@ -133,7 +137,10 @@ export const ProjectDashboardPage: React.FC = () => {
     }
   };
 
-  const validateAndSetFile = (selectedFile: File, target: "BASELINE" | "MONITORING") => {
+  const validateAndSetFile = (
+    selectedFile: File,
+    target: "BASELINE" | "MONITORING",
+  ) => {
     const ext = selectedFile.name.split(".").pop()?.toLowerCase();
     if (ext && ["pdf", "docx", "txt"].includes(ext)) {
       if (target === "BASELINE") setBaselineFile(selectedFile);
@@ -158,7 +165,10 @@ export const ProjectDashboardPage: React.FC = () => {
     setIsDragging(false);
   };
 
-  const handleDrop = (e: React.DragEvent, target: "BASELINE" | "MONITORING") => {
+  const handleDrop = (
+    e: React.DragEvent,
+    target: "BASELINE" | "MONITORING",
+  ) => {
     e.preventDefault();
     if (uploading) return;
     setIsDragging(false);
@@ -226,43 +236,48 @@ export const ProjectDashboardPage: React.FC = () => {
     }
   };
 
-  const handleUpload = async (e: React.FormEvent, target: "BASELINE" | "MONITORING") => {
+  const handleUpload = async (
+    e: React.FormEvent,
+    target: "BASELINE" | "MONITORING",
+  ) => {
     e.preventDefault();
     const fileToUpload = target === "BASELINE" ? baselineFile : monitoringFile;
     if (!fileToUpload) return;
-    
+
     setUploadTarget(target);
     const formData = new FormData();
     formData.append("file", fileToUpload);
-    formData.append("document_type", target === "BASELINE" ? baselineDocType : monitoringDocType);
+    formData.append(
+      "document_type",
+      target === "BASELINE" ? baselineDocType : monitoringDocType,
+    );
 
     setUploading(true);
     try {
-      const checkRes = await apiClient.post(
-        `/projects/${id}/documents/check-relevance`,
+      const res = await apiClient.post(
+        `/projects/${id}/documents/confirm-upload`,
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },
         },
       );
-      if (checkRes.data.success) {
-        setRelevanceCheckResult({
-          score: checkRes.data.score,
-          reasoning: checkRes.data.reasoning,
-          temp_key: checkRes.data.temp_key,
-          original_name: checkRes.data.original_name,
-        });
-        setShowRelevancePopup(true);
+      if (res.data.success) {
+        const docsRes = await apiClient.get(`/projects/${id}/documents/`);
+        if (docsRes.data.success) setDocuments(docsRes.data.data);
+        if (target === "BASELINE") setBaselineFile(null);
+        else setMonitoringFile(null);
+        showNotification("Document uploaded successfully!", "success");
       }
     } catch (error: any) {
-      console.error("Relevance check failed", error);
-      const errMsg = error.response?.data?.detail || "Relevance check failed";
+      console.error("Upload failed", error);
+      const errMsg = error.response?.data?.detail || "Upload failed";
       showNotification(errMsg, "error");
     } finally {
       setUploading(false);
     }
   };
 
+  /*
   const confirmUpload = async () => {
     if (!relevanceCheckResult) return;
     setConfirmingUpload(true);
@@ -293,6 +308,7 @@ export const ProjectDashboardPage: React.FC = () => {
       setConfirmingUpload(false);
     }
   };
+  */
 
   if (!project) return <Loader message="Loading project cockpit details..." />;
 
@@ -323,20 +339,36 @@ export const ProjectDashboardPage: React.FC = () => {
       <div className="max-w-6xl mx-auto space-y-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-black tracking-tight text-white">{project.project_name}</h1>
+            <h1 className="text-3xl font-black tracking-tight text-white">
+              {project.project_name}
+            </h1>
             <p className="text-gray-400 text-sm mt-1">{project.description}</p>
             {(project.start_date || project.end_date) && (
               <div className="flex flex-wrap gap-x-6 gap-y-1 items-center text-xs text-gray-500 mt-2.5">
                 {project.start_date && (
                   <div>
-                    <span className="font-semibold text-gray-400">Start Date:</span>{" "}
-                    <span className="text-teal-400 font-semibold">{new Date(project.start_date).toLocaleDateString(undefined, {dateStyle: 'medium'})}</span>
+                    <span className="font-semibold text-gray-400">
+                      Start Date:
+                    </span>{" "}
+                    <span className="text-teal-400 font-semibold">
+                      {new Date(project.start_date).toLocaleDateString(
+                        undefined,
+                        { dateStyle: "medium" },
+                      )}
+                    </span>
                   </div>
                 )}
                 {project.end_date && (
                   <div>
-                    <span className="font-semibold text-gray-400">End Date:</span>{" "}
-                    <span className="text-teal-400 font-semibold">{new Date(project.end_date).toLocaleDateString(undefined, {dateStyle: 'medium'})}</span>
+                    <span className="font-semibold text-gray-400">
+                      End Date:
+                    </span>{" "}
+                    <span className="text-teal-400 font-semibold">
+                      {new Date(project.end_date).toLocaleDateString(
+                        undefined,
+                        { dateStyle: "medium" },
+                      )}
+                    </span>
                   </div>
                 )}
               </div>
@@ -371,13 +403,16 @@ export const ProjectDashboardPage: React.FC = () => {
                 <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 uppercase tracking-wider">
                   Section 1 • One-Time Onboarding
                 </span>
-                <span className="text-xs text-gray-500 font-medium">Project Initiation</span>
+                <span className="text-xs text-gray-500 font-medium">
+                  Project Initiation
+                </span>
               </div>
               <h2 className="text-xl font-bold text-white flex items-center gap-2">
                 Project Initiation & Baseline Setup
               </h2>
               <p className="text-xs text-gray-400 mt-1">
-                Upload initial contract documents to build the project scope baseline. These documents are uploaded once during onboarding.
+                Upload initial contract documents to build the project scope
+                baseline. These documents are uploaded once during onboarding.
               </p>
             </div>
 
@@ -392,7 +427,10 @@ export const ProjectDashboardPage: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             <div
-              onClick={() => { setBaselineDocType("EL"); setUploadTarget("BASELINE"); }}
+              onClick={() => {
+                setBaselineDocType("EL");
+                setUploadTarget("BASELINE");
+              }}
               className={`p-4 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
                 baselineDocType === "EL"
                   ? "bg-gradient-to-r from-emerald-950/50 to-teal-950/40 border-emerald-500/60 shadow-lg shadow-emerald-500/10 ring-1 ring-emerald-500/30"
@@ -400,18 +438,27 @@ export const ProjectDashboardPage: React.FC = () => {
               }`}
             >
               <div className="flex items-center gap-3">
-                <div className={`p-2.5 rounded-xl ${baselineDocType === "EL" ? "bg-emerald-500/20 text-emerald-400" : "bg-gray-700/50 text-gray-400"}`}>
+                <div
+                  className={`p-2.5 rounded-xl ${baselineDocType === "EL" ? "bg-emerald-500/20 text-emerald-400" : "bg-gray-700/50 text-gray-400"}`}
+                >
                   <FileText className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-white">Engagement Letter (EL)</h3>
-                  <p className="text-xs text-gray-400">Official signed client engagement contract</p>
+                  <h3 className="text-sm font-bold text-white">
+                    Engagement Letter (EL)
+                  </h3>
+                  <p className="text-xs text-gray-400">
+                    Official signed client engagement contract
+                  </p>
                 </div>
               </div>
             </div>
 
             <div
-              onClick={() => { setBaselineDocType("IFA"); setUploadTarget("BASELINE"); }}
+              onClick={() => {
+                setBaselineDocType("IFA");
+                setUploadTarget("BASELINE");
+              }}
               className={`p-4 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
                 baselineDocType === "IFA"
                   ? "bg-gradient-to-r from-emerald-950/50 to-teal-950/40 border-emerald-500/60 shadow-lg shadow-emerald-500/10 ring-1 ring-emerald-500/30"
@@ -419,12 +466,18 @@ export const ProjectDashboardPage: React.FC = () => {
               }`}
             >
               <div className="flex items-center gap-3">
-                <div className={`p-2.5 rounded-xl ${baselineDocType === "IFA" ? "bg-emerald-500/20 text-emerald-400" : "bg-gray-700/50 text-gray-400"}`}>
+                <div
+                  className={`p-2.5 rounded-xl ${baselineDocType === "IFA" ? "bg-emerald-500/20 text-emerald-400" : "bg-gray-700/50 text-gray-400"}`}
+                >
                   <FileSpreadsheet className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-white">Independence & Financial (IFA)</h3>
-                  <p className="text-xs text-gray-400">Inter-firm approval & financial budget document</p>
+                  <h3 className="text-sm font-bold text-white">
+                    Independence & Financial (IFA)
+                  </h3>
+                  <p className="text-xs text-gray-400">
+                    Inter-firm approval & financial budget document
+                  </p>
                 </div>
               </div>
             </div>
@@ -436,16 +489,26 @@ export const ProjectDashboardPage: React.FC = () => {
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="text-xs font-semibold text-gray-300 uppercase tracking-wider flex items-center gap-2">
                     <UploadCloud className="w-4 h-4 text-emerald-400" />
-                    Target Category: <span className="text-emerald-300 font-bold">{getDocTypeLabel(baselineDocType)}</span>
+                    Target Category:{" "}
+                    <span className="text-emerald-300 font-bold">
+                      {getDocTypeLabel(baselineDocType)}
+                    </span>
                   </h4>
                 </div>
 
-                <form onSubmit={(e) => handleUpload(e, "BASELINE")} className="space-y-4">
+                <form
+                  onSubmit={(e) => handleUpload(e, "BASELINE")}
+                  className="space-y-4"
+                >
                   <div
                     onDragOver={handleDragOver}
                     onDragLeave={handleDragLeave}
                     onDrop={(e) => handleDrop(e, "BASELINE")}
-                    onClick={uploading ? undefined : () => triggerFileSelect("BASELINE")}
+                    onClick={
+                      uploading
+                        ? undefined
+                        : () => triggerFileSelect("BASELINE")
+                    }
                     className={`border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center transition-all duration-200 ${
                       uploading
                         ? "border-gray-700 bg-gray-900/10 cursor-not-allowed opacity-50"
@@ -474,7 +537,9 @@ export const ProjectDashboardPage: React.FC = () => {
                         <div className="flex items-center justify-between bg-gray-800/80 border border-gray-700 rounded-lg p-3 w-full max-w-xs">
                           <div className="flex items-center gap-2 overflow-hidden mr-2">
                             <FileText className="h-5 w-5 text-green-400 flex-shrink-0" />
-                            <span className="text-sm truncate text-gray-200">{baselineFile.name}</span>
+                            <span className="text-sm truncate text-gray-200">
+                              {baselineFile.name}
+                            </span>
                           </div>
                           <button
                             type="button"
@@ -489,7 +554,9 @@ export const ProjectDashboardPage: React.FC = () => {
                           </button>
                         </div>
                         {!uploading && (
-                          <span className="text-xs text-gray-500 mt-2">Click or drag new file to replace</span>
+                          <span className="text-xs text-gray-500 mt-2">
+                            Click or drag new file to replace
+                          </span>
                         )}
                       </div>
                     ) : (
@@ -499,9 +566,14 @@ export const ProjectDashboardPage: React.FC = () => {
                         </div>
                         <div className="text-center">
                           <p className="text-sm text-gray-300 font-medium">
-                            Upload <strong className="text-emerald-300">{getDocTypeLabel(baselineDocType)}</strong>
+                            Upload{" "}
+                            <strong className="text-emerald-300">
+                              {getDocTypeLabel(baselineDocType)}
+                            </strong>
                           </p>
-                          <p className="text-xs text-gray-500 mt-1">Drag & drop (.pdf, .docx, .txt) or click to browse</p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            Drag & drop (.pdf, .docx, .txt) or click to browse
+                          </p>
                         </div>
                       </>
                     )}
@@ -512,7 +584,9 @@ export const ProjectDashboardPage: React.FC = () => {
                     disabled={!baselineFile || uploading}
                     className="w-full py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-semibold rounded-xl text-xs transition-all shadow-md shadow-emerald-500/20 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                   >
-                    {uploading ? "Uploading Document..." : `Upload ${getDocTypeLabel(baselineDocType)}`}
+                    {uploading
+                      ? "Uploading Document..."
+                      : `Upload ${getDocTypeLabel(baselineDocType)}`}
                   </button>
                 </form>
               </div>
@@ -527,8 +601,12 @@ export const ProjectDashboardPage: React.FC = () => {
                 {initiationDocs.length === 0 ? (
                   <div className="py-10 text-center border border-dashed border-gray-750 rounded-xl bg-gray-900/20">
                     <FileCheck className="w-8 h-8 text-gray-600 mx-auto mb-2" />
-                    <p className="text-xs text-gray-400 font-medium">No initiation documents uploaded yet.</p>
-                    <p className="text-[11px] text-gray-500 mt-0.5">Select EL or IFA above to upload.</p>
+                    <p className="text-xs text-gray-400 font-medium">
+                      No initiation documents uploaded yet.
+                    </p>
+                    <p className="text-[11px] text-gray-500 mt-0.5">
+                      Select EL or IFA above to upload.
+                    </p>
                   </div>
                 ) : (
                   <ul className="space-y-2">
@@ -553,7 +631,8 @@ export const ProjectDashboardPage: React.FC = () => {
                             className={`text-[10px] px-2 py-0.5 rounded font-semibold ${
                               doc.processing_status === "COMPLETED"
                                 ? "bg-green-500/20 text-green-400 border border-green-500/30"
-                                : doc.processing_status === "PROCESSING" || doc.processing_status === "PARSING"
+                                : doc.processing_status === "PROCESSING" ||
+                                    doc.processing_status === "PARSING"
                                   ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 animate-pulse"
                                   : doc.processing_status === "FAILED"
                                     ? "bg-red-500/20 text-red-400 border border-red-500/30"
@@ -563,7 +642,8 @@ export const ProjectDashboardPage: React.FC = () => {
                             {doc.processing_status}
                           </span>
 
-                          {(doc.processing_status === "UPLOADED" || doc.processing_status === "FAILED") && (
+                          {(doc.processing_status === "UPLOADED" ||
+                            doc.processing_status === "FAILED") && (
                             <button
                               onClick={() => handleProcessDocument(doc.id)}
                               title="Extract and process document"
@@ -573,7 +653,8 @@ export const ProjectDashboardPage: React.FC = () => {
                             </button>
                           )}
 
-                          {(doc.processing_status === "UPLOADED" || doc.processing_status === "FAILED") && (
+                          {(doc.processing_status === "UPLOADED" ||
+                            doc.processing_status === "FAILED") && (
                             <button
                               onClick={() => handleDeleteDocument(doc.id)}
                               title="Delete document"
@@ -599,13 +680,17 @@ export const ProjectDashboardPage: React.FC = () => {
                 <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-indigo-500/15 text-indigo-400 border border-indigo-500/30 uppercase tracking-wider">
                   Section 2 • Recurring Execution
                 </span>
-                <span className="text-xs text-gray-500 font-medium">Progress Tracker</span>
+                <span className="text-xs text-gray-500 font-medium">
+                  Progress Tracker
+                </span>
               </div>
               <h2 className="text-xl font-bold text-white flex items-center gap-2">
                 Progress Tracker & Continuous Ingestion
               </h2>
               <p className="text-xs text-gray-400 mt-1">
-                Upload recurring project documents (MOMs, status reports) to evaluate execution deliverables against the approved scope baseline.
+                Upload recurring project documents (MOMs, status reports) to
+                evaluate execution deliverables against the approved scope
+                baseline.
               </p>
             </div>
 
@@ -623,16 +708,23 @@ export const ProjectDashboardPage: React.FC = () => {
               <div className="w-12 h-12 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center mb-3">
                 <Lock className="w-6 h-6 text-amber-400" />
               </div>
-              <h3 className="text-base font-bold text-white mb-2">Progress Ingestion Locked</h3>
+              <h3 className="text-base font-bold text-white mb-2">
+                Progress Ingestion Locked
+              </h3>
               <p className="text-xs text-gray-400 max-w-md leading-relaxed">
-                The Engagement Manager must extract and approve the initial <strong>Scope Baseline</strong> for this project before you can upload recurring execution documents (MOMs and Status Reports).
+                The Engagement Manager must extract and approve the initial{" "}
+                <strong>Scope Baseline</strong> for this project before you can
+                upload recurring execution documents (MOMs and Status Reports).
               </p>
             </div>
           ) : (
             <>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 <div
-                  onClick={() => { setMonitoringDocType("MOM"); setUploadTarget("MONITORING"); }}
+                  onClick={() => {
+                    setMonitoringDocType("MOM");
+                    setUploadTarget("MONITORING");
+                  }}
                   className={`p-4 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
                     monitoringDocType === "MOM"
                       ? "bg-gradient-to-r from-indigo-950/50 to-blue-950/40 border-indigo-500/60 shadow-lg shadow-indigo-500/10 ring-1 ring-indigo-500/30"
@@ -640,18 +732,27 @@ export const ProjectDashboardPage: React.FC = () => {
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <div className={`p-2.5 rounded-xl ${monitoringDocType === "MOM" ? "bg-indigo-500/20 text-indigo-400" : "bg-gray-700/50 text-gray-400"}`}>
+                    <div
+                      className={`p-2.5 rounded-xl ${monitoringDocType === "MOM" ? "bg-indigo-500/20 text-indigo-400" : "bg-gray-700/50 text-gray-400"}`}
+                    >
                       <Clock className="w-5 h-5" />
                     </div>
                     <div>
-                      <h3 className="text-sm font-bold text-white">Minutes of Meeting (MOM)</h3>
-                      <p className="text-xs text-gray-400">Steering MoM & decision log</p>
+                      <h3 className="text-sm font-bold text-white">
+                        Minutes of Meeting (MOM)
+                      </h3>
+                      <p className="text-xs text-gray-400">
+                        Steering MoM & decision log
+                      </p>
                     </div>
                   </div>
                 </div>
 
                 <div
-                  onClick={() => { setMonitoringDocType("STATUS_REPORT"); setUploadTarget("MONITORING"); }}
+                  onClick={() => {
+                    setMonitoringDocType("STATUS_REPORT");
+                    setUploadTarget("MONITORING");
+                  }}
                   className={`p-4 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
                     monitoringDocType === "STATUS_REPORT"
                       ? "bg-gradient-to-r from-indigo-950/50 to-blue-950/40 border-indigo-500/60 shadow-lg shadow-indigo-500/10 ring-1 ring-indigo-500/30"
@@ -659,12 +760,18 @@ export const ProjectDashboardPage: React.FC = () => {
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <div className={`p-2.5 rounded-xl ${monitoringDocType === "STATUS_REPORT" ? "bg-indigo-500/20 text-indigo-400" : "bg-gray-700/50 text-gray-400"}`}>
+                    <div
+                      className={`p-2.5 rounded-xl ${monitoringDocType === "STATUS_REPORT" ? "bg-indigo-500/20 text-indigo-400" : "bg-gray-700/50 text-gray-400"}`}
+                    >
                       <Layers className="w-5 h-5" />
                     </div>
                     <div>
-                      <h3 className="text-sm font-bold text-white">Status Report</h3>
-                      <p className="text-xs text-gray-400">Periodic sprint & status updates</p>
+                      <h3 className="text-sm font-bold text-white">
+                        Status Report
+                      </h3>
+                      <p className="text-xs text-gray-400">
+                        Periodic sprint & status updates
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -678,8 +785,12 @@ export const ProjectDashboardPage: React.FC = () => {
                       <Plus className="w-5 h-5" />
                     </div>
                     <div>
-                      <h3 className="text-sm font-bold text-white">+ Add Custom Type</h3>
-                      <p className="text-xs text-gray-400">Create custom category</p>
+                      <h3 className="text-sm font-bold text-white">
+                        + Add Custom Type
+                      </h3>
+                      <p className="text-xs text-gray-400">
+                        Create custom category
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -691,16 +802,26 @@ export const ProjectDashboardPage: React.FC = () => {
                     <div className="flex items-center justify-between mb-3">
                       <h4 className="text-xs font-semibold text-gray-300 uppercase tracking-wider flex items-center gap-2">
                         <UploadCloud className="w-4 h-4 text-indigo-400" />
-                        Target Category: <span className="text-indigo-300 font-bold">{getDocTypeLabel(monitoringDocType)}</span>
+                        Target Category:{" "}
+                        <span className="text-indigo-300 font-bold">
+                          {getDocTypeLabel(monitoringDocType)}
+                        </span>
                       </h4>
                     </div>
 
-                    <form onSubmit={(e) => handleUpload(e, "MONITORING")} className="space-y-4">
+                    <form
+                      onSubmit={(e) => handleUpload(e, "MONITORING")}
+                      className="space-y-4"
+                    >
                       <div
                         onDragOver={handleDragOver}
                         onDragLeave={handleDragLeave}
                         onDrop={(e) => handleDrop(e, "MONITORING")}
-                        onClick={uploading ? undefined : () => triggerFileSelect("MONITORING")}
+                        onClick={
+                          uploading
+                            ? undefined
+                            : () => triggerFileSelect("MONITORING")
+                        }
                         className={`border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center transition-all duration-200 ${
                           uploading
                             ? "border-gray-700 bg-gray-900/10 cursor-not-allowed opacity-50"
@@ -718,7 +839,10 @@ export const ProjectDashboardPage: React.FC = () => {
                           disabled={uploading}
                           onChange={(e) => {
                             if (e.target.files && e.target.files[0]) {
-                              validateAndSetFile(e.target.files[0], "MONITORING");
+                              validateAndSetFile(
+                                e.target.files[0],
+                                "MONITORING",
+                              );
                             }
                           }}
                           className="hidden"
@@ -729,7 +853,9 @@ export const ProjectDashboardPage: React.FC = () => {
                             <div className="flex items-center justify-between bg-gray-800/80 border border-gray-700 rounded-lg p-3 w-full max-w-xs">
                               <div className="flex items-center gap-2 overflow-hidden mr-2">
                                 <FileText className="h-5 w-5 text-green-400 flex-shrink-0" />
-                                <span className="text-sm truncate text-gray-200">{monitoringFile.name}</span>
+                                <span className="text-sm truncate text-gray-200">
+                                  {monitoringFile.name}
+                                </span>
                               </div>
                               <button
                                 type="button"
@@ -744,7 +870,9 @@ export const ProjectDashboardPage: React.FC = () => {
                               </button>
                             </div>
                             {!uploading && (
-                              <span className="text-xs text-gray-500 mt-2">Click or drag new file to replace</span>
+                              <span className="text-xs text-gray-500 mt-2">
+                                Click or drag new file to replace
+                              </span>
                             )}
                           </div>
                         ) : (
@@ -754,9 +882,15 @@ export const ProjectDashboardPage: React.FC = () => {
                             </div>
                             <div className="text-center">
                               <p className="text-sm text-gray-300 font-medium">
-                                Upload <strong className="text-indigo-300">{getDocTypeLabel(monitoringDocType)}</strong>
+                                Upload{" "}
+                                <strong className="text-indigo-300">
+                                  {getDocTypeLabel(monitoringDocType)}
+                                </strong>
                               </p>
-                              <p className="text-xs text-gray-500 mt-1">Drag & drop (.pdf, .docx, .txt) or click to browse</p>
+                              <p className="text-xs text-gray-500 mt-1">
+                                Drag & drop (.pdf, .docx, .txt) or click to
+                                browse
+                              </p>
                             </div>
                           </>
                         )}
@@ -767,7 +901,9 @@ export const ProjectDashboardPage: React.FC = () => {
                         disabled={!monitoringFile || uploading}
                         className="w-full py-2.5 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white font-semibold rounded-xl text-xs transition-all shadow-md shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                       >
-                        {uploading ? "Uploading Document..." : `Upload ${getDocTypeLabel(monitoringDocType)}`}
+                        {uploading
+                          ? "Uploading Document..."
+                          : `Upload ${getDocTypeLabel(monitoringDocType)}`}
                       </button>
                     </form>
                   </div>
@@ -782,8 +918,12 @@ export const ProjectDashboardPage: React.FC = () => {
                     {trackerDocs.length === 0 ? (
                       <div className="py-10 text-center border border-dashed border-gray-750 rounded-xl bg-gray-900/20">
                         <Clock className="w-8 h-8 text-gray-600 mx-auto mb-2" />
-                        <p className="text-xs text-gray-400 font-medium">No progress tracking documents ingested yet.</p>
-                        <p className="text-[11px] text-gray-500 mt-0.5">Select MOM or Status Report above to upload.</p>
+                        <p className="text-xs text-gray-400 font-medium">
+                          No progress tracking documents ingested yet.
+                        </p>
+                        <p className="text-[11px] text-gray-500 mt-0.5">
+                          Select MOM or Status Report above to upload.
+                        </p>
                       </div>
                     ) : (
                       <ul className="space-y-2 max-h-[280px] overflow-y-auto pr-1">
@@ -808,7 +948,8 @@ export const ProjectDashboardPage: React.FC = () => {
                                 className={`text-[10px] px-2 py-0.5 rounded font-semibold ${
                                   doc.processing_status === "COMPLETED"
                                     ? "bg-green-500/20 text-green-400 border border-green-500/30"
-                                    : doc.processing_status === "PROCESSING" || doc.processing_status === "PARSING"
+                                    : doc.processing_status === "PROCESSING" ||
+                                        doc.processing_status === "PARSING"
                                       ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 animate-pulse"
                                       : doc.processing_status === "FAILED"
                                         ? "bg-red-500/20 text-red-400 border border-red-500/30"
@@ -818,7 +959,8 @@ export const ProjectDashboardPage: React.FC = () => {
                                 {doc.processing_status}
                               </span>
 
-                              {(doc.processing_status === "UPLOADED" || doc.processing_status === "FAILED") && (
+                              {(doc.processing_status === "UPLOADED" ||
+                                doc.processing_status === "FAILED") && (
                                 <button
                                   onClick={() => setProcessingDocId(doc.id)}
                                   title="Extract and process document"
@@ -828,7 +970,8 @@ export const ProjectDashboardPage: React.FC = () => {
                                 </button>
                               )}
 
-                              {(doc.processing_status === "UPLOADED" || doc.processing_status === "FAILED") && (
+                              {(doc.processing_status === "UPLOADED" ||
+                                doc.processing_status === "FAILED") && (
                                 <button
                                   onClick={() => handleDeleteDocument(doc.id)}
                                   title="Delete document"
@@ -860,7 +1003,7 @@ export const ProjectDashboardPage: React.FC = () => {
             <div className="space-y-4 mb-6">
               <div>
                 <label className="block text-gray-400 text-sm mb-1">
-                 Document Type Name
+                  Document Type Name
                 </label>
                 <input
                   type="text"
@@ -973,12 +1116,15 @@ export const ProjectDashboardPage: React.FC = () => {
             <div className="w-12 h-12 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center mx-auto mb-4 text-amber-400">
               <AlertTriangle className="w-6 h-6" />
             </div>
-            
+
             <h2 className="text-xl font-bold mb-2 text-white text-center">
               Confirm Document Processing
             </h2>
             <p className="text-sm text-gray-400 mb-6 text-center leading-relaxed font-medium">
-              This document <span className="text-white font-bold">cannot be deleted</span> once processed. Are you sure you want to add this and start the analysis?
+              This document{" "}
+              <span className="text-white font-bold">cannot be deleted</span>{" "}
+              once processed. Are you sure you want to add this and start the
+              analysis?
             </p>
 
             <div className="flex gap-3">
@@ -999,7 +1145,7 @@ export const ProjectDashboardPage: React.FC = () => {
         </div>
       )}
 
-      {showRelevancePopup && relevanceCheckResult && (
+      {/* showRelevancePopup && relevanceCheckResult && (
         <div className="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-[#111827] border border-gray-700 rounded-2xl p-6 w-full max-w-md shadow-2xl">
             <h2 className="text-xl font-bold mb-2 text-white">
@@ -1065,7 +1211,7 @@ export const ProjectDashboardPage: React.FC = () => {
               <button
                 onClick={confirmUpload}
                 disabled={relevanceCheckResult.score < 60 || confirmingUpload}
-                className={`px-4 py-2 rounded-lg font-semibold transition-colors text-sm flex items-center gap-1.5 ${
+                className={`px-4 py-2 rounded-lg font-semibold transition-colors text-sm flex items-center gap-1.5 \${
                   relevanceCheckResult.score < 60 || confirmingUpload
                     ? "bg-blue-900/40 text-blue-700 cursor-not-allowed border border-blue-950/20"
                     : "bg-blue-600 text-white hover:bg-blue-700 hover:shadow-lg"
@@ -1083,7 +1229,7 @@ export const ProjectDashboardPage: React.FC = () => {
             </div>
           </div>
         </div>
-      )}
+      ) */}
 
       {/* TOAST NOTIFICATION */}
       {notification && (
