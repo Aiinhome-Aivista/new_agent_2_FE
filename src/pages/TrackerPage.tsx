@@ -288,7 +288,8 @@ export const TrackerPage: React.FC = () => {
       const response = await apiClient.get(`/projects/${id}/documents/${documentId}/download`, {
         responseType: 'blob',
       });
-      const blob = new Blob([response.data], { type: response.headers['content-type'] || 'application/octet-stream' });
+      const contentType = (response.headers['content-type'] as string) || 'application/octet-stream';
+      const blob = new Blob([response.data], { type: contentType });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
