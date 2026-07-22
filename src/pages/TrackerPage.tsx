@@ -53,6 +53,8 @@ export const TrackerPage: React.FC = () => {
     const userName = user?.name || 'System User';
     const userEmail = user?.email || '';
     const exportTime = new Date().toLocaleString();
+    const startDate = project?.start_date ? new Date(project.start_date).toLocaleDateString(undefined, { dateStyle: 'medium' }) : 'N/A';
+    const endDate = project?.end_date ? new Date(project.end_date).toLocaleDateString(undefined, { dateStyle: 'medium' }) : 'N/A';
 
     return `
       <html>
@@ -95,6 +97,8 @@ export const TrackerPage: React.FC = () => {
             <div class="header-meta">
               <div class="meta-item"><span class="meta-label">Project Name:</span> <span>${projectName}</span></div>
               <div class="meta-item"><span class="meta-label">Exported By:</span> <span>${userName} ${userEmail ? `(${userEmail})` : ''}</span></div>
+              <div class="meta-item"><span class="meta-label">Start Date:</span> <span>${startDate}</span></div>
+              <div class="meta-item"><span class="meta-label">End Date:</span> <span>${endDate}</span></div>
               <div class="meta-item"><span class="meta-label">Exported At:</span> <span>${exportTime}</span></div>
               <div class="meta-item"><span class="meta-label">Total Risks:</span> <span>${itemsToExport.length}</span></div>
             </div>

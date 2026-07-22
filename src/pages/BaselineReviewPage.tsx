@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useParams, useNavigate } from "react-router-dom";
 import apiClient from "../api/apiClient";
@@ -21,25 +21,34 @@ import {
 export const BaselineReviewPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [baseline, setBaseline] = useState<any>(null);
+  const [project, setProject] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchBaseline = async () => {
+    const fetchData = async () => {
       try {
-        const res = await apiClient.get(`/projects/${id}/baseline/`);
-        if (res.data.success) {
-          setBaseline(res.data.data);
+        const [baselineRes, projectRes] = await Promise.all([
+          apiClient.get(`/projects/${id}/baseline/`),
+          apiClient.get(`/projects/${id}`),
+        ]);
+        if (baselineRes.data.success) {
+          setBaseline(baselineRes.data.data);
+        }
+        if (projectRes.data.success) {
+          setProject(projectRes.data.data);
         }
       } catch (error) {
-        console.error("Failed to fetch baseline");
+        console.error("Failed to fetch baseline or project details");
       } finally {
         setLoading(false);
       }
     };
-    fetchBaseline();
+    fetchData();
   }, [id]);
+  const timelineContainerRef = useRef<HTMLDivElement>(null);
+
   const [notification, setNotification] = useState<{
     message: string;
     type: "info" | "error" | "success";
@@ -71,6 +80,21 @@ export const BaselineReviewPage: React.FC = () => {
       setSelectedDeliverableId(baseline.deliverables[0].id);
     }
   }, [baseline, selectedDeliverableId]);
+
+  useEffect(() => {
+    if (selectedDeliverableId && timelineContainerRef.current) {
+      const activeNode = timelineContainerRef.current.querySelector(
+        `[data-active="true"]`
+      );
+      if (activeNode) {
+        activeNode.scrollIntoView({
+          behavior: "smooth",
+          block: "nearest",
+          inline: "center",
+        });
+      }
+    }
+  }, [selectedDeliverableId]);
 
   const activeIndex =
     baseline?.deliverables?.findIndex(
@@ -301,12 +325,20 @@ export const BaselineReviewPage: React.FC = () => {
           .in-scope-badge { font-weight: bold; color: #2e7d32; }
           .out-scope-badge { font-weight: bold; color: #c62828; }
           .other-badge { font-weight: bold; color: #1565c0; }
+          .project-details { background-color: #f4f6f8; border: 1px solid #dddddd; padding: 12px; margin-bottom: 20px; border-radius: 4px; }
+          .project-details p { margin: 4px 0; font-size: 12px; color: #555555; }
+          .project-details strong { color: #111111; }
         </style>
       </head>
       <body>
         <h1>Contract Scope Baseline Review Report</h1>
-        <p><strong>Baseline Status:</strong> ${baseline.status}</p>
-        <p><strong>Export Date:</strong> ${new Date().toLocaleDateString()}</p>
+        <div class="project-details">
+          <p><strong>Project Name:</strong> ${project?.project_name || 'N/A'}</p>
+          <p><strong>Start Date:</strong> ${project?.start_date ? new Date(project.start_date).toLocaleDateString(undefined, { dateStyle: 'medium' }) : 'N/A'}</p>
+          <p><strong>End Date:</strong> ${project?.end_date ? new Date(project.end_date).toLocaleDateString(undefined, { dateStyle: 'medium' }) : 'N/A'}</p>
+          <p><strong>Baseline Status:</strong> ${baseline.status}</p>
+          <p><strong>Export Date:</strong> ${new Date().toLocaleDateString(undefined, { dateStyle: 'medium' })}</p>
+        </div>
         <hr style="border: 0; border-top: 1px solid #dddddd; margin-bottom: 20px;" />
         
         <h2>In Scope Items (${inScopeItems.length})</h2>
@@ -385,7 +417,10 @@ export const BaselineReviewPage: React.FC = () => {
           <style>
             body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; padding: 40px; color: #1f2937; line-height: 1.5; }
             h1 { font-size: 26px; font-weight: bold; color: #111827; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px; margin-bottom: 8px; }
-            .header-meta { font-size: 13px; color: #6b7280; margin-bottom: 30px; }
+            .header-meta { font-size: 13px; color: #4b5563; margin-bottom: 30px; padding: 14px; background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; }
+            .header-meta-row { display: flex; justify-content: space-between; margin-bottom: 8px; }
+            .header-meta-row:last-child { margin-bottom: 0; }
+            .header-meta-item { flex: 1; }
             h2 { font-size: 18px; font-weight: bold; color: #374151; margin-top: 30px; margin-bottom: 15px; border-bottom: 1px solid #e5e7eb; padding-bottom: 6px; }
             .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
             .column { display: flex; flex-direction: column; gap: 16px; }
@@ -406,8 +441,18 @@ export const BaselineReviewPage: React.FC = () => {
         <body>
           <h1>Contract Scope Baseline Review Report</h1>
           <div class="header-meta">
-            <span><strong>Baseline Status:</strong> ${baseline.status}</span> &bull; 
-            <span><strong>Export Date:</strong> ${new Date().toLocaleDateString()}</span>
+            <div class="header-meta-row">
+              <div class="header-meta-item"><strong>Project Name:</strong> ${project?.project_name || 'N/A'}</div>
+              <div class="header-meta-item" style="text-align: right;"><strong>Baseline Status:</strong> ${baseline.status}</div>
+            </div>
+            <div class="header-meta-row">
+              <div class="header-meta-item">
+                <strong>Start Date:</strong> ${project?.start_date ? new Date(project.start_date).toLocaleDateString(undefined, { dateStyle: 'medium' }) : 'N/A'}
+                &nbsp;&bull;&nbsp;
+                <strong>End Date:</strong> ${project?.end_date ? new Date(project.end_date).toLocaleDateString(undefined, { dateStyle: 'medium' }) : 'N/A'}
+              </div>
+              <div class="header-meta-item" style="text-align: right;"><strong>Export Date:</strong> ${new Date().toLocaleDateString(undefined, { dateStyle: 'medium' })}</div>
+            </div>
           </div>
           
           <div class="grid">
@@ -621,7 +666,7 @@ export const BaselineReviewPage: React.FC = () => {
                     </p>
                   </div>
                 ) : (
-                  <div className="space-y-4 flex-1">
+                  <div className="space-y-4 flex-1 max-h-[750px] overflow-y-auto pr-2 custom-scrollbar">
                     {inScopeItems.map((item: any) => (
                       <div
                         key={item.id}
@@ -710,7 +755,7 @@ export const BaselineReviewPage: React.FC = () => {
                     </p>
                   </div>
                 ) : (
-                  <div className="space-y-4 flex-1">
+                  <div className="space-y-4 flex-1 max-h-[750px] overflow-y-auto pr-2 custom-scrollbar">
                     {outOfScopeItems.map((item: any) => (
                       <div
                         key={item.id}
@@ -802,72 +847,78 @@ export const BaselineReviewPage: React.FC = () => {
                   </button>
 
                   {/* Horizontal Timeline Track */}
-                  <div className="flex-1 relative py-6 overflow-visible">
-                    {/* Horizontal Track Line */}
-                    <div className="absolute top-[96px] left-12 right-12 h-1 bg-gray-800 rounded-full z-0"></div>
+                  <div className="flex-1 min-w-0 relative py-6 overflow-hidden">
+                    {/* Scrollable Container */}
+                    <div
+                      ref={timelineContainerRef}
+                      className="overflow-x-auto no-scrollbar"
+                    >
+                      {/* Inner wrapper to contain absolute layout in full scroll width */}
+                      <div className="relative flex justify-between items-center min-w-max pt-4 pb-4 pl-12 pr-12">
+                        {/* Horizontal Track Line */}
+                        <div className="absolute top-[72px] left-12 right-12 h-1 bg-gray-800 rounded-full z-0"></div>
+                        {baseline.deliverables?.map(
+                          (item: any, index: number) => {
+                            const isSelected = selectedDeliverableId === item.id;
+                            const displayName =
+                              item.deadline || `Item ${index + 1}`;
 
-                    {/* Nodes wrapper */}
-                    <div className="flex justify-between items-center z-10 relative overflow-x-auto pt-4 pb-4 pl-12 pr-12 scrollbar-thin scrollbar-thumb-gray-800 scrollbar-track-transparent">
-                      {baseline.deliverables?.map(
-                        (item: any, index: number) => {
-                          const isSelected = selectedDeliverableId === item.id;
-                          const displayName =
-                            item.deadline || `Item ${index + 1}`;
+                            return (
+                              <div
+                                key={item.id}
+                                data-active={isSelected}
+                                className="flex flex-col items-center flex-shrink-0 cursor-pointer group mx-6 first:ml-0 last:mr-0 relative pt-12"
+                                onClick={() => setSelectedDeliverableId(item.id)}
+                              >
+                                {/* Date Label bubble with down caret */}
+                                <div className="absolute top-0 left-1/2 -translate-x-1/2 flex flex-col items-center pointer-events-none">
+                                  <div
+                                    className={`px-3 py-1 rounded text-xs font-semibold shadow-md transition-all duration-300 border whitespace-nowrap ${
+                                      isSelected
+                                        ? "bg-purple-650 text-white border-purple-500 scale-105"
+                                        : "bg-[#1e293b] text-gray-300 border-gray-750"
+                                    }`}
+                                  >
+                                    {displayName}
+                                  </div>
+                                  <div
+                                    className={`w-2 h-2 rotate-45 -mt-1 border-r border-b transition-colors ${
+                                      isSelected
+                                        ? "bg-purple-650 border-purple-500"
+                                        : "bg-[#1e293b] border-gray-750"
+                                    }`}
+                                  ></div>
+                                </div>
 
-                          return (
-                            <div
-                              key={item.id}
-                              className="flex flex-col items-center flex-shrink-0 cursor-pointer group mx-6 first:ml-0 last:mr-0 relative pt-12"
-                              onClick={() => setSelectedDeliverableId(item.id)}
-                            >
-                              {/* Date Label bubble with down caret */}
-                              <div className="absolute top-0 left-1/2 -translate-x-1/2 flex flex-col items-center pointer-events-none">
+                                {/* Node Circle */}
                                 <div
-                                  className={`px-3 py-1 rounded text-xs font-semibold shadow-md transition-all duration-300 border whitespace-nowrap ${
+                                  className={`w-5 h-5 rounded-full flex items-center justify-center transition-all duration-300 border-2 z-10 bg-gray-900 ${
                                     isSelected
-                                      ? "bg-purple-650 text-white border-purple-500 scale-105"
-                                      : "bg-[#1e293b] text-gray-300 border-gray-750"
+                                      ? "border-purple-500 scale-125 bg-gray-100 shadow-lg shadow-purple-500/20"
+                                      : "border-gray-600 group-hover:border-gray-450"
                                   }`}
                                 >
-                                  {displayName}
+                                  {isSelected && (
+                                    <span className="w-1.5 h-1.5 rounded-full bg-purple-600 animate-pulse"></span>
+                                  )}
                                 </div>
-                                <div
-                                  className={`w-2 h-2 rotate-45 -mt-1 border-r border-b transition-colors ${
+
+                                {/* Mini label below */}
+                                <span
+                                  className={`text-[10px] mt-2.5 transition-colors max-w-[90px] truncate text-center ${
                                     isSelected
-                                      ? "bg-purple-650 border-purple-500"
-                                      : "bg-[#1e293b] border-gray-750"
+                                      ? "text-purple-300 font-semibold"
+                                      : "text-gray-500 group-hover:text-gray-400"
                                   }`}
-                                ></div>
+                                  title={item.name}
+                                >
+                                  {item.name}
+                                </span>
                               </div>
-
-                              {/* Node Circle */}
-                              <div
-                                className={`w-5 h-5 rounded-full flex items-center justify-center transition-all duration-300 border-2 z-10 bg-gray-900 ${
-                                  isSelected
-                                    ? "border-purple-500 scale-125 bg-gray-100 shadow-lg shadow-purple-500/20"
-                                    : "border-gray-600 group-hover:border-gray-450"
-                                }`}
-                              >
-                                {isSelected && (
-                                  <span className="w-1.5 h-1.5 rounded-full bg-purple-600 animate-pulse"></span>
-                                )}
-                              </div>
-
-                              {/* Mini label below */}
-                              <span
-                                className={`text-[10px] mt-2.5 transition-colors max-w-[90px] truncate text-center ${
-                                  isSelected
-                                    ? "text-purple-300 font-semibold"
-                                    : "text-gray-500 group-hover:text-gray-400"
-                                }`}
-                                title={item.name}
-                              >
-                                {item.name}
-                              </span>
-                            </div>
-                          );
-                        },
-                      )}
+                            );
+                          },
+                        )}
+                      </div>
                     </div>
                   </div>
 
