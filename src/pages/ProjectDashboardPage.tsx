@@ -19,6 +19,7 @@ import {
   Sparkles,
   Check,
   FileCheck,
+  AlertTriangle,
 } from "lucide-react";
 
 export const ProjectDashboardPage: React.FC = () => {
@@ -49,6 +50,7 @@ export const ProjectDashboardPage: React.FC = () => {
 
   const [deletingDocId, setDeletingDocId] = useState<number | null>(null);
   const [deleteReason, setDeleteReason] = useState("");
+  const [processingDocId, setProcessingDocId] = useState<number | null>(null);
 
   const [isDragging, setIsDragging] = useState(false);
   const baselineFileInputRef = useRef<HTMLInputElement>(null);
@@ -191,6 +193,13 @@ export const ProjectDashboardPage: React.FC = () => {
       const docsRes = await apiClient.get(`/projects/${id}/documents/`);
       if (docsRes.data.success) setDocuments(docsRes.data.data);
     }
+  };
+
+  const confirmProcessDocument = async () => {
+    if (!processingDocId) return;
+    const docId = processingDocId;
+    setProcessingDocId(null);
+    await handleProcessDocument(docId);
   };
 
   const handleDeleteDocument = (docId: number) => {
@@ -811,7 +820,7 @@ export const ProjectDashboardPage: React.FC = () => {
 
                               {(doc.processing_status === "UPLOADED" || doc.processing_status === "FAILED") && (
                                 <button
-                                  onClick={() => handleProcessDocument(doc.id)}
+                                  onClick={() => setProcessingDocId(doc.id)}
                                   title="Extract and process document"
                                   className="p-1.5 bg-green-600/20 hover:bg-green-600 border border-green-500/30 text-green-400 hover:text-white rounded-lg transition-all"
                                 >
@@ -952,6 +961,38 @@ export const ProjectDashboardPage: React.FC = () => {
                 }`}
               >
                 Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {processingDocId !== null && (
+        <div className="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-[#111827] border border-gray-700 rounded-2xl p-6 w-full max-w-md shadow-2xl">
+            <div className="w-12 h-12 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center mx-auto mb-4 text-amber-400">
+              <AlertTriangle className="w-6 h-6" />
+            </div>
+            
+            <h2 className="text-xl font-bold mb-2 text-white text-center">
+              Confirm Document Processing
+            </h2>
+            <p className="text-sm text-gray-400 mb-6 text-center leading-relaxed font-medium">
+              This document <span className="text-white font-bold">cannot be deleted</span> once processed. Are you sure you want to add this and start the analysis?
+            </p>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setProcessingDocId(null)}
+                className="flex-1 py-2.5 bg-gray-800 hover:bg-gray-750 text-gray-300 rounded-xl text-xs font-semibold transition-all border border-gray-700 cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmProcessDocument}
+                className="flex-1 py-2.5 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-semibold transition-all shadow-md shadow-amber-600/20 cursor-pointer"
+              >
+                Yes, Start Process
               </button>
             </div>
           </div>
