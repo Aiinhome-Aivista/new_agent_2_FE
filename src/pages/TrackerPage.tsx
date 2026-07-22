@@ -588,14 +588,43 @@ export const TrackerPage: React.FC = () => {
                   return (
                     <div
                       key={item.id}
-                      className={`p-6 rounded-xl border bg-gray-800 ${borderColor} animate-fade-in-up hover:shadow-xl hover:shadow-black/20 hover:border-gray-700 transition-all duration-300`}
+                      className={`rounded-xl border bg-gray-800 ${borderColor} animate-fade-in-up hover:shadow-xl hover:shadow-black/20 hover:border-gray-700 transition-all duration-300 overflow-hidden`}
                       style={{ animationDelay: `${index * 50}ms` }}
                     >
-                      {/* Header Row */}
-                      <div className="flex justify-between items-start mb-3">
-                        <div className="flex items-start gap-3 flex-1 min-w-0">
+                      {/* Scope Item Title Banner */}
+                      <div className={`px-6 py-3 border-b ${
+                        level === 'CRITICAL' ? 'bg-red-950/60 border-red-500/30' :
+                        level === 'HIGH'     ? 'bg-orange-950/50 border-orange-500/30' :
+                        level === 'MEDIUM'   ? 'bg-yellow-950/40 border-yellow-500/30' :
+                                              'bg-green-950/30 border-green-500/20'
+                      }`}>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded ${
+                            level === 'CRITICAL' ? 'bg-red-500/20 text-red-300' :
+                            level === 'HIGH'     ? 'bg-orange-500/20 text-orange-300' :
+                            level === 'MEDIUM'   ? 'bg-yellow-500/20 text-yellow-300' :
+                                                  'bg-green-500/20 text-green-300'
+                          }`}>
+                            Scope Item
+                          </span>
+                          <h3 className={`font-bold text-lg leading-tight ${
+                            level === 'CRITICAL' ? 'text-red-200' :
+                            level === 'HIGH'     ? 'text-orange-200' :
+                            level === 'MEDIUM'   ? 'text-yellow-100' :
+                                                  'text-green-200'
+                          }`}>
+                            {item.name || `${typeLabels[item.item_type] || item.item_type} #${item.id}`}
+                          </h3>
+                          <span className="text-[10px] text-gray-500 ml-auto">{categoryLabel}</span>
+                        </div>
+                      </div>
+
+                      <div className="p-6">
+                      {/* Header Row: checkbox + doc metadata + badges */}
+                      <div className="flex justify-between items-start mb-4">
+                        <div className="flex items-center gap-3 flex-1 min-w-0 flex-wrap">
                           {activeTab === 'ACTIVE' && (
-                            <div className="pt-1.5 flex-shrink-0">
+                            <div className="flex-shrink-0">
                               <input
                                 type="checkbox"
                                 checked={selectedItemIds.includes(item.id)}
@@ -604,28 +633,23 @@ export const TrackerPage: React.FC = () => {
                               />
                             </div>
                           )}
-                          <div className="flex-1 min-w-0">
-                            <h3 className="font-bold text-xl truncate">{item.name}</h3>
-                          <div className="flex items-center gap-2 mt-1 flex-wrap">
-                            <span className="text-xs text-gray-400 bg-gray-700/50 px-2 py-0.5 rounded">
-                              {typeLabels[item.item_type] || item.item_type}
+                          <span className="text-xs text-gray-400 bg-gray-700/50 px-2 py-0.5 rounded">
+                            {typeLabels[item.item_type] || item.item_type}
+                          </span>
+                          <span className="text-xs text-gray-300 font-medium flex items-center gap-1.5 bg-gray-900/50 px-2 py-1 rounded border border-gray-700/40">
+                            <span className="text-gray-500 font-semibold">Doc:</span>
+                            <span className="text-gray-200 truncate max-w-[200px]" title={item.document_name}>
+                              {item.document_name}
                             </span>
-                            <span className="text-xs text-gray-300 font-medium flex items-center gap-1.5 bg-gray-900/50 px-2 py-1 rounded border border-gray-700/40">
-                              <span className="text-gray-500 font-semibold">Doc:</span>
-                              <span className="text-gray-200 truncate max-w-[200px]" title={item.document_name}>
-                                {item.document_name}
-                              </span>
-                              <button
-                                onClick={() => handleDownloadDocument(item.source_document_id, item.document_name)}
-                                title="Download Document"
-                                className="p-0.5 text-gray-400 hover:text-cyan-400 hover:bg-gray-800 rounded transition-all cursor-pointer flex-shrink-0"
-                              >
-                                <Download className="w-3.5 h-3.5" />
-                              </button>
-                            </span>
-                          </div>
+                            <button
+                              onClick={() => handleDownloadDocument(item.source_document_id, item.document_name)}
+                              title="Download Document"
+                              className="p-0.5 text-gray-400 hover:text-cyan-400 hover:bg-gray-800 rounded transition-all cursor-pointer flex-shrink-0"
+                            >
+                              <Download className="w-3.5 h-3.5" />
+                            </button>
+                          </span>
                         </div>
-                      </div>
                         <div className="flex items-center gap-2 flex-shrink-0 ml-4 flex-wrap justify-end">
                           {/* Risk Level Badge */}
                           <span className={`px-3 py-1 rounded-full text-xs font-bold border ${levelStyle.bg} ${levelStyle.text} ${levelStyle.border}`}>
@@ -644,10 +668,6 @@ export const TrackerPage: React.FC = () => {
                         </div>
                       </div>
 
-                      {/* Risk Category */}
-                      <div className="mb-3">
-                        <span className="text-xs text-gray-400 font-medium">{categoryLabel}</span>
-                      </div>
 
                       {/* Description (WHY this risk score) */}
                       {description && (
@@ -724,6 +744,7 @@ export const TrackerPage: React.FC = () => {
                           </div>
                         </div>
                       )}
+                    </div>{/* end p-6 body wrapper */}
                     </div>
                   );
                 })}
