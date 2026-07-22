@@ -374,26 +374,6 @@ export const ProjectDashboardPage: React.FC = () => {
               </div>
             )}
           </div>
-          <div className="flex gap-3">
-            <Link
-              to={`/projects/${id}/members`}
-              className="px-4 py-2.5 bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-200 rounded-xl text-xs font-semibold transition-all"
-            >
-              Project Members
-            </Link>
-            <Link
-              to={`/projects/${id}/baseline`}
-              className="px-4 py-2.5 bg-purple-600/90 hover:bg-purple-600 text-white rounded-xl text-xs font-semibold transition-all shadow-md shadow-purple-600/20"
-            >
-              Baseline Review
-            </Link>
-            <Link
-              to={`/projects/${id}/tracker`}
-              className="px-4 py-2.5 bg-rose-600/90 hover:bg-rose-600 text-white rounded-xl text-xs font-semibold transition-all shadow-md shadow-rose-600/20"
-            >
-              Risk Tracker
-            </Link>
-          </div>
         </div>
 
         <div className="bg-gray-900/40 border border-gray-800 rounded-2xl p-6 md:p-8 backdrop-blur-md shadow-xl">

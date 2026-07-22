@@ -422,7 +422,6 @@ export const TrackerPage: React.FC = () => {
             </div>
           </div>
           <div className="flex gap-4">
-            <button onClick={() => navigate(`/projects/${id}`)} className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-md">Back to Dashboard</button>
             <button onClick={handleOpenProcessModal} disabled={processing} className={`px-4 py-2 rounded-md ${processing ? 'bg-gray-600 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}>
               {processing ? 'Processing AI...' : 'Process Status Document'}
             </button>

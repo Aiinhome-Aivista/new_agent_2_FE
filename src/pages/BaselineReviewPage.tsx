@@ -566,12 +566,17 @@ export const BaselineReviewPage: React.FC = () => {
             <h1 className="text-3xl font-bold">Baseline Review</h1>
           </div>
           <div className="flex gap-4 items-center">
-            <button
-              onClick={() => navigate(`/projects/${id}`)}
-              className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-md"
-            >
-              Back to Dashboard
-            </button>
+            {baseline && (
+              <span
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wider ${
+                  baseline.status === "APPROVED" 
+                    ? "bg-green-600/20 border border-green-500/40 text-green-300" 
+                    : "bg-amber-600/20 border border-amber-500/40 text-amber-300"
+                }`}
+              >
+                Status: {baseline.status}
+              </span>
+            )}
 
             {user?.role !== "PROJECT_LEAD" && (
               <button
@@ -608,15 +613,7 @@ export const BaselineReviewPage: React.FC = () => {
           <p className="text-gray-400">No baseline exists yet.</p>
         ) : (
           <div>
-            <div className="mb-6">
-              <span
-                className={`px-3 py-1 rounded text-sm ${baseline.status === "APPROVED" ? "bg-green-600" : "bg-yellow-600"}`}
-              >
-                Status: {baseline.status}
-              </span>
-            </div>
-
-            <div className="mb-12 border-b border-gray-800"></div>
+            <div className="mb-8 border-b border-gray-800"></div>
 
             {/* Deliverables timeline */}
             <div className="mb-8">
