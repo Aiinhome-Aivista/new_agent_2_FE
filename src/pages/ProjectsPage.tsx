@@ -76,8 +76,10 @@ export const ProjectsPage: React.FC = () => {
 
   useEffect(() => {
     fetchProjects();
-    fetchLeads();
-  }, []);
+    if (user?.role === 'ADMIN' || user?.role === 'ENGAGEMENT_MANAGER') {
+      fetchLeads();
+    }
+  }, [user]);
 
   useEffect(() => {
     if (!projectName.trim() || !clientName.trim() || isDescriptionManuallyEdited) return;

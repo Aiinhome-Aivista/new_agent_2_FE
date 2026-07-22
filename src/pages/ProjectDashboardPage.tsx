@@ -425,174 +425,258 @@ export const ProjectDashboardPage: React.FC = () => {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            <div
-              onClick={() => {
-                setBaselineDocType("EL");
-                setUploadTarget("BASELINE");
-              }}
-              className={`p-4 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
-                baselineDocType === "EL"
-                  ? "bg-gradient-to-r from-emerald-950/50 to-teal-950/40 border-emerald-500/60 shadow-lg shadow-emerald-500/10 ring-1 ring-emerald-500/30"
-                  : "bg-gray-800/40 border-gray-700/60 hover:bg-gray-800/80"
-              }`}
-            >
-              <div className="flex items-center gap-3">
+          {user?.role === "ENGAGEMENT_MANAGER" || user?.role === "ADMIN" ? (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 <div
-                  className={`p-2.5 rounded-xl ${baselineDocType === "EL" ? "bg-emerald-500/20 text-emerald-400" : "bg-gray-700/50 text-gray-400"}`}
+                  onClick={() => {
+                    setBaselineDocType("EL");
+                    setUploadTarget("BASELINE");
+                  }}
+                  className={`p-4 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
+                    baselineDocType === "EL"
+                      ? "bg-gradient-to-r from-emerald-950/50 to-teal-950/40 border-emerald-500/60 shadow-lg shadow-emerald-500/10 ring-1 ring-emerald-500/30"
+                      : "bg-gray-800/40 border-gray-700/60 hover:bg-gray-800/80"
+                  }`}
                 >
-                  <FileText className="w-5 h-5" />
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`p-2.5 rounded-xl ${baselineDocType === "EL" ? "bg-emerald-500/20 text-emerald-400" : "bg-gray-700/50 text-gray-400"}`}
+                    >
+                      <FileText className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold text-white">
+                        Engagement Letter (EL)
+                      </h3>
+                      <p className="text-xs text-gray-400">
+                        Official signed client engagement contract
+                      </p>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-sm font-bold text-white">
-                    Engagement Letter (EL)
-                  </h3>
-                  <p className="text-xs text-gray-400">
-                    Official signed client engagement contract
-                  </p>
+
+                <div
+                  onClick={() => {
+                    setBaselineDocType("IFA");
+                    setUploadTarget("BASELINE");
+                  }}
+                  className={`p-4 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
+                    baselineDocType === "IFA"
+                      ? "bg-gradient-to-r from-emerald-950/50 to-teal-950/40 border-emerald-500/60 shadow-lg shadow-emerald-500/10 ring-1 ring-emerald-500/30"
+                      : "bg-gray-800/40 border-gray-700/60 hover:bg-gray-800/80"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`p-2.5 rounded-xl ${baselineDocType === "IFA" ? "bg-emerald-500/20 text-emerald-400" : "bg-gray-700/50 text-gray-400"}`}
+                    >
+                      <FileSpreadsheet className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold text-white">
+                        Independence & Financial (IFA)
+                      </h3>
+                      <p className="text-xs text-gray-400">
+                        Inter-firm approval & financial budget document
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div
-              onClick={() => {
-                setBaselineDocType("IFA");
-                setUploadTarget("BASELINE");
-              }}
-              className={`p-4 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
-                baselineDocType === "IFA"
-                  ? "bg-gradient-to-r from-emerald-950/50 to-teal-950/40 border-emerald-500/60 shadow-lg shadow-emerald-500/10 ring-1 ring-emerald-500/30"
-                  : "bg-gray-800/40 border-gray-700/60 hover:bg-gray-800/80"
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <div
-                  className={`p-2.5 rounded-xl ${baselineDocType === "IFA" ? "bg-emerald-500/20 text-emerald-400" : "bg-gray-700/50 text-gray-400"}`}
-                >
-                  <FileSpreadsheet className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold text-white">
-                    Independence & Financial (IFA)
-                  </h3>
-                  <p className="text-xs text-gray-400">
-                    Inter-firm approval & financial budget document
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="bg-gray-800/50 p-5 rounded-xl border border-gray-700/70 flex flex-col justify-between relative overflow-hidden min-h-[300px]">
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="text-xs font-semibold text-gray-300 uppercase tracking-wider flex items-center gap-2">
+                        <UploadCloud className="w-4 h-4 text-emerald-400" />
+                        Target Category:{" "}
+                        <span className="text-emerald-300 font-bold">
+                          {getDocTypeLabel(baselineDocType)}
+                        </span>
+                      </h4>
+                    </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-gray-800/50 p-5 rounded-xl border border-gray-700/70 flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-xs font-semibold text-gray-300 uppercase tracking-wider flex items-center gap-2">
-                    <UploadCloud className="w-4 h-4 text-emerald-400" />
-                    Target Category:{" "}
-                    <span className="text-emerald-300 font-bold">
-                      {getDocTypeLabel(baselineDocType)}
-                    </span>
-                  </h4>
-                </div>
-
-                <form
-                  onSubmit={(e) => handleUpload(e, "BASELINE")}
-                  className="space-y-4"
-                >
-                  <div
-                    onDragOver={handleDragOver}
-                    onDragLeave={handleDragLeave}
-                    onDrop={(e) => handleDrop(e, "BASELINE")}
-                    onClick={
-                      uploading
-                        ? undefined
-                        : () => triggerFileSelect("BASELINE")
-                    }
-                    className={`border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center transition-all duration-200 ${
-                      uploading
-                        ? "border-gray-700 bg-gray-900/10 cursor-not-allowed opacity-50"
-                        : isDragging
-                          ? "border-emerald-400 bg-emerald-950/20 cursor-pointer"
-                          : baselineFile
-                            ? "border-green-500 bg-green-950/10 cursor-pointer"
-                            : "border-gray-600 hover:border-gray-400 bg-gray-900/40 hover:bg-gray-900/60 cursor-pointer"
-                    }`}
-                  >
-                    <input
-                      type="file"
-                      ref={baselineFileInputRef}
-                      accept=".pdf,.docx,.txt"
-                      disabled={uploading}
-                      onChange={(e) => {
-                        if (e.target.files && e.target.files[0]) {
-                          validateAndSetFile(e.target.files[0], "BASELINE");
+                    <form
+                      onSubmit={(e) => handleUpload(e, "BASELINE")}
+                      className="space-y-4"
+                    >
+                      <div
+                        onDragOver={handleDragOver}
+                        onDragLeave={handleDragLeave}
+                        onDrop={(e) => handleDrop(e, "BASELINE")}
+                        onClick={
+                          uploading
+                            ? undefined
+                            : () => triggerFileSelect("BASELINE")
                         }
-                      }}
-                      className="hidden"
-                    />
+                        className={`border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center transition-all duration-200 ${
+                          uploading
+                            ? "border-gray-700 bg-gray-900/10 cursor-not-allowed opacity-50"
+                            : isDragging
+                              ? "border-emerald-400 bg-emerald-950/20 cursor-pointer"
+                              : baselineFile
+                                ? "border-green-500 bg-green-950/10 cursor-pointer"
+                                : "border-gray-600 hover:border-gray-400 bg-gray-900/40 hover:bg-gray-900/60 cursor-pointer"
+                        }`}
+                      >
+                        <input
+                          type="file"
+                          ref={baselineFileInputRef}
+                          accept=".pdf,.docx,.txt"
+                          disabled={uploading}
+                          onChange={(e) => {
+                            if (e.target.files && e.target.files[0]) {
+                              validateAndSetFile(e.target.files[0], "BASELINE");
+                            }
+                          }}
+                          className="hidden"
+                        />
 
-                    {baselineFile ? (
-                      <div className="flex flex-col items-center w-full">
-                        <div className="flex items-center justify-between bg-gray-800/80 border border-gray-700 rounded-lg p-3 w-full max-w-xs">
-                          <div className="flex items-center gap-2 overflow-hidden mr-2">
-                            <FileText className="h-5 w-5 text-green-400 flex-shrink-0" />
-                            <span className="text-sm truncate text-gray-200">
-                              {baselineFile.name}
-                            </span>
+                        {baselineFile ? (
+                          <div className="flex flex-col items-center w-full">
+                            <div className="flex items-center justify-between bg-gray-800/80 border border-gray-700 rounded-lg p-3 w-full max-w-xs">
+                              <div className="flex items-center gap-2 overflow-hidden mr-2">
+                                <FileText className="h-5 w-5 text-green-400 flex-shrink-0" />
+                                <span className="text-sm truncate text-gray-200">
+                                  {baselineFile.name}
+                                </span>
+                              </div>
+                              <button
+                                type="button"
+                                disabled={uploading}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setBaselineFile(null);
+                                }}
+                                className="p-1 hover:bg-gray-700 rounded text-gray-400 hover:text-red-400 transition-colors disabled:opacity-30"
+                              >
+                                <X className="h-4 w-4" />
+                              </button>
+                            </div>
+                            {!uploading && (
+                              <span className="text-xs text-gray-500 mt-2">
+                                Click or drag new file to replace
+                              </span>
+                            )}
                           </div>
-                          <button
-                            type="button"
-                            disabled={uploading}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setBaselineFile(null);
-                            }}
-                            className="p-1 hover:bg-gray-700 rounded text-gray-400 hover:text-red-400 transition-colors disabled:opacity-30"
-                          >
-                            <X className="h-4 w-4" />
-                          </button>
-                        </div>
-                        {!uploading && (
-                          <span className="text-xs text-gray-500 mt-2">
-                            Click or drag new file to replace
-                          </span>
+                        ) : (
+                          <>
+                            <div className="bg-emerald-500/10 p-4 rounded-full mb-4 ring-8 ring-emerald-500/5">
+                              <UploadCloud className="w-8 h-8 text-emerald-400" />
+                            </div>
+                            <div className="text-center">
+                              <p className="text-sm text-gray-300 font-medium">
+                                Upload{" "}
+                                <strong className="text-emerald-300">
+                                  {getDocTypeLabel(baselineDocType)}
+                                </strong>
+                              </p>
+                              <p className="text-xs text-gray-500 mt-1">
+                                Drag & drop (.pdf, .docx, .txt) or click to browse
+                              </p>
+                            </div>
+                          </>
                         )}
                       </div>
+
+                      <button
+                        type="submit"
+                        disabled={!baselineFile || uploading}
+                        className="w-full py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-semibold rounded-xl text-xs transition-all shadow-md shadow-emerald-500/20 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                      >
+                        {uploading
+                          ? "Uploading Document..."
+                          : `Upload ${getDocTypeLabel(baselineDocType)}`}
+                      </button>
+                    </form>
+                  </div>
+                </div>
+
+                <div className="bg-gray-800/50 p-5 rounded-xl border border-gray-700/70 flex flex-col justify-between">
+                  <div>
+                    <h4 className="text-xs font-semibold text-gray-300 uppercase tracking-wider mb-3">
+                      Initiation Baseline Artifacts ({initiationDocs.length})
+                    </h4>
+
+                    {initiationDocs.length === 0 ? (
+                      <div className="py-10 text-center border border-dashed border-gray-750 rounded-xl bg-gray-900/20">
+                        <FileCheck className="w-8 h-8 text-gray-600 mx-auto mb-2" />
+                        <p className="text-xs text-gray-400 font-medium">
+                          No initiation documents uploaded yet.
+                        </p>
+                        <p className="text-[11px] text-gray-500 mt-0.5">
+                          Select EL or IFA above to upload.
+                        </p>
+                      </div>
                     ) : (
-                      <>
-                        <div className="bg-emerald-500/10 p-4 rounded-full mb-4 ring-8 ring-emerald-500/5">
-                          <UploadCloud className="w-8 h-8 text-emerald-400" />
-                        </div>
-                        <div className="text-center">
-                          <p className="text-sm text-gray-300 font-medium">
-                            Upload{" "}
-                            <strong className="text-emerald-300">
-                              {getDocTypeLabel(baselineDocType)}
-                            </strong>
-                          </p>
-                          <p className="text-xs text-gray-500 mt-1">
-                            Drag & drop (.pdf, .docx, .txt) or click to browse
-                          </p>
-                        </div>
-                      </>
+                      <ul className="space-y-2">
+                        {initiationDocs.map((doc) => (
+                          <li
+                            key={doc.id}
+                            className="flex justify-between items-center p-3 bg-gray-900/60 rounded-xl border border-gray-700/50 hover:border-emerald-500/30 transition-all"
+                          >
+                            <div className="flex flex-col min-w-0 pr-2">
+                              <span className="truncate font-semibold text-xs text-gray-200">
+                                {doc.document_name}
+                              </span>
+                              <div className="flex items-center gap-2 mt-1">
+                                <span className="text-[10px] px-2 py-0.5 bg-emerald-500/15 text-emerald-300 border border-emerald-500/20 rounded font-semibold uppercase">
+                                  {doc.document_type}
+                                </span>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-2 flex-shrink-0">
+                              <span
+                                className={`text-[10px] px-2 py-0.5 rounded font-semibold ${
+                                  doc.processing_status === "COMPLETED"
+                                    ? "bg-green-500/20 text-green-400 border border-green-500/30"
+                                    : doc.processing_status === "PROCESSING" ||
+                                        doc.processing_status === "PARSING"
+                                      ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 animate-pulse"
+                                      : doc.processing_status === "FAILED"
+                                        ? "bg-red-500/20 text-red-400 border border-red-500/30"
+                                        : "bg-blue-500/20 text-blue-400 border border-blue-500/30"
+                                }`}
+                              >
+                                {doc.processing_status}
+                              </span>
+                              {user?.role === "ENGAGEMENT_MANAGER" &&
+                                (doc.processing_status === "UPLOADED" ||
+                                  doc.processing_status === "FAILED") && (
+                                  <button
+                                    onClick={() => handleProcessDocument(doc.id)}
+                                    title="Extract and process document"
+                                    className="p-1.5 bg-green-600/20 hover:bg-green-600 border border-green-500/30 text-green-400 hover:text-white rounded-lg transition-all"
+                                  >
+                                    <Play className="h-3 w-3" />
+                                  </button>
+                                )}
+
+                              {user?.role === "ENGAGEMENT_MANAGER" &&
+                                (doc.processing_status === "UPLOADED" ||
+                                  doc.processing_status === "FAILED") && (
+                                  <button
+                                    onClick={() => handleDeleteDocument(doc.id)}
+                                    title="Delete document"
+                                    className="p-1.5 bg-red-600/20 hover:bg-red-600 border border-red-500/30 text-red-400 hover:text-white rounded-lg transition-all"
+                                  >
+                                    <Trash2 className="h-3 w-3" />
+                                  </button>
+                                )}
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
                     )}
                   </div>
-
-                  <button
-                    type="submit"
-                    disabled={!baselineFile || uploading}
-                    className="w-full py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-semibold rounded-xl text-xs transition-all shadow-md shadow-emerald-500/20 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                  >
-                    {uploading
-                      ? "Uploading Document..."
-                      : `Upload ${getDocTypeLabel(baselineDocType)}`}
-                  </button>
-                </form>
+                </div>
               </div>
-            </div>
-
-            <div className="bg-gray-800/50 p-5 rounded-xl border border-gray-700/70 flex flex-col justify-between">
+            </>
+          ) : (
+            <div className="bg-gray-800/50 p-5 rounded-xl border border-gray-700/70 flex flex-col justify-between w-full">
               <div>
                 <h4 className="text-xs font-semibold text-gray-300 uppercase tracking-wider mb-3">
                   Initiation Baseline Artifacts ({initiationDocs.length})
@@ -604,16 +688,13 @@ export const ProjectDashboardPage: React.FC = () => {
                     <p className="text-xs text-gray-400 font-medium">
                       No initiation documents uploaded yet.
                     </p>
-                    <p className="text-[11px] text-gray-500 mt-0.5">
-                      Select EL or IFA above to upload.
-                    </p>
                   </div>
                 ) : (
                   <ul className="space-y-2">
                     {initiationDocs.map((doc) => (
                       <li
                         key={doc.id}
-                        className="flex justify-between items-center p-3 bg-gray-900/60 rounded-xl border border-gray-700/50 hover:border-emerald-500/30 transition-all"
+                        className="flex justify-between items-center p-3 bg-gray-900/60 rounded-xl border border-gray-700/50 transition-all"
                       >
                         <div className="flex flex-col min-w-0 pr-2">
                           <span className="truncate font-semibold text-xs text-gray-200">
@@ -641,28 +722,6 @@ export const ProjectDashboardPage: React.FC = () => {
                           >
                             {doc.processing_status}
                           </span>
-
-                          {(doc.processing_status === "UPLOADED" ||
-                            doc.processing_status === "FAILED") && (
-                            <button
-                              onClick={() => handleProcessDocument(doc.id)}
-                              title="Extract and process document"
-                              className="p-1.5 bg-green-600/20 hover:bg-green-600 border border-green-500/30 text-green-400 hover:text-white rounded-lg transition-all"
-                            >
-                              <Play className="h-3 w-3" />
-                            </button>
-                          )}
-
-                          {(doc.processing_status === "UPLOADED" ||
-                            doc.processing_status === "FAILED") && (
-                            <button
-                              onClick={() => handleDeleteDocument(doc.id)}
-                              title="Delete document"
-                              className="p-1.5 bg-red-600/20 hover:bg-red-600 border border-red-500/30 text-red-400 hover:text-white rounded-lg transition-all"
-                            >
-                              <Trash2 className="h-3 w-3" />
-                            </button>
-                          )}
                         </div>
                       </li>
                     ))}
@@ -670,7 +729,7 @@ export const ProjectDashboardPage: React.FC = () => {
                 )}
               </div>
             </div>
-          </div>
+          )}
         </div>
 
         <div className="bg-gray-900/40 border border-gray-800 rounded-2xl p-6 md:p-8 backdrop-blur-md shadow-xl">
@@ -703,7 +762,7 @@ export const ProjectDashboardPage: React.FC = () => {
             </Link>
           </div>
 
-          {isProjectLead && project.monitoring_status !== "ACTIVE" ? (
+          {project.monitoring_status !== "ACTIVE" ? (
             <div className="bg-amber-950/20 border border-amber-500/30 rounded-xl p-8 flex flex-col items-center justify-center text-center">
               <div className="w-12 h-12 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center mb-3">
                 <Lock className="w-6 h-6 text-amber-400" />
@@ -796,8 +855,21 @@ export const ProjectDashboardPage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="bg-gray-800/50 p-5 rounded-xl border border-gray-700/70 flex flex-col justify-between">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="bg-gray-800/50 p-5 rounded-xl border border-gray-700/70 flex flex-col justify-between relative overflow-hidden min-h-[300px]">
+                {!(user?.role === "PROJECT_LEAD" || user?.role === "ENGAGEMENT_MANAGER" || user?.role === "ADMIN") ? (
+                  <div className="flex-1 flex flex-col items-center justify-center py-12 px-4 text-center">
+                    <div className="bg-amber-500/10 p-3 rounded-full mb-3 border border-amber-500/20 shadow-sm animate-pulse">
+                      <Lock className="w-6 h-6 text-amber-400" />
+                    </div>
+                    <h4 className="text-sm font-bold text-gray-200 mb-1">
+                      Upload Restricted
+                    </h4>
+                    <p className="text-xs text-gray-400 max-w-[280px] leading-relaxed">
+                      Only users with the <strong className="text-indigo-400">Project Lead</strong> or <strong className="text-indigo-400">Engagement Manager</strong> role are authorized to upload or modify Progress Ingestion documents (MOMs & Status Reports).
+                    </p>
+                  </div>
+                ) : (
                   <div>
                     <div className="flex items-center justify-between mb-3">
                       <h4 className="text-xs font-semibold text-gray-300 uppercase tracking-wider flex items-center gap-2">
@@ -907,7 +979,8 @@ export const ProjectDashboardPage: React.FC = () => {
                       </button>
                     </form>
                   </div>
-                </div>
+                )}
+              </div>
 
                 <div className="bg-gray-800/50 p-5 rounded-xl border border-gray-700/70 flex flex-col justify-between">
                   <div>
@@ -959,27 +1032,29 @@ export const ProjectDashboardPage: React.FC = () => {
                                 {doc.processing_status}
                               </span>
 
-                              {(doc.processing_status === "UPLOADED" ||
-                                doc.processing_status === "FAILED") && (
-                                <button
-                                  onClick={() => setProcessingDocId(doc.id)}
-                                  title="Extract and process document"
-                                  className="p-1.5 bg-green-600/20 hover:bg-green-600 border border-green-500/30 text-green-400 hover:text-white rounded-lg transition-all"
-                                >
-                                  <Play className="h-3 w-3" />
-                                </button>
-                              )}
+                              {(user?.role === "PROJECT_LEAD" || user?.role === "ENGAGEMENT_MANAGER" || user?.role === "ADMIN") &&
+                                (doc.processing_status === "UPLOADED" ||
+                                  doc.processing_status === "FAILED") && (
+                                  <button
+                                    onClick={() => setProcessingDocId(doc.id)}
+                                    title="Extract and process document"
+                                    className="p-1.5 bg-green-600/20 hover:bg-green-600 border border-green-500/30 text-green-400 hover:text-white rounded-lg transition-all"
+                                  >
+                                    <Play className="h-3 w-3" />
+                                  </button>
+                                )}
 
-                              {(doc.processing_status === "UPLOADED" ||
-                                doc.processing_status === "FAILED") && (
-                                <button
-                                  onClick={() => handleDeleteDocument(doc.id)}
-                                  title="Delete document"
-                                  className="p-1.5 bg-red-600/20 hover:bg-red-600 border border-red-500/30 text-red-400 hover:text-white rounded-lg transition-all"
-                                >
-                                  <Trash2 className="h-3 w-3" />
-                                </button>
-                              )}
+                              {(user?.role === "PROJECT_LEAD" || user?.role === "ENGAGEMENT_MANAGER" || user?.role === "ADMIN") &&
+                                (doc.processing_status === "UPLOADED" ||
+                                  doc.processing_status === "FAILED") && (
+                                  <button
+                                    onClick={() => handleDeleteDocument(doc.id)}
+                                    title="Delete document"
+                                    className="p-1.5 bg-red-600/20 hover:bg-red-600 border border-red-500/30 text-red-400 hover:text-white rounded-lg transition-all"
+                                  >
+                                    <Trash2 className="h-3 w-3" />
+                                  </button>
+                                )}
                             </div>
                           </li>
                         ))}
