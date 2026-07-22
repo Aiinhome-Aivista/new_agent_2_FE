@@ -26,7 +26,8 @@ export const ProjectDashboardPage: React.FC = () => {
   const { user } = useAuth();
   const [project, setProject] = useState<Project | null>(null);
   const [documents, setDocuments] = useState<any[]>([]);
-  const [file, setFile] = useState<File | null>(null);
+  const [baselineFile, setBaselineFile] = useState<File | null>(null);
+  const [monitoringFile, setMonitoringFile] = useState<File | null>(null);
 
   const isProjectLead = user?.role === "PROJECT_LEAD";
   const [baselineDocType, setBaselineDocType] = useState<string>("EL");
@@ -50,7 +51,8 @@ export const ProjectDashboardPage: React.FC = () => {
   const [deleteReason, setDeleteReason] = useState("");
 
   const [isDragging, setIsDragging] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const baselineFileInputRef = useRef<HTMLInputElement>(null);
+  const monitoringFileInputRef = useRef<HTMLInputElement>(null);
 
   const [notification, setNotification] = useState<{
     message: string;
@@ -129,10 +131,11 @@ export const ProjectDashboardPage: React.FC = () => {
     }
   };
 
-  const validateAndSetFile = (selectedFile: File) => {
+  const validateAndSetFile = (selectedFile: File, target: "BASELINE" | "MONITORING") => {
     const ext = selectedFile.name.split(".").pop()?.toLowerCase();
     if (ext && ["pdf", "docx", "txt"].includes(ext)) {
-      setFile(selectedFile);
+      if (target === "BASELINE") setBaselineFile(selectedFile);
+      else setMonitoringFile(selectedFile);
     } else {
       showNotification(
         "Unsupported file format. Please upload a .pdf, .docx, or .txt file.",
@@ -153,18 +156,19 @@ export const ProjectDashboardPage: React.FC = () => {
     setIsDragging(false);
   };
 
-  const handleDrop = (e: React.DragEvent) => {
+  const handleDrop = (e: React.DragEvent, target: "BASELINE" | "MONITORING") => {
     e.preventDefault();
     if (uploading) return;
     setIsDragging(false);
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      validateAndSetFile(e.dataTransfer.files[0]);
+      validateAndSetFile(e.dataTransfer.files[0], target);
     }
   };
 
   const triggerFileSelect = (target: "BASELINE" | "MONITORING") => {
     setUploadTarget(target);
-    fileInputRef.current?.click();
+    if (target === "BASELINE") baselineFileInputRef.current?.click();
+    else monitoringFileInputRef.current?.click();
   };
 
   const handleProcessDocument = async (docId: number) => {
@@ -213,13 +217,15 @@ export const ProjectDashboardPage: React.FC = () => {
     }
   };
 
-  const handleUpload = async (e: React.FormEvent) => {
+  const handleUpload = async (e: React.FormEvent, target: "BASELINE" | "MONITORING") => {
     e.preventDefault();
-    if (!file) return;
-
+    const fileToUpload = target === "BASELINE" ? baselineFile : monitoringFile;
+    if (!fileToUpload) return;
+    
+    setUploadTarget(target);
     const formData = new FormData();
-    formData.append("file", file);
-    formData.append("document_type", uploadTarget === "BASELINE" ? baselineDocType : monitoringDocType);
+    formData.append("file", fileToUpload);
+    formData.append("document_type", target === "BASELINE" ? baselineDocType : monitoringDocType);
 
     setUploading(true);
     try {
@@ -263,7 +269,8 @@ export const ProjectDashboardPage: React.FC = () => {
       if (res.data.success) {
         const docsRes = await apiClient.get(`/projects/${id}/documents/`);
         if (docsRes.data.success) setDocuments(docsRes.data.data);
-        setFile(null);
+        if (uploadTarget === "BASELINE") setBaselineFile(null);
+        else setMonitoringFile(null);
         setShowRelevancePopup(false);
         setRelevanceCheckResult(null);
         showNotification("Document uploaded successfully!", "success");
@@ -424,48 +431,48 @@ export const ProjectDashboardPage: React.FC = () => {
                   </h4>
                 </div>
 
-                <form onSubmit={handleUpload} className="space-y-4">
+                <form onSubmit={(e) => handleUpload(e, "BASELINE")} className="space-y-4">
                   <div
                     onDragOver={handleDragOver}
                     onDragLeave={handleDragLeave}
-                    onDrop={(e) => { setUploadTarget("BASELINE"); handleDrop(e); }}
+                    onDrop={(e) => handleDrop(e, "BASELINE")}
                     onClick={uploading ? undefined : () => triggerFileSelect("BASELINE")}
                     className={`border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center transition-all duration-200 ${
                       uploading
                         ? "border-gray-700 bg-gray-900/10 cursor-not-allowed opacity-50"
                         : isDragging
                           ? "border-emerald-400 bg-emerald-950/20 cursor-pointer"
-                          : file && uploadTarget === "BASELINE"
+                          : baselineFile
                             ? "border-green-500 bg-green-950/10 cursor-pointer"
                             : "border-gray-600 hover:border-gray-400 bg-gray-900/40 hover:bg-gray-900/60 cursor-pointer"
                     }`}
                   >
                     <input
                       type="file"
-                      ref={fileInputRef}
+                      ref={baselineFileInputRef}
                       accept=".pdf,.docx,.txt"
                       disabled={uploading}
                       onChange={(e) => {
                         if (e.target.files && e.target.files[0]) {
-                          validateAndSetFile(e.target.files[0]);
+                          validateAndSetFile(e.target.files[0], "BASELINE");
                         }
                       }}
                       className="hidden"
                     />
 
-                    {file && uploadTarget === "BASELINE" ? (
+                    {baselineFile ? (
                       <div className="flex flex-col items-center w-full">
                         <div className="flex items-center justify-between bg-gray-800/80 border border-gray-700 rounded-lg p-3 w-full max-w-xs">
                           <div className="flex items-center gap-2 overflow-hidden mr-2">
                             <FileText className="h-5 w-5 text-green-400 flex-shrink-0" />
-                            <span className="text-sm truncate text-gray-200">{file.name}</span>
+                            <span className="text-sm truncate text-gray-200">{baselineFile.name}</span>
                           </div>
                           <button
                             type="button"
                             disabled={uploading}
                             onClick={(e) => {
                               e.stopPropagation();
-                              setFile(null);
+                              setBaselineFile(null);
                             }}
                             className="p-1 hover:bg-gray-700 rounded text-gray-400 hover:text-red-400 transition-colors disabled:opacity-30"
                           >
@@ -493,7 +500,7 @@ export const ProjectDashboardPage: React.FC = () => {
 
                   <button
                     type="submit"
-                    disabled={!file || uploading}
+                    disabled={!baselineFile || uploading}
                     className="w-full py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-semibold rounded-xl text-xs transition-all shadow-md shadow-emerald-500/20 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                   >
                     {uploading ? "Uploading Document..." : `Upload ${getDocTypeLabel(baselineDocType)}`}
@@ -679,48 +686,48 @@ export const ProjectDashboardPage: React.FC = () => {
                       </h4>
                     </div>
 
-                    <form onSubmit={handleUpload} className="space-y-4">
+                    <form onSubmit={(e) => handleUpload(e, "MONITORING")} className="space-y-4">
                       <div
                         onDragOver={handleDragOver}
                         onDragLeave={handleDragLeave}
-                        onDrop={(e) => { setUploadTarget("MONITORING"); handleDrop(e); }}
+                        onDrop={(e) => handleDrop(e, "MONITORING")}
                         onClick={uploading ? undefined : () => triggerFileSelect("MONITORING")}
                         className={`border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center transition-all duration-200 ${
                           uploading
                             ? "border-gray-700 bg-gray-900/10 cursor-not-allowed opacity-50"
                             : isDragging
                               ? "border-indigo-400 bg-indigo-950/20 cursor-pointer"
-                              : file && uploadTarget === "MONITORING"
+                              : monitoringFile
                                 ? "border-green-500 bg-green-950/10 cursor-pointer"
                                 : "border-gray-600 hover:border-gray-400 bg-gray-900/40 hover:bg-gray-900/60 cursor-pointer"
                         }`}
                       >
                         <input
                           type="file"
-                          ref={fileInputRef}
+                          ref={monitoringFileInputRef}
                           accept=".pdf,.docx,.txt"
                           disabled={uploading}
                           onChange={(e) => {
                             if (e.target.files && e.target.files[0]) {
-                              validateAndSetFile(e.target.files[0]);
+                              validateAndSetFile(e.target.files[0], "MONITORING");
                             }
                           }}
                           className="hidden"
                         />
 
-                        {file && uploadTarget === "MONITORING" ? (
+                        {monitoringFile ? (
                           <div className="flex flex-col items-center w-full">
                             <div className="flex items-center justify-between bg-gray-800/80 border border-gray-700 rounded-lg p-3 w-full max-w-xs">
                               <div className="flex items-center gap-2 overflow-hidden mr-2">
                                 <FileText className="h-5 w-5 text-green-400 flex-shrink-0" />
-                                <span className="text-sm truncate text-gray-200">{file.name}</span>
+                                <span className="text-sm truncate text-gray-200">{monitoringFile.name}</span>
                               </div>
                               <button
                                 type="button"
                                 disabled={uploading}
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  setFile(null);
+                                  setMonitoringFile(null);
                                 }}
                                 className="p-1 hover:bg-gray-700 rounded text-gray-400 hover:text-red-400 transition-colors disabled:opacity-30"
                               >
@@ -748,7 +755,7 @@ export const ProjectDashboardPage: React.FC = () => {
 
                       <button
                         type="submit"
-                        disabled={!file || uploading}
+                        disabled={!monitoringFile || uploading}
                         className="w-full py-2.5 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white font-semibold rounded-xl text-xs transition-all shadow-md shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                       >
                         {uploading ? "Uploading Document..." : `Upload ${getDocTypeLabel(monitoringDocType)}`}
