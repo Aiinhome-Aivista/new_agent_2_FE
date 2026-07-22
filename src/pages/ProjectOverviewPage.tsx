@@ -92,6 +92,7 @@ export const ProjectOverviewPage: React.FC = () => {
   const [members, setMembers] = useState<any[]>([]);
   const [risks, setRisks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showAllScopeItems, setShowAllScopeItems] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -371,48 +372,50 @@ export const ProjectOverviewPage: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
           {/* DOCUMENT CHECKLIST */}
-          <div className="bg-gray-900/50 border border-gray-800 rounded-2xl p-5 backdrop-blur-md">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                <FileCheck2 className="w-4 h-4 text-blue-400" />
-                Document Checklist
-              </h3>
-              <Link to={`/projects/${id}/cockpit`} className="text-[11px] text-teal-400 hover:text-teal-300 flex items-center gap-1 font-semibold">
-                Upload <ArrowRight className="w-3 h-3" />
-              </Link>
-            </div>
+          <div className="bg-gray-900/50 border border-gray-800 rounded-2xl p-5 backdrop-blur-md flex flex-col justify-between h-full">
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                  <FileCheck2 className="w-4 h-4 text-blue-400" />
+                  Document Checklist
+                </h3>
+                <Link to={`/projects/${id}/cockpit`} className="text-[11px] text-teal-400 hover:text-teal-300 flex items-center gap-1 font-semibold">
+                  Upload <ArrowRight className="w-3 h-3" />
+                </Link>
+              </div>
 
-            <div className="space-y-2">
-              {[
-                { label: "Engagement Letter (EL)", type: "EL", present: hasEL, section: "Initiation" },
-                { label: "Independence & Financial (IFA)", type: "IFA", present: hasIFA, section: "Initiation" },
-                { label: "Minutes of Meeting (MOM)", type: "MOM", present: hasMOM, section: "Execution" },
-                { label: "Status Report", type: "STATUS_REPORT", present: hasStatusReport, section: "Execution" },
-              ].map((item) => (
-                <div key={item.type} className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${
-                  item.present ? "bg-emerald-950/20 border-emerald-500/20" : "bg-gray-800/50 border-gray-700/50"
-                }`}>
-                  {item.present
-                    ? <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                    : <Circle className="w-4 h-4 text-gray-600 flex-shrink-0" />
-                  }
-                  <div className="flex-1 min-w-0">
-                    <p className={`text-xs font-semibold truncate ${item.present ? "text-gray-200" : "text-gray-500"}`}>{item.label}</p>
-                    <p className="text-[10px] text-gray-600">{item.section}</p>
+              <div className="space-y-2">
+                {[
+                  { label: "Engagement Letter (EL)", type: "EL", present: hasEL, section: "Initiation" },
+                  { label: "Independence & Financial (IFA)", type: "IFA", present: hasIFA, section: "Initiation" },
+                  { label: "Minutes of Meeting (MOM)", type: "MOM", present: hasMOM, section: "Execution" },
+                  { label: "Status Report", type: "STATUS_REPORT", present: hasStatusReport, section: "Execution" },
+                ].map((item) => (
+                  <div key={item.type} className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${
+                    item.present ? "bg-emerald-950/20 border-emerald-500/20" : "bg-gray-800/50 border-gray-700/50"
+                  }`}>
+                    {item.present
+                      ? <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                      : <Circle className="w-4 h-4 text-gray-600 flex-shrink-0" />
+                    }
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-xs font-semibold truncate ${item.present ? "text-gray-200" : "text-gray-500"}`}>{item.label}</p>
+                      <p className="text-[10px] text-gray-600">{item.section}</p>
+                    </div>
+                    {item.present ? (
+                      <span className="text-[10px] text-emerald-400 font-bold">✓</span>
+                    ) : (
+                      <span className="text-[10px] text-amber-400 font-bold px-1.5 py-0.5 bg-amber-500/10 rounded border border-amber-500/20">Missing</span>
+                    )}
                   </div>
-                  {item.present ? (
-                    <span className="text-[10px] text-emerald-400 font-bold">✓</span>
-                  ) : (
-                    <span className="text-[10px] text-amber-400 font-bold px-1.5 py-0.5 bg-amber-500/10 rounded border border-amber-500/20">Missing</span>
-                  )}
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
 
             {documents.length > 0 && (
-              <div className="mt-3 pt-3 border-t border-gray-800">
+              <div className="mt-4 pt-3 border-t border-gray-850">
                 <p className="text-[10px] text-gray-500 font-medium mb-2">All Uploaded Files ({documents.length})</p>
-                <div className="space-y-1 max-h-[100px] overflow-y-auto pr-1">
+                <div className="space-y-1 max-h-[100px] overflow-y-auto pr-1 custom-scrollbar">
                   {documents.slice(0, 6).map((doc) => (
                     <div key={doc.id} className="flex items-center justify-between text-[10px]">
                       <span className="text-gray-400 truncate max-w-[150px]">{doc.document_name}</span>
@@ -429,140 +432,149 @@ export const ProjectOverviewPage: React.FC = () => {
           </div>
 
           {/* SCOPE BASELINE */}
-          <div className="bg-gray-900/50 border border-gray-800 rounded-2xl p-5 backdrop-blur-md">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                <Target className="w-4 h-4 text-purple-400" />
-                Scope Baseline
-              </h3>
-              <Link to={`/projects/${id}/baseline`} className="text-[11px] text-purple-400 hover:text-purple-300 flex items-center gap-1 font-semibold">
-                Review <ArrowRight className="w-3 h-3" />
-              </Link>
-            </div>
-
-            {!baseline ? (
-              <div className="py-8 text-center">
-                <ScrollText className="w-8 h-8 text-gray-700 mx-auto mb-2" />
-                <p className="text-xs text-gray-500">No baseline extracted yet.</p>
-                {isEM && (
-                  <Link to={`/projects/${id}/baseline`} className="text-[11px] text-purple-400 hover:text-purple-300 font-semibold mt-2 inline-flex items-center gap-1">
-                    Extract Baseline <ArrowRight className="w-3 h-3" />
-                  </Link>
-                )}
+          <div className="bg-gray-900/50 border border-gray-800 rounded-2xl p-5 backdrop-blur-md flex flex-col justify-between h-full">
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                  <Target className="w-4 h-4 text-purple-400" />
+                  Scope Baseline
+                </h3>
+                <Link to={`/projects/${id}/baseline`} className="text-[11px] text-purple-400 hover:text-purple-300 flex items-center gap-1 font-semibold">
+                  Review <ArrowRight className="w-3 h-3" />
+                </Link>
               </div>
-            ) : (
-              <>
-                <div className="mb-3 flex items-center gap-2">
-                  <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider ${
-                    baselineApproved
-                      ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
-                      : "bg-amber-500/15 text-amber-400 border border-amber-500/30"
-                  }`}>
-                    {baseline.status}
-                  </span>
-                  <span className="text-[10px] text-gray-500">{totalItems} scope items</span>
-                </div>
 
-                {/* Stacked bar */}
-                {totalItems > 0 && (
-                  <div className="mb-4">
-                    <div className="flex h-3 rounded-full overflow-hidden gap-0.5 mb-2">
-                      {inScopeItems.length > 0 && (
-                        <div className="bg-emerald-500 transition-all" style={{ width: `${(inScopeItems.length / totalItems) * 100}%` }} />
-                      )}
-                      {outOfScopeItems.length > 0 && (
-                        <div className="bg-rose-500 transition-all" style={{ width: `${(outOfScopeItems.length / totalItems) * 100}%` }} />
-                      )}
-                      {uncertainItems.length > 0 && (
-                        <div className="bg-amber-500 transition-all" style={{ width: `${(uncertainItems.length / totalItems) * 100}%` }} />
-                      )}
-                    </div>
-                    <div className="flex justify-between text-[10px]">
-                      <span className="text-emerald-400 font-semibold">In Scope: {inScopeItems.length}</span>
-                      <span className="text-rose-400 font-semibold">Out: {outOfScopeItems.length}</span>
-                      <span className="text-amber-400 font-semibold">Uncertain: {uncertainItems.length}</span>
-                    </div>
-                  </div>
-                )}
-
-                {/* Top scope items preview */}
-                <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1">
-                  {inScopeItems.slice(0, 3).map((item: any) => (
-                    <div key={item.id} className="flex items-start gap-2 p-2 bg-gray-800/50 rounded-lg border border-gray-700/30">
-                      <CheckCheck className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0 mt-0.5" />
-                      <div>
-                        <p className="text-[11px] font-semibold text-gray-200 leading-tight">{item.name}</p>
-                        {item.description && <p className="text-[10px] text-gray-500 truncate">{item.description?.slice(0, 55)}…</p>}
-                      </div>
-                    </div>
-                  ))}
-                  {inScopeItems.length > 3 && (
-                    <p className="text-[10px] text-purple-400 text-center font-semibold">+{inScopeItems.length - 3} more in scope items</p>
+              {!baseline ? (
+                <div className="py-8 text-center">
+                  <ScrollText className="w-8 h-8 text-gray-700 mx-auto mb-2" />
+                  <p className="text-xs text-gray-500">No baseline extracted yet.</p>
+                  {isEM && (
+                    <Link to={`/projects/${id}/baseline`} className="text-[11px] text-purple-400 hover:text-purple-300 font-semibold mt-2 inline-flex items-center gap-1">
+                      Extract Baseline <ArrowRight className="w-3 h-3" />
+                    </Link>
                   )}
                 </div>
-              </>
-            )}
+              ) : (
+                <>
+                  <div className="mb-3 flex items-center gap-2">
+                    <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider ${
+                      baselineApproved
+                        ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
+                        : "bg-amber-500/15 text-amber-400 border border-amber-500/30"
+                    }`}>
+                      {baseline.status}
+                    </span>
+                    <span className="text-[10px] text-gray-500">{totalItems} scope items</span>
+                  </div>
+
+                  {/* Stacked bar */}
+                  {totalItems > 0 && (
+                    <div className="mb-4">
+                      <div className="flex h-3 rounded-full overflow-hidden gap-0.5 mb-2">
+                        {inScopeItems.length > 0 && (
+                          <div className="bg-emerald-500 transition-all" style={{ width: `${(inScopeItems.length / totalItems) * 100}%` }} />
+                        )}
+                        {outOfScopeItems.length > 0 && (
+                          <div className="bg-rose-500 transition-all" style={{ width: `${(outOfScopeItems.length / totalItems) * 100}%` }} />
+                        )}
+                        {uncertainItems.length > 0 && (
+                          <div className="bg-amber-500 transition-all" style={{ width: `${(uncertainItems.length / totalItems) * 100}%` }} />
+                        )}
+                      </div>
+                      <div className="flex justify-between text-[10px]">
+                        <span className="text-emerald-400 font-semibold">In Scope: {inScopeItems.length}</span>
+                        <span className="text-rose-400 font-semibold">Out: {outOfScopeItems.length}</span>
+                        <span className="text-amber-400 font-semibold">Uncertain: {uncertainItems.length}</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Top scope items preview */}
+                  <div className="space-y-2 max-h-[250px] overflow-y-auto pr-1 custom-scrollbar">
+                    {(showAllScopeItems ? inScopeItems : inScopeItems.slice(0, 3)).map((item: any) => (
+                      <div key={item.id} className="flex items-start gap-2 p-2 bg-gray-800/50 rounded-lg border border-gray-700/30">
+                        <CheckCheck className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0 mt-0.5" />
+                        <div>
+                          <p className="text-[11px] font-semibold text-gray-200 leading-tight">{item.name}</p>
+                          {item.description && <p className="text-[10px] text-gray-500 truncate">{item.description?.slice(0, 55)}…</p>}
+                        </div>
+                      </div>
+                    ))}
+                    {inScopeItems.length > 3 && (
+                      <button
+                        onClick={() => setShowAllScopeItems(!showAllScopeItems)}
+                        className="w-full text-[10px] text-purple-400 text-center font-semibold mt-1 hover:text-purple-300 transition-colors cursor-pointer focus:outline-none block"
+                      >
+                        {showAllScopeItems ? "Show less" : `+${inScopeItems.length - 3} more in scope items`}
+                      </button>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
           </div>
 
           {/* RISK SUMMARY */}
-          <div className="bg-gray-900/50 border border-gray-800 rounded-2xl p-5 backdrop-blur-md">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 text-rose-400" />
-                Risk Summary
-              </h3>
-              <Link to={`/projects/${id}/tracker`} className="text-[11px] text-rose-400 hover:text-rose-300 flex items-center gap-1 font-semibold">
-                Tracker <ArrowRight className="w-3 h-3" />
-              </Link>
-            </div>
-
-            {risks.length === 0 ? (
-              <div className="py-8 text-center">
-                <Shield className="w-8 h-8 text-gray-700 mx-auto mb-2" />
-                <p className="text-xs text-gray-500">No risk findings recorded yet.</p>
+          <div className="bg-gray-900/50 border border-gray-800 rounded-2xl p-5 backdrop-blur-md flex flex-col justify-between h-full">
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 text-rose-400" />
+                  Risk Summary
+                </h3>
+                <Link to={`/projects/${id}/tracker`} className="text-[11px] text-rose-400 hover:text-rose-300 flex items-center gap-1 font-semibold">
+                  Tracker <ArrowRight className="w-3 h-3" />
+                </Link>
               </div>
-            ) : (
-              <>
-                {/* Severity breakdown bars */}
-                <div className="space-y-2.5 mb-4">
-                  {[
-                    { label: "Critical / High", count: riskHigh, color: "bg-rose-500", textColor: "text-rose-400" },
-                    { label: "Medium", count: riskMed, color: "bg-amber-500", textColor: "text-amber-400" },
-                    { label: "Low", count: riskLow, color: "bg-blue-500", textColor: "text-blue-400" },
-                    { label: "Resolved", count: resolvedRisks.length, color: "bg-emerald-500", textColor: "text-emerald-400" },
-                  ].map((bar) => (
-                    <div key={bar.label}>
-                      <div className="flex justify-between text-[10px] mb-1">
-                        <span className="text-gray-500">{bar.label}</span>
-                        <span className={`font-bold ${bar.textColor}`}>{bar.count}</span>
-                      </div>
-                      <div className="w-full h-1.5 bg-gray-800 rounded-full overflow-hidden">
-                        <div
-                          className={`h-full ${bar.color} rounded-full transition-all duration-700`}
-                          style={{ width: risks.length > 0 ? `${(bar.count / risks.length) * 100}%` : "0%" }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
 
-                {/* Recent risks */}
-                <div className="space-y-2 max-h-[140px] overflow-y-auto pr-1">
-                  {openRisks.slice(0, 4).map((risk) => (
-                    <div key={risk.id} className="flex items-start gap-2 p-2 bg-gray-800/50 rounded-lg border border-gray-700/30">
-                      <span className={`inline-block mt-0.5 w-2 h-2 rounded-full flex-shrink-0 ${
-                        risk.severity === "HIGH" || risk.severity === "CRITICAL" ? "bg-rose-400" :
-                        risk.severity === "MEDIUM" ? "bg-amber-400" : "bg-blue-400"
-                      }`} />
-                      <div className="min-w-0">
-                        <p className="text-[11px] font-semibold text-gray-200 leading-tight truncate">{risk.title || risk.finding}</p>
-                        <p className="text-[10px] text-gray-500">{risk.severity}</p>
-                      </div>
-                    </div>
-                  ))}
+              {risks.length === 0 ? (
+                <div className="py-8 text-center">
+                  <Shield className="w-8 h-8 text-gray-700 mx-auto mb-2" />
+                  <p className="text-xs text-gray-500">No risk findings recorded yet.</p>
                 </div>
-              </>
-            )}
+              ) : (
+                <>
+                  {/* Severity breakdown bars */}
+                  <div className="space-y-2.5 mb-4">
+                    {[
+                      { label: "Critical / High", count: riskHigh, color: "bg-rose-500", textColor: "text-rose-400" },
+                      { label: "Medium", count: riskMed, color: "bg-amber-500", textColor: "text-amber-400" },
+                      { label: "Low", count: riskLow, color: "bg-blue-500", textColor: "text-blue-400" },
+                      { label: "Resolved", count: resolvedRisks.length, color: "bg-emerald-500", textColor: "text-emerald-400" },
+                    ].map((bar) => (
+                      <div key={bar.label}>
+                        <div className="flex justify-between text-[10px] mb-1">
+                          <span className="text-gray-500">{bar.label}</span>
+                          <span className={`font-bold ${bar.textColor}`}>{bar.count}</span>
+                        </div>
+                        <div className="w-full h-1.5 bg-gray-800 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full ${bar.color} rounded-full transition-all duration-700`}
+                            style={{ width: risks.length > 0 ? `${(bar.count / risks.length) * 100}%` : "0%" }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Recent risks */}
+                  <div className="space-y-2 max-h-[250px] overflow-y-auto pr-1 custom-scrollbar">
+                    {openRisks.slice(0, 4).map((risk) => (
+                      <div key={risk.id} className="flex items-start gap-2 p-2 bg-gray-800/50 rounded-lg border border-gray-700/30">
+                        <span className={`inline-block mt-0.5 w-2 h-2 rounded-full flex-shrink-0 ${
+                          risk.severity === "HIGH" || risk.severity === "CRITICAL" ? "bg-rose-400" :
+                          risk.severity === "MEDIUM" ? "bg-amber-400" : "bg-blue-400"
+                        }`} />
+                        <div className="min-w-0">
+                          <p className="text-[11px] font-semibold text-gray-200 leading-tight truncate">{risk.title || risk.finding}</p>
+                          <p className="text-[10px] text-gray-500">{risk.severity}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </div>
 
