@@ -926,9 +926,17 @@ export const BaselineReviewPage: React.FC = () => {
                           <span className="font-semibold text-emerald-400 px-2.5 py-0.5 bg-emerald-950/40 rounded border border-emerald-800/30">
                             {item.scope_type}
                           </span>
-                          <span className="text-gray-500 font-medium">
-                            Confidence: {(item.confidence * 100).toFixed(0)}%
-                          </span>
+                          <div className="flex items-center gap-3">
+                            {item.deadline && (
+                              <span className="text-purple-300 font-semibold bg-purple-950/45 px-2 py-0.5 rounded border border-purple-800/30 flex items-center gap-1">
+                                <Clock className="w-3.5 h-3.5 text-purple-400" />
+                                {new Date(item.deadline).toLocaleDateString(undefined, { dateStyle: "medium" })}
+                              </span>
+                            )}
+                            <span className="text-gray-500 font-medium">
+                              Confidence: {(item.confidence * 100).toFixed(0)}%
+                            </span>
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -1131,10 +1139,18 @@ export const BaselineReviewPage: React.FC = () => {
                               ) : (
                                 <div className="space-y-3">
                                   {inScope.map((item: any) => (
-                                    <div key={item.id} className="p-3 bg-gray-850/40 rounded-lg border border-gray-800/50">
-                                      <p className="text-xs font-semibold text-gray-200">{item.name}</p>
-                                      {item.description && (
-                                        <p className="text-[11px] text-gray-500 mt-1">{item.description}</p>
+                                    <div key={item.id} className="p-3 bg-gray-850/40 rounded-lg border border-gray-800/50 flex flex-col justify-between gap-2">
+                                      <div>
+                                        <p className="text-xs font-semibold text-gray-200">{item.name}</p>
+                                        {item.description && (
+                                          <p className="text-[11px] text-gray-500 mt-1">{item.description}</p>
+                                        )}
+                                      </div>
+                                      {item.deadline && (
+                                        <div className="text-[10px] text-purple-300 font-semibold bg-purple-950/40 px-2 py-0.5 rounded border border-purple-800/20 w-fit flex items-center gap-1 mt-1">
+                                          <Clock className="w-3 h-3 text-purple-400" />
+                                          {new Date(item.deadline).toLocaleDateString(undefined, { dateStyle: "medium" })}
+                                        </div>
                                       )}
                                     </div>
                                   ))}
