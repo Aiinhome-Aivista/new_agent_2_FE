@@ -721,10 +721,10 @@ export const TrackerPage: React.FC = () => {
                           
                           {/* Single Card Export */}
                           <div className="relative">
-                            <button onClick={(e) => { e.stopPropagation(); setOpenExportCardId(openExportCardId === item.id ? null : item.id); }} className="px-3 py-2 bg-gray-700 hover:bg-gray-650 rounded-md text-sm transition-colors cursor-pointer font-medium flex items-center gap-1.5 border border-gray-600/50">
+                            {/* <button onClick={(e) => { e.stopPropagation(); setOpenExportCardId(openExportCardId === item.id ? null : item.id); }} className="px-3 py-2 bg-gray-700 hover:bg-gray-650 rounded-md text-sm transition-colors cursor-pointer font-medium flex items-center gap-1.5 border border-gray-600/50">
                               <span>Export</span>
                               <span className="text-[10px] text-gray-400">▼</span>
-                            </button>
+                            </button> */}
                             
                             {openExportCardId === item.id && (
                               <>
