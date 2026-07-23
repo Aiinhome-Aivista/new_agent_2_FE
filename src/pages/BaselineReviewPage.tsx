@@ -257,6 +257,28 @@ export const BaselineReviewPage: React.FC = () => {
     }
   };
 
+  const handleUpdateCompletionStatus = async (itemId: number, newStatus: string) => {
+    try {
+      const res = await apiClient.patch(
+        `/projects/${id}/baseline/items/${itemId}/completion`,
+        { completion_status: newStatus }
+      );
+      if (res.data.success) {
+        showNotification(res.data.message, "success");
+        const baselineRes = await apiClient.get(`/projects/${id}/baseline/`);
+        if (baselineRes.data.success) {
+          setBaseline(baselineRes.data.data);
+        }
+      }
+    } catch (error: any) {
+      showNotification(
+        "Failed to update status: " +
+          (error.response?.data?.detail || "Server error"),
+        "error",
+      );
+    }
+  };
+
   const handleExtractClick = async () => {
     try {
       const res = await apiClient.get(`/projects/${id}/documents/`);
@@ -866,8 +888,13 @@ export const BaselineReviewPage: React.FC = () => {
                       >
                         <div>
                           <div className="flex justify-between items-start gap-2 mb-2">
-                            <h4 className="font-bold text-lg text-white group-hover:text-emerald-300 transition-colors">
+                            <h4 className="font-bold text-lg text-white group-hover:text-emerald-300 transition-colors flex items-center gap-2">
                               {item.name}
+                              {item.completion_status === 'COMPLETED' && (
+                                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950/40 text-emerald-400 border border-emerald-800/30">
+                                  COMPLETED
+                                </span>
+                              )}
                             </h4>
                             <div className="flex items-center gap-2 flex-shrink-0">
                               {(() => {
@@ -881,16 +908,32 @@ export const BaselineReviewPage: React.FC = () => {
                               })()}
                               {(user?.role === "ADMIN" ||
                                 user?.role === "ENGAGEMENT_MANAGER") && (
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setDeletingItemId(item.id);
-                                  }}
-                                  title="Delete scope item"
-                                  className="p-1.5 text-rose-400 hover:text-white bg-rose-950/30 hover:bg-rose-900/50 border border-rose-500/20 rounded-lg transition-colors cursor-pointer flex-shrink-0"
-                                >
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                </button>
+                                <>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleUpdateCompletionStatus(item.id, item.completion_status === 'COMPLETED' ? 'ACTIVE' : 'COMPLETED');
+                                    }}
+                                    title={item.completion_status === 'COMPLETED' ? "Mark as Active" : "Mark as Completed"}
+                                    className={`p-1.5 rounded-lg transition-colors cursor-pointer flex-shrink-0 border ${
+                                      item.completion_status === 'COMPLETED'
+                                        ? "text-emerald-400 hover:text-white bg-emerald-950/30 hover:bg-emerald-900/50 border-emerald-500/20"
+                                        : "text-gray-400 hover:text-emerald-400 bg-gray-800 hover:bg-gray-700 border-gray-700/60"
+                                    }`}
+                                  >
+                                    <CheckCircle2 className="w-3.5 h-3.5" />
+                                  </button>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setDeletingItemId(item.id);
+                                    }}
+                                    title="Delete scope item"
+                                    className="p-1.5 text-rose-400 hover:text-white bg-rose-950/30 hover:bg-rose-900/50 border border-rose-500/20 rounded-lg transition-colors cursor-pointer flex-shrink-0"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </>
                               )}
                             </div>
                           </div>
@@ -974,8 +1017,13 @@ export const BaselineReviewPage: React.FC = () => {
                       >
                         <div>
                           <div className="flex justify-between items-start gap-2 mb-2">
-                            <h4 className="font-bold text-lg text-white group-hover:text-rose-300 transition-colors">
+                            <h4 className="font-bold text-lg text-white group-hover:text-rose-300 transition-colors flex items-center gap-2">
                               {item.name}
+                              {item.completion_status === 'COMPLETED' && (
+                                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950/40 text-emerald-400 border border-emerald-800/30">
+                                  COMPLETED
+                                </span>
+                              )}
                             </h4>
                             <div className="flex items-center gap-2 flex-shrink-0">
                               {(() => {
@@ -989,16 +1037,32 @@ export const BaselineReviewPage: React.FC = () => {
                               })()}
                               {(user?.role === "ADMIN" ||
                                 user?.role === "ENGAGEMENT_MANAGER") && (
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setDeletingItemId(item.id);
-                                  }}
-                                  title="Delete scope item"
-                                  className="p-1.5 text-rose-400 hover:text-white bg-rose-950/30 hover:bg-rose-900/50 border border-rose-500/20 rounded-lg transition-colors cursor-pointer flex-shrink-0"
-                                >
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                </button>
+                                <>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleUpdateCompletionStatus(item.id, item.completion_status === 'COMPLETED' ? 'ACTIVE' : 'COMPLETED');
+                                    }}
+                                    title={item.completion_status === 'COMPLETED' ? "Mark as Active" : "Mark as Completed"}
+                                    className={`p-1.5 rounded-lg transition-colors cursor-pointer flex-shrink-0 border ${
+                                      item.completion_status === 'COMPLETED'
+                                        ? "text-emerald-400 hover:text-white bg-emerald-950/30 hover:bg-emerald-900/50 border-emerald-500/20"
+                                        : "text-gray-400 hover:text-emerald-400 bg-gray-800 hover:bg-gray-700 border-gray-700/60"
+                                    }`}
+                                  >
+                                    <CheckCircle2 className="w-3.5 h-3.5" />
+                                  </button>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setDeletingItemId(item.id);
+                                    }}
+                                    title="Delete scope item"
+                                    className="p-1.5 text-rose-400 hover:text-white bg-rose-950/30 hover:bg-rose-900/50 border border-rose-500/20 rounded-lg transition-colors cursor-pointer flex-shrink-0"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </>
                               )}
                             </div>
                           </div>
