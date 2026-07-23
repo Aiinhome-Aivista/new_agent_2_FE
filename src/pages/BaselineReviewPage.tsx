@@ -6,14 +6,15 @@ import { useAuth } from "../auth/AuthContext";
 import { Loader } from "../components/Loader";
 
 const formatDate = (dateStr: string | null | undefined) => {
-  if (!dateStr) return 'N/A';
+  if (!dateStr) return "N/A";
   try {
-    const cleanStr = typeof dateStr === 'string' ? dateStr.replace(' ', 'T') : dateStr;
+    const cleanStr =
+      typeof dateStr === "string" ? dateStr.replace(" ", "T") : dateStr;
     const d = new Date(cleanStr);
-    if (isNaN(d.getTime())) return 'N/A';
-    return d.toLocaleDateString(undefined, { dateStyle: 'medium' });
+    if (isNaN(d.getTime())) return "N/A";
+    return d.toLocaleDateString(undefined, { dateStyle: "medium" });
   } catch (e) {
-    return 'N/A';
+    return "N/A";
   }
 };
 import {
@@ -40,7 +41,9 @@ export const BaselineReviewPage: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [versions, setVersions] = useState<any[]>([]);
-  const [expandedVersions, setExpandedVersions] = useState<Record<number, boolean>>({});
+  const [expandedVersions, setExpandedVersions] = useState<
+    Record<number, boolean>
+  >({});
 
   useEffect(() => {
     const fetchData = async () => {
@@ -60,7 +63,9 @@ export const BaselineReviewPage: React.FC = () => {
           setVersions(versionsRes.data.data);
         }
       } catch (error) {
-        console.error("Failed to fetch baseline, project details, or versions history");
+        console.error(
+          "Failed to fetch baseline, project details, or versions history",
+        );
       } finally {
         setLoading(false);
       }
@@ -103,9 +108,8 @@ export const BaselineReviewPage: React.FC = () => {
 
   useEffect(() => {
     if (selectedDeliverableId && timelineContainerRef.current) {
-      const activeNode = timelineContainerRef.current.querySelector(
-        `[data-active="true"]`
-      );
+      const activeNode =
+        timelineContainerRef.current.querySelector(`[data-active="true"]`);
       if (activeNode) {
         activeNode.scrollIntoView({
           behavior: "smooth",
@@ -138,7 +142,9 @@ export const BaselineReviewPage: React.FC = () => {
 
   const getItemVersion = (sourceDocId: number) => {
     if (!sourceDocId || !versions) return null;
-    const foundVer = versions.find((v: any) => v.source_document_id === sourceDocId);
+    const foundVer = versions.find(
+      (v: any) => v.source_document_id === sourceDocId,
+    );
     return foundVer ? `v${foundVer.version}` : null;
   };
 
@@ -270,11 +276,14 @@ export const BaselineReviewPage: React.FC = () => {
     }
   };
 
-  const handleUpdateCompletionStatus = async (itemId: number, newStatus: string) => {
+  const handleUpdateCompletionStatus = async (
+    itemId: number,
+    newStatus: string,
+  ) => {
     try {
       const res = await apiClient.patch(
         `/projects/${id}/baseline/items/${itemId}/completion`,
-        { completion_status: newStatus }
+        { completion_status: newStatus },
       );
       if (res.data.success) {
         showNotification(res.data.message, "success");
@@ -399,7 +408,7 @@ export const BaselineReviewPage: React.FC = () => {
       <body>
         <h1>Contract Scope Baseline Review Report</h1>
         <div class="project-details">
-          <p><strong>Project Name:</strong> ${project?.project_name || 'N/A'}</p>
+          <p><strong>Project Name:</strong> ${project?.project_name || "N/A"}</p>
           <p><strong>Start Date:</strong> ${formatDate(project?.start_date)}</p>
           <p><strong>End Date:</strong> ${formatDate(project?.end_date)}</p>
           <p><strong>Baseline Status:</strong> ${baseline.status}</p>
@@ -508,7 +517,7 @@ export const BaselineReviewPage: React.FC = () => {
           <h1>Contract Scope Baseline Review Report</h1>
           <div class="header-meta">
             <div class="header-meta-row">
-              <div class="header-meta-item"><strong>Project Name:</strong> ${project?.project_name || 'N/A'}</div>
+              <div class="header-meta-item"><strong>Project Name:</strong> ${project?.project_name || "N/A"}</div>
               <div class="header-meta-item" style="text-align: right;"><strong>Baseline Status:</strong> ${baseline.status}</div>
             </div>
             <div class="header-meta-row">
@@ -592,6 +601,13 @@ export const BaselineReviewPage: React.FC = () => {
       (item: any) => item.scope_type !== "IN_SCOPE",
     ) || [];
 
+  const isBaselineExtracted = !!(
+    baseline &&
+    (inScopeItems.length > 0 ||
+      outOfScopeItems.length > 0 ||
+      (baseline.deliverables && baseline.deliverables.length > 0))
+  );
+
   return (
     <div className="flex-1 bg-transparent p-6 md:p-10 relative overflow-hidden">
       <div className="max-w-6xl mx-auto">
@@ -601,11 +617,11 @@ export const BaselineReviewPage: React.FC = () => {
             <h1 className="text-3xl font-bold">Baseline Review</h1>
           </div>
           <div className="flex gap-4 items-center">
-            {baseline && (
+            {baseline && baseline.status && (
               <span
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wider ${
-                  baseline.status === "APPROVED" 
-                    ? "bg-green-600/20 border border-green-500/40 text-green-300" 
+                  baseline.status === "APPROVED"
+                    ? "bg-green-600/20 border border-green-500/40 text-green-300"
                     : "bg-amber-600/20 border border-amber-500/40 text-amber-300"
                 }`}
               >
@@ -644,8 +660,14 @@ export const BaselineReviewPage: React.FC = () => {
         </div>
 
         {/* Status display section */}
-        {!baseline ? (
-          <p className="text-gray-400">No baseline exists yet.</p>
+        {!isBaselineExtracted ? (
+          <div className="text-center py-16 bg-amber-950/10 border border-amber-500/20 rounded-2xl animate-fade-in-up p-8 max-w-2xl mx-auto my-8">
+            <AlertTriangle className="w-12 h-12 text-amber-500 mx-auto mb-4 animate-bounce" />
+            <h3 className="text-lg font-bold text-white mb-2">
+              No document is extracted please extract document for baseline
+              review
+            </h3>
+          </div>
         ) : (
           <div>
             <div className="mb-8 border-b border-gray-800"></div>
@@ -685,7 +707,8 @@ export const BaselineReviewPage: React.FC = () => {
                           <div className="absolute top-[72px] left-12 right-12 h-1 bg-gray-800 rounded-full z-0"></div>
                           {baseline.deliverables?.map(
                             (item: any, index: number) => {
-                              const isSelected = selectedDeliverableId === item.id;
+                              const isSelected =
+                                selectedDeliverableId === item.id;
                               const displayName =
                                 item.deadline || `Item ${index + 1}`;
 
@@ -694,7 +717,9 @@ export const BaselineReviewPage: React.FC = () => {
                                   key={item.id}
                                   data-active={isSelected}
                                   className="flex flex-col items-center flex-shrink-0 cursor-pointer group mx-6 first:ml-0 last:mr-0 relative pt-12"
-                                  onClick={() => setSelectedDeliverableId(item.id)}
+                                  onClick={() =>
+                                    setSelectedDeliverableId(item.id)
+                                  }
                                 >
                                   {/* Date Label bubble with down caret */}
                                   <div className="absolute top-0 left-1/2 -translate-x-1/2 flex flex-col items-center pointer-events-none">
@@ -749,9 +774,11 @@ export const BaselineReviewPage: React.FC = () => {
                     </div>
 
                     {/* Right navigation arrow */}
-                     <button
+                    <button
                       onClick={handleNext}
-                      disabled={activeIndex >= (baseline?.deliverables?.length || 0) - 1}
+                      disabled={
+                        activeIndex >= (baseline?.deliverables?.length || 0) - 1
+                      }
                       className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-900 border border-gray-700 text-gray-400 hover:text-white hover:bg-gray-800 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-colors cursor-pointer z-10 shadow-md"
                     >
                       <ChevronRight className="w-5 h-5" />
@@ -810,8 +837,6 @@ export const BaselineReviewPage: React.FC = () => {
               )}
             </div>
             <div className="mb-12 border-b border-gray-800"></div>
-          </div>
-        )}
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold">Scope Items Baseline</h2>
               <div className="flex items-center gap-3">
@@ -904,7 +929,7 @@ export const BaselineReviewPage: React.FC = () => {
                           <div className="flex justify-between items-start gap-2 mb-2">
                             <h4 className="font-bold text-lg text-white group-hover:text-emerald-300 transition-colors flex items-center gap-2">
                               {item.name}
-                              {item.completion_status === 'COMPLETED' && (
+                              {item.completion_status === "COMPLETED" && (
                                 <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950/40 text-emerald-400 border border-emerald-800/30">
                                   COMPLETED
                                 </span>
@@ -912,7 +937,9 @@ export const BaselineReviewPage: React.FC = () => {
                             </h4>
                             <div className="flex items-center gap-2 flex-shrink-0">
                               {(() => {
-                                const versionLabel = getItemVersion(item.source_document_id);
+                                const versionLabel = getItemVersion(
+                                  item.source_document_id,
+                                );
                                 if (!versionLabel) return null;
                                 return (
                                   <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-950/40 text-purple-300 border border-purple-800/30">
@@ -923,7 +950,7 @@ export const BaselineReviewPage: React.FC = () => {
                               {(user?.role === "ADMIN" ||
                                 user?.role === "ENGAGEMENT_MANAGER") && (
                                 <>
-                                  {item.completion_status === 'COMPLETED' && (
+                                  {item.completion_status === "COMPLETED" && (
                                     <div
                                       title="Completed"
                                       className="p-1.5 rounded-lg flex-shrink-0 border text-emerald-400 bg-emerald-950/30 border-emerald-500/20"
@@ -1027,7 +1054,7 @@ export const BaselineReviewPage: React.FC = () => {
                           <div className="flex justify-between items-start gap-2 mb-2">
                             <h4 className="font-bold text-lg text-white group-hover:text-rose-300 transition-colors flex items-center gap-2">
                               {item.name}
-                              {item.completion_status === 'COMPLETED' && (
+                              {item.completion_status === "COMPLETED" && (
                                 <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950/40 text-emerald-400 border border-emerald-800/30">
                                   COMPLETED
                                 </span>
@@ -1035,7 +1062,9 @@ export const BaselineReviewPage: React.FC = () => {
                             </h4>
                             <div className="flex items-center gap-2 flex-shrink-0">
                               {(() => {
-                                const versionLabel = getItemVersion(item.source_document_id);
+                                const versionLabel = getItemVersion(
+                                  item.source_document_id,
+                                );
                                 if (!versionLabel) return null;
                                 return (
                                   <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-950/40 text-purple-300 border border-purple-800/30">
@@ -1046,7 +1075,7 @@ export const BaselineReviewPage: React.FC = () => {
                               {(user?.role === "ADMIN" ||
                                 user?.role === "ENGAGEMENT_MANAGER") && (
                                 <>
-                                  {item.completion_status === 'COMPLETED' && (
+                                  {item.completion_status === "COMPLETED" && (
                                     <div
                                       title="Completed"
                                       className="p-1.5 rounded-lg flex-shrink-0 border text-emerald-400 bg-emerald-950/30 border-emerald-500/20"
@@ -1114,162 +1143,213 @@ export const BaselineReviewPage: React.FC = () => {
               </div>
             </div>
 
-        {/* Baseline Version History */}
-        {versions && versions.length > 0 && (
-          <div className="mt-16">
-            <div className="mb-12 border-b border-gray-800"></div>
-            <h2 className="text-2xl font-bold mb-6">Baseline Version History</h2>
-            <div className="space-y-4">
-              {versions.map((ver) => {
-                const isExpanded = !!expandedVersions[ver.id];
-                const displayVersion = `Version ${ver.version} (v${ver.version})`;
-                
-                // Filtering scope items for version history:
-                // If version === 1, show all items.
-                // If version > 1, show only items where source_document_id === ver.source_document_id.
-                const rawItems = ver.scope_items || [];
-                const filteredItems = ver.version === 1
-                  ? rawItems
-                  : rawItems.filter((item: any) => item.source_document_id === ver.source_document_id);
-                  
-                const inScope = filteredItems.filter((i: any) => i.scope_type === "IN_SCOPE");
-                const outOfScope = filteredItems.filter((i: any) => i.scope_type === "OUT_OF_SCOPE");
-                const uncertain = filteredItems.filter((i: any) => i.scope_type === "UNCERTAIN");
-                
-                const approvedDate = formatDate(ver.approved_at);
-                const createdDate = formatDate(ver.created_at);
+            {/* Baseline Version History */}
+            {versions && versions.length > 0 && (
+              <div className="mt-16">
+                <div className="mb-12 border-b border-gray-800"></div>
+                <h2 className="text-2xl font-bold mb-6">
+                  Baseline Version History
+                </h2>
+                <div className="space-y-4">
+                  {versions.map((ver) => {
+                    const isExpanded = !!expandedVersions[ver.id];
+                    const displayVersion = `Version ${ver.version} (v${ver.version})`;
 
-                return (
-                  <div 
-                    key={ver.id} 
-                    className="border border-gray-800 rounded-xl bg-gray-900/30 backdrop-blur-md overflow-hidden transition-all duration-300"
-                  >
-                    {/* Header */}
-                    <button
-                      onClick={() => setExpandedVersions(prev => ({ ...prev, [ver.id]: !isExpanded }))}
-                      className="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-gray-850/50 transition-colors cursor-pointer select-none"
-                    >
-                      <div className="flex flex-wrap items-center gap-4">
-                        <span className="text-lg font-bold text-white">
-                          {displayVersion}
-                        </span>
-                        <span className={`px-2.5 py-0.5 rounded text-xs font-bold ${
-                          ver.status === "APPROVED" 
-                            ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" 
-                            : ver.status === "SUPERSEDED"
-                            ? "bg-gray-500/10 text-gray-400 border border-gray-500/20"
-                            : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
-                        }`}>
-                          {ver.status}
-                        </span>
-                        {ver.document_name && (
-                          <span className="text-xs text-cyan-400 font-medium">
-                            Doc: {ver.document_name}
-                          </span>
-                        )}
-                        <span className="text-xs text-gray-400">
-                          {ver.status === "APPROVED" ? `Approved on: ${approvedDate}` : `Created on: ${createdDate}`}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <span className="text-xs text-gray-500 font-semibold bg-gray-850 px-2.5 py-1 rounded-full">
-                          {filteredItems.length} {filteredItems.length === 1 ? "item" : "items"}
-                        </span>
-                        <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`} />
-                      </div>
-                    </button>
+                    // Filtering scope items for version history:
+                    // If version === 1, show all items.
+                    // If version > 1, show only items where source_document_id === ver.source_document_id.
+                    const rawItems = ver.scope_items || [];
+                    const filteredItems =
+                      ver.version === 1
+                        ? rawItems
+                        : rawItems.filter(
+                            (item: any) =>
+                              item.source_document_id ===
+                              ver.source_document_id,
+                          );
 
-                    {/* Collapsible Content */}
-                    {isExpanded && (
-                      <div className="px-6 pb-6 pt-2 border-t border-gray-850 animate-fadeIn bg-gray-950/20">
-                        {filteredItems.length === 0 ? (
-                          <p className="text-gray-500 text-sm py-4 italic text-center">
-                            No scope items found for this baseline version.
-                          </p>
-                        ) : (
-                          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-4">
-                            {/* In Scope */}
-                            <div className="bg-gray-900/40 p-5 rounded-lg border border-gray-800/80">
-                              <h4 className="text-sm font-bold text-emerald-400 uppercase tracking-wider mb-4 border-b border-gray-800 pb-2">
-                                In Scope ({inScope.length})
-                              </h4>
-                              {inScope.length === 0 ? (
-                                <p className="text-gray-600 text-xs italic">No in-scope items.</p>
-                              ) : (
-                                <div className="space-y-3">
-                                  {inScope.map((item: any) => (
-                                    <div key={item.id} className="p-3 bg-gray-850/40 rounded-lg border border-gray-800/50 flex flex-col justify-between gap-2">
-                                      <div>
-                                        <p className="text-xs font-semibold text-gray-200">{item.name}</p>
-                                        {item.description && (
-                                          <p className="text-[11px] text-gray-500 mt-1">{item.description}</p>
-                                        )}
-                                      </div>
-                                      {item.deadline && (
-                                        <div className="text-[10px] text-purple-300 font-semibold bg-purple-950/40 px-2 py-0.5 rounded border border-purple-800/20 w-fit flex items-center gap-1 mt-1">
-                                          <Clock className="w-3 h-3 text-purple-400" />
-                                          {formatDate(item.deadline)}
-                                        </div>
-                                      )}
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
+                    const inScope = filteredItems.filter(
+                      (i: any) => i.scope_type === "IN_SCOPE",
+                    );
+                    const outOfScope = filteredItems.filter(
+                      (i: any) => i.scope_type === "OUT_OF_SCOPE",
+                    );
+                    const uncertain = filteredItems.filter(
+                      (i: any) => i.scope_type === "UNCERTAIN",
+                    );
 
-                            {/* Out of Scope & Uncertain */}
-                            <div className="space-y-6">
-                              {/* Out of Scope */}
-                              <div className="bg-gray-900/40 p-5 rounded-lg border border-gray-800/80">
-                                <h4 className="text-sm font-bold text-rose-400 uppercase tracking-wider mb-4 border-b border-gray-800 pb-2">
-                                  Out of Scope ({outOfScope.length})
-                                </h4>
-                                {outOfScope.length === 0 ? (
-                                  <p className="text-gray-600 text-xs italic">No out-of-scope items.</p>
-                                ) : (
-                                  <div className="space-y-3">
-                                    {outOfScope.map((item: any) => (
-                                      <div key={item.id} className="p-3 bg-gray-850/40 rounded-lg border border-gray-800/50">
-                                        <p className="text-xs font-semibold text-gray-200">{item.name}</p>
-                                        {item.description && (
-                                          <p className="text-[11px] text-gray-500 mt-1">{item.description}</p>
-                                        )}
-                                      </div>
-                                    ))}
-                                  </div>
-                                )}
-                              </div>
+                    const approvedDate = formatDate(ver.approved_at);
+                    const createdDate = formatDate(ver.created_at);
 
-                              {/* Uncertain */}
-                              {uncertain.length > 0 && (
+                    return (
+                      <div
+                        key={ver.id}
+                        className="border border-gray-800 rounded-xl bg-gray-900/30 backdrop-blur-md overflow-hidden transition-all duration-300"
+                      >
+                        {/* Header */}
+                        <button
+                          onClick={() =>
+                            setExpandedVersions((prev) => ({
+                              ...prev,
+                              [ver.id]: !isExpanded,
+                            }))
+                          }
+                          className="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-gray-850/50 transition-colors cursor-pointer select-none"
+                        >
+                          <div className="flex flex-wrap items-center gap-4">
+                            <span className="text-lg font-bold text-white">
+                              {displayVersion}
+                            </span>
+                            <span
+                              className={`px-2.5 py-0.5 rounded text-xs font-bold ${
+                                ver.status === "APPROVED"
+                                  ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                                  : ver.status === "SUPERSEDED"
+                                    ? "bg-gray-500/10 text-gray-400 border border-gray-500/20"
+                                    : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                              }`}
+                            >
+                              {ver.status}
+                            </span>
+                            {ver.document_name && (
+                              <span className="text-xs text-cyan-400 font-medium">
+                                Doc: {ver.document_name}
+                              </span>
+                            )}
+                            <span className="text-xs text-gray-400">
+                              {ver.status === "APPROVED"
+                                ? `Approved on: ${approvedDate}`
+                                : `Created on: ${createdDate}`}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <span className="text-xs text-gray-500 font-semibold bg-gray-850 px-2.5 py-1 rounded-full">
+                              {filteredItems.length}{" "}
+                              {filteredItems.length === 1 ? "item" : "items"}
+                            </span>
+                            <ChevronDown
+                              className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}
+                            />
+                          </div>
+                        </button>
+
+                        {/* Collapsible Content */}
+                        {isExpanded && (
+                          <div className="px-6 pb-6 pt-2 border-t border-gray-850 animate-fadeIn bg-gray-950/20">
+                            {filteredItems.length === 0 ? (
+                              <p className="text-gray-500 text-sm py-4 italic text-center">
+                                No scope items found for this baseline version.
+                              </p>
+                            ) : (
+                              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-4">
+                                {/* In Scope */}
                                 <div className="bg-gray-900/40 p-5 rounded-lg border border-gray-800/80">
-                                  <h4 className="text-sm font-bold text-amber-400 uppercase tracking-wider mb-4 border-b border-gray-800 pb-2">
-                                    Uncertain ({uncertain.length})
+                                  <h4 className="text-sm font-bold text-emerald-400 uppercase tracking-wider mb-4 border-b border-gray-800 pb-2">
+                                    In Scope ({inScope.length})
                                   </h4>
-                                  <div className="space-y-3">
-                                    {uncertain.map((item: any) => (
-                                      <div key={item.id} className="p-3 bg-gray-850/40 rounded-lg border border-gray-800/50">
-                                        <p className="text-xs font-semibold text-gray-200">{item.name}</p>
-                                        {item.description && (
-                                          <p className="text-[11px] text-gray-500 mt-1">{item.description}</p>
-                                        )}
-                                      </div>
-                                    ))}
-                                  </div>
+                                  {inScope.length === 0 ? (
+                                    <p className="text-gray-600 text-xs italic">
+                                      No in-scope items.
+                                    </p>
+                                  ) : (
+                                    <div className="space-y-3">
+                                      {inScope.map((item: any) => (
+                                        <div
+                                          key={item.id}
+                                          className="p-3 bg-gray-850/40 rounded-lg border border-gray-800/50 flex flex-col justify-between gap-2"
+                                        >
+                                          <div>
+                                            <p className="text-xs font-semibold text-gray-200">
+                                              {item.name}
+                                            </p>
+                                            {item.description && (
+                                              <p className="text-[11px] text-gray-500 mt-1">
+                                                {item.description}
+                                              </p>
+                                            )}
+                                          </div>
+                                          {item.deadline && (
+                                            <div className="text-[10px] text-purple-300 font-semibold bg-purple-950/40 px-2 py-0.5 rounded border border-purple-800/20 w-fit flex items-center gap-1 mt-1">
+                                              <Clock className="w-3 h-3 text-purple-400" />
+                                              {formatDate(item.deadline)}
+                                            </div>
+                                          )}
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
                                 </div>
-                              )}
-                            </div>
+
+                                {/* Out of Scope & Uncertain */}
+                                <div className="space-y-6">
+                                  {/* Out of Scope */}
+                                  <div className="bg-gray-900/40 p-5 rounded-lg border border-gray-800/80">
+                                    <h4 className="text-sm font-bold text-rose-400 uppercase tracking-wider mb-4 border-b border-gray-800 pb-2">
+                                      Out of Scope ({outOfScope.length})
+                                    </h4>
+                                    {outOfScope.length === 0 ? (
+                                      <p className="text-gray-600 text-xs italic">
+                                        No out-of-scope items.
+                                      </p>
+                                    ) : (
+                                      <div className="space-y-3">
+                                        {outOfScope.map((item: any) => (
+                                          <div
+                                            key={item.id}
+                                            className="p-3 bg-gray-850/40 rounded-lg border border-gray-800/50"
+                                          >
+                                            <p className="text-xs font-semibold text-gray-200">
+                                              {item.name}
+                                            </p>
+                                            {item.description && (
+                                              <p className="text-[11px] text-gray-500 mt-1">
+                                                {item.description}
+                                              </p>
+                                            )}
+                                          </div>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+
+                                  {/* Uncertain */}
+                                  {uncertain.length > 0 && (
+                                    <div className="bg-gray-900/40 p-5 rounded-lg border border-gray-800/80">
+                                      <h4 className="text-sm font-bold text-amber-400 uppercase tracking-wider mb-4 border-b border-gray-800 pb-2">
+                                        Uncertain ({uncertain.length})
+                                      </h4>
+                                      <div className="space-y-3">
+                                        {uncertain.map((item: any) => (
+                                          <div
+                                            key={item.id}
+                                            className="p-3 bg-gray-850/40 rounded-lg border border-gray-800/50"
+                                          >
+                                            <p className="text-xs font-semibold text-gray-200">
+                                              {item.name}
+                                            </p>
+                                            {item.description && (
+                                              <p className="text-[11px] text-gray-500 mt-1">
+                                                {item.description}
+                                              </p>
+                                            )}
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
         )}
-
 
         {showExtractModal && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
