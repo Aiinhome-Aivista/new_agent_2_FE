@@ -17,6 +17,7 @@ import {
   Trash2,
   X,
   AlertTriangle,
+  Circle,
 } from "lucide-react";
 
 export const BaselineReviewPage: React.FC = () => {
@@ -909,20 +910,14 @@ export const BaselineReviewPage: React.FC = () => {
                               {(user?.role === "ADMIN" ||
                                 user?.role === "ENGAGEMENT_MANAGER") && (
                                 <>
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleUpdateCompletionStatus(item.id, item.completion_status === 'COMPLETED' ? 'ACTIVE' : 'COMPLETED');
-                                    }}
-                                    title={item.completion_status === 'COMPLETED' ? "Mark as Active" : "Mark as Completed"}
-                                    className={`p-1.5 rounded-lg transition-colors cursor-pointer flex-shrink-0 border ${
-                                      item.completion_status === 'COMPLETED'
-                                        ? "text-emerald-400 hover:text-white bg-emerald-950/30 hover:bg-emerald-900/50 border-emerald-500/20"
-                                        : "text-gray-400 hover:text-emerald-400 bg-gray-800 hover:bg-gray-700 border-gray-700/60"
-                                    }`}
-                                  >
-                                    <CheckCircle2 className="w-3.5 h-3.5" />
-                                  </button>
+                                  {item.completion_status === 'COMPLETED' && (
+                                    <div
+                                      title="Completed"
+                                      className="p-1.5 rounded-lg flex-shrink-0 border text-emerald-400 bg-emerald-950/30 border-emerald-500/20"
+                                    >
+                                      <CheckCircle2 className="w-3.5 h-3.5" />
+                                    </div>
+                                  )}
                                   <button
                                     onClick={(e) => {
                                       e.stopPropagation();
@@ -1038,20 +1033,14 @@ export const BaselineReviewPage: React.FC = () => {
                               {(user?.role === "ADMIN" ||
                                 user?.role === "ENGAGEMENT_MANAGER") && (
                                 <>
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleUpdateCompletionStatus(item.id, item.completion_status === 'COMPLETED' ? 'ACTIVE' : 'COMPLETED');
-                                    }}
-                                    title={item.completion_status === 'COMPLETED' ? "Mark as Active" : "Mark as Completed"}
-                                    className={`p-1.5 rounded-lg transition-colors cursor-pointer flex-shrink-0 border ${
-                                      item.completion_status === 'COMPLETED'
-                                        ? "text-emerald-400 hover:text-white bg-emerald-950/30 hover:bg-emerald-900/50 border-emerald-500/20"
-                                        : "text-gray-400 hover:text-emerald-400 bg-gray-800 hover:bg-gray-700 border-gray-700/60"
-                                    }`}
-                                  >
-                                    <CheckCircle2 className="w-3.5 h-3.5" />
-                                  </button>
+                                  {item.completion_status === 'COMPLETED' && (
+                                    <div
+                                      title="Completed"
+                                      className="p-1.5 rounded-lg flex-shrink-0 border text-emerald-400 bg-emerald-950/30 border-emerald-500/20"
+                                    >
+                                      <CheckCircle2 className="w-3.5 h-3.5" />
+                                    </div>
+                                  )}
                                   <button
                                     onClick={(e) => {
                                       e.stopPropagation();
