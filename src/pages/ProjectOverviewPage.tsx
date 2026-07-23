@@ -169,6 +169,8 @@ export const ProjectOverviewPage: React.FC = () => {
 
   const docsUploaded = documents.filter((d) => d.processing_status === "COMPLETED").length;
   const processingDocs = documents.filter((d) => d.processing_status === "PROCESSING" || d.processing_status === "PARSING").length;
+  const initiationDocsCount = documents.filter((d) => d.document_type === "EL" || d.document_type === "IFA").length;
+  const monitoringDocsCount = documents.filter((d) => d.document_type !== "EL" && d.document_type !== "IFA").length;
 
   // ── Risk severity breakdown ──────────────────────────────────────────────
   const riskHigh = openRisks.filter((r) => r.severity === "HIGH" || r.severity === "CRITICAL").length;
@@ -387,15 +389,16 @@ export const ProjectOverviewPage: React.FC = () => {
           <div className="col-span-12 md:col-span-9 grid grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Documents */}
             <div className="bg-gray-900/50 border border-gray-800 rounded-2xl p-5 backdrop-blur-md flex flex-col justify-between">
-              <div className="flex justify-between items-start mb-3">
+              <div className="flex justify-between items-start mb-2">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Documents</span>
                 <div className="p-1.5 bg-blue-500/10 rounded-lg"><FileText className="w-4 h-4 text-blue-400" /></div>
               </div>
               <div>
-                <p className="text-3xl font-black text-white mb-1">{documents.length}</p>
-                <div className="space-y-0.5 text-[11px]">
-                  <div className="flex justify-between"><span className="text-gray-500">Processed</span><span className="text-emerald-400 font-semibold">{docsUploaded}</span></div>
-                  {processingDocs > 0 && <div className="flex justify-between"><span className="text-gray-500">Processing</span><span className="text-amber-400 font-semibold animate-pulse">{processingDocs}</span></div>}
+                <p className="text-3xl font-black text-white mb-2">{documents.length}</p>
+                <div className="space-y-1.5 text-[11px] border-t border-gray-850 pt-2">
+                  <div className="flex justify-between"><span className="text-gray-500">Contract Initiation</span><span className="text-cyan-400 font-bold">{initiationDocsCount}</span></div>
+                  <div className="flex justify-between"><span className="text-gray-500">Project Monitoring</span><span className="text-purple-400 font-bold">{monitoringDocsCount}</span></div>
+                  <div className="flex justify-between border-t border-gray-850/40 pt-1 mt-1"><span className="text-gray-500">Processed</span><span className="text-emerald-400 font-semibold">{docsUploaded}</span></div>
                 </div>
               </div>
             </div>
