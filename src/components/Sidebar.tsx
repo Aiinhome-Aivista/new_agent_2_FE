@@ -15,6 +15,7 @@ import {
   User,
   Users,
   LayoutGrid,
+  MessageSquare,
 } from "lucide-react";
 
 export const Sidebar: React.FC = () => {
@@ -164,6 +165,18 @@ export const Sidebar: React.FC = () => {
             >
               <Activity className="w-5 h-5" />
               Risk Tracker
+            </Link>
+
+            <Link
+              to={`/projects/${projectId}/assistant`}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+                isProjectActive("assistant")
+                  ? "bg-gradient-to-r from-teal-500/10 to-blue-600/10 border border-teal-500/20 text-teal-400 font-semibold"
+                  : "hover:bg-white/[0.03] text-gray-400 hover:text-white border border-transparent"
+              }`}
+            >
+              <MessageSquare className="w-5 h-5" />
+              AI Assistant
             </Link>
           </div>
         )}

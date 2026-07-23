@@ -11,6 +11,7 @@ import { ProjectOverviewPage } from './pages/ProjectOverviewPage';
 import { BaselineReviewPage } from './pages/BaselineReviewPage';
 import { TrackerPage } from './pages/TrackerPage';
 import { ProjectMembersPage } from './pages/ProjectMembersPage';
+import { AIAssistantPage } from './pages/AIAssistantPage';
 import { ProtectedRoute } from './routes/ProtectedRoute';
 import { Sidebar } from './components/Sidebar';
 
@@ -56,6 +57,10 @@ const App: React.FC = () => {
           <Route 
             path="/projects/:id/tracker" 
             element={<ProtectedRoute><ProtectedLayout><TrackerPage /></ProtectedLayout></ProtectedRoute>} 
+          />
+          <Route 
+            path="/projects/:id/assistant" 
+            element={<ProtectedRoute><ProtectedLayout><AIAssistantPage /></ProtectedLayout></ProtectedRoute>} 
           />
           <Route 
             path="/projects/:id/members" 

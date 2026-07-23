@@ -82,7 +82,7 @@ export const ProjectsPage: React.FC = () => {
   }, [user]);
 
   useEffect(() => {
-    if (!projectName.trim() || !clientName.trim() || isDescriptionManuallyEdited) return;
+    if (!projectName?.trim() || !clientName?.trim() || isDescriptionManuallyEdited) return;
 
     const timer = setTimeout(async () => {
       setIsGeneratingDesc(true);
@@ -92,7 +92,7 @@ export const ProjectsPage: React.FC = () => {
           client_name: clientName
         });
         if (res.data.success && !isDescriptionManuallyEdited) {
-          setDescription(res.data.description);
+          setDescription(res.data.description || '');
         }
       } catch (error) {
         console.error("Failed to auto-generate description", error);
@@ -368,7 +368,7 @@ export const ProjectsPage: React.FC = () => {
                 </button>
                 <button 
                   type="submit" 
-                  disabled={!projectName.trim() || !clientName.trim() || !assignedLeadId || !description.trim() || isGeneratingDesc}
+                  disabled={!projectName?.trim() || !clientName?.trim() || !assignedLeadId || !description?.trim() || isGeneratingDesc}
                   className="flex-1 py-2.5 bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-400 hover:to-blue-500 text-white font-semibold rounded-xl text-xs transition-all shadow-md shadow-teal-500/10 disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   Create
