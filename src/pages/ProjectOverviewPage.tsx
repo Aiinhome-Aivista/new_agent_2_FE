@@ -29,6 +29,8 @@ import {
   Calendar,
   FileCheck2,
   XCircle,
+  Info,
+  Lock,
 } from "lucide-react";
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -39,26 +41,47 @@ function getDaysRemaining(endDate?: string | null): number | null {
   return Math.ceil(diff / (1000 * 60 * 60 * 24));
 }
 
-function getRagColor(score: number) {
+function getRagColor(score: number, monitoringStatus?: string) {
+  if (monitoringStatus === "DRAFT" || monitoringStatus === "BASELINE_PENDING_REVIEW") {
+    return {
+      ring: "#06b6d4",
+      text: "text-cyan-400",
+      bg: "bg-cyan-500/10",
+      border: "border-cyan-500/30",
+      label: "SETTING UP",
+      labelColor: "text-cyan-400"
+    };
+  }
   if (score >= 70) return { ring: "#10b981", text: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/30", label: "HEALTHY", labelColor: "text-emerald-400" };
   if (score >= 40) return { ring: "#f59e0b", text: "text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/30", label: "AT RISK", labelColor: "text-amber-400" };
   return { ring: "#ef4444", text: "text-rose-400", bg: "bg-rose-500/10", border: "border-rose-500/30", label: "CRITICAL", labelColor: "text-rose-400" };
 }
 
 function computeHealthScore(
+  monitoringStatus: string,
   hasBothDocs: boolean,
   baselineApproved: boolean,
   openRisks: number,
   totalRisks: number,
   daysRemaining: number | null
 ): number {
-  let score = 100;
-  if (!hasBothDocs) score -= 25;
-  if (!baselineApproved) score -= 20;
-  if (totalRisks > 0) score -= Math.min(30, Math.round((openRisks / totalRisks) * 30));
-  if (daysRemaining !== null && daysRemaining < 0) score -= 15;
-  else if (daysRemaining !== null && daysRemaining < 14) score -= 8;
-  return Math.max(0, score);
+  if (monitoringStatus === "DRAFT" || monitoringStatus === "BASELINE_PENDING_REVIEW") {
+    let score = 0;
+    if (hasBothDocs) score += 60;
+    if (baselineApproved) score += 40;
+    else if (monitoringStatus === "BASELINE_PENDING_REVIEW") score += 20;
+    return score;
+  } else {
+    let score = 100;
+    if (totalRisks > 0) {
+      score -= Math.min(60, Math.round((openRisks / totalRisks) * 60));
+    }
+    if (daysRemaining !== null) {
+      if (daysRemaining < 0) score -= 40;
+      else if (daysRemaining < 14) score -= 20;
+    }
+    return Math.max(0, score);
+  }
 }
 
 // ─── Animated ring gauge ─────────────────────────────────────────────────────
@@ -139,8 +162,8 @@ export const ProjectOverviewPage: React.FC = () => {
   const resolvedRisks = risks.filter((r) => r.status === "RESOLVED");
 
   const daysRemaining = getDaysRemaining(project.end_date);
-  const healthScore = computeHealthScore(hasBothInitDocs, baselineApproved, openRisks.length, risks.length, daysRemaining);
-  const rag = getRagColor(healthScore);
+  const healthScore = computeHealthScore(project.monitoring_status, hasBothInitDocs, baselineApproved, openRisks.length, risks.length, daysRemaining);
+  const rag = getRagColor(healthScore, project.monitoring_status);
 
   const isEM = user?.role === "ADMIN" || user?.role === "ENGAGEMENT_MANAGER";
 
@@ -194,11 +217,18 @@ export const ProjectOverviewPage: React.FC = () => {
         {/* ── RAG BANNER ──────────────────────────────────────────────── */}
         <div className={`flex items-center gap-3 px-5 py-3 rounded-2xl ${rag.bg} border ${rag.border}`}>
           <span className={`text-xs font-black uppercase tracking-widest ${rag.labelColor} flex items-center gap-2`}>
-            <span className={`inline-block w-2 h-2 rounded-full ${rag.label === "HEALTHY" ? "bg-emerald-400" : rag.label === "AT RISK" ? "bg-amber-400" : "bg-rose-400"} animate-pulse`} />
+            <span className={`inline-block w-2 h-2 rounded-full ${
+              rag.label === "SETTING UP" ? "bg-cyan-400" :
+              rag.label === "HEALTHY" ? "bg-emerald-400" : 
+              rag.label === "AT RISK" ? "bg-amber-400" : 
+              "bg-rose-400"
+            } animate-pulse`} />
             Project Status: {rag.label}
           </span>
           <span className="text-xs text-gray-400 flex-1">
-            {rag.label === "HEALTHY"
+            {rag.label === "SETTING UP"
+              ? "Project is in onboarding phase. Please upload contract documents and approve the scope baseline to begin monitoring."
+              : rag.label === "HEALTHY"
               ? "All critical metrics are within acceptable thresholds. Project is progressing well."
               : rag.label === "AT RISK"
               ? "One or more metrics require attention. Review open items below."
@@ -211,8 +241,38 @@ export const ProjectOverviewPage: React.FC = () => {
         <div className="grid grid-cols-12 gap-5">
 
           {/* Health Score Gauge */}
-          <div className="col-span-12 md:col-span-3 bg-gray-900/50 border border-gray-800 rounded-2xl p-5 flex flex-col items-center justify-center text-center backdrop-blur-md">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-3">Project Health Score</p>
+          <div className="col-span-12 md:col-span-3 bg-gray-900/50 border border-gray-800 rounded-2xl p-5 flex flex-col items-center justify-center text-center backdrop-blur-md relative z-10 hover:z-30 transition-all">
+            <div className="flex items-center gap-1.5 mb-3 text-gray-500 relative">
+              <p className="text-[10px] font-bold uppercase tracking-widest">Project Health Score</p>
+              <div className="relative group flex items-center cursor-help hover:text-cyan-400 transition-colors">
+                <Info className="w-3.5 h-3.5" />
+                
+                {/* Tooltip Content */}
+                <div className="absolute left-1/2 -translate-x-1/2 md:left-0 md:translate-x-0 top-full mt-2 w-72 p-4 bg-[#0b0e17] border border-gray-800 rounded-xl shadow-2xl backdrop-blur-md opacity-0 translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 z-50 text-left">
+                  <h4 className="font-bold text-xs text-[#00e5ff] mb-2 border-b border-gray-850 pb-1 flex items-center gap-1.5">
+                    Health Score Logic & Weights
+                  </h4>
+                  <div className="space-y-3 text-[10px] text-gray-300">
+                    <div>
+                      <span className="font-semibold text-white block mb-0.5">Setup Phase (Onboarding)</span>
+                      <ul className="list-disc pl-4 space-y-0.5 text-gray-400 font-medium">
+                        <li><strong className="text-white">60 pts</strong>: Initial Documents (EL & IFA) processed.</li>
+                        <li><strong className="text-white">40 pts</strong>: Baseline approved (20 pts if extracted but pending review).</li>
+                      </ul>
+                    </div>
+
+                    <div>
+                      <span className="font-semibold text-white block mb-0.5">Execution Phase (Active)</span>
+                      <ul className="list-disc pl-4 space-y-0.5 text-gray-400 font-medium">
+                        <li>Starts at 100 points.</li>
+                        <li>Deducts up to <strong className="text-white">60 pts</strong> based on the proportion of unresolved risks.</li>
+                        <li>Deducts up to <strong className="text-white">40 pts</strong> for timeline delays (40 pts if past end date, 20 pts if within 14 days of end date).</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
             <div className="relative">
               <HealthRing score={healthScore} color={rag.ring} />
               <div className="absolute inset-0 flex flex-col items-center justify-center">
@@ -222,20 +282,104 @@ export const ProjectOverviewPage: React.FC = () => {
             </div>
             <span className={`mt-2 text-xs font-black tracking-widest uppercase ${rag.labelColor}`}>{rag.label}</span>
             <div className="mt-3 w-full text-left space-y-1.5">
-              {[
-                { label: "Documents", ok: hasBothInitDocs, minus: 25 },
-                { label: "Baseline", ok: baselineApproved, minus: 20 },
-                { label: "Risks Resolved", ok: openRisks.length === 0 || risks.length === 0, minus: 30 },
-                { label: "Timeline", ok: daysRemaining === null || daysRemaining >= 14, minus: 15 },
-              ].map((item) => (
-                <div key={item.label} className="flex items-center justify-between text-[10px]">
-                  <span className="text-gray-500">{item.label}</span>
-                  {item.ok
-                    ? <span className="text-emerald-400 font-semibold flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> OK</span>
-                    : <span className="text-rose-400 font-semibold flex items-center gap-1"><AlertCircle className="w-3 h-3" /> -{item.minus}pts</span>
-                  }
-                </div>
-              ))}
+              {(() => {
+                const isSetup = project.monitoring_status === "DRAFT" || project.monitoring_status === "BASELINE_PENDING_REVIEW";
+                const rows = isSetup ? [
+                  { 
+                    label: "Documents", 
+                    status: hasBothInitDocs ? "OK" : "Pending",
+                    points: hasBothInitDocs ? "+60" : "-60",
+                    ok: hasBothInitDocs,
+                    locked: false
+                  },
+                  { 
+                    label: "Baseline", 
+                    status: baselineApproved 
+                      ? "OK" 
+                      : project.monitoring_status === "BASELINE_PENDING_REVIEW" 
+                        ? "Pending Review" 
+                        : "Pending Extract",
+                    points: baselineApproved 
+                      ? "+40" 
+                      : project.monitoring_status === "BASELINE_PENDING_REVIEW" 
+                        ? "+20" 
+                        : "-40",
+                    ok: baselineApproved || project.monitoring_status === "BASELINE_PENDING_REVIEW",
+                    locked: false
+                  },
+                  { 
+                    label: "Risks Resolved", 
+                    status: "LOCKED", 
+                    points: "N/A", 
+                    ok: false,
+                    locked: true 
+                  },
+                  { 
+                    label: "Timeline", 
+                    status: "LOCKED", 
+                    points: "N/A", 
+                    ok: false,
+                    locked: true 
+                  },
+                ] : [
+                  { 
+                    label: "Documents", 
+                    status: "OK", 
+                    points: "OK", 
+                    ok: true,
+                    locked: false 
+                  },
+                  { 
+                    label: "Baseline", 
+                    status: "OK", 
+                    points: "OK", 
+                    ok: true,
+                    locked: false 
+                  },
+                  { 
+                    label: "Risks Resolved", 
+                    status: openRisks.length === 0 ? "OK" : `${openRisks.length} Open`,
+                    points: openRisks.length === 0 ? "OK" : `-${Math.min(60, Math.round((openRisks.length / risks.length) * 60))}pts`,
+                    ok: openRisks.length === 0,
+                    locked: false
+                  },
+                  { 
+                    label: "Timeline", 
+                    status: daysRemaining === null || daysRemaining >= 14 ? "OK" : daysRemaining < 0 ? "Delayed" : "Due Soon",
+                    points: daysRemaining === null || daysRemaining >= 14 ? "OK" : `-${daysRemaining < 0 ? 40 : 20}pts`,
+                    ok: daysRemaining === null || daysRemaining >= 14,
+                    locked: false
+                  },
+                ];
+
+                return rows.map((item) => (
+                  <div key={item.label} className="flex items-center justify-between text-[10px]">
+                    <span className="text-gray-500">{item.label}</span>
+                    <span className={`flex items-center gap-1 font-semibold ${
+                      item.locked ? "text-gray-500" :
+                      item.ok ? "text-emerald-400" : 
+                      item.status.startsWith("Pending") || item.status === "Due Soon" ? "text-amber-400" : "text-rose-400"
+                    }`}>
+                      {item.locked ? (
+                        <>
+                          <Lock className="w-3 h-3" />
+                          <span>{item.status}</span>
+                        </>
+                      ) : item.ok ? (
+                        <>
+                          <CheckCircle2 className="w-3 h-3" />
+                          <span>{item.status}</span>
+                        </>
+                      ) : (
+                        <>
+                          <AlertCircle className="w-3 h-3" />
+                          <span>{item.status} ({item.points})</span>
+                        </>
+                      )}
+                    </span>
+                  </div>
+                ));
+              })()}
             </div>
           </div>
 
