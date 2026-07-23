@@ -4,6 +4,18 @@ import { useParams, useNavigate } from "react-router-dom";
 import apiClient from "../api/apiClient";
 import { useAuth } from "../auth/AuthContext";
 import { Loader } from "../components/Loader";
+
+const formatDate = (dateStr: string | null | undefined) => {
+  if (!dateStr) return 'N/A';
+  try {
+    const cleanStr = typeof dateStr === 'string' ? dateStr.replace(' ', 'T') : dateStr;
+    const d = new Date(cleanStr);
+    if (isNaN(d.getTime())) return 'N/A';
+    return d.toLocaleDateString(undefined, { dateStyle: 'medium' });
+  } catch (e) {
+    return 'N/A';
+  }
+};
 import {
   Loader2,
   CheckCircle2,
@@ -387,10 +399,10 @@ export const BaselineReviewPage: React.FC = () => {
         <h1>Contract Scope Baseline Review Report</h1>
         <div class="project-details">
           <p><strong>Project Name:</strong> ${project?.project_name || 'N/A'}</p>
-          <p><strong>Start Date:</strong> ${project?.start_date ? new Date(project.start_date).toLocaleDateString(undefined, { dateStyle: 'medium' }) : 'N/A'}</p>
-          <p><strong>End Date:</strong> ${project?.end_date ? new Date(project.end_date).toLocaleDateString(undefined, { dateStyle: 'medium' }) : 'N/A'}</p>
+          <p><strong>Start Date:</strong> ${formatDate(project?.start_date)}</p>
+          <p><strong>End Date:</strong> ${formatDate(project?.end_date)}</p>
           <p><strong>Baseline Status:</strong> ${baseline.status}</p>
-          <p><strong>Export Date:</strong> ${new Date().toLocaleDateString(undefined, { dateStyle: 'medium' })}</p>
+          <p><strong>Export Date:</strong> ${formatDate(new Date().toISOString())}</p>
         </div>
         <hr style="border: 0; border-top: 1px solid #dddddd; margin-bottom: 20px;" />
         
@@ -500,11 +512,11 @@ export const BaselineReviewPage: React.FC = () => {
             </div>
             <div class="header-meta-row">
               <div class="header-meta-item">
-                <strong>Start Date:</strong> ${project?.start_date ? new Date(project.start_date).toLocaleDateString(undefined, { dateStyle: 'medium' }) : 'N/A'}
+                <strong>Start Date:</strong> ${formatDate(project?.start_date)}
                 &nbsp;&bull;&nbsp;
-                <strong>End Date:</strong> ${project?.end_date ? new Date(project.end_date).toLocaleDateString(undefined, { dateStyle: 'medium' }) : 'N/A'}
+                <strong>End Date:</strong> ${formatDate(project?.end_date)}
               </div>
-              <div class="header-meta-item" style="text-align: right;"><strong>Export Date:</strong> ${new Date().toLocaleDateString(undefined, { dateStyle: 'medium' })}</div>
+              <div class="header-meta-item" style="text-align: right;"><strong>Export Date:</strong> ${formatDate(new Date().toISOString())}</div>
             </div>
           </div>
           
@@ -736,9 +748,9 @@ export const BaselineReviewPage: React.FC = () => {
                     </div>
 
                     {/* Right navigation arrow */}
-                    <button
+                     <button
                       onClick={handleNext}
-                      disabled={activeIndex >= baseline.deliverables.length - 1}
+                      disabled={activeIndex >= (baseline?.deliverables?.length || 0) - 1}
                       className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-900 border border-gray-700 text-gray-400 hover:text-white hover:bg-gray-800 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-colors cursor-pointer z-10 shadow-md"
                     >
                       <ChevronRight className="w-5 h-5" />
@@ -748,14 +760,15 @@ export const BaselineReviewPage: React.FC = () => {
                   {/* Selected Item Detail View */}
                   {(() => {
                     const selectedItem =
-                      baseline.deliverables.find(
+                      baseline?.deliverables?.find(
                         (d: any) => d.id === selectedDeliverableId,
-                      ) || baseline.deliverables[0];
+                      ) || baseline?.deliverables?.[0];
                     if (!selectedItem) return null;
 
+                    const dLen = baseline?.deliverables?.length || 0;
                     const caretLeft =
-                      baseline.deliverables.length > 1
-                        ? `calc(96px + (${activeIndex} / ${baseline.deliverables.length - 1}) * (100% - 192px))`
+                      dLen > 1
+                        ? `calc(96px + (${activeIndex} / ${dLen - 1}) * (100% - 192px))`
                         : "50%";
 
                     return (
@@ -970,7 +983,7 @@ export const BaselineReviewPage: React.FC = () => {
                             {item.deadline && (
                               <span className="text-purple-300 font-semibold bg-purple-950/45 px-2 py-0.5 rounded border border-purple-800/30 flex items-center gap-1">
                                 <Clock className="w-3.5 h-3.5 text-purple-400" />
-                                {new Date(item.deadline).toLocaleDateString(undefined, { dateStyle: "medium" })}
+                                {formatDate(item.deadline)}
                               </span>
                             )}
                             <span className="text-gray-500 font-medium">
@@ -1134,12 +1147,8 @@ export const BaselineReviewPage: React.FC = () => {
                 const outOfScope = filteredItems.filter((i: any) => i.scope_type === "OUT_OF_SCOPE");
                 const uncertain = filteredItems.filter((i: any) => i.scope_type === "UNCERTAIN");
                 
-                const approvedDate = ver.approved_at 
-                  ? new Date(ver.approved_at).toLocaleDateString(undefined, { dateStyle: "medium" }) 
-                  : "N/A";
-                const createdDate = ver.created_at 
-                  ? new Date(ver.created_at).toLocaleDateString(undefined, { dateStyle: "medium" }) 
-                  : "N/A";
+                const approvedDate = formatDate(ver.approved_at);
+                const createdDate = formatDate(ver.created_at);
 
                 return (
                   <div 
@@ -1210,7 +1219,7 @@ export const BaselineReviewPage: React.FC = () => {
                                       {item.deadline && (
                                         <div className="text-[10px] text-purple-300 font-semibold bg-purple-950/40 px-2 py-0.5 rounded border border-purple-800/20 w-fit flex items-center gap-1 mt-1">
                                           <Clock className="w-3 h-3 text-purple-400" />
-                                          {new Date(item.deadline).toLocaleDateString(undefined, { dateStyle: "medium" })}
+                                          {formatDate(item.deadline)}
                                         </div>
                                       )}
                                     </div>

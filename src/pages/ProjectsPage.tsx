@@ -5,6 +5,17 @@ import { useAuth } from '../auth/AuthContext';
 import { Link } from 'react-router-dom';
 import { Loader } from '../components/Loader';
 
+const formatDate = (dateStr: string | null | undefined) => {
+  if (!dateStr) return 'Not Specified';
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return 'Not Specified';
+    return d.toLocaleDateString(undefined, { dateStyle: 'medium' });
+  } catch (e) {
+    return 'Not Specified';
+  }
+};
+
 export const ProjectsPage: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
@@ -82,7 +93,7 @@ export const ProjectsPage: React.FC = () => {
   }, [user]);
 
   useEffect(() => {
-    if (!projectName.trim() || !clientName.trim() || isDescriptionManuallyEdited) return;
+    if (!(projectName || '').trim() || !(clientName || '').trim() || isDescriptionManuallyEdited) return;
 
     const timer = setTimeout(async () => {
       setIsGeneratingDesc(true);
@@ -92,7 +103,8 @@ export const ProjectsPage: React.FC = () => {
           client_name: clientName
         });
         if (res.data.success && !isDescriptionManuallyEdited) {
-          setDescription(res.data.description);
+          const desc = res.data.data?.description || res.data.description || '';
+          setDescription(desc);
         }
       } catch (error) {
         console.error("Failed to auto-generate description", error);
@@ -159,13 +171,13 @@ export const ProjectsPage: React.FC = () => {
           )}
         </div>
         
-        {projects.length === 0 ? (
+        {(!projects || projects.length === 0) ? (
           <div className="p-12 rounded-2xl bg-white/[0.01] border border-white/5 text-center">
             <p className="text-gray-500 text-sm">No projects currently initialized.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {projects.map((p) => (
+            {(projects || []).map((p) => (
               <div 
                 key={p.id} 
                 className="group p-6 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-teal-500/30 hover:bg-white/[0.04] transition-all duration-300 hover:shadow-2xl hover:shadow-teal-500/5 hover:-translate-y-1 flex flex-col justify-between"
@@ -178,7 +190,7 @@ export const ProjectsPage: React.FC = () => {
                   <div className="text-gray-400 text-xs mt-3 mb-4 space-y-1.5 border-t border-white/5 pt-3">
                     <div className="flex items-center justify-between">
                       <span className="text-gray-500 font-medium">Start Date:</span>
-                      <span className="text-gray-300 font-semibold">{p.start_date ? new Date(p.start_date).toLocaleDateString(undefined, {dateStyle: 'medium'}) : 'Not Specified'}</span>
+                      <span className="text-gray-300 font-semibold">{formatDate(p.start_date)}</span>
                     </div>
                     <div className="flex items-center justify-between min-h-[24px]">
                       <span className="text-gray-500 font-medium">End Date:</span>
@@ -205,7 +217,7 @@ export const ProjectsPage: React.FC = () => {
                         </div>
                       ) : (
                         <div className="flex items-center gap-2">
-                          <span className="text-gray-300 font-semibold">{p.end_date ? new Date(p.end_date).toLocaleDateString(undefined, {dateStyle: 'medium'}) : 'Not Specified'}</span>
+                          <span className="text-gray-300 font-semibold">{formatDate(p.end_date)}</span>
                           {(user?.role === 'ADMIN' || user?.role === 'ENGAGEMENT_MANAGER') && (
                             <button
                               onClick={() => {
@@ -323,7 +335,7 @@ export const ProjectsPage: React.FC = () => {
                   className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 text-white text-sm transition-all"
                 >
                   <option value="" className="bg-[#0b0e17] text-gray-400">-- Select Project Lead --</option>
-                  {projectLeads.map((lead) => (
+                  {(projectLeads || []).map((lead) => (
                     <option key={lead.id} value={lead.id} className="bg-[#0b0e17] text-white">
                       {lead.name} ({lead.email})
                     </option>
@@ -368,7 +380,7 @@ export const ProjectsPage: React.FC = () => {
                 </button>
                 <button 
                   type="submit" 
-                  disabled={!projectName.trim() || !clientName.trim() || !assignedLeadId || !description.trim() || isGeneratingDesc}
+                  disabled={!(projectName || '').trim() || !(clientName || '').trim() || !assignedLeadId || !(description || '').trim() || isGeneratingDesc}
                   className="flex-1 py-2.5 bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-400 hover:to-blue-500 text-white font-semibold rounded-xl text-xs transition-all shadow-md shadow-teal-500/10 disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   Create

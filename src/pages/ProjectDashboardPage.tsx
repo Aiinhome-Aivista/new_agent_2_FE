@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import apiClient from "../api/apiClient";
 import type { Project } from "../types";
 import { Loader } from "../components/Loader";
@@ -24,6 +24,7 @@ import {
 
 export const ProjectDashboardPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [project, setProject] = useState<Project | null>(null);
   const [documents, setDocuments] = useState<any[]>([]);
@@ -183,8 +184,17 @@ export const ProjectDashboardPage: React.FC = () => {
     else monitoringFileInputRef.current?.click();
   };
 
-  const handleProcessDocument = async (docId: number) => {
+  const handleProcessDocument = async (docId: number, docType: string) => {
     try {
+      if (docType === "STATUS_REPORT" || docType === "MOM") {
+        showNotification("Starting evaluation...", "success");
+        apiClient.post(`/projects/${id}/monitoring/process?document_id=${docId}`).catch(err => {
+          console.error("Failed to start monitoring process:", err);
+        });
+        navigate(`/projects/${id}/tracker?processing_document_id=${docId}`);
+        return;
+      }
+
       setDocuments((prev) =>
         prev.map((d) =>
           d.id === docId ? { ...d, processing_status: "PROCESSING" } : d,
@@ -208,8 +218,9 @@ export const ProjectDashboardPage: React.FC = () => {
   const confirmProcessDocument = async () => {
     if (!processingDocId) return;
     const docId = processingDocId;
+    const doc = documents.find((d) => d.id === docId);
     setProcessingDocId(null);
-    await handleProcessDocument(docId);
+    await handleProcessDocument(docId, doc?.document_type || "");
   };
 
   const handleDeleteDocument = (docId: number) => {
@@ -264,9 +275,18 @@ export const ProjectDashboardPage: React.FC = () => {
       if (res.data.success) {
         const docsRes = await apiClient.get(`/projects/${id}/documents/`);
         if (docsRes.data.success) setDocuments(docsRes.data.data);
-        if (target === "BASELINE") setBaselineFile(null);
-        else setMonitoringFile(null);
-        showNotification("Document uploaded successfully!", "success");
+        if (target === "BASELINE") {
+          setBaselineFile(null);
+          showNotification("Document uploaded successfully!", "success");
+        } else {
+          setMonitoringFile(null);
+          showNotification("Document uploaded. Starting evaluation...", "success");
+          const docId = res.data.data.id;
+          apiClient.post(`/projects/${id}/monitoring/process?document_id=${docId}`).catch(err => {
+            console.error("Failed to start monitoring process:", err);
+          });
+          navigate(`/projects/${id}/tracker?processing_document_id=${docId}`);
+        }
       }
     } catch (error: any) {
       console.error("Upload failed", error);
@@ -627,7 +647,7 @@ export const ProjectDashboardPage: React.FC = () => {
                                 (doc.processing_status === "UPLOADED" ||
                                   doc.processing_status === "FAILED") && (
                                   <button
-                                    onClick={() => handleProcessDocument(doc.id)}
+                                    onClick={() => handleProcessDocument(doc.id, doc.document_type)}
                                     title="Extract and process document"
                                     className="p-1.5 bg-green-600/20 hover:bg-green-600 border border-green-500/30 text-green-400 hover:text-white rounded-lg transition-all"
                                   >
