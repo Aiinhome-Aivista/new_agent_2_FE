@@ -35,23 +35,52 @@ export const AIAssistantPage: React.FC = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [query, setQuery] = useState('');
   
+  const [project, setProject] = useState<any>(null);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(true);
+  
   const [loadingSessions, setLoadingSessions] = useState(true);
   const [loadingMessages, setLoadingMessages] = useState(false);
-  const [sendingMessage, setSendingMessage] = useState(false);
+  const [sendingSessionId, setSendingSessionId] = useState<number | null>(null);
   const [creatingSession, setCreatingSession] = useState(false);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Suggested Prompts
-  const suggestedPrompts = [
-    "What is in scope for data migration?",
-    "List all out of scope items in the EL contract",
-    "What are the key upcoming deliverables and deadlines?",
-    "Summarize the main project assumptions and client dependencies"
-  ];
-
   useEffect(() => {
     fetchSessions();
+    const fetchProjectDetails = async () => {
+      try {
+        const res = await apiClient.get(`/projects/${id}`);
+        if (res.data.success) {
+          setProject(res.data.data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch project details:", err);
+      }
+    };
+    
+    const fetchSuggestions = async () => {
+      setLoadingSuggestions(true);
+      try {
+        const res = await apiClient.get(`/projects/${id}/rag/suggestions`);
+        if (res.data.success) {
+          setSuggestions(res.data.data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch project suggestions:", err);
+        setSuggestions([
+          "What is in scope for data migration?",
+          "List all out of scope items in the contract",
+          "What are the key upcoming deliverables and deadlines?",
+          "Summarize the main project assumptions and dependencies"
+        ]);
+      } finally {
+        setLoadingSuggestions(false);
+      }
+    };
+    
+    fetchProjectDetails();
+    fetchSuggestions();
   }, [id]);
 
   useEffect(() => {
@@ -101,10 +130,10 @@ export const AIAssistantPage: React.FC = () => {
     }
   };
 
-  const handleCreateSession = async () => {
+  const handleCreateSession = async (): Promise<number | null> => {
     setCreatingSession(true);
     try {
-      const name = `Chat Session - ${new Date().toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })}`;
+      const name = 'New Chat';
       const res = await apiClient.post(`/projects/${id}/rag/sessions`, {
         session_name: name
       });
@@ -112,9 +141,12 @@ export const AIAssistantPage: React.FC = () => {
         const newSession = res.data.data;
         setSessions([newSession, ...sessions]);
         setCurrentSessionId(newSession.id);
+        return newSession.id;
       }
+      return null;
     } catch (error) {
       console.error("Failed to create chat session:", error);
+      return null;
     } finally {
       setCreatingSession(false);
     }
@@ -137,14 +169,15 @@ export const AIAssistantPage: React.FC = () => {
     }
   };
 
-  const handleSendMessage = async (textToSend?: string) => {
+  const handleSendMessage = async (textToSend?: string, overrideSessionId?: number) => {
     const text = textToSend || query;
-    if (!text.trim() || currentSessionId === null || sendingMessage) return;
+    const sessionIdToUse = overrideSessionId !== undefined ? overrideSessionId : currentSessionId;
+    if (!text.trim() || sessionIdToUse === null || sendingSessionId !== null) return;
     
-    setSendingMessage(true);
+    setSendingSessionId(sessionIdToUse);
     if (!textToSend) setQuery('');
     
-    // Optimistic user message update
+    // Optimistic user message update if we are on the active session
     const tempUserMsg: ChatMessage = {
       id: Date.now(),
       role: 'USER',
@@ -152,31 +185,45 @@ export const AIAssistantPage: React.FC = () => {
       citations: [],
       created_at: new Date().toISOString()
     };
-    setMessages(prev => [...prev, tempUserMsg]);
+    if (currentSessionId === sessionIdToUse) {
+      setMessages(prev => [...prev, tempUserMsg]);
+    }
 
     try {
-      const res = await apiClient.post(`/projects/${id}/rag/sessions/${currentSessionId}/messages`, {
+      const res = await apiClient.post(`/projects/${id}/rag/sessions/${sessionIdToUse}/messages`, {
         query: text
       });
       if (res.data.success) {
         // Replace temp messages with official list or append assistant message
         const assistantMsg = res.data.data;
-        setMessages(prev => {
-          // Remove the temporary message and set official messages from server
-          return prev.filter(m => m.id !== tempUserMsg.id).concat([
-            { ...tempUserMsg, id: assistantMsg.id - 1 }, // Give it a matching sorted ID
-            assistantMsg
-          ]);
-        });
+        if (currentSessionId === sessionIdToUse) {
+          setMessages(prev => {
+            // Remove the temporary message and set official messages from server
+            return prev.filter(m => m.id !== tempUserMsg.id).concat([
+              { ...tempUserMsg, id: assistantMsg.id - 1 }, // Give it a matching sorted ID
+              assistantMsg
+            ]);
+          });
+        }
         
         // Refresh sessions to show updated updated_at timestamps
         fetchSessionsWithoutReset();
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to send message:", error);
-      alert("Failed to get response from AI Assistant.");
+      const errorMsg = error.response?.data?.detail || error.message || "Unknown error";
+      const errorAssistantMsg: ChatMessage = {
+        id: Date.now() + 1,
+        role: 'ASSISTANT',
+        content: `Error: Failed to retrieve answer from AI Assistant. (Details: ${errorMsg}). Please check your connection or try again later.`,
+        citations: [],
+        created_at: new Date().toISOString()
+      };
+      if (currentSessionId === sessionIdToUse) {
+        setMessages(prev => [...prev, errorAssistantMsg]);
+      }
     } finally {
-      setSendingMessage(false);
+      setSendingSessionId(null);
     }
   };
 
@@ -211,12 +258,41 @@ export const AIAssistantPage: React.FC = () => {
     }
   };
 
+  const formatMessageContent = (content: string) => {
+    // 1. Clean up any raw #, * or - characters (bullet list markers/dividers) at the beginning of lines
+    const cleaned = content.split('\n').map(line => {
+      let l = line.trim();
+      // Strip leading hashes (e.g. "### Title" -> "Title")
+      l = l.replace(/^#+\s*/, '');
+      // Strip leading bullet stars (e.g. "* Item" -> "Item")
+      if (l.startsWith('*') && !l.startsWith('**')) {
+        l = l.replace(/^\*\s*/, '');
+      }
+      // Strip leading bullet dashes (e.g. "- Item" -> "Item")
+      l = l.replace(/^-\s*/, '');
+      // If the line consists only of hyphens or underscores (e.g. "---"), replace with empty
+      if (/^[-_\s]+$/.test(l)) {
+        l = '';
+      }
+      return l;
+    }).join('\n');
+
+    // 2. Parse **bold** syntax to <strong> tags
+    const parts = cleaned.split('**');
+    return parts.map((part, index) => {
+      if (index % 2 === 1) {
+        return <strong key={index} className="font-extrabold text-cyan-200">{part}</strong>;
+      }
+      return part;
+    });
+  };
+
   if (loadingSessions && sessions.length === 0) {
     return <Loader message="Initializing AI Assistant..." />;
   }
 
   return (
-    <div className="flex-1 flex flex-col md:flex-row bg-[#080b14] h-screen overflow-hidden">
+    <div className="flex-1 flex flex-col md:flex-row bg-[#080b14] h-[calc(100vh-4rem)] md:h-screen max-h-[calc(100vh-4rem)] md:max-h-screen overflow-hidden">
       
       {/* LEFT PANEL: Session Directory */}
       <div className="w-full md:w-80 bg-gray-900/30 border-r border-white/5 flex flex-col h-1/3 md:h-full flex-shrink-0">
@@ -306,14 +382,14 @@ export const AIAssistantPage: React.FC = () => {
             <div className="w-full space-y-2 pt-4">
               <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">Try asking:</p>
               <div className="grid grid-cols-1 gap-2">
-                {suggestedPrompts.map((p, idx) => (
+                {suggestions.map((p, idx) => (
                   <button
                     key={idx}
-                    onClick={() => {
-                      handleCreateSession().then(() => {
-                        // After session is created, trigger message send
-                        setTimeout(() => handleSendMessage(p), 800);
-                      });
+                    onClick={async () => {
+                      const newId = await handleCreateSession();
+                      if (newId) {
+                        handleSendMessage(p, newId);
+                      }
                     }}
                     className="text-left px-4 py-2.5 bg-gray-800/30 hover:bg-gray-800/60 border border-white/5 hover:border-cyan-500/20 text-gray-300 hover:text-cyan-200 text-xs rounded-xl transition-all cursor-pointer active:scale-[0.99]"
                   >
@@ -332,7 +408,9 @@ export const AIAssistantPage: React.FC = () => {
                 <h3 className="text-sm font-bold text-white">
                   {sessions.find(s => s.id === currentSessionId)?.session_name}
                 </h3>
-                <p className="text-[10px] text-cyan-400 font-semibold uppercase tracking-widest mt-0.5">Project RAG Intelligence</p>
+                <p className="text-[10px] text-cyan-400 font-semibold uppercase tracking-widest mt-0.5">
+                  {project?.project_name || 'Project RAG Intelligence'}
+                </p>
               </div>
             </div>
 
@@ -348,7 +426,7 @@ export const AIAssistantPage: React.FC = () => {
                   <p className="text-xs text-gray-500">Ask your first question about the project deliverables or scope contracts.</p>
                   
                   <div className="flex flex-wrap justify-center gap-2 max-w-lg mt-4">
-                    {suggestedPrompts.map((p, idx) => (
+                    {suggestions.map((p, idx) => (
                       <button
                         key={idx}
                         onClick={() => handleSendMessage(p)}
@@ -383,30 +461,45 @@ export const AIAssistantPage: React.FC = () => {
                             ? 'bg-gradient-to-r from-cyan-600/90 to-blue-600/90 text-white rounded-tr-none shadow-lg shadow-cyan-500/10'
                             : 'bg-gray-800/60 border border-white/5 text-gray-200 rounded-tl-none'
                         }`}>
-                          <div className="whitespace-pre-wrap">{msg.content}</div>
+                          <div className="whitespace-pre-wrap">{formatMessageContent(msg.content)}</div>
                         </div>
 
                         {/* Citations Footer */}
                         {!isUser && msg.citations && msg.citations.length > 0 && (
-                          <div className="pl-2 pt-1">
-                            <span className="text-[10px] uppercase font-bold tracking-wider text-gray-500 block mb-1.5">References & Citations:</span>
-                            <div className="flex flex-wrap gap-2">
+                          <div className="pl-2 pt-3 border-t border-white/5 mt-3 space-y-2">
+                            <span className="text-[10px] uppercase font-bold tracking-wider text-cyan-400/80 block">
+                              References & Citations:
+                            </span>
+                            <div className="flex flex-col gap-2">
                               {msg.citations.map((cit, cidx) => (
-                                <div
+                                <div 
                                   key={cidx}
-                                  title={cit.text}
-                                  className="inline-flex items-center gap-1.5 bg-gray-900/60 hover:bg-gray-900 border border-white/5 px-2.5 py-1 rounded-lg text-[10px] text-gray-400 hover:text-cyan-400 transition-all duration-200 select-none group"
+                                  className="bg-white/[0.02] border border-white/5 hover:border-cyan-500/20 rounded-xl p-3 transition-all duration-200"
                                 >
-                                  <FileText className="w-3 h-3 text-cyan-500/80 group-hover:scale-105" />
-                                  <span>{cit.document_name} (Page {cit.page})</span>
-                                  {cit.document_id && (
-                                    <button
-                                      onClick={() => handleDownloadDoc(cit.document_id, cit.document_name)}
-                                      title="Download Source Document"
-                                      className="ml-1 p-0.5 hover:bg-gray-800 rounded text-gray-500 hover:text-cyan-400 transition-colors cursor-pointer"
-                                    >
-                                      <Download className="w-2.5 h-2.5" />
-                                    </button>
+                                  <div className="flex items-center justify-between gap-4 mb-2">
+                                    <div className="flex flex-wrap items-center gap-2">
+                                      <FileText className="w-3.5 h-3.5 text-cyan-400" />
+                                      <span className="text-xs font-bold text-gray-300">
+                                        {cit.document_name}
+                                      </span>
+                                      <span className="text-[10px] bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 px-2 py-0.5 rounded font-semibold">
+                                        Page {cit.page}
+                                      </span>
+                                    </div>
+                                    {cit.document_id && (
+                                      <button
+                                        onClick={() => handleDownloadDoc(cit.document_id, cit.document_name)}
+                                        className="inline-flex items-center gap-1 px-2.5 py-1 bg-gray-800 hover:bg-cyan-500 hover:text-black border border-white/5 rounded-lg text-[10px] text-gray-400 font-semibold transition-all cursor-pointer"
+                                      >
+                                        <Download className="w-3 h-3" />
+                                        <span>Download</span>
+                                      </button>
+                                    )}
+                                  </div>
+                                  {cit.text && (
+                                    <div className="text-[11px] text-gray-400 italic bg-black/20 border-l-2 border-cyan-500/50 p-2.5 rounded-r-lg leading-relaxed select-text">
+                                      "{cit.text}"
+                                    </div>
                                   )}
                                 </div>
                               ))}
@@ -420,7 +513,7 @@ export const AIAssistantPage: React.FC = () => {
               )}
               
               {/* Sending / Thinking state */}
-              {sendingMessage && (
+              {sendingSessionId === currentSessionId && (
                 <div className="flex gap-3 max-w-3xl mr-auto">
                   <div className="w-8 h-8 rounded-xl bg-indigo-500/15 text-indigo-400 flex items-center justify-center flex-shrink-0 animate-pulse">
                     <Bot className="w-4 h-4" />
@@ -440,19 +533,19 @@ export const AIAssistantPage: React.FC = () => {
             <div className="p-4 border-t border-white/5 bg-gray-900/10 flex-shrink-0">
               <form
                 onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }}
-                className="max-w-4xl mx-auto flex gap-2 relative bg-gray-800/30 border border-white/10 rounded-2xl focus-within:border-cyan-500/50 focus-within:ring-2 focus-within:ring-cyan-500/10 transition-all p-1"
+                className="w-full flex gap-2 relative bg-gray-800/30 border border-white/10 rounded-2xl focus-within:border-cyan-500/50 focus-within:ring-2 focus-within:ring-cyan-500/10 transition-all p-1"
               >
                 <input
                   type="text"
                   value={query}
-                  disabled={sendingMessage}
+                  disabled={sendingSessionId !== null}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Ask a question about project scope or status documents..."
                   className="flex-1 bg-transparent border-0 outline-none text-sm text-white placeholder-gray-500 px-4 py-3 disabled:opacity-50"
                 />
                 <button
                   type="submit"
-                  disabled={!query.trim() || sendingMessage}
+                  disabled={!query.trim() || sendingSessionId !== null}
                   className="px-4 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-black font-semibold rounded-xl text-xs flex items-center gap-1.5 transition-all shadow-md shadow-cyan-500/15 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer self-center mr-1"
                 >
                   <Send className="w-3.5 h-3.5" />

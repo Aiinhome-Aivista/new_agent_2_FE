@@ -677,7 +677,7 @@ export const BaselineReviewPage: React.FC = () => {
               <h2 className="text-xl font-bold mb-4">
                 Deliverables & IFA Allocations
               </h2>
-              {baseline.deliverables?.length === 0 ? (
+              {!baseline.deliverables || baseline.deliverables.length === 0 ? (
                 <p className="text-gray-400 mb-8">
                   No deliverables or budget allocations found.
                 </p>
@@ -773,11 +773,10 @@ export const BaselineReviewPage: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Right navigation arrow */}
                     <button
                       onClick={handleNext}
                       disabled={
-                        activeIndex >= (baseline?.deliverables?.length || 0) - 1
+                        activeIndex >= (baseline.deliverables?.length || 0) - 1
                       }
                       className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-900 border border-gray-700 text-gray-400 hover:text-white hover:bg-gray-800 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-colors cursor-pointer z-10 shadow-md"
                     >
@@ -788,9 +787,10 @@ export const BaselineReviewPage: React.FC = () => {
                   {/* Selected Item Detail View */}
                   {(() => {
                     const selectedItem =
-                      baseline?.deliverables?.find(
+                      (baseline.deliverables || []).find(
                         (d: any) => d.id === selectedDeliverableId,
-                      ) || baseline?.deliverables?.[0];
+                      ) ||
+                      (baseline.deliverables && baseline.deliverables[0]);
                     if (!selectedItem) return null;
 
                     const dLen = baseline?.deliverables?.length || 0;
