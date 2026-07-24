@@ -997,17 +997,31 @@ export const BaselineReviewPage: React.FC = () => {
                           )}
                         </div>
 
-                        <div className="flex justify-between items-center text-xs mt-auto pt-3 border-t border-gray-700/20">
-                          <span className="font-semibold text-emerald-400 px-2.5 py-0.5 bg-emerald-950/40 rounded border border-emerald-800/30">
-                            {item.scope_type}
-                          </span>
-                          <div className="flex items-center gap-3">
-                            {item.deadline && (
-                              <span className="text-purple-300 font-semibold bg-purple-950/45 px-2 py-0.5 rounded border border-purple-800/30 flex items-center gap-1">
-                                <Clock className="w-3.5 h-3.5 text-purple-400" />
-                                {formatDate(item.deadline)}
+                        <div className="flex flex-col gap-2 mt-auto pt-3 border-t border-gray-700/20">
+                          {/* Milestone & Deadline Row */}
+                          <div className="flex flex-wrap items-center gap-2 text-xs">
+                            {item.milestone && (
+                              <span className="text-blue-300 font-semibold bg-blue-950/45 px-2 py-0.5 rounded border border-blue-800/30 flex items-center gap-1">
+                                <CheckCircle2 className="w-3.5 h-3.5 text-blue-400" />
+                                {item.milestone}
                               </span>
                             )}
+                            {item.deadline_text && (
+                              <span className="text-purple-300 font-semibold bg-purple-950/45 px-2 py-0.5 rounded border border-purple-800/30 flex items-center gap-1" title={item.deadline ? formatDate(item.deadline) : "Unnormalized"}>
+                                <Clock className="w-3.5 h-3.5 text-purple-400" />
+                                {item.deadline_text}
+                              </span>
+                            )}
+                            {item.extraction_method && (
+                              <span className="text-gray-400 font-medium text-[10px] bg-gray-800 px-1.5 py-0.5 rounded ml-auto">
+                                By: {item.extraction_method}
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex justify-between items-center text-xs">
+                            <span className="font-semibold text-emerald-400 px-2.5 py-0.5 bg-emerald-950/40 rounded border border-emerald-800/30">
+                              {item.scope_type}
+                            </span>
                             <span className="text-gray-500 font-medium">
                               Confidence: {(item.confidence * 100).toFixed(0)}%
                             </span>
@@ -1122,19 +1136,41 @@ export const BaselineReviewPage: React.FC = () => {
                           )}
                         </div>
 
-                        <div className="flex justify-between items-center text-xs mt-auto pt-3 border-t border-gray-700/20">
-                          <span
-                            className={`font-semibold px-2.5 py-0.5 rounded border ${
-                              item.scope_type === "OUT_OF_SCOPE"
-                                ? "text-rose-400 bg-rose-950/40 border-rose-800/30"
-                                : "text-blue-400 bg-blue-950/40 border-blue-800/30"
-                            }`}
-                          >
-                            {item.scope_type}
-                          </span>
-                          <span className="text-gray-500 font-medium">
-                            Confidence: {(item.confidence * 100).toFixed(0)}%
-                          </span>
+                        <div className="flex flex-col gap-2 mt-auto pt-3 border-t border-gray-700/20">
+                          {/* Milestone & Deadline Row */}
+                          <div className="flex flex-wrap items-center gap-2 text-xs">
+                            {item.milestone && (
+                              <span className="text-blue-300 font-semibold bg-blue-950/45 px-2 py-0.5 rounded border border-blue-800/30 flex items-center gap-1">
+                                <CheckCircle2 className="w-3.5 h-3.5 text-blue-400" />
+                                {item.milestone}
+                              </span>
+                            )}
+                            {item.deadline_text && (
+                              <span className="text-purple-300 font-semibold bg-purple-950/45 px-2 py-0.5 rounded border border-purple-800/30 flex items-center gap-1" title={item.deadline ? formatDate(item.deadline) : "Unnormalized"}>
+                                <Clock className="w-3.5 h-3.5 text-purple-400" />
+                                {item.deadline_text}
+                              </span>
+                            )}
+                            {item.extraction_method && (
+                              <span className="text-gray-400 font-medium text-[10px] bg-gray-800 px-1.5 py-0.5 rounded ml-auto">
+                                By: {item.extraction_method}
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex justify-between items-center text-xs">
+                            <span
+                              className={`font-semibold px-2.5 py-0.5 rounded border ${
+                                item.scope_type === "OUT_OF_SCOPE"
+                                  ? "text-rose-400 bg-rose-950/40 border-rose-800/30"
+                                  : "text-blue-400 bg-blue-950/40 border-blue-800/30"
+                              }`}
+                            >
+                              {item.scope_type}
+                            </span>
+                            <span className="text-gray-500 font-medium">
+                              Confidence: {(item.confidence * 100).toFixed(0)}%
+                            </span>
+                          </div>
                         </div>
                       </div>
                     ))}
