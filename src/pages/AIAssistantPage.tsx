@@ -43,8 +43,16 @@ export const AIAssistantPage: React.FC = () => {
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [sendingSessionId, setSendingSessionId] = useState<number | null>(null);
   const [creatingSession, setCreatingSession] = useState(false);
+  const [sessionToDelete, setSessionToDelete] = useState<number | null>(null);
+  const [deletingSession, setDeletingSession] = useState(false);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const currentSessionIdRef = useRef<number | null>(null);
+  const skipNextFetchRef = useRef<boolean>(false);
+
+  useEffect(() => {
+    currentSessionIdRef.current = currentSessionId;
+  }, [currentSessionId]);
 
   useEffect(() => {
     fetchSessions();
@@ -85,6 +93,10 @@ export const AIAssistantPage: React.FC = () => {
 
   useEffect(() => {
     if (currentSessionId !== null) {
+      if (skipNextFetchRef.current) {
+        skipNextFetchRef.current = false;
+        return;
+      }
       fetchMessages(currentSessionId);
     } else {
       setMessages([]);
@@ -107,6 +119,7 @@ export const AIAssistantPage: React.FC = () => {
         setSessions(res.data.data);
         if (res.data.data.length > 0 && currentSessionId === null) {
           setCurrentSessionId(res.data.data[0].id);
+          currentSessionIdRef.current = res.data.data[0].id;
         }
       }
     } catch (error) {
@@ -139,8 +152,11 @@ export const AIAssistantPage: React.FC = () => {
       });
       if (res.data.success) {
         const newSession = res.data.data;
-        setSessions([newSession, ...sessions]);
+        setSessions(prev => [newSession, ...prev]);
+        skipNextFetchRef.current = true;
+        setMessages([]);
         setCurrentSessionId(newSession.id);
+        currentSessionIdRef.current = newSession.id;
         return newSession.id;
       }
       return null;
@@ -152,26 +168,38 @@ export const AIAssistantPage: React.FC = () => {
     }
   };
 
-  const handleDeleteSession = async (sessionId: number, e: React.MouseEvent) => {
+  const handleDeleteSession = (sessionId: number, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!confirm("Are you sure you want to delete this chat session and all its messages?")) return;
+    setSessionToDelete(sessionId);
+  };
+
+  const confirmDeleteSession = async () => {
+    if (sessionToDelete === null) return;
+    setDeletingSession(true);
     try {
-      const res = await apiClient.delete(`/projects/${id}/rag/sessions/${sessionId}`);
+      const res = await apiClient.delete(`/projects/${id}/rag/sessions/${sessionToDelete}`);
       if (res.data.success) {
-        setSessions(sessions.filter(s => s.id !== sessionId));
-        if (currentSessionId === sessionId) {
-          const remaining = sessions.filter(s => s.id !== sessionId);
-          setCurrentSessionId(remaining.length > 0 ? remaining[0].id : null);
-        }
+        setSessions(prev => {
+          const remaining = prev.filter(s => s.id !== sessionToDelete);
+          if (currentSessionIdRef.current === sessionToDelete) {
+            const nextSessionId = remaining.length > 0 ? remaining[0].id : null;
+            setCurrentSessionId(nextSessionId);
+            currentSessionIdRef.current = nextSessionId;
+          }
+          return remaining;
+        });
+        setSessionToDelete(null);
       }
     } catch (error) {
       console.error("Failed to delete session:", error);
+    } finally {
+      setDeletingSession(false);
     }
   };
 
   const handleSendMessage = async (textToSend?: string, overrideSessionId?: number) => {
     const text = textToSend || query;
-    const sessionIdToUse = overrideSessionId !== undefined ? overrideSessionId : currentSessionId;
+    const sessionIdToUse = overrideSessionId !== undefined ? overrideSessionId : currentSessionIdRef.current;
     if (!text.trim() || sessionIdToUse === null || sendingSessionId !== null) return;
     
     setSendingSessionId(sessionIdToUse);
@@ -185,7 +213,7 @@ export const AIAssistantPage: React.FC = () => {
       citations: [],
       created_at: new Date().toISOString()
     };
-    if (currentSessionId === sessionIdToUse) {
+    if (currentSessionIdRef.current === sessionIdToUse) {
       setMessages(prev => [...prev, tempUserMsg]);
     }
 
@@ -196,7 +224,7 @@ export const AIAssistantPage: React.FC = () => {
       if (res.data.success) {
         // Replace temp messages with official list or append assistant message
         const assistantMsg = res.data.data;
-        if (currentSessionId === sessionIdToUse) {
+        if (currentSessionIdRef.current === sessionIdToUse) {
           setMessages(prev => {
             // Remove the temporary message and set official messages from server
             return prev.filter(m => m.id !== tempUserMsg.id).concat([
@@ -329,7 +357,10 @@ export const AIAssistantPage: React.FC = () => {
             sessions.map((session) => (
               <div
                 key={session.id}
-                onClick={() => setCurrentSessionId(session.id)}
+                onClick={() => {
+                  setCurrentSessionId(session.id);
+                  currentSessionIdRef.current = session.id;
+                }}
                 className={`group p-3 rounded-xl border transition-all duration-200 cursor-pointer flex items-center justify-between ${
                   currentSessionId === session.id
                     ? "bg-cyan-950/30 border-cyan-500/30 shadow-lg shadow-cyan-500/5"
@@ -556,6 +587,51 @@ export const AIAssistantPage: React.FC = () => {
           </>
         )}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {sessionToDelete !== null && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div className="w-full max-w-md bg-[#0f1322] border border-white/10 rounded-2xl p-6 shadow-2xl shadow-black/80 animate-scale-in">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl">
+                <Trash2 className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="font-display font-bold text-white text-lg">Delete Chat Session</h3>
+                <p className="text-xs text-gray-400 mt-1">This action cannot be undone.</p>
+              </div>
+            </div>
+            
+            <p className="text-sm text-gray-300 mb-6 leading-relaxed">
+              Are you sure you want to delete this chat session and all its messages?
+            </p>
+            
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setSessionToDelete(null)}
+                disabled={deletingSession}
+                className="px-4 py-2.5 bg-gray-800 hover:bg-gray-700/80 border border-white/5 text-gray-300 font-semibold rounded-xl text-xs transition-all cursor-pointer disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDeleteSession}
+                disabled={deletingSession}
+                className="px-4 py-2.5 bg-red-600 hover:bg-red-500 text-white font-semibold rounded-xl text-xs flex items-center gap-2 transition-all shadow-lg shadow-red-600/15 cursor-pointer disabled:opacity-50"
+              >
+                {deletingSession ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>Deleting...</span>
+                  </>
+                ) : (
+                  <span>Delete</span>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
