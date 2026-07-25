@@ -31,6 +31,8 @@ import {
   X,
   AlertTriangle,
   Circle,
+  Calendar,
+  MapPin,
 } from "lucide-react";
 
 export const BaselineReviewPage: React.FC = () => {
@@ -100,11 +102,22 @@ export const BaselineReviewPage: React.FC = () => {
     number | null
   >(null);
 
+  // Compute timelineItems early so handlers can reference it
+  const timelineItems = React.useMemo(() => {
+    return (baseline?.scope_items || [])
+      .filter((item: any) => item.deadline || item.milestone)
+      .sort((a: any, b: any) => {
+        if (!a.deadline) return 1;
+        if (!b.deadline) return -1;
+        return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
+      });
+  }, [baseline]);
+
   useEffect(() => {
-    if (baseline?.deliverables?.length > 0 && selectedDeliverableId === null) {
-      setSelectedDeliverableId(baseline.deliverables[0].id);
+    if (timelineItems.length > 0 && selectedDeliverableId === null) {
+      setSelectedDeliverableId(timelineItems[0].id);
     }
-  }, [baseline, selectedDeliverableId]);
+  }, [timelineItems, selectedDeliverableId]);
 
   useEffect(() => {
     if (selectedDeliverableId && timelineContainerRef.current) {
@@ -121,22 +134,19 @@ export const BaselineReviewPage: React.FC = () => {
   }, [selectedDeliverableId]);
 
   const activeIndex =
-    baseline?.deliverables?.findIndex(
+    timelineItems.findIndex(
       (d: any) => d.id === selectedDeliverableId,
     ) ?? -1;
 
   const handlePrev = () => {
-    if (baseline?.deliverables && activeIndex > 0) {
-      setSelectedDeliverableId(baseline.deliverables[activeIndex - 1].id);
+    if (timelineItems.length > 0 && activeIndex > 0) {
+      setSelectedDeliverableId(timelineItems[activeIndex - 1].id);
     }
   };
 
   const handleNext = () => {
-    if (
-      baseline?.deliverables &&
-      activeIndex < baseline.deliverables.length - 1
-    ) {
-      setSelectedDeliverableId(baseline.deliverables[activeIndex + 1].id);
+    if (timelineItems.length > 0 && activeIndex < timelineItems.length - 1) {
+      setSelectedDeliverableId(timelineItems[activeIndex + 1].id);
     }
   };
 
@@ -601,13 +611,7 @@ export const BaselineReviewPage: React.FC = () => {
       (item: any) => item.scope_type !== "IN_SCOPE",
     ) || [];
 
-  const timelineItems = (baseline?.scope_items || [])
-    .filter((item: any) => item.deadline || item.milestone)
-    .sort((a: any, b: any) => {
-      if (!a.deadline) return 1;
-      if (!b.deadline) return -1;
-      return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
-    });
+  // timelineItems is now computed via useMemo above the handlers
 
   const isBaselineExtracted = !!(
     baseline &&
@@ -682,188 +686,468 @@ export const BaselineReviewPage: React.FC = () => {
 
             {/* Deliverables timeline */}
             <div className="mb-8">
-              <h2 className="text-xl font-bold mb-4">Deliverables</h2>
+              {/* Section Header */}
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-1 h-7 rounded-full bg-gradient-to-b from-cyan-400 to-violet-500"></div>
+                <h2 className="text-xl font-bold tracking-tight">Deliverables Timeline</h2>
+                <span className="ml-auto text-xs font-medium text-gray-500 flex items-center gap-1.5">
+                  <Calendar className="w-3.5 h-3.5" />
+                  {new Date().toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" })}
+                </span>
+              </div>
+
               {timelineItems.length === 0 ? (
                 <p className="text-gray-400 mb-8">
                   No scheduled scope items found.
                 </p>
-              ) : (
-                <div>
-                  {/* Horizontal Timeline Container */}
-                  <div className="flex items-center gap-4 my-10 relative">
-                    {/* Left navigation arrow */}
-                    <button
-                      onClick={handlePrev}
-                      disabled={activeIndex <= 0}
-                      className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-900 border border-gray-700 text-gray-400 hover:text-white hover:bg-gray-800 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-colors cursor-pointer z-10 shadow-md"
-                    >
-                      <ChevronLeft className="w-5 h-5" />
-                    </button>
+              ) : (() => {
+                /* ── Colour palette for deliverables ── */
+                const palette = [
+                  { bg: "rgba(6,182,212,0.12)",  border: "#06b6d4", text: "#67e8f9", dot: "#06b6d4", glow: "rgba(6,182,212,0.3)" },
+                  { bg: "rgba(139,92,246,0.12)", border: "#8b5cf6", text: "#c4b5fd", dot: "#8b5cf6", glow: "rgba(139,92,246,0.3)" },
+                  { bg: "rgba(245,158,11,0.12)", border: "#f59e0b", text: "#fcd34d", dot: "#f59e0b", glow: "rgba(245,158,11,0.3)" },
+                  { bg: "rgba(244,63,94,0.12)",  border: "#f43f5e", text: "#fda4af", dot: "#f43f5e", glow: "rgba(244,63,94,0.3)" },
+                  { bg: "rgba(16,185,129,0.12)", border: "#10b981", text: "#6ee7b7", dot: "#10b981", glow: "rgba(16,185,129,0.3)" },
+                  { bg: "rgba(99,102,241,0.12)", border: "#6366f1", text: "#a5b4fc", dot: "#6366f1", glow: "rgba(99,102,241,0.3)" },
+                  { bg: "rgba(217,70,239,0.12)", border: "#d946ef", text: "#f0abfc", dot: "#d946ef", glow: "rgba(217,70,239,0.3)" },
+                  { bg: "rgba(20,184,166,0.12)", border: "#14b8a6", text: "#5eead4", dot: "#14b8a6", glow: "rgba(20,184,166,0.3)" },
+                ];
 
-                    {/* Horizontal Timeline Track */}
-                    <div className="flex-1 min-w-0 relative py-6 overflow-hidden">
-                      {/* Scrollable Container */}
+                /* ── Parse dates & compute timeline bounds ── */
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const todayMs = today.getTime();
+
+                const parsedItems = timelineItems.map((item: any, idx: number) => {
+                  const raw = item.deadline || item.deadline_text || null;
+                  let dateMs: number | null = null;
+                  if (raw) {
+                    const d = new Date(typeof raw === "string" ? raw.replace(" ", "T") : raw);
+                    if (!isNaN(d.getTime())) {
+                      d.setHours(0, 0, 0, 0);
+                      dateMs = d.getTime();
+                    }
+                  }
+                  return { ...item, _dateMs: dateMs, _idx: idx, _color: palette[idx % palette.length] };
+                });
+
+                const datedItems = parsedItems.filter((i: any) => i._dateMs !== null);
+                const hasDates = datedItems.length >= 1;
+
+                let minMs = todayMs;
+                let maxMs = todayMs;
+                if (hasDates) {
+                  const allMs = [...datedItems.map((i: any) => i._dateMs as number), todayMs];
+                  minMs = Math.min(...allMs);
+                  maxMs = Math.max(...allMs);
+                  // Add padding on each side so edge items aren't clipped
+                  const range = maxMs - minMs || 86400000 * 30;
+                  minMs -= range * 0.08;
+                  maxMs += range * 0.08;
+                }
+
+                const totalRange = maxMs - minMs || 1;
+                const toPercent = (ms: number) => Math.max(2, Math.min(98, ((ms - minMs) / totalRange) * 100));
+                const todayPct = hasDates ? toPercent(todayMs) : -1;
+
+                /* ── Generate month tick marks ── */
+                const monthTicks: { pct: number; label: string }[] = [];
+                if (hasDates) {
+                  const startDate = new Date(minMs);
+                  const endDate = new Date(maxMs);
+                  const cur = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
+                  while (cur <= endDate) {
+                    const pct = ((cur.getTime() - minMs) / totalRange) * 100;
+                    if (pct >= 0 && pct <= 100) {
+                      monthTicks.push({
+                        pct,
+                        label: cur.toLocaleDateString(undefined, { month: "short", year: "2-digit" }),
+                      });
+                    }
+                    cur.setMonth(cur.getMonth() + 1);
+                  }
+                }
+
+                /* ── Position items ── */
+                const getLeftPct = (item: any, idx: number) => {
+                  if (hasDates && item._dateMs !== null) {
+                    return toPercent(item._dateMs);
+                  }
+                  // Fallback: evenly spaced between 8% and 92%
+                  const count = parsedItems.length;
+                  return count === 1 ? 50 : 8 + (idx / (count - 1)) * 84;
+                };
+
+                const formatItemDate = (item: any) => {
+                  const raw = item.deadline_text || item.deadline;
+                  if (!raw) return item.milestone || `Item ${item._idx + 1}`;
+                  try {
+                    const d = new Date(typeof raw === "string" ? raw.replace(" ", "T") : raw);
+                    if (isNaN(d.getTime())) return raw;
+                    return d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+                  } catch { return raw; }
+                };
+
+                const isPast = (item: any) => item._dateMs !== null && item._dateMs < todayMs;
+
+                const selectedItem = parsedItems.find((d: any) => d.id === selectedDeliverableId) || parsedItems[0];
+
+                /* ── Determine alternating above/below positions ── */
+                const sortedByPosition = [...parsedItems].sort((a: any, b: any) => getLeftPct(a, a._idx) - getLeftPct(b, b._idx));
+                const positionMap = new Map<number, boolean>();
+                sortedByPosition.forEach((item: any, i: number) => {
+                  positionMap.set(item.id, i % 2 === 0); // true = above, false = below
+                });
+
+                /* ── Track midpoint Y for consistent reference ── */
+                const TRACK_Y = 120;
+                const ABOVE_LABEL_TOP = 16;
+                const BELOW_LABEL_START = TRACK_Y + 8;
+
+                return (
+                  <div>
+                    {/* ── Navigation row ── */}
+                    <div className="flex items-center gap-3 mb-3">
+                      <button
+                        onClick={handlePrev}
+                        disabled={activeIndex <= 0}
+                        className="flex-shrink-0 w-9 h-9 rounded-full bg-gray-900/80 border border-gray-700/60 text-gray-400 hover:text-white hover:bg-gray-800 hover:border-gray-600 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-all cursor-pointer z-10 shadow-md backdrop-blur-sm"
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                      </button>
+                      <div className="flex-1 flex items-center justify-center">
+                        <span className="text-[11px] text-gray-500 tracking-wide">
+                          {activeIndex + 1} of {timelineItems.length} deliverables
+                        </span>
+                      </div>
+                      <button
+                        onClick={handleNext}
+                        disabled={activeIndex >= timelineItems.length - 1}
+                        className="flex-shrink-0 w-9 h-9 rounded-full bg-gray-900/80 border border-gray-700/60 text-gray-400 hover:text-white hover:bg-gray-800 hover:border-gray-600 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-all cursor-pointer z-10 shadow-md backdrop-blur-sm"
+                      >
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    {/* ── Timeline Canvas ── */}
+                    <div className="relative rounded-2xl border border-gray-800/60 bg-gradient-to-br from-gray-900/60 via-gray-950/80 to-gray-900/60 backdrop-blur-sm overflow-visible">
+                      {/* Subtle grid background pattern */}
+                      <div className="absolute inset-0 rounded-2xl overflow-hidden opacity-[0.03]" style={{
+                        backgroundImage: "radial-gradient(circle, #fff 1px, transparent 1px)",
+                        backgroundSize: "24px 24px"
+                      }}></div>
+
+                      {/* Responsive track container — no horizontal scroll, uses % positioning */}
                       <div
                         ref={timelineContainerRef}
-                        className="overflow-x-auto no-scrollbar"
+                        className="relative w-full"
+                        style={{ height: "260px", padding: "0 16px" }}
                       >
-                        {/* Inner wrapper to contain absolute layout in full scroll width */}
-                        <div className="relative flex justify-between items-center min-w-max pt-4 pb-4 pl-12 pr-12">
-                          {/* Horizontal Track Line */}
-                          <div className="absolute top-[72px] left-12 right-12 h-1 bg-gray-800 rounded-full z-0"></div>
-                          {timelineItems.map((item: any, index: number) => {
-                            const isSelected =
-                              selectedDeliverableId === item.id;
-                            const displayName =
-                              item.deadline_original ||
-                              item.deadline_normalized ||
-                              item.deadline_text ||
-                              item.deadline ||
-                              `Item ${index + 1}`;
 
-                            return (
-                              <div
-                                key={item.id}
-                                data-active={isSelected}
-                                className="flex flex-col items-center flex-shrink-0 cursor-pointer group mx-6 first:ml-0 last:mr-0 relative pt-12"
-                                onClick={() =>
-                                  setSelectedDeliverableId(item.id)
-                                }
-                              >
-                                {/* Date Label bubble with down caret */}
-                                <div className="absolute top-0 left-1/2 -translate-x-1/2 flex flex-col items-center pointer-events-none">
+                        {/* ── Month tick marks ── */}
+                        {monthTicks.map((tick, i) => (
+                          <div key={`tick-${i}`} className="absolute flex flex-col items-center pointer-events-none" style={{ left: `${tick.pct}%`, top: "10px", bottom: "40px" }}>
+                            <span className="text-[9px] text-gray-600 font-medium tracking-wider uppercase whitespace-nowrap" style={{ transform: "translateX(-50%)" }}>
+                              {tick.label}
+                            </span>
+                            <div className="w-px flex-1 bg-gray-800/40 mt-1"></div>
+                          </div>
+                        ))}
+
+                        {/* ── Main track line ── */}
+                        <div
+                          className="absolute h-[3px] rounded-full timeline-track-shimmer"
+                          style={{ top: `${TRACK_Y}px`, left: "16px", right: "16px" }}
+                        ></div>
+
+                        {/* ── Gradient overlay on track (past = colored, future = dim) ── */}
+                        {hasDates && todayPct >= 0 && todayPct <= 100 && (
+                          <div
+                            className="absolute h-[3px] rounded-l-full"
+                            style={{
+                              top: `${TRACK_Y}px`,
+                              left: "16px",
+                              width: `calc(${todayPct}% - 16px)`,
+                              background: "linear-gradient(90deg, #06b6d4, #8b5cf6, #f59e0b)",
+                              opacity: 0.6,
+                            }}
+                          ></div>
+                        )}
+
+                        {/* ── TODAY marker ── */}
+                        {hasDates && todayPct >= 0 && todayPct <= 100 && (
+                          <div className="absolute flex flex-col items-center z-30 pointer-events-none" style={{ left: `${todayPct}%`, top: `${TRACK_Y - 46}px`, transform: "translateX(-50%)" }}>
+                            {/* Label */}
+                            <div className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-widest bg-orange-500/20 text-orange-300 border border-orange-500/40 shadow-lg whitespace-nowrap"
+                              style={{ animation: "todayPulse 2s ease-in-out infinite" }}>
+                              ● Today
+                            </div>
+                            {/* Vertical line from label down through track and below */}
+                            <div className="w-0.5 bg-orange-400/60 rounded-full mt-1" style={{ height: `${46 + 50}px`, animation: "todayLinePulse 2s ease-in-out infinite" }}></div>
+                            {/* Date below */}
+                            <span className="text-[9px] text-orange-400/70 mt-0.5 whitespace-nowrap font-medium">
+                              {today.toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                            </span>
+                          </div>
+                        )}
+
+                        {/* ── Deliverable Nodes ── */}
+                        {parsedItems.map((item: any, idx: number) => {
+                          const isSelected = selectedDeliverableId === item.id;
+                          const leftPct = getLeftPct(item, idx);
+                          const color = item._color;
+                          const isAbove = positionMap.get(item.id) ?? true;
+                          const dateStr = formatItemDate(item);
+                          const past = isPast(item);
+                          const completionStatus = item.completion_status || "ACTIVE";
+                          const isCompleted = completionStatus === "COMPLETED";
+                          const isCancelled = completionStatus === "CANCELLED";
+
+                          return (
+                            <div
+                              key={item.id}
+                              data-active={isSelected}
+                              className="absolute flex flex-col items-center cursor-pointer group"
+                              style={{
+                                left: `${leftPct}%`,
+                                top: isAbove ? `${ABOVE_LABEL_TOP}px` : `${TRACK_Y - 6}px`,
+                                transform: "translateX(-50%)",
+                                zIndex: isSelected ? 20 : 10,
+                              }}
+                              onClick={() => setSelectedDeliverableId(item.id)}
+                            >
+                              {isAbove ? (
+                                <>
+                                  {/* Date label */}
                                   <div
-                                    className={`px-3 py-1 rounded text-xs font-semibold shadow-md transition-all duration-300 border whitespace-nowrap ${
-                                      isSelected
-                                        ? "bg-purple-650 text-white border-purple-500 scale-105"
-                                        : "bg-[#1e293b] text-gray-300 border-gray-750"
-                                    }`}
+                                    className="px-2 py-0.5 rounded-md text-[10px] font-semibold shadow-md transition-all duration-300 border whitespace-nowrap max-w-[110px] truncate text-center"
+                                    style={isSelected ? {
+                                      borderColor: color.border,
+                                      backgroundColor: color.bg,
+                                      color: color.text,
+                                      boxShadow: `0 2px 12px ${color.glow}`,
+                                    } : {
+                                      borderColor: "rgba(55,65,81,0.5)",
+                                      backgroundColor: "rgba(17,24,39,0.85)",
+                                      color: "#9ca3af",
+                                    }}
+                                    title={dateStr}
                                   >
-                                    {displayName}
+                                    {dateStr}
                                   </div>
-                                  <div
-                                    className={`w-2 h-2 rotate-45 -mt-1 border-r border-b transition-colors ${
-                                      isSelected
-                                        ? "bg-purple-650 border-purple-500"
-                                        : "bg-[#1e293b] border-gray-750"
+                                  {/* Name */}
+                                  <span
+                                    className={`text-[9px] mt-0.5 max-w-[100px] truncate text-center leading-tight transition-colors ${
+                                      isSelected ? "font-semibold" : "text-gray-600 group-hover:text-gray-400"
                                     }`}
-                                  ></div>
-                                </div>
+                                    style={isSelected ? { color: color.text } : {}}
+                                    title={item.scope_item_normalized || item.name}
+                                  >
+                                    {item.scope_item_normalized || item.name}
+                                  </span>
+                                  {/* Connector line down to track */}
+                                  <div className="w-px transition-colors duration-300" style={{ height: `${TRACK_Y - ABOVE_LABEL_TOP - 40}px`, backgroundColor: isSelected ? color.border : "#374151", minHeight: "12px" }}></div>
+                                  {/* Node dot on the track */}
+                                  <div
+                                    className={`relative w-[14px] h-[14px] rounded-full timeline-node-enter transition-all duration-300 flex-shrink-0 ${
+                                      isSelected ? "scale-[1.4]" : "group-hover:scale-125"
+                                    }`}
+                                    style={{
+                                      backgroundColor: isSelected ? color.dot : (past ? color.dot : "#4b5563"),
+                                      boxShadow: isSelected ? `0 0 10px ${color.glow}, 0 0 20px ${color.glow}` : "none",
+                                      opacity: isCompleted ? 0.5 : isCancelled ? 0.3 : 1,
+                                      animationDelay: `${idx * 60}ms`,
+                                    }}
+                                  >
+                                    {isCompleted && (
+                                      <CheckCircle2 className="absolute -top-1 -right-1 w-3 h-3 text-emerald-400" style={{ filter: "drop-shadow(0 0 2px rgba(16,185,129,0.5))" }} />
+                                    )}
+                                    {isSelected && (
+                                      <span className="absolute inset-0 rounded-full animate-ping" style={{ backgroundColor: color.dot, opacity: 0.25 }}></span>
+                                    )}
+                                  </div>
+                                </>
+                              ) : (
+                                <>
+                                  {/* Node dot on the track */}
+                                  <div
+                                    className={`relative w-[14px] h-[14px] rounded-full timeline-node-enter transition-all duration-300 flex-shrink-0 ${
+                                      isSelected ? "scale-[1.4]" : "group-hover:scale-125"
+                                    }`}
+                                    style={{
+                                      backgroundColor: isSelected ? color.dot : (past ? color.dot : "#4b5563"),
+                                      boxShadow: isSelected ? `0 0 10px ${color.glow}, 0 0 20px ${color.glow}` : "none",
+                                      opacity: isCompleted ? 0.5 : isCancelled ? 0.3 : 1,
+                                      animationDelay: `${idx * 60}ms`,
+                                    }}
+                                  >
+                                    {isCompleted && (
+                                      <CheckCircle2 className="absolute -top-1 -right-1 w-3 h-3 text-emerald-400" style={{ filter: "drop-shadow(0 0 2px rgba(16,185,129,0.5))" }} />
+                                    )}
+                                    {isSelected && (
+                                      <span className="absolute inset-0 rounded-full animate-ping" style={{ backgroundColor: color.dot, opacity: 0.25 }}></span>
+                                    )}
+                                  </div>
+                                  {/* Connector line down from track */}
+                                  <div className="w-px transition-colors duration-300" style={{ height: "16px", backgroundColor: isSelected ? color.border : "#374151" }}></div>
+                                  {/* Date label */}
+                                  <div
+                                    className="px-2 py-0.5 rounded-md text-[10px] font-semibold shadow-md transition-all duration-300 border whitespace-nowrap max-w-[110px] truncate text-center"
+                                    style={isSelected ? {
+                                      borderColor: color.border,
+                                      backgroundColor: color.bg,
+                                      color: color.text,
+                                      boxShadow: `0 2px 12px ${color.glow}`,
+                                    } : {
+                                      borderColor: "rgba(55,65,81,0.5)",
+                                      backgroundColor: "rgba(17,24,39,0.85)",
+                                      color: "#9ca3af",
+                                    }}
+                                    title={dateStr}
+                                  >
+                                    {dateStr}
+                                  </div>
+                                  {/* Name */}
+                                  <span
+                                    className={`text-[9px] mt-0.5 max-w-[100px] truncate text-center leading-tight transition-colors ${
+                                      isSelected ? "font-semibold" : "text-gray-600 group-hover:text-gray-400"
+                                    }`}
+                                    style={isSelected ? { color: color.text } : {}}
+                                    title={item.scope_item_normalized || item.name}
+                                  >
+                                    {item.scope_item_normalized || item.name}
+                                  </span>
+                                </>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
 
-                                {/* Node Circle */}
-                                <div
-                                  className={`w-5 h-5 rounded-full flex items-center justify-center transition-all duration-300 border-2 z-10 bg-gray-900 ${
-                                    isSelected
-                                      ? "border-purple-500 scale-125 bg-gray-100 shadow-lg shadow-purple-500/20"
-                                      : "border-gray-600 group-hover:border-gray-450"
-                                  }`}
-                                >
-                                  {isSelected && (
-                                    <span className="w-1.5 h-1.5 rounded-full bg-purple-600 animate-pulse"></span>
-                                  )}
-                                </div>
-
-                                {/* Mini label below */}
-                                <span
-                                  className={`text-[10px] mt-2.5 transition-colors max-w-[90px] truncate text-center ${
-                                    isSelected
-                                      ? "text-purple-300 font-semibold"
-                                      : "text-gray-500 group-hover:text-gray-400"
-                                  }`}
-                                  title={
-                                    item.scope_item_normalized || item.name
-                                  }
-                                >
-                                  {item.scope_item_normalized || item.name}
-                                </span>
-                              </div>
-                            );
-                          })}
+                      {/* ── Legend ── */}
+                      <div className="flex items-center gap-4 px-5 py-3 border-t border-gray-800/40 flex-wrap">
+                        {hasDates && (
+                          <div className="flex items-center gap-1.5">
+                            <div className="w-2.5 h-2.5 rounded-full bg-orange-400" style={{ animation: "todayPulse 2s ease-in-out infinite" }}></div>
+                            <span className="text-[10px] text-gray-500">Today</span>
+                          </div>
+                        )}
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-6 h-0.5 rounded-full" style={{ background: "linear-gradient(90deg, #06b6d4, #8b5cf6, #f59e0b)" }}></div>
+                          <span className="text-[10px] text-gray-500">Past</span>
                         </div>
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-6 h-0.5 rounded-full bg-gray-700"></div>
+                          <span className="text-[10px] text-gray-500">Future</span>
+                        </div>
+                        {parsedItems.some((i: any) => (i.completion_status || "ACTIVE") === "COMPLETED") && (
+                          <div className="flex items-center gap-1.5">
+                            <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                            <span className="text-[10px] text-gray-500">Completed</span>
+                          </div>
+                        )}
                       </div>
                     </div>
 
-                    <button
-                      onClick={handleNext}
-                      disabled={activeIndex >= (timelineItems.length || 0) - 1}
-                      className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-900 border border-gray-700 text-gray-400 hover:text-white hover:bg-gray-800 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-colors cursor-pointer z-10 shadow-md"
-                    >
-                      <ChevronRight className="w-5 h-5" />
-                    </button>
-                  </div>
+                    {/* ── Selected Item Detail Card ── */}
+                    {selectedItem && (() => {
+                      const color = selectedItem._color;
+                      const completionStatus = selectedItem.completion_status || "ACTIVE";
 
-                  {/* Selected Item Detail View */}
-                  {(() => {
-                    const selectedItem =
-                      (timelineItems || []).find(
-                        (d: any) => d.id === selectedDeliverableId,
-                      ) ||
-                      (timelineItems && timelineItems[0]);
-                    if (!selectedItem) return null;
-
-                    const dLen = timelineItems?.length || 0;
-                    const caretLeft =
-                      dLen > 1
-                        ? `calc(96px + (${activeIndex} / ${dLen - 1}) * (100% - 192px))`
-                        : "50%";
-
-                    return (
-                      <div className="relative p-6 bg-gray-900/90 backdrop-blur-sm rounded-2xl border border-gray-850 shadow-2xl animate-fadeIn mb-6">
-                        {/* Caret pointing up to selected node */}
+                      return (
                         <div
-                          className="absolute -top-[9px] w-4 h-4 bg-gray-900 border-l border-t border-gray-850 z-10 transition-all duration-300"
+                          key={selectedItem.id}
+                          className="relative mt-5 rounded-2xl border backdrop-blur-sm shadow-2xl timeline-detail-enter overflow-hidden"
                           style={{
-                            left: caretLeft,
-                            transform: "translateX(-50%) rotate(45deg)",
+                            borderColor: `${color.border}25`,
+                            background: `linear-gradient(135deg, ${color.bg}, rgba(17,24,39,0.95))`,
                           }}
-                        ></div>
+                        >
+                          {/* Accent bar */}
+                          <div className="absolute top-0 left-0 right-0 h-[2px] rounded-t-2xl" style={{
+                            background: `linear-gradient(90deg, ${color.dot}, transparent)`,
+                          }}></div>
 
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                          <div>
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-purple-400">
-                              Selected Scope Item
-                            </span>
-                            <h3 className="font-bold text-xl text-white mt-0.5">
-                              {selectedItem.scope_item_normalized ||
-                                selectedItem.name}
-                            </h3>
-                          </div>
-                          <div className="flex flex-wrap gap-2.5">
-                            {(selectedItem.milestone_normalized ||
-                              selectedItem.milestone) && (
-                              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-950/40 text-blue-300 border border-blue-800/25 shadow-sm">
-                                Milestone:{" "}
-                                {selectedItem.milestone_normalized ||
-                                  selectedItem.milestone}
+                          <div className="p-5">
+                            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: color.dot }}></span>
+                                  <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: color.text }}>
+                                    Selected Deliverable
+                                  </span>
+                                </div>
+                                <h3 className="font-bold text-lg text-white mt-0.5 leading-snug">
+                                  {selectedItem.scope_item_normalized || selectedItem.name}
+                                </h3>
+                                {selectedItem.description && (
+                                  <p className="mt-2 text-sm text-gray-400 leading-relaxed line-clamp-2">
+                                    {selectedItem.description}
+                                  </p>
+                                )}
+                              </div>
+
+                              {/* Status indicator */}
+                              <div className="flex-shrink-0">
+                                <div className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider border ${
+                                  completionStatus === "COMPLETED"
+                                    ? "bg-emerald-950/40 text-emerald-300 border-emerald-700/40"
+                                    : completionStatus === "CANCELLED"
+                                    ? "bg-red-950/40 text-red-300 border-red-700/40"
+                                    : "bg-gray-800/60 text-gray-300 border-gray-700/40"
+                                }`}>
+                                  {completionStatus === "COMPLETED" && <CheckCircle2 className="w-3 h-3 inline mr-1.5 -mt-0.5" />}
+                                  {completionStatus === "CANCELLED" && <X className="w-3 h-3 inline mr-1.5 -mt-0.5" />}
+                                  {completionStatus === "ACTIVE" && <Clock className="w-3 h-3 inline mr-1.5 -mt-0.5" />}
+                                  {completionStatus.replace("_", " ")}
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Meta badges */}
+                            <div className="flex flex-wrap gap-2 mt-3">
+                              {(selectedItem.milestone_normalized || selectedItem.milestone) && (
+                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-blue-950/30 text-blue-300 border border-blue-800/25 shadow-sm">
+                                  <MapPin className="w-3 h-3" />
+                                  {selectedItem.milestone_normalized || selectedItem.milestone}
+                                </span>
+                              )}
+                              {(selectedItem.deadline_text || selectedItem.deadline) && (
+                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border shadow-sm" style={{
+                                  backgroundColor: `${color.bg}`,
+                                  borderColor: `${color.border}30`,
+                                  color: color.text,
+                                }}>
+                                  <Calendar className="w-3 h-3" />
+                                  {formatItemDate(selectedItem)}
+                                </span>
+                              )}
+                              <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-gray-800/50 border border-gray-700/40 text-gray-400 text-xs font-medium">
+                                {selectedItem.scope_type?.replace("_", " ") || "Scope Item"}
                               </span>
-                            )}
-                            {(selectedItem.deadline_original ||
-                              selectedItem.deadline_normalized ||
-                              selectedItem.deadline_text) && (
-                              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-purple-950/40 text-purple-300 border border-purple-800/25 shadow-sm">
-                                Date:{" "}
-                                {selectedItem.deadline_original ||
-                                  selectedItem.deadline_normalized ||
-                                  selectedItem.deadline_text}
-                              </span>
-                            )}
-                            <span className="inline-flex items-center px-3 py-1 rounded bg-gray-850/60 border border-gray-700/60 text-gray-300 text-xs font-medium">
-                              {selectedItem.scope_type.replace("_", " ")}
-                            </span>
+                              {selectedItem._dateMs !== null && (
+                                <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium border ${
+                                  selectedItem._dateMs < todayMs
+                                    ? "bg-red-950/20 text-red-300/80 border-red-800/20"
+                                    : selectedItem._dateMs === todayMs
+                                    ? "bg-orange-950/20 text-orange-300/80 border-orange-800/20"
+                                    : "bg-green-950/20 text-green-300/80 border-green-800/20"
+                                }`}>
+                                  {selectedItem._dateMs < todayMs ? "⏰ Overdue" : selectedItem._dateMs === todayMs ? "📍 Due Today" : `📅 ${Math.ceil((selectedItem._dateMs - todayMs) / 86400000)} days left`}
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </div>
-                        {selectedItem.description && (
-                          <p className="mt-3 text-sm text-gray-400">
-                            {selectedItem.description}
-                          </p>
-                        )}
-                      </div>
-                    );
-                  })()}
-                </div>
-              )}
+                      );
+                    })()}
+                  </div>
+                );
+              })()}
             </div>
             <div className="mb-12 border-b border-gray-800"></div>
+
+            
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold">Scope Items Baseline</h2>
               <div className="flex items-center gap-3">
