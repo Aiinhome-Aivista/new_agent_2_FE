@@ -601,6 +601,14 @@ export const BaselineReviewPage: React.FC = () => {
       (item: any) => item.scope_type !== "IN_SCOPE",
     ) || [];
 
+  const timelineItems = (baseline?.scope_items || [])
+    .filter((item: any) => item.deadline || item.milestone)
+    .sort((a: any, b: any) => {
+      if (!a.deadline) return 1;
+      if (!b.deadline) return -1;
+      return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
+    });
+
   const isBaselineExtracted = !!(
     baseline &&
     (inScopeItems.length > 0 ||
@@ -675,11 +683,11 @@ export const BaselineReviewPage: React.FC = () => {
             {/* Deliverables timeline */}
             <div className="mb-8">
               <h2 className="text-xl font-bold mb-4">
-                Deliverables & IFA Allocations
+                Timeline (Milestones & Deadlines)
               </h2>
-              {!baseline.deliverables || baseline.deliverables.length === 0 ? (
+              {timelineItems.length === 0 ? (
                 <p className="text-gray-400 mb-8">
-                  No deliverables or budget allocations found.
+                  No scheduled scope items found.
                 </p>
               ) : (
                 <div>
@@ -705,12 +713,12 @@ export const BaselineReviewPage: React.FC = () => {
                         <div className="relative flex justify-between items-center min-w-max pt-4 pb-4 pl-12 pr-12">
                           {/* Horizontal Track Line */}
                           <div className="absolute top-[72px] left-12 right-12 h-1 bg-gray-800 rounded-full z-0"></div>
-                          {baseline.deliverables?.map(
+                          {timelineItems.map(
                             (item: any, index: number) => {
                               const isSelected =
                                 selectedDeliverableId === item.id;
                               const displayName =
-                                item.deadline || `Item ${index + 1}`;
+                                item.deadline_text || item.deadline || `Item ${index + 1}`;
 
                               return (
                                 <div
@@ -776,7 +784,7 @@ export const BaselineReviewPage: React.FC = () => {
                     <button
                       onClick={handleNext}
                       disabled={
-                        activeIndex >= (baseline.deliverables?.length || 0) - 1
+                        activeIndex >= (timelineItems.length || 0) - 1
                       }
                       className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-900 border border-gray-700 text-gray-400 hover:text-white hover:bg-gray-800 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-colors cursor-pointer z-10 shadow-md"
                     >
@@ -787,13 +795,13 @@ export const BaselineReviewPage: React.FC = () => {
                   {/* Selected Item Detail View */}
                   {(() => {
                     const selectedItem =
-                      (baseline.deliverables || []).find(
+                      (timelineItems || []).find(
                         (d: any) => d.id === selectedDeliverableId,
                       ) ||
-                      (baseline.deliverables && baseline.deliverables[0]);
+                      (timelineItems && timelineItems[0]);
                     if (!selectedItem) return null;
 
-                    const dLen = baseline?.deliverables?.length || 0;
+                    const dLen = timelineItems?.length || 0;
                     const caretLeft =
                       dLen > 1
                         ? `calc(96px + (${activeIndex} / ${dLen - 1}) * (100% - 192px))`
@@ -813,23 +821,33 @@ export const BaselineReviewPage: React.FC = () => {
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                           <div>
                             <span className="text-[10px] font-bold uppercase tracking-wider text-purple-400">
-                              Selected Deliverable Details
+                              Selected Scope Item
                             </span>
                             <h3 className="font-bold text-xl text-white mt-0.5">
                               {selectedItem.name}
                             </h3>
                           </div>
                           <div className="flex flex-wrap gap-2.5">
-                            {selectedItem.deadline && (
+                            {selectedItem.milestone && (
+                              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-950/40 text-blue-300 border border-blue-800/25 shadow-sm">
+                                Milestone: {selectedItem.milestone}
+                              </span>
+                            )}
+                            {selectedItem.deadline_text && (
                               <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-purple-950/40 text-purple-300 border border-purple-800/25 shadow-sm">
-                                Date: {selectedItem.deadline}
+                                Date: {selectedItem.deadline_text}
                               </span>
                             )}
                             <span className="inline-flex items-center px-3 py-1 rounded bg-gray-850/60 border border-gray-700/60 text-gray-300 text-xs font-medium">
-                              Owner: {selectedItem.owner || "Unassigned"}
+                              {selectedItem.scope_type.replace("_", " ")}
                             </span>
                           </div>
                         </div>
+                        {selectedItem.description && (
+                            <p className="mt-3 text-sm text-gray-400">
+                                {selectedItem.description}
+                            </p>
+                        )}
                       </div>
                     );
                   })()}
