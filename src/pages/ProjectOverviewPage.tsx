@@ -340,9 +340,9 @@ export const ProjectOverviewPage: React.FC = () => {
                   },
                   { 
                     label: "Risks Resolved", 
-                    status: openRisks.length === 0 ? "OK" : `${openRisks.length} Open`,
-                    points: openRisks.length === 0 ? "OK" : `-${Math.min(60, Math.round((openRisks.length / risks.length) * 60))}pts`,
-                    ok: openRisks.length === 0,
+                    status: risks.length === 0 ? "No Data" : openRisks.length === 0 ? "OK" : `${openRisks.length} Open`,
+                    points: risks.length === 0 ? "-" : openRisks.length === 0 ? "OK" : `-${Math.min(60, Math.round((openRisks.length / risks.length) * 60))}pts`,
+                    ok: risks.length === 0 ? true : openRisks.length === 0,
                     locked: false
                   },
                   { 

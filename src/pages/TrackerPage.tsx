@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import apiClient from "../api/apiClient";
 import { Loader } from "../components/Loader";
@@ -109,22 +109,25 @@ export const TrackerPage: React.FC = () => {
   const [isEvaluating, setIsEvaluating] = useState(false);
   const [evaluationProgress, setEvaluationProgress] = useState<any>(null);
   const [elapsedTime, setElapsedTime] = useState(0);
+  const activeDocIdRef = useRef<string | null>(null);
 
-  const fetchProgress = async (docId?: string) => {
+  const fetchProgress = async () => {
+    const docId = activeDocIdRef.current;
+    if (!docId) {
+      setIsEvaluating(false);
+      return;
+    }
     try {
-      const url = docId
-        ? `/projects/${id}/monitoring/progress?document_id=${docId}`
-        : `/projects/${id}/monitoring/progress`;
-      const res = await apiClient.get(url);
+      const res = await apiClient.get(`/projects/${id}/monitoring/progress?document_id=${docId}`);
       if (res.data.success && res.data.data) {
         const prog = res.data.data;
         setEvaluationProgress(prog);
         if (prog.status === "running") {
           setIsEvaluating(true);
         } else if (prog.status === "completed") {
+          activeDocIdRef.current = null;
           setIsEvaluating(false);
           setEvaluationProgress(null);
-          navigate(`/projects/${id}/tracker`, { replace: true });
 
           // Refresh tracker items
           const [trackerRes, projectRes] = await Promise.all([
@@ -138,8 +141,9 @@ export const TrackerPage: React.FC = () => {
             "success",
           );
         } else if (prog.status === "failed") {
+          activeDocIdRef.current = null;
           setIsEvaluating(false);
-          navigate(`/projects/${id}/tracker`, { replace: true });
+          setEvaluationProgress(null);
           showNotification(
             `Evaluation failed: ${prog.error || "Unknown error"}`,
             "error",
@@ -154,20 +158,14 @@ export const TrackerPage: React.FC = () => {
   };
 
   useEffect(() => {
-    const queryParams = new URLSearchParams(window.location.search);
-    const docId = queryParams.get("processing_document_id");
+    // Only poll progress when the user has actively triggered evaluation in this session.
+    // Never use URL query params to auto-start polling — they're stale from previous sessions.
+    if (!isEvaluating) return;
 
-    fetchProgress(docId || undefined);
-
-    let interval: any;
-    if (isEvaluating || docId) {
-      interval = setInterval(() => {
-        fetchProgress(docId || undefined);
-      }, 2000);
-    }
-    return () => {
-      if (interval) clearInterval(interval);
-    };
+    const interval = setInterval(() => {
+      fetchProgress();
+    }, 2000);
+    return () => clearInterval(interval);
   }, [id, isEvaluating]);
 
   useEffect(() => {
@@ -602,6 +600,7 @@ export const TrackerPage: React.FC = () => {
           console.error("Failed to start monitoring process:", err);
         });
 
+      activeDocIdRef.current = docId;
       setEvaluationProgress({
         currentStage: "Loading Project Baseline",
         progress: 10,

@@ -186,14 +186,6 @@ export const ProjectDashboardPage: React.FC = () => {
 
   const handleProcessDocument = async (docId: number, docType: string) => {
     try {
-      if (docType === "STATUS_REPORT" || docType === "MOM") {
-        showNotification("Starting evaluation...", "success");
-        apiClient.post(`/projects/${id}/monitoring/process?document_id=${docId}`).catch(err => {
-          console.error("Failed to start monitoring process:", err);
-        });
-        navigate(`/projects/${id}/tracker?processing_document_id=${docId}`);
-        return;
-      }
 
       setDocuments((prev) =>
         prev.map((d) =>
@@ -280,12 +272,7 @@ export const ProjectDashboardPage: React.FC = () => {
           showNotification("Document uploaded successfully!", "success");
         } else {
           setMonitoringFile(null);
-          showNotification("Document uploaded. Starting evaluation...", "success");
-          const docId = res.data.data.id;
-          apiClient.post(`/projects/${id}/monitoring/process?document_id=${docId}`).catch(err => {
-            console.error("Failed to start monitoring process:", err);
-          });
-          navigate(`/projects/${id}/tracker?processing_document_id=${docId}`);
+          showNotification("Document uploaded successfully! You can now process it.", "success");
         }
       }
     } catch (error: any) {
