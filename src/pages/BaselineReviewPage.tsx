@@ -434,9 +434,10 @@ export const BaselineReviewPage: React.FC = () => {
                 .map(
                   (item: any) => `
           <div class="item-card">
-            <div class="item-title">${item.name}</div>
-            <div class="item-desc">${item.description}</div>
-            ${item.evidence_text ? `<div class="evidence"><strong>AI Reasoning:</strong> "${item.evidence_text}"</div>` : ""}
+            <div class="item-title">${item.scope_item_normalized || item.name}</div>
+            <div class="item-desc"><strong>Original Text:</strong> "${item.name}"</div>
+            <div class="item-desc"><strong>Reasoning:</strong> ${item.description}</div>
+            ${item.evidence_text ? `<div class="evidence"><strong>Evidence:</strong> "${item.evidence_text}"</div>` : ""}
             <div class="meta">
               <span class="in-scope-badge">IN SCOPE</span> &bull; 
               <strong>Confidence:</strong> ${(item.confidence * 100).toFixed(0)}%
@@ -455,9 +456,10 @@ export const BaselineReviewPage: React.FC = () => {
                 .map(
                   (item: any) => `
           <div class="item-card">
-            <div class="item-title">${item.name}</div>
-            <div class="item-desc">${item.description}</div>
-            ${item.evidence_text ? `<div class="evidence"><strong>AI Reasoning:</strong> "${item.evidence_text}"</div>` : ""}
+            <div class="item-title">${item.scope_item_normalized || item.name}</div>
+            <div class="item-desc"><strong>Original Text:</strong> "${item.name}"</div>
+            <div class="item-desc"><strong>Reasoning:</strong> ${item.description}</div>
+            ${item.evidence_text ? `<div class="evidence"><strong>Evidence:</strong> "${item.evidence_text}"</div>` : ""}
             <div class="meta">
               <span class="${item.scope_type === "OUT_OF_SCOPE" ? "out-scope-badge" : "other-badge"}">${item.scope_type}</span> &bull; 
               <strong>Confidence:</strong> ${(item.confidence * 100).toFixed(0)}%
@@ -550,9 +552,10 @@ export const BaselineReviewPage: React.FC = () => {
                       .map(
                         (item: any) => `
                 <div class="item-card">
-                  <div class="item-title">${item.name}</div>
-                  <div class="item-desc">${item.description}</div>
-                  ${item.evidence_text ? `<div class="evidence"><strong>AI Reasoning:</strong> "${item.evidence_text}"</div>` : ""}
+                  <div class="item-title">${item.scope_item_normalized || item.name}</div>
+                  <div class="item-desc"><strong>Original Text:</strong> "${item.name}"</div>
+                  <div class="item-desc"><strong>Reasoning:</strong> ${item.description}</div>
+                  ${item.evidence_text ? `<div class="evidence"><strong>Evidence:</strong> "${item.evidence_text}"</div>` : ""}
                   <div class="meta">
                     <span class="badge-in">IN SCOPE</span>
                     <span>Confidence: ${(item.confidence * 100).toFixed(0)}%</span>
@@ -573,9 +576,10 @@ export const BaselineReviewPage: React.FC = () => {
                       .map(
                         (item: any) => `
                 <div class="item-card">
-                  <div class="item-title">${item.name}</div>
-                  <div class="item-desc">${item.description}</div>
-                  ${item.evidence_text ? `<div class="evidence"><strong>AI Reasoning:</strong> "${item.evidence_text}"</div>` : ""}
+                  <div class="item-title">${item.scope_item_normalized || item.name}</div>
+                  <div class="item-desc"><strong>Original Text:</strong> "${item.name}"</div>
+                  <div class="item-desc"><strong>Reasoning:</strong> ${item.description}</div>
+                  ${item.evidence_text ? `<div class="evidence"><strong>Evidence:</strong> "${item.evidence_text}"</div>` : ""}
                   <div class="meta">
                     <span class="${item.scope_type === "OUT_OF_SCOPE" ? "badge-out" : "badge-other"}">${item.scope_type}</span>
                     <span>Confidence: ${(item.confidence * 100).toFixed(0)}%</span>
@@ -1080,11 +1084,33 @@ export const BaselineReviewPage: React.FC = () => {
                                 <h3 className="font-bold text-lg text-white mt-0.5 leading-snug">
                                   {selectedItem.scope_item_normalized || selectedItem.name}
                                 </h3>
-                                {selectedItem.description && (
-                                  <p className="mt-2 text-sm text-gray-400 leading-relaxed line-clamp-2">
-                                    {selectedItem.description}
-                                  </p>
-                                )}
+                                
+                                <details className="mt-3 group cursor-pointer">
+                                  <summary className="text-xs font-bold text-gray-400 uppercase tracking-wider hover:text-gray-200 transition-colors list-none flex items-center">
+                                    <span className="mr-1.5 transition-transform group-open:rotate-90 text-[10px]">▶</span>
+                                    AI Extraction Details
+                                  </summary>
+                                  <div className="mt-3 space-y-3 p-3 bg-gray-900/60 rounded-lg border border-gray-700/40">
+                                    {selectedItem.description && (
+                                      <div>
+                                        <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">AI Reasoning</h5>
+                                        <p className="text-xs text-gray-300 italic leading-relaxed">{selectedItem.description}</p>
+                                      </div>
+                                    )}
+                                    {selectedItem.evidence_text && (
+                                      <div>
+                                        <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">Evidence</h5>
+                                        <p className="text-xs text-gray-300 italic leading-relaxed">{selectedItem.evidence_text}</p>
+                                      </div>
+                                    )}
+                                    {(selectedItem.name && selectedItem.scope_item_normalized) && (
+                                      <div>
+                                        <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">Original Text</h5>
+                                        <p className="text-xs text-gray-300 font-serif italic">{selectedItem.name}</p>
+                                      </div>
+                                    )}
+                                  </div>
+                                </details>
                               </div>
 
                               {/* Status indicator */}
@@ -1283,26 +1309,32 @@ export const BaselineReviewPage: React.FC = () => {
                               )}
                             </div>
                           </div>
-                          <p className="text-gray-400 text-sm mb-4 leading-relaxed">
-                            {item.description}
-                          </p>
-
-                          {(item.name || item.evidence_text) && (
-                            <div className="mb-4 p-3 bg-gray-900/60 rounded-lg border border-gray-700/40">
-                              <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">
-                                Original Text
-                              </h5>
-                              <p className="text-gray-300 text-xs italic mb-2 font-serif">
-                                "{item.name}"
-                              </p>
-                              <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">
-                                AI Reasoning
-                              </h5>
-                              <p className="text-gray-300 text-xs italic leading-relaxed">
-                                "{item.evidence_text}"
-                              </p>
+                          <details className="mt-3 mb-4 group cursor-pointer">
+                            <summary className="text-xs font-bold text-gray-400 uppercase tracking-wider hover:text-gray-200 transition-colors list-none flex items-center">
+                              <span className="mr-1.5 transition-transform group-open:rotate-90 text-[10px]">▶</span>
+                              AI Extraction Details
+                            </summary>
+                            <div className="mt-3 space-y-3 p-3 bg-gray-900/60 rounded-lg border border-gray-700/40">
+                              {item.description && (
+                                <div>
+                                  <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">AI Reasoning</h5>
+                                  <p className="text-xs text-gray-300 italic leading-relaxed">{item.description}</p>
+                                </div>
+                              )}
+                              {item.evidence_text && (
+                                <div>
+                                  <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">Evidence</h5>
+                                  <p className="text-xs text-gray-300 italic leading-relaxed">{item.evidence_text}</p>
+                                </div>
+                              )}
+                              {(item.name && item.scope_item_normalized) && (
+                                <div>
+                                  <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">Original Text</h5>
+                                  <p className="text-xs text-gray-300 font-serif italic">{item.name}</p>
+                                </div>
+                              )}
                             </div>
-                          )}
+                          </details>
 
                           {item.status_change_tag && (
                             <div className="mb-4 p-2 bg-amber-500/10 border border-amber-500/30 rounded-lg">
@@ -1435,26 +1467,32 @@ export const BaselineReviewPage: React.FC = () => {
                               )}
                             </div>
                           </div>
-                          <p className="text-gray-400 text-sm mb-4 leading-relaxed">
-                            {item.description}
-                          </p>
-
-                          {(item.name || item.evidence_text) && (
-                            <div className="mb-4 p-3 bg-gray-900/60 rounded-lg border border-gray-700/40">
-                              <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">
-                                Original Text
-                              </h5>
-                              <p className="text-gray-300 text-xs italic mb-2 font-serif">
-                                "{item.name}"
-                              </p>
-                              <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">
-                                AI Reasoning
-                              </h5>
-                              <p className="text-gray-300 text-xs italic leading-relaxed">
-                                "{item.evidence_text}"
-                              </p>
+                          <details className="mt-3 mb-4 group cursor-pointer">
+                            <summary className="text-xs font-bold text-gray-400 uppercase tracking-wider hover:text-gray-200 transition-colors list-none flex items-center">
+                              <span className="mr-1.5 transition-transform group-open:rotate-90 text-[10px]">▶</span>
+                              AI Extraction Details
+                            </summary>
+                            <div className="mt-3 space-y-3 p-3 bg-gray-900/60 rounded-lg border border-gray-700/40">
+                              {item.description && (
+                                <div>
+                                  <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">AI Reasoning</h5>
+                                  <p className="text-xs text-gray-300 italic leading-relaxed">{item.description}</p>
+                                </div>
+                              )}
+                              {item.evidence_text && (
+                                <div>
+                                  <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">Evidence</h5>
+                                  <p className="text-xs text-gray-300 italic leading-relaxed">{item.evidence_text}</p>
+                                </div>
+                              )}
+                              {(item.name && item.scope_item_normalized) && (
+                                <div>
+                                  <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">Original Text</h5>
+                                  <p className="text-xs text-gray-300 font-serif italic">{item.name}</p>
+                                </div>
+                              )}
                             </div>
-                          )}
+                          </details>
 
                           {item.status_change_tag && (
                             <div className="mb-4 p-2 bg-amber-500/10 border border-amber-500/30 rounded-lg">
@@ -1633,13 +1671,34 @@ export const BaselineReviewPage: React.FC = () => {
                                         >
                                           <div>
                                             <p className="text-xs font-semibold text-gray-200">
-                                              {item.name}
+                                              {item.scope_item_normalized || item.name}
                                             </p>
-                                            {item.description && (
-                                              <p className="text-[11px] text-gray-500 mt-1">
-                                                {item.description}
-                                              </p>
-                                            )}
+                                            <details className="mt-1 group cursor-pointer">
+                                              <summary className="text-[10px] font-bold text-gray-500 uppercase tracking-wider hover:text-gray-300 transition-colors list-none flex items-center">
+                                                <span className="mr-1 transition-transform group-open:rotate-90">▶</span>
+                                                Details
+                                              </summary>
+                                              <div className="mt-2 space-y-2">
+                                                {item.description && (
+                                                  <div>
+                                                    <h5 className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">Reasoning</h5>
+                                                    <p className="text-[11px] text-gray-400 italic">{item.description}</p>
+                                                  </div>
+                                                )}
+                                                {item.evidence_text && (
+                                                  <div>
+                                                    <h5 className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">Evidence</h5>
+                                                    <p className="text-[11px] text-gray-400 italic">{item.evidence_text}</p>
+                                                  </div>
+                                                )}
+                                                {(item.name && item.scope_item_normalized) && (
+                                                  <div>
+                                                    <h5 className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">Original</h5>
+                                                    <p className="text-[11px] text-gray-400 font-serif italic">{item.name}</p>
+                                                  </div>
+                                                )}
+                                              </div>
+                                            </details>
                                           </div>
                                           {item.deadline && (
                                             <div className="text-[10px] text-purple-300 font-semibold bg-purple-950/40 px-2 py-0.5 rounded border border-purple-800/20 w-fit flex items-center gap-1 mt-1">
@@ -1672,13 +1731,34 @@ export const BaselineReviewPage: React.FC = () => {
                                             className="p-3 bg-gray-850/40 rounded-lg border border-gray-800/50"
                                           >
                                             <p className="text-xs font-semibold text-gray-200">
-                                              {item.name}
+                                              {item.scope_item_normalized || item.name}
                                             </p>
-                                            {item.description && (
-                                              <p className="text-[11px] text-gray-500 mt-1">
-                                                {item.description}
-                                              </p>
-                                            )}
+                                            <details className="mt-1 group cursor-pointer">
+                                              <summary className="text-[10px] font-bold text-gray-500 uppercase tracking-wider hover:text-gray-300 transition-colors list-none flex items-center">
+                                                <span className="mr-1 transition-transform group-open:rotate-90">▶</span>
+                                                Details
+                                              </summary>
+                                              <div className="mt-2 space-y-2">
+                                                {item.description && (
+                                                  <div>
+                                                    <h5 className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">Reasoning</h5>
+                                                    <p className="text-[11px] text-gray-400 italic">{item.description}</p>
+                                                  </div>
+                                                )}
+                                                {item.evidence_text && (
+                                                  <div>
+                                                    <h5 className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">Evidence</h5>
+                                                    <p className="text-[11px] text-gray-400 italic">{item.evidence_text}</p>
+                                                  </div>
+                                                )}
+                                                {(item.name && item.scope_item_normalized) && (
+                                                  <div>
+                                                    <h5 className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">Original</h5>
+                                                    <p className="text-[11px] text-gray-400 font-serif italic">{item.name}</p>
+                                                  </div>
+                                                )}
+                                              </div>
+                                            </details>
                                           </div>
                                         ))}
                                       </div>
@@ -1698,13 +1778,34 @@ export const BaselineReviewPage: React.FC = () => {
                                             className="p-3 bg-gray-850/40 rounded-lg border border-gray-800/50"
                                           >
                                             <p className="text-xs font-semibold text-gray-200">
-                                              {item.name}
+                                              {item.scope_item_normalized || item.name}
                                             </p>
-                                            {item.description && (
-                                              <p className="text-[11px] text-gray-500 mt-1">
-                                                {item.description}
-                                              </p>
-                                            )}
+                                            <details className="mt-1 group cursor-pointer">
+                                              <summary className="text-[10px] font-bold text-gray-500 uppercase tracking-wider hover:text-gray-300 transition-colors list-none flex items-center">
+                                                <span className="mr-1 transition-transform group-open:rotate-90">▶</span>
+                                                Details
+                                              </summary>
+                                              <div className="mt-2 space-y-2">
+                                                {item.description && (
+                                                  <div>
+                                                    <h5 className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">Reasoning</h5>
+                                                    <p className="text-[11px] text-gray-400 italic">{item.description}</p>
+                                                  </div>
+                                                )}
+                                                {item.evidence_text && (
+                                                  <div>
+                                                    <h5 className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">Evidence</h5>
+                                                    <p className="text-[11px] text-gray-400 italic">{item.evidence_text}</p>
+                                                  </div>
+                                                )}
+                                                {(item.name && item.scope_item_normalized) && (
+                                                  <div>
+                                                    <h5 className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">Original</h5>
+                                                    <p className="text-[11px] text-gray-400 font-serif italic">{item.name}</p>
+                                                  </div>
+                                                )}
+                                              </div>
+                                            </details>
                                           </div>
                                         ))}
                                       </div>
