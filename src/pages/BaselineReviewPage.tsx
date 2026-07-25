@@ -682,9 +682,7 @@ export const BaselineReviewPage: React.FC = () => {
 
             {/* Deliverables timeline */}
             <div className="mb-8">
-              <h2 className="text-xl font-bold mb-4">
-                Timeline (Milestones & Deadlines)
-              </h2>
+              <h2 className="text-xl font-bold mb-4">Deliverables</h2>
               {timelineItems.length === 0 ? (
                 <p className="text-gray-400 mb-8">
                   No scheduled scope items found.
@@ -713,79 +711,81 @@ export const BaselineReviewPage: React.FC = () => {
                         <div className="relative flex justify-between items-center min-w-max pt-4 pb-4 pl-12 pr-12">
                           {/* Horizontal Track Line */}
                           <div className="absolute top-[72px] left-12 right-12 h-1 bg-gray-800 rounded-full z-0"></div>
-                          {timelineItems.map(
-                            (item: any, index: number) => {
-                              const isSelected =
-                                selectedDeliverableId === item.id;
-                              const displayName =
-                                item.deadline_text || item.deadline || `Item ${index + 1}`;
+                          {timelineItems.map((item: any, index: number) => {
+                            const isSelected =
+                              selectedDeliverableId === item.id;
+                            const displayName =
+                              item.deadline_original ||
+                              item.deadline_normalized ||
+                              item.deadline_text ||
+                              item.deadline ||
+                              `Item ${index + 1}`;
 
-                              return (
+                            return (
+                              <div
+                                key={item.id}
+                                data-active={isSelected}
+                                className="flex flex-col items-center flex-shrink-0 cursor-pointer group mx-6 first:ml-0 last:mr-0 relative pt-12"
+                                onClick={() =>
+                                  setSelectedDeliverableId(item.id)
+                                }
+                              >
+                                {/* Date Label bubble with down caret */}
+                                <div className="absolute top-0 left-1/2 -translate-x-1/2 flex flex-col items-center pointer-events-none">
+                                  <div
+                                    className={`px-3 py-1 rounded text-xs font-semibold shadow-md transition-all duration-300 border whitespace-nowrap ${
+                                      isSelected
+                                        ? "bg-purple-650 text-white border-purple-500 scale-105"
+                                        : "bg-[#1e293b] text-gray-300 border-gray-750"
+                                    }`}
+                                  >
+                                    {displayName}
+                                  </div>
+                                  <div
+                                    className={`w-2 h-2 rotate-45 -mt-1 border-r border-b transition-colors ${
+                                      isSelected
+                                        ? "bg-purple-650 border-purple-500"
+                                        : "bg-[#1e293b] border-gray-750"
+                                    }`}
+                                  ></div>
+                                </div>
+
+                                {/* Node Circle */}
                                 <div
-                                  key={item.id}
-                                  data-active={isSelected}
-                                  className="flex flex-col items-center flex-shrink-0 cursor-pointer group mx-6 first:ml-0 last:mr-0 relative pt-12"
-                                  onClick={() =>
-                                    setSelectedDeliverableId(item.id)
+                                  className={`w-5 h-5 rounded-full flex items-center justify-center transition-all duration-300 border-2 z-10 bg-gray-900 ${
+                                    isSelected
+                                      ? "border-purple-500 scale-125 bg-gray-100 shadow-lg shadow-purple-500/20"
+                                      : "border-gray-600 group-hover:border-gray-450"
+                                  }`}
+                                >
+                                  {isSelected && (
+                                    <span className="w-1.5 h-1.5 rounded-full bg-purple-600 animate-pulse"></span>
+                                  )}
+                                </div>
+
+                                {/* Mini label below */}
+                                <span
+                                  className={`text-[10px] mt-2.5 transition-colors max-w-[90px] truncate text-center ${
+                                    isSelected
+                                      ? "text-purple-300 font-semibold"
+                                      : "text-gray-500 group-hover:text-gray-400"
+                                  }`}
+                                  title={
+                                    item.scope_item_normalized || item.name
                                   }
                                 >
-                                  {/* Date Label bubble with down caret */}
-                                  <div className="absolute top-0 left-1/2 -translate-x-1/2 flex flex-col items-center pointer-events-none">
-                                    <div
-                                      className={`px-3 py-1 rounded text-xs font-semibold shadow-md transition-all duration-300 border whitespace-nowrap ${
-                                        isSelected
-                                          ? "bg-purple-650 text-white border-purple-500 scale-105"
-                                          : "bg-[#1e293b] text-gray-300 border-gray-750"
-                                      }`}
-                                    >
-                                      {displayName}
-                                    </div>
-                                    <div
-                                      className={`w-2 h-2 rotate-45 -mt-1 border-r border-b transition-colors ${
-                                        isSelected
-                                          ? "bg-purple-650 border-purple-500"
-                                          : "bg-[#1e293b] border-gray-750"
-                                      }`}
-                                    ></div>
-                                  </div>
-
-                                  {/* Node Circle */}
-                                  <div
-                                    className={`w-5 h-5 rounded-full flex items-center justify-center transition-all duration-300 border-2 z-10 bg-gray-900 ${
-                                      isSelected
-                                        ? "border-purple-500 scale-125 bg-gray-100 shadow-lg shadow-purple-500/20"
-                                        : "border-gray-600 group-hover:border-gray-450"
-                                    }`}
-                                  >
-                                    {isSelected && (
-                                      <span className="w-1.5 h-1.5 rounded-full bg-purple-600 animate-pulse"></span>
-                                    )}
-                                  </div>
-
-                                  {/* Mini label below */}
-                                  <span
-                                    className={`text-[10px] mt-2.5 transition-colors max-w-[90px] truncate text-center ${
-                                      isSelected
-                                        ? "text-purple-300 font-semibold"
-                                        : "text-gray-500 group-hover:text-gray-400"
-                                    }`}
-                                    title={item.name}
-                                  >
-                                    {item.name}
-                                  </span>
-                                </div>
-                              );
-                            },
-                          )}
+                                  {item.scope_item_normalized || item.name}
+                                </span>
+                              </div>
+                            );
+                          })}
                         </div>
                       </div>
                     </div>
 
                     <button
                       onClick={handleNext}
-                      disabled={
-                        activeIndex >= (timelineItems.length || 0) - 1
-                      }
+                      disabled={activeIndex >= (timelineItems.length || 0) - 1}
                       className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-900 border border-gray-700 text-gray-400 hover:text-white hover:bg-gray-800 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-colors cursor-pointer z-10 shadow-md"
                     >
                       <ChevronRight className="w-5 h-5" />
@@ -824,18 +824,27 @@ export const BaselineReviewPage: React.FC = () => {
                               Selected Scope Item
                             </span>
                             <h3 className="font-bold text-xl text-white mt-0.5">
-                              {selectedItem.name}
+                              {selectedItem.scope_item_normalized ||
+                                selectedItem.name}
                             </h3>
                           </div>
                           <div className="flex flex-wrap gap-2.5">
-                            {selectedItem.milestone && (
+                            {(selectedItem.milestone_normalized ||
+                              selectedItem.milestone) && (
                               <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-950/40 text-blue-300 border border-blue-800/25 shadow-sm">
-                                Milestone: {selectedItem.milestone}
+                                Milestone:{" "}
+                                {selectedItem.milestone_normalized ||
+                                  selectedItem.milestone}
                               </span>
                             )}
-                            {selectedItem.deadline_text && (
+                            {(selectedItem.deadline_original ||
+                              selectedItem.deadline_normalized ||
+                              selectedItem.deadline_text) && (
                               <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-purple-950/40 text-purple-300 border border-purple-800/25 shadow-sm">
-                                Date: {selectedItem.deadline_text}
+                                Date:{" "}
+                                {selectedItem.deadline_original ||
+                                  selectedItem.deadline_normalized ||
+                                  selectedItem.deadline_text}
                               </span>
                             )}
                             <span className="inline-flex items-center px-3 py-1 rounded bg-gray-850/60 border border-gray-700/60 text-gray-300 text-xs font-medium">
@@ -844,9 +853,9 @@ export const BaselineReviewPage: React.FC = () => {
                           </div>
                         </div>
                         {selectedItem.description && (
-                            <p className="mt-3 text-sm text-gray-400">
-                                {selectedItem.description}
-                            </p>
+                          <p className="mt-3 text-sm text-gray-400">
+                            {selectedItem.description}
+                          </p>
                         )}
                       </div>
                     );
@@ -946,7 +955,7 @@ export const BaselineReviewPage: React.FC = () => {
                         <div>
                           <div className="flex justify-between items-start gap-2 mb-2">
                             <h4 className="font-bold text-lg text-white group-hover:text-emerald-300 transition-colors flex items-center gap-2">
-                              {item.name}
+                              {item.scope_item_normalized || item.name}
                               {item.completion_status === "COMPLETED" && (
                                 <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950/40 text-emerald-400 border border-emerald-800/30">
                                   COMPLETED
@@ -994,8 +1003,14 @@ export const BaselineReviewPage: React.FC = () => {
                             {item.description}
                           </p>
 
-                          {item.evidence_text && (
+                          {(item.name || item.evidence_text) && (
                             <div className="mb-4 p-3 bg-gray-900/60 rounded-lg border border-gray-700/40">
+                              <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">
+                                Original Text
+                              </h5>
+                              <p className="text-gray-300 text-xs italic mb-2 font-serif">
+                                "{item.name}"
+                              </p>
                               <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">
                                 AI Reasoning
                               </h5>
@@ -1025,7 +1040,14 @@ export const BaselineReviewPage: React.FC = () => {
                               </span>
                             )}
                             {item.deadline_text && (
-                              <span className="text-purple-300 font-semibold bg-purple-950/45 px-2 py-0.5 rounded border border-purple-800/30 flex items-center gap-1" title={item.deadline ? formatDate(item.deadline) : "Unnormalized"}>
+                              <span
+                                className="text-purple-300 font-semibold bg-purple-950/45 px-2 py-0.5 rounded border border-purple-800/30 flex items-center gap-1"
+                                title={
+                                  item.deadline
+                                    ? formatDate(item.deadline)
+                                    : "Unnormalized"
+                                }
+                              >
                                 <Clock className="w-3.5 h-3.5 text-purple-400" />
                                 {item.deadline_text}
                               </span>
@@ -1085,7 +1107,7 @@ export const BaselineReviewPage: React.FC = () => {
                         <div>
                           <div className="flex justify-between items-start gap-2 mb-2">
                             <h4 className="font-bold text-lg text-white group-hover:text-rose-300 transition-colors flex items-center gap-2">
-                              {item.name}
+                              {item.scope_item_normalized || item.name}
                               {item.completion_status === "COMPLETED" && (
                                 <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950/40 text-emerald-400 border border-emerald-800/30">
                                   COMPLETED
@@ -1133,8 +1155,14 @@ export const BaselineReviewPage: React.FC = () => {
                             {item.description}
                           </p>
 
-                          {item.evidence_text && (
+                          {(item.name || item.evidence_text) && (
                             <div className="mb-4 p-3 bg-gray-900/60 rounded-lg border border-gray-700/40">
+                              <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">
+                                Original Text
+                              </h5>
+                              <p className="text-gray-300 text-xs italic mb-2 font-serif">
+                                "{item.name}"
+                              </p>
                               <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">
                                 AI Reasoning
                               </h5>
@@ -1164,7 +1192,14 @@ export const BaselineReviewPage: React.FC = () => {
                               </span>
                             )}
                             {item.deadline_text && (
-                              <span className="text-purple-300 font-semibold bg-purple-950/45 px-2 py-0.5 rounded border border-purple-800/30 flex items-center gap-1" title={item.deadline ? formatDate(item.deadline) : "Unnormalized"}>
+                              <span
+                                className="text-purple-300 font-semibold bg-purple-950/45 px-2 py-0.5 rounded border border-purple-800/30 flex items-center gap-1"
+                                title={
+                                  item.deadline
+                                    ? formatDate(item.deadline)
+                                    : "Unnormalized"
+                                }
+                              >
                                 <Clock className="w-3.5 h-3.5 text-purple-400" />
                                 {item.deadline_text}
                               </span>
