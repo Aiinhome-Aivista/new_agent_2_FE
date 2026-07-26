@@ -110,63 +110,88 @@ export const TrackerPage: React.FC = () => {
   const [evaluationProgress, setEvaluationProgress] = useState<any>(null);
   const [elapsedTime, setElapsedTime] = useState(0);
   const activeDocIdRef = useRef<string | null>(null);
+  const eventSourceRef = useRef<EventSource | null>(null);
 
-  const fetchProgress = async () => {
-    const docId = activeDocIdRef.current;
-    if (!docId) {
+  const startSSEStream = (docId: string) => {
+    // Close any existing stream first
+    if (eventSourceRef.current) {
+      eventSourceRef.current.close();
+      eventSourceRef.current = null;
+    }
+
+    const token = localStorage.getItem('token');
+    if (!token) {
+      showNotification("Authentication error. Please log in again.", "error");
       setIsEvaluating(false);
       return;
     }
-    try {
-      const res = await apiClient.get(`/projects/${id}/monitoring/progress?document_id=${docId}`);
-      if (res.data.success && res.data.data) {
-        const prog = res.data.data;
-        setEvaluationProgress(prog);
-        if (prog.status === "running") {
-          setIsEvaluating(true);
-        } else if (prog.status === "completed") {
+
+    const url = `${import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8080/api'}/projects/${id}/monitoring/stream?document_id=${docId}&token=${encodeURIComponent(token)}`;
+    const es = new EventSource(url);
+    eventSourceRef.current = es;
+
+    es.onmessage = async (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        const { step, progress, status, error } = data;
+
+        if (status === 'completed') {
+          setEvaluationProgress({ currentStage: 'Completed', progress: 100, status: 'completed' });
+          es.close();
+          eventSourceRef.current = null;
           activeDocIdRef.current = null;
           setIsEvaluating(false);
+
+          // Short delay so user sees 100% before dashboard loads
+          await new Promise(r => setTimeout(r, 1200));
           setEvaluationProgress(null);
 
-          // Refresh tracker items
           const [trackerRes, projectRes] = await Promise.all([
             apiClient.get(`/projects/${id}/tracker/`),
             apiClient.get(`/projects/${id}`),
           ]);
           if (trackerRes.data.success) setItems(trackerRes.data.data);
           if (projectRes.data.success) setProject(projectRes.data.data);
-          showNotification(
-            "Evaluation completed! Risk dashboard loaded.",
-            "success",
-          );
-        } else if (prog.status === "failed") {
+          showNotification('Evaluation completed! Risk dashboard loaded.', 'success');
+
+        } else if (status === 'failed') {
+          es.close();
+          eventSourceRef.current = null;
           activeDocIdRef.current = null;
           setIsEvaluating(false);
           setEvaluationProgress(null);
-          showNotification(
-            `Evaluation failed: ${prog.error || "Unknown error"}`,
-            "error",
-          );
+          showNotification(`Evaluation failed: ${error || 'Unknown error'}`, 'error');
+
+        } else {
+          // running — update the timeline step
+          setEvaluationProgress({ currentStage: step, progress, status: 'running' });
         }
-      } else {
-        setIsEvaluating(false);
+      } catch (e) {
+        console.error('SSE parse error:', e);
       }
-    } catch (error) {
-      console.error("Failed to fetch progress:", error);
-    }
+    };
+
+    es.onerror = () => {
+      console.error('SSE connection error');
+      es.close();
+      eventSourceRef.current = null;
+      if (activeDocIdRef.current) {
+        setIsEvaluating(false);
+        setEvaluationProgress(null);
+        activeDocIdRef.current = null;
+        showNotification('Connection lost during evaluation. Please check results.', 'error');
+      }
+    };
   };
 
+  // Cleanup EventSource on unmount
   useEffect(() => {
-    // Only poll progress when the user has actively triggered evaluation in this session.
-    // Never use URL query params to auto-start polling — they're stale from previous sessions.
-    if (!isEvaluating) return;
-
-    const interval = setInterval(() => {
-      fetchProgress();
-    }, 2000);
-    return () => clearInterval(interval);
-  }, [id, isEvaluating]);
+    return () => {
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close();
+      }
+    };
+  }, []);
 
   useEffect(() => {
     let timer: any;
@@ -593,19 +618,18 @@ export const TrackerPage: React.FC = () => {
       setSelectedDocId("");
       showNotification("AI Evaluation started!", "success");
       setIsEvaluating(true);
-
-      apiClient
-        .post(`/projects/${id}/monitoring/process?document_id=${docId}`)
-        .catch((err) => {
-          console.error("Failed to start monitoring process:", err);
-        });
-
       activeDocIdRef.current = docId;
+
+      // Set initial progress state immediately so timeline shows
       setEvaluationProgress({
         currentStage: "Loading Project Baseline",
-        progress: 10,
+        progress: 5,
         status: "running",
       });
+
+      // Open SSE stream — this drives all real-time step updates
+      startSSEStream(docId);
+
     } catch (error: any) {
       showNotification(
         "Failed to start processing: " +
