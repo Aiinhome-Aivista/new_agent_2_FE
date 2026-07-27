@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import apiClient from "../api/apiClient";
 import { Loader } from "../components/Loader";
+import { useDocumentProgress } from "../context/DocumentProgressContext";
 import {
   Loader2,
   Info,
@@ -85,138 +86,50 @@ export const TrackerPage: React.FC = () => {
   const resolvedItems = items.filter((item) => item.status === "RESOLVED");
   const currentTabItems = activeTab === "ACTIVE" ? activeItems : resolvedItems;
 
+  const fetchTrackerAndProject = async () => {
+    try {
+      const [trackerRes, projectRes] = await Promise.all([
+        apiClient.get(`/projects/${id}/tracker/`),
+        apiClient.get(`/projects/${id}`),
+      ]);
+      if (trackerRes.data.success) setItems(trackerRes.data.data);
+      if (projectRes.data.success) setProject(projectRes.data.data);
+    } catch (error) {
+      console.error(
+        "Failed to fetch tracker items or project details:",
+        error,
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchTrackerAndProject = async () => {
-      try {
-        const [trackerRes, projectRes] = await Promise.all([
-          apiClient.get(`/projects/${id}/tracker/`),
-          apiClient.get(`/projects/${id}`),
-        ]);
-        if (trackerRes.data.success) setItems(trackerRes.data.data);
-        if (projectRes.data.success) setProject(projectRes.data.data);
-      } catch (error) {
-        console.error(
-          "Failed to fetch tracker items or project details:",
-          error,
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchTrackerAndProject();
   }, [id]);
 
-  const [isEvaluating, setIsEvaluating] = useState(false);
-  const [evaluationProgress, setEvaluationProgress] = useState<any>(null);
-  const [elapsedTime, setElapsedTime] = useState(0);
-  const activeDocIdRef = useRef<string | null>(null);
-  const eventSourceRef = useRef<EventSource | null>(null);
+  const {
+    isEvaluating,
+    evaluationProgress,
+    elapsedTime,
+    startSSEStream,
+    checkActiveProgress,
+    resetProgress
+  } = useDocumentProgress();
 
-  const startSSEStream = (docId: string) => {
-    // Close any existing stream first
-    if (eventSourceRef.current) {
-      eventSourceRef.current.close();
-      eventSourceRef.current = null;
-    }
-
-    const token = localStorage.getItem('token');
-    if (!token) {
-      showNotification("Authentication error. Please log in again.", "error");
-      setIsEvaluating(false);
-      return;
-    }
-
-    const url = `${import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8080/api'}/projects/${id}/monitoring/stream?document_id=${docId}&token=${encodeURIComponent(token)}`;
-    const es = new EventSource(url);
-    eventSourceRef.current = es;
-
-    es.onmessage = async (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        const { step, progress, status, error } = data;
-
-        if (status === 'completed') {
-          setEvaluationProgress({ currentStage: 'Completed', progress: 100, status: 'completed' });
-          es.close();
-          eventSourceRef.current = null;
-          activeDocIdRef.current = null;
-          setIsEvaluating(false);
-
-          // Short delay so user sees 100% before dashboard loads
-          await new Promise(r => setTimeout(r, 1200));
-          setEvaluationProgress(null);
-
-          const [trackerRes, projectRes] = await Promise.all([
-            apiClient.get(`/projects/${id}/tracker/`),
-            apiClient.get(`/projects/${id}`),
-          ]);
-          if (trackerRes.data.success) setItems(trackerRes.data.data);
-          if (projectRes.data.success) setProject(projectRes.data.data);
-          showNotification('Evaluation completed! Risk dashboard loaded.', 'success');
-
-        } else if (status === 'failed') {
-          es.close();
-          eventSourceRef.current = null;
-          activeDocIdRef.current = null;
-          setIsEvaluating(false);
-          setEvaluationProgress({
-            currentStage: step || 'FAILED',
-            progress: progress || 0,
-            status: 'failed',
-            error: error || 'Unknown error'
-          });
-          showNotification(`Evaluation failed: ${error || 'Unknown error'}`, 'error');
-
-        } else {
-          // running — update the timeline step
-          setEvaluationProgress({ currentStage: step, progress, status: 'running' });
-        }
-      } catch (e) {
-        console.error('SSE parse error:', e);
-      }
-    };
-
-    es.onerror = () => {
-      console.error('SSE connection error');
-      es.close();
-      eventSourceRef.current = null;
-      if (activeDocIdRef.current) {
-        setIsEvaluating(false);
-        setEvaluationProgress({
-          currentStage: 'FAILED',
-          progress: 0,
-          status: 'failed',
-          error: 'Connection lost during evaluation. Please check results.'
-        });
-        activeDocIdRef.current = null;
-        showNotification('Connection lost during evaluation. Please check results.', 'error');
-      }
-    };
-  };
-
-  // Cleanup EventSource on unmount
+  // Check active progress on mount
   useEffect(() => {
-    return () => {
-      if (eventSourceRef.current) {
-        eventSourceRef.current.close();
-      }
-    };
-  }, []);
-
-  useEffect(() => {
-    let timer: any;
-    if (isEvaluating) {
-      const startTime = Date.now();
-      timer = setInterval(() => {
-        setElapsedTime(Math.floor((Date.now() - startTime) / 1000));
-      }, 1000);
-    } else {
-      setElapsedTime(0);
+    if (id) {
+      checkActiveProgress(Number(id));
     }
-    return () => {
-      if (timer) clearInterval(timer);
-    };
-  }, [isEvaluating]);
+  }, [id]);
+
+  // Reload page data when evaluation completes
+  useEffect(() => {
+    if (evaluationProgress?.status === "completed") {
+      fetchTrackerAndProject();
+    }
+  }, [evaluationProgress?.status]);
 
   useEffect(() => {
     setSelectedItemIds([]);
@@ -623,22 +536,14 @@ export const TrackerPage: React.FC = () => {
     if (!selectedDocId) return;
     setProcessing(true);
     try {
-      const docId = selectedDocId;
+      const docId = Number(selectedDocId);
+      const documentName = eligibleDocs.find((d: any) => d.id === docId)?.document_name || "Document";
       setShowProcessModal(false);
       setSelectedDocId("");
       showNotification("AI Evaluation started!", "success");
-      setIsEvaluating(true);
-      activeDocIdRef.current = docId;
-
-      // Set initial progress state immediately so timeline shows
-      setEvaluationProgress({
-        currentStage: "Loading Project Baseline",
-        progress: 5,
-        status: "running",
-      });
-
-      // Open SSE stream — this drives all real-time step updates
-      startSSEStream(docId);
+      
+      // Start global SSE stream
+      startSSEStream(Number(id), docId, documentName);
 
     } catch (error: any) {
       showNotification(
@@ -646,7 +551,6 @@ export const TrackerPage: React.FC = () => {
           (error.response?.data?.detail || "Server error"),
         "error",
       );
-      setIsEvaluating(false);
     } finally {
       setProcessing(false);
     }
@@ -686,7 +590,7 @@ export const TrackerPage: React.FC = () => {
 
         {isFailed && (
           <button
-            onClick={() => setEvaluationProgress(null)}
+            onClick={resetProgress}
             className="absolute top-4 right-4 p-2 bg-gray-900/50 hover:bg-gray-800 border border-gray-800/50 hover:border-gray-700 rounded-lg text-gray-400 hover:text-white transition-colors cursor-pointer z-50 flex items-center justify-center"
             title="Dismiss"
           >
