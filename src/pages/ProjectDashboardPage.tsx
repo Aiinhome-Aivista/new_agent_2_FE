@@ -604,7 +604,7 @@ export const ProjectDashboardPage: React.FC = () => {
                             key={doc.id}
                             className="flex justify-between items-center p-3 bg-gray-900/60 rounded-xl border border-gray-700/50 hover:border-emerald-500/30 transition-all"
                           >
-                            <div className="flex flex-col min-w-0 pr-2">
+                            <div className="flex flex-col min-w-0 pr-2 w-full">
                               <span className="truncate font-semibold text-xs text-gray-200">
                                 {doc.document_name}
                               </span>
@@ -613,6 +613,11 @@ export const ProjectDashboardPage: React.FC = () => {
                                   {doc.document_type}
                                 </span>
                               </div>
+                              {doc.processing_status === "FAILED" && doc.processing_error && (
+                                <p className="text-[10px] text-rose-400 font-medium font-mono mt-1 whitespace-pre-wrap max-w-full break-words border border-rose-500/20 bg-rose-950/20 rounded-md px-2 py-1 select-text">
+                                  Error: {doc.processing_error}
+                                </p>
+                              )}
                             </div>
 
                             <div className="flex items-center gap-2 flex-shrink-0">
@@ -992,7 +997,7 @@ export const ProjectDashboardPage: React.FC = () => {
                             key={doc.id}
                             className="flex justify-between items-center p-3 bg-gray-900/60 rounded-xl border border-gray-700/50 hover:border-indigo-500/30 transition-all"
                           >
-                            <div className="flex flex-col min-w-0 pr-2">
+                            <div className="flex flex-col min-w-0 pr-2 w-full">
                               <span className="truncate font-semibold text-xs text-gray-200">
                                 {doc.document_name}
                               </span>
@@ -1001,6 +1006,11 @@ export const ProjectDashboardPage: React.FC = () => {
                                   {doc.document_type}
                                 </span>
                               </div>
+                              {doc.processing_status === "FAILED" && doc.processing_error && (
+                                <p className="text-[10px] text-rose-400 font-medium font-mono mt-1 whitespace-pre-wrap max-w-full break-words border border-rose-500/20 bg-rose-950/20 rounded-md px-2 py-1 select-text">
+                                  Error: {doc.processing_error}
+                                </p>
+                              )}
                             </div>
 
                             <div className="flex items-center gap-2 flex-shrink-0">

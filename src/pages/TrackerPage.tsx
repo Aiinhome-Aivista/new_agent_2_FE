@@ -159,7 +159,12 @@ export const TrackerPage: React.FC = () => {
           eventSourceRef.current = null;
           activeDocIdRef.current = null;
           setIsEvaluating(false);
-          setEvaluationProgress(null);
+          setEvaluationProgress({
+            currentStage: step || 'FAILED',
+            progress: progress || 0,
+            status: 'failed',
+            error: error || 'Unknown error'
+          });
           showNotification(`Evaluation failed: ${error || 'Unknown error'}`, 'error');
 
         } else {
@@ -177,7 +182,12 @@ export const TrackerPage: React.FC = () => {
       eventSourceRef.current = null;
       if (activeDocIdRef.current) {
         setIsEvaluating(false);
-        setEvaluationProgress(null);
+        setEvaluationProgress({
+          currentStage: 'FAILED',
+          progress: 0,
+          status: 'failed',
+          error: 'Connection lost during evaluation. Please check results.'
+        });
         activeDocIdRef.current = null;
         showNotification('Connection lost during evaluation. Please check results.', 'error');
       }
@@ -673,6 +683,16 @@ export const TrackerPage: React.FC = () => {
       <div className="w-full bg-[#0b0e17]/80 border border-gray-800 rounded-3xl p-8 backdrop-blur-md shadow-2xl relative overflow-hidden max-w-4xl mx-auto my-8 animate-fade-in-up">
         <div className="absolute -top-24 -right-24 w-48 h-48 rounded-full bg-cyan-500/10 blur-[60px]" />
         <div className="absolute -bottom-24 -left-24 w-48 h-48 rounded-full bg-blue-500/10 blur-[60px]" />
+
+        {isFailed && (
+          <button
+            onClick={() => setEvaluationProgress(null)}
+            className="absolute top-4 right-4 p-2 bg-gray-900/50 hover:bg-gray-800 border border-gray-800/50 hover:border-gray-700 rounded-lg text-gray-400 hover:text-white transition-colors cursor-pointer z-50 flex items-center justify-center"
+            title="Dismiss"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        )}
 
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-gray-800/60 pb-6 mb-8">
           <div>
