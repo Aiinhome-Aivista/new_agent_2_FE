@@ -1274,7 +1274,21 @@ export const BaselineReviewPage: React.FC = () => {
                     {/* ── Selected Item Detail Card ── */}
                     {selectedItem && (() => {
                       const color = selectedItem._color;
-                      const completionStatus = selectedItem.completion_status || "ACTIVE";
+                      const latestProgress = selectedItem.latest_progress;
+                      const completionStatus = latestProgress?.status_code || selectedItem.completion_status || "ACTIVE";
+                      const statusLabel = latestProgress?.status_label || completionStatus.replace("_", " ");
+                      const progressPct = latestProgress?.progress_percentage;
+                      const executionSummary = latestProgress?.execution_summary;
+                      const updateSource = latestProgress?.document_name;
+                      const updateDate = latestProgress?.status_updated_at;
+                      let dependencies: string[] = [];
+                      try {
+                        if (latestProgress?.dependencies) {
+                          dependencies = typeof latestProgress.dependencies === 'string' ? JSON.parse(latestProgress.dependencies) : latestProgress.dependencies;
+                        }
+                      } catch (e) {
+                          console.error("Failed to parse dependencies", e);
+                      }
 
                       return (
                         <div
@@ -1303,21 +1317,73 @@ export const BaselineReviewPage: React.FC = () => {
                                   {selectedItem.scope_item_normalized || selectedItem.name}
                                 </h3>
                                 
-                                <details className="mt-3 group cursor-pointer">
+                                {executionSummary && (
+                                  <div className="mt-4 p-3 bg-blue-950/20 border border-blue-900/30 rounded-lg">
+                                    <h5 className="text-[10px] font-bold text-blue-400 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                                      <FileText className="w-3 h-3" /> Latest Update
+                                    </h5>
+                                    <p className="text-sm text-gray-200 leading-relaxed">{executionSummary}</p>
+                                  </div>
+                                )}
+
+                                {progressPct !== null && progressPct !== undefined && (
+                                  <div className="mt-4">
+                                    <div className="flex justify-between items-center mb-1.5">
+                                      <span className="text-xs font-semibold text-gray-400">Progress</span>
+                                      <span className="text-xs font-bold text-white">{progressPct}%</span>
+                                    </div>
+                                    <div className="w-full bg-gray-800 rounded-full h-1.5">
+                                      <div className="bg-emerald-500 h-1.5 rounded-full" style={{ width: `${progressPct}%` }}></div>
+                                    </div>
+                                  </div>
+                                )}
+
+                                {dependencies && dependencies.length > 0 && (
+                                  <div className="mt-4">
+                                    <h5 className="text-[10px] font-bold text-orange-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                                      <AlertTriangle className="w-3 h-3" /> Dependencies
+                                    </h5>
+                                    <ul className="space-y-1.5">
+                                      {dependencies.map((dep, idx) => (
+                                        <li key={idx} className="text-xs text-gray-300 flex items-start gap-2 bg-orange-950/10 px-2 py-1.5 rounded-md border border-orange-900/20">
+                                          <Circle className="w-1.5 h-1.5 mt-1 text-orange-500 fill-orange-500 flex-shrink-0" />
+                                          <span className="leading-tight">{dep}</span>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                )}
+                                
+                                <details className="mt-5 group cursor-pointer">
                                   <summary className="text-xs font-bold text-gray-400 uppercase tracking-wider hover:text-gray-200 transition-colors list-none flex items-center">
                                     <span className="mr-1.5 transition-transform group-open:rotate-90 text-[10px]">▶</span>
                                     AI Extraction Details
                                   </summary>
                                   <div className="mt-3 space-y-3 p-3 bg-gray-900/60 rounded-lg border border-gray-700/40">
+                                    {(updateSource || updateDate) && (
+                                      <div>
+                                        <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">Updated From</h5>
+                                        <p className="text-xs text-gray-300 italic">
+                                          {updateSource ? updateSource : 'Unknown Document'}
+                                          {updateDate && ` • ${formatDate(updateDate)}`}
+                                        </p>
+                                      </div>
+                                    )}
+                                    {latestProgress?.evidence_text && (
+                                      <div>
+                                        <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">Progress Evidence</h5>
+                                        <p className="text-xs text-gray-300 italic leading-relaxed">{latestProgress.evidence_text}</p>
+                                      </div>
+                                    )}
                                     {selectedItem.description && (
                                       <div>
-                                        <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">AI Reasoning</h5>
+                                        <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">AI Reasoning (Baseline)</h5>
                                         <p className="text-xs text-gray-300 italic leading-relaxed">{selectedItem.description}</p>
                                       </div>
                                     )}
                                     {selectedItem.evidence_text && (
                                       <div>
-                                        <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">Evidence</h5>
+                                        <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">Evidence (Baseline)</h5>
                                         <p className="text-xs text-gray-300 italic leading-relaxed">{selectedItem.evidence_text}</p>
                                       </div>
                                     )}
@@ -1333,17 +1399,19 @@ export const BaselineReviewPage: React.FC = () => {
 
                               {/* Status indicator */}
                               <div className="flex-shrink-0">
-                                <div className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider border ${
+                                <div className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider border shadow-sm ${
                                   completionStatus === "COMPLETED"
-                                    ? "bg-emerald-950/40 text-emerald-300 border-emerald-700/40"
-                                    : completionStatus === "CANCELLED"
-                                    ? "bg-red-950/40 text-red-300 border-red-700/40"
-                                    : "bg-gray-800/60 text-gray-300 border-gray-700/40"
+                                    ? "bg-emerald-950/60 text-emerald-300 border-emerald-700/50"
+                                    : completionStatus === "BLOCKED" || completionStatus === "DELAYED"
+                                    ? "bg-red-950/60 text-red-300 border-red-700/50"
+                                    : completionStatus === "IN_PROGRESS"
+                                    ? "bg-blue-950/60 text-blue-300 border-blue-700/50"
+                                    : "bg-gray-800/80 text-gray-300 border-gray-700/60"
                                 }`}>
-                                  {completionStatus === "COMPLETED" && <CheckCircle2 className="w-3 h-3 inline mr-1.5 -mt-0.5" />}
-                                  {completionStatus === "CANCELLED" && <X className="w-3 h-3 inline mr-1.5 -mt-0.5" />}
-                                  {completionStatus === "ACTIVE" && <Clock className="w-3 h-3 inline mr-1.5 -mt-0.5" />}
-                                  {completionStatus.replace("_", " ")}
+                                  {completionStatus === "COMPLETED" && <CheckCircle2 className="w-3.5 h-3.5 inline mr-1.5 -mt-0.5" />}
+                                  {completionStatus === "BLOCKED" && <X className="w-3.5 h-3.5 inline mr-1.5 -mt-0.5" />}
+                                  {(completionStatus === "IN_PROGRESS" || completionStatus === "ACTIVE") && <Clock className="w-3.5 h-3.5 inline mr-1.5 -mt-0.5" />}
+                                  {statusLabel}
                                 </div>
                               </div>
                             </div>
