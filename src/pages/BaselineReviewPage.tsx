@@ -938,7 +938,10 @@ export const BaselineReviewPage: React.FC = () => {
                   const raw = item.deadline || item.deadline_text || null;
                   let dateMs: number | null = null;
                   if (raw) {
-                    const d = new Date(typeof raw === "string" ? raw.replace(" ", "T") : raw);
+                    let d = new Date(raw);
+                    if (isNaN(d.getTime()) && typeof raw === "string") {
+                      d = new Date(raw.replace(" ", "T"));
+                    }
                     if (!isNaN(d.getTime())) {
                       d.setHours(0, 0, 0, 0);
                       dateMs = d.getTime();
@@ -998,7 +1001,10 @@ export const BaselineReviewPage: React.FC = () => {
                   const raw = item.deadline_text || item.deadline;
                   if (!raw) return item.milestone || `Item ${item._idx + 1}`;
                   try {
-                    const d = new Date(typeof raw === "string" ? raw.replace(" ", "T") : raw);
+                    let d = new Date(raw);
+                    if (isNaN(d.getTime()) && typeof raw === "string") {
+                      d = new Date(raw.replace(" ", "T"));
+                    }
                     if (isNaN(d.getTime())) return raw;
                     return d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
                   } catch { return raw; }
