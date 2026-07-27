@@ -71,6 +71,15 @@ const steps = [
   },
 ];
 
+const baselineSteps = [
+  { key: "Detecting Scope Sections", name: "Detect Sections", desc: "Identifying contract scope and deliverables sections." },
+  { key: "Extracting Scope Candidates", name: "Extract Candidates", desc: "Extracting candidate sentences and clauses." },
+  { key: "Classifying Scope Items", name: "Classify Items", desc: "Classifying items into IN_SCOPE/OUT_OF_SCOPE using LLM." },
+  { key: "Deduplicating Candidates", name: "Deduplicate", desc: "Merging similar items and resolving overlaps." },
+  { key: "Extracting Milestones & Deadlines", name: "Enrich Dates", desc: "Extracting milestone tags and deadline dates." },
+  { key: "Saving Baseline Draft", name: "Save Draft", desc: "Saving draft baseline and performing smart diff checks." }
+];
+
 export const TrackerPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -556,13 +565,21 @@ export const TrackerPage: React.FC = () => {
     }
   };
 
+  const isBaselineExtraction = 
+    evaluationProgress?.document_type === 'EL' || 
+    evaluationProgress?.document_type === 'IFA' || 
+    evaluationProgress?.document_type?.toUpperCase() === 'EL' ||
+    evaluationProgress?.document_type?.toUpperCase() === 'IFA' ||
+    ["Detect Sections", "Extract Candidates", "Classify Items", "Deduplicate", "Enrich Dates", "Save Draft", "Detecting Scope Sections", "Extracting Scope Candidates", "Classifying Scope Items", "Deduplicating Candidates", "Extracting Milestones & Deadlines", "Saving Baseline Draft"].includes(evaluationProgress?.currentStage || "");
+  const currentSteps = isBaselineExtraction ? baselineSteps : steps;
+
   const getStepState = (index: number) => {
     if (!evaluationProgress) {
       return index === 0 ? "running" : "pending";
     }
     const status = evaluationProgress.status;
     const currentStage = evaluationProgress.currentStage;
-    const activeIndex = steps.findIndex((s) => s.name === currentStage);
+    const activeIndex = currentSteps.findIndex((s) => s.name === currentStage || s.key === currentStage || (currentStage && currentStage.toLowerCase().includes(s.name.toLowerCase().split(' ')[0])));
 
     if (status === "completed") return "completed";
     if (status === "failed") {
@@ -605,12 +622,16 @@ export const TrackerPage: React.FC = () => {
                 className={`w-5 h-5 text-cyan-400 ${isFailed ? "" : "animate-spin"}`}
               />
               {isFailed
-                ? "Risk Evaluation Failed"
+                ? "Evaluation Failed"
+                : isBaselineExtraction
+                ? "Baseline Scope Extraction in Progress..."
                 : "Analyzing Project Risks & Timeline..."}
             </h2>
             <p className="text-xs text-gray-400 mt-1">
               {isFailed
                 ? "An error occurred during evaluation."
+                : isBaselineExtraction
+                ? "AI agents are analyzing and classifying contract scope sections and deliverables."
                 : "AI agents are running automated checks against your project baseline."}
             </p>
           </div>
@@ -654,7 +675,7 @@ export const TrackerPage: React.FC = () => {
         )}
 
         <div className="relative border-l border-gray-800/80 ml-4 pl-8 space-y-8">
-          {steps.map((step, idx) => {
+          {currentSteps.map((step, idx) => {
             const state = getStepState(idx);
 
             let iconElement;

@@ -21,12 +21,12 @@ export const GlobalProgressWidget: React.FC = () => {
     }
   }, [isEvaluating, evaluationProgress]);
 
-  // Auto-dismiss completed widget after 8 seconds
+  // Auto-dismiss completed widget after 20 seconds so user can view and click
   useEffect(() => {
     if (evaluationProgress && (evaluationProgress.status === 'completed' || evaluationProgress.status === 'failed')) {
       const timer = setTimeout(() => {
         resetProgress();
-      }, 8000);
+      }, 20000);
       return () => clearTimeout(timer);
     }
   }, [evaluationProgress, resetProgress]);
@@ -38,12 +38,21 @@ export const GlobalProgressWidget: React.FC = () => {
   const isFailed = status === 'failed';
   const isCompleted = status === 'completed';
   const docName = evaluationProgress.document_name || 'Document';
+  const isBaseline = 
+    evaluationProgress.document_type === 'EL' || 
+    evaluationProgress.document_type === 'IFA' || 
+    evaluationProgress.document_type?.toUpperCase() === 'EL' ||
+    evaluationProgress.document_type?.toUpperCase() === 'IFA' ||
+    ["Detect Sections", "Extract Candidates", "Classify Items", "Deduplicate", "Enrich Dates", "Save Draft", "Detecting Scope Sections", "Extracting Scope Candidates", "Classifying Scope Items", "Deduplicating Candidates", "Extracting Milestones & Deadlines", "Saving Baseline Draft"].includes(evaluationProgress.currentStage || "");
 
   const handleViewTracker = () => {
     if (activeProjectId) {
-      navigate(`/projects/${activeProjectId}/tracker`);
-      // If we are already on the tracker page, trigger page reload or state refresh
-      if (location.pathname === `/projects/${activeProjectId}/tracker`) {
+      const targetPath = isBaseline
+        ? `/projects/${activeProjectId}/baseline`
+        : `/projects/${activeProjectId}/tracker`;
+      navigate(targetPath);
+      // If we are already on that page, trigger page reload or state refresh
+      if (location.pathname === targetPath) {
         window.location.reload();
       }
     }
@@ -102,7 +111,13 @@ export const GlobalProgressWidget: React.FC = () => {
             <AlertCircle className="w-4 h-4 text-rose-500" />
           )}
           <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">
-            {isFailed ? 'Error Details' : isCompleted ? 'Analysis Done' : 'AI Risk Analysis'}
+            {isFailed 
+              ? 'Error Details' 
+              : isCompleted 
+                ? 'Analysis Done' 
+                : isBaseline 
+                  ? 'Baseline Extraction' 
+                  : 'AI Risk Analysis'}
           </span>
         </div>
         <div className="flex items-center gap-2">
@@ -159,13 +174,13 @@ export const GlobalProgressWidget: React.FC = () => {
           </div>
         )}
 
-        {/* Action Button on Complete */}
-        {isCompleted && (
+        {/* Action Button */}
+        {!isFailed && (
           <button
             onClick={handleViewTracker}
             className="w-full flex items-center justify-center gap-2 py-2 px-3 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-xs font-bold text-white rounded-lg shadow-lg hover:shadow-cyan-500/10 transition-all duration-200 cursor-pointer"
           >
-            <span>View Risk Tracker</span>
+            <span>{isCompleted ? (isBaseline ? 'View Baseline Review' : 'View Risk Tracker') : (isBaseline ? 'View Baseline Tracker' : 'View Live Tracker')}</span>
             <ExternalLink className="w-3.5 h-3.5" />
           </button>
         )}

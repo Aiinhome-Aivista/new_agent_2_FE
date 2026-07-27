@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
 import apiClient from '../api/apiClient';
 
 interface EvaluationProgress {
@@ -7,6 +7,7 @@ interface EvaluationProgress {
   status: 'running' | 'completed' | 'failed' | 'pending';
   document_name?: string;
   document_id?: number;
+  document_type?: string;
   error?: string;
 }
 
@@ -17,6 +18,7 @@ interface DocumentProgressContextType {
   activeDocId: number | null;
   activeProjectId: number | null;
   startSSEStream: (projectId: number, docId: number, documentName: string) => void;
+  startPolling: (projectId: number, docId: number, documentName: string, initialElapsedSeconds?: number, documentType?: string) => void;
   checkActiveProgress: (projectId: number) => Promise<void>;
   resetProgress: () => void;
 }
@@ -94,7 +96,7 @@ export const DocumentProgressProvider: React.FC<{ children: React.ReactNode }> =
   };
 
   // Start polling progress from DB status
-  const startPolling = (projectId: number, docId: number, documentName: string, initialElapsedSeconds = 0) => {
+  const startPolling = (projectId: number, docId: number, documentName: string, initialElapsedSeconds = 0, documentType?: string) => {
     stopPolling();
     stopSSEStream();
     setIsEvaluating(true);
@@ -102,11 +104,21 @@ export const DocumentProgressProvider: React.FC<{ children: React.ReactNode }> =
     setActiveProjectId(projectId);
     startTimer(initialElapsedSeconds);
 
+    setEvaluationProgress({
+      currentStage: 'Initializing...',
+      progress: 5,
+      status: 'running',
+      document_name: documentName,
+      document_id: docId,
+      document_type: documentType
+    });
+
     const fetchProgress = async () => {
       try {
         const response = await apiClient.get(`/projects/${projectId}/monitoring/progress?document_id=${docId}`);
         if (response.data.success && response.data.data) {
-          const { status, progress, step, error, elapsed_seconds } = response.data.data;
+          const { status, progress, step, error, elapsed_seconds, document_type: dbDocType } = response.data.data;
+          const currentDocType = dbDocType || documentType;
           
           // Calibrate elapsed time to match backend's real duration
           if (elapsed_seconds !== undefined && elapsed_seconds !== null) {
@@ -123,7 +135,8 @@ export const DocumentProgressProvider: React.FC<{ children: React.ReactNode }> =
               progress: 100,
               status: 'completed',
               document_name: documentName,
-              document_id: docId
+              document_id: docId,
+              document_type: currentDocType
             });
             stopPolling();
             stopTimer();
@@ -134,6 +147,7 @@ export const DocumentProgressProvider: React.FC<{ children: React.ReactNode }> =
               status: 'failed',
               document_name: documentName,
               document_id: docId,
+              document_type: currentDocType,
               error: error || 'Unknown error'
             });
             stopPolling();
@@ -144,7 +158,8 @@ export const DocumentProgressProvider: React.FC<{ children: React.ReactNode }> =
               progress: progress || 0,
               status: 'running',
               document_name: documentName,
-              document_id: docId
+              document_id: docId,
+              document_type: currentDocType
             });
           }
         }
@@ -171,7 +186,8 @@ export const DocumentProgressProvider: React.FC<{ children: React.ReactNode }> =
       progress: 5,
       status: 'running',
       document_name: documentName,
-      document_id: docId
+      document_id: docId,
+      document_type: 'STATUS_REPORT'
     });
 
     const token = localStorage.getItem('token');
@@ -196,7 +212,8 @@ export const DocumentProgressProvider: React.FC<{ children: React.ReactNode }> =
             progress: 100,
             status: 'completed',
             document_name: documentName,
-            document_id: docId
+            document_id: docId,
+            document_type: 'STATUS_REPORT'
           });
           stopSSEStream();
           stopTimer();
@@ -207,6 +224,7 @@ export const DocumentProgressProvider: React.FC<{ children: React.ReactNode }> =
             status: 'failed',
             document_name: documentName,
             document_id: docId,
+            document_type: 'STATUS_REPORT',
             error: error || 'Unknown error'
           });
           stopSSEStream();
@@ -217,7 +235,8 @@ export const DocumentProgressProvider: React.FC<{ children: React.ReactNode }> =
             progress: progress,
             status: 'running',
             document_name: documentName,
-            document_id: docId
+            document_id: docId,
+            document_type: 'STATUS_REPORT'
           });
         }
       } catch (e) {
@@ -229,29 +248,33 @@ export const DocumentProgressProvider: React.FC<{ children: React.ReactNode }> =
       console.error('SSE connection lost. Switching to polling...');
       stopSSEStream();
       // Switch to polling as a fallback
-      startPolling(projectId, docId, documentName);
+      startPolling(projectId, docId, documentName, 0, evaluationProgress?.document_type || 'STATUS_REPORT');
     };
   };
 
   // Check if any document is currently processing for a project (on mount/reload)
-  const checkActiveProgress = async (projectId: number) => {
+  const checkActiveProgress = useCallback(async (projectId: number) => {
     // If we are already actively evaluating a document in this project, keep the current state/timer
     if (isEvaluating && activeProjectId === projectId) {
+      return;
+    }
+    // If we already have a completed or failed evaluation result displayed, do not overwrite it!
+    if (evaluationProgress && (evaluationProgress.status === 'completed' || evaluationProgress.status === 'failed')) {
       return;
     }
     try {
       const response = await apiClient.get(`/projects/${projectId}/monitoring/progress`);
       if (response.data.success && response.data.data) {
-        const { document_id, document_name, status, progress, step, elapsed_seconds } = response.data.data;
+        const { document_id, document_name, status, progress, step, elapsed_seconds, document_type } = response.data.data;
         if (status === 'running') {
           // Document is processing, start polling it with the elapsed time from backend
-          startPolling(projectId, document_id, document_name, elapsed_seconds || 0);
+          startPolling(projectId, document_id, document_name, elapsed_seconds || 0, document_type);
         }
       }
     } catch (err) {
       console.error('Error checking active progress:', err);
     }
-  };
+  }, [isEvaluating, activeProjectId, evaluationProgress, startPolling]);
 
   return (
     <DocumentProgressContext.Provider value={{
@@ -261,6 +284,7 @@ export const DocumentProgressProvider: React.FC<{ children: React.ReactNode }> =
       activeDocId,
       activeProjectId,
       startSSEStream,
+      startPolling,
       checkActiveProgress,
       resetProgress
     }}>
