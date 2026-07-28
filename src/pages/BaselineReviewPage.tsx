@@ -133,6 +133,42 @@ export const BaselineReviewPage: React.FC = () => {
     }
   }, [selectedDeliverableId]);
 
+  // Handle URL query parameters for automated follow-up actions
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const selectedIdStr = params.get("selected");
+    const action = params.get("action");
+
+    if (selectedIdStr && timelineItems.length > 0) {
+      const selectedId = parseInt(selectedIdStr, 10);
+      const exists = timelineItems.some((item: any) => item.id === selectedId);
+      if (exists) {
+        setSelectedDeliverableId(selectedId);
+        
+        // Execute automated status change if requested
+        if (action === "completed") {
+          handleUpdateCompletionStatus(selectedId, "COMPLETED");
+        } else if (action === "pending") {
+          handleUpdateCompletionStatus(selectedId, "ACTIVE");
+        } else if (action === "reschedule") {
+          // Focus the reschedule date picker
+          setTimeout(() => {
+            const dateInput = document.getElementById("reschedule-date-input");
+            if (dateInput) {
+              dateInput.scrollIntoView({ behavior: "smooth", block: "center" });
+              dateInput.focus();
+            }
+          }, 500);
+        }
+        
+        // Clear parameters from URL so they don't re-run on subsequent page reloads
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, document.title, newUrl);
+      }
+    }
+  }, [timelineItems]);
+
+
   const activeIndex =
     timelineItems.findIndex(
       (d: any) => d.id === selectedDeliverableId,
@@ -310,6 +346,32 @@ export const BaselineReviewPage: React.FC = () => {
       );
     }
   };
+
+  const handleRescheduleDeadline = async (
+    itemId: number,
+    newDeadline: string,
+  ) => {
+    try {
+      const res = await apiClient.patch(
+        `/projects/${id}/baseline/items/${itemId}/completion`,
+        { deadline: newDeadline },
+      );
+      if (res.data.success) {
+        showNotification("Deliverable rescheduled successfully", "success");
+        const baselineRes = await apiClient.get(`/projects/${id}/baseline/`);
+        if (baselineRes.data.success) {
+          setBaseline(baselineRes.data.data);
+        }
+      }
+    } catch (error: any) {
+      showNotification(
+        "Failed to reschedule deliverable: " +
+          (error.response?.data?.detail || "Server error"),
+        "error",
+      );
+    }
+  };
+
 
   const handleExtractClick = async () => {
     try {
@@ -1163,6 +1225,51 @@ export const BaselineReviewPage: React.FC = () => {
                                 </span>
                               )}
                             </div>
+
+                            {/* Interactive Update & Reschedule Controls */}
+                            {(user?.role === "ADMIN" ||
+                              user?.role === "ENGAGEMENT_MANAGER" ||
+                              user?.role === "PROJECT_LEAD") && (
+                              <div className="mt-5 pt-4 border-t border-gray-800/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                <div className="flex items-center gap-2.5">
+                                  <span className="text-xs font-bold uppercase tracking-wider text-gray-500">Update Status:</span>
+                                  <div className="flex rounded-lg overflow-hidden border border-gray-700 bg-gray-900/60 p-0.5">
+                                    {[
+                                      { value: "ACTIVE", label: "Pending", color: "hover:bg-blue-600/80 hover:text-white" },
+                                      { value: "COMPLETED", label: "Completed", color: "hover:bg-emerald-600/80 hover:text-white" },
+                                      { value: "CANCELLED", label: "Cancelled", color: "hover:bg-red-600/80 hover:text-white" }
+                                    ].map((opt) => (
+                                      <button
+                                        key={opt.value}
+                                        onClick={() => handleUpdateCompletionStatus(selectedItem.id, opt.value)}
+                                        className={`px-3 py-1 text-[11px] font-bold rounded-md transition-all cursor-pointer ${
+                                          completionStatus === opt.value
+                                            ? opt.value === "COMPLETED"
+                                              ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/25"
+                                              : opt.value === "CANCELLED"
+                                              ? "bg-red-600 text-white shadow-md shadow-red-600/25"
+                                              : "bg-blue-600 text-white shadow-md shadow-blue-600/25"
+                                            : `text-gray-400 ${opt.color}`
+                                        }`}
+                                      >
+                                        {opt.label}
+                                      </button>
+                                    ))}
+                                  </div>
+                                </div>
+
+                                <div className="flex items-center gap-2.5">
+                                  <span className="text-xs font-bold uppercase tracking-wider text-gray-500">Reschedule:</span>
+                                  <input
+                                    id="reschedule-date-input"
+                                    type="date"
+                                    className="px-2.5 py-1 text-xs font-semibold rounded-md border border-gray-700 bg-gray-900/60 text-white focus:outline-none focus:border-violet-500 cursor-pointer shadow-inner"
+                                    value={selectedItem.deadline ? new Date(selectedItem.deadline).toISOString().split('T')[0] : ""}
+                                    onChange={(e) => handleRescheduleDeadline(selectedItem.id, e.target.value)}
+                                  />
+                                </div>
+                              </div>
+                            )}
                           </div>
                         </div>
                       );
