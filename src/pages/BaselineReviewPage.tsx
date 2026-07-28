@@ -979,18 +979,6 @@ export const BaselineReviewPage: React.FC = () => {
                   No scheduled scope items found.
                 </p>
               ) : (() => {
-                /* ── Colour palette for deliverables ── */
-                const palette = [
-                  { bg: "rgba(6,182,212,0.12)",  border: "#06b6d4", text: "#67e8f9", dot: "#06b6d4", glow: "rgba(6,182,212,0.3)" },
-                  { bg: "rgba(139,92,246,0.12)", border: "#8b5cf6", text: "#c4b5fd", dot: "#8b5cf6", glow: "rgba(139,92,246,0.3)" },
-                  { bg: "rgba(245,158,11,0.12)", border: "#f59e0b", text: "#fcd34d", dot: "#f59e0b", glow: "rgba(245,158,11,0.3)" },
-                  { bg: "rgba(244,63,94,0.12)",  border: "#f43f5e", text: "#fda4af", dot: "#f43f5e", glow: "rgba(244,63,94,0.3)" },
-                  { bg: "rgba(16,185,129,0.12)", border: "#10b981", text: "#6ee7b7", dot: "#10b981", glow: "rgba(16,185,129,0.3)" },
-                  { bg: "rgba(99,102,241,0.12)", border: "#6366f1", text: "#a5b4fc", dot: "#6366f1", glow: "rgba(99,102,241,0.3)" },
-                  { bg: "rgba(217,70,239,0.12)", border: "#d946ef", text: "#f0abfc", dot: "#d946ef", glow: "rgba(217,70,239,0.3)" },
-                  { bg: "rgba(20,184,166,0.12)", border: "#14b8a6", text: "#5eead4", dot: "#14b8a6", glow: "rgba(20,184,166,0.3)" },
-                ];
-
                 /* ── Parse dates & compute timeline bounds ── */
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);
@@ -1009,8 +997,19 @@ export const BaselineReviewPage: React.FC = () => {
                       dateMs = d.getTime();
                     }
                   }
-                  return { ...item, _dateMs: dateMs, _idx: idx, _color: palette[idx % palette.length] };
+
+                  // Determine status-based color scheme
+                  const completionStatus = item.completion_status || "ACTIVE";
+                  let itemColor = { bg: "rgba(245,158,11,0.12)", border: "#f59e0b", text: "#fcd34d", dot: "#f59e0b", glow: "rgba(245,158,11,0.3)" }; // Pending/Active (Amber)
+                  if (completionStatus === "COMPLETED") {
+                    itemColor = { bg: "rgba(16,185,129,0.12)", border: "#10b981", text: "#6ee7b7", dot: "#10b981", glow: "rgba(16,185,129,0.3)" }; // Completed (Green)
+                  } else if (completionStatus === "CANCELLED") {
+                    itemColor = { bg: "rgba(244,63,94,0.12)", border: "#f43f5e", text: "#fda4af", dot: "#f43f5e", glow: "rgba(244,63,94,0.3)" }; // Cancelled (Red)
+                  }
+
+                  return { ...item, _dateMs: dateMs, _idx: idx, _color: itemColor };
                 });
+
 
                 const datedItems = parsedItems.filter((i: any) => i._dateMs !== null);
                 const hasDates = datedItems.length >= 1;
@@ -1237,9 +1236,9 @@ export const BaselineReviewPage: React.FC = () => {
                                       isSelected ? "scale-[1.4]" : "group-hover:scale-125"
                                     }`}
                                     style={{
-                                      backgroundColor: isSelected ? color.dot : (past ? color.dot : "#4b5563"),
+                                      backgroundColor: isSelected ? color.dot : (isCompleted || isCancelled ? color.dot : (past ? color.dot : "#4b5563")),
                                       boxShadow: isSelected ? `0 0 10px ${color.glow}, 0 0 20px ${color.glow}` : "none",
-                                      opacity: isCompleted ? 0.5 : isCancelled ? 0.3 : 1,
+                                      opacity: isCompleted ? 0.75 : isCancelled ? 0.5 : 1,
                                       animationDelay: `${idx * 60}ms`,
                                     }}
                                   >
@@ -1259,9 +1258,9 @@ export const BaselineReviewPage: React.FC = () => {
                                       isSelected ? "scale-[1.4]" : "group-hover:scale-125"
                                     }`}
                                     style={{
-                                      backgroundColor: isSelected ? color.dot : (past ? color.dot : "#4b5563"),
+                                      backgroundColor: isSelected ? color.dot : (isCompleted || isCancelled ? color.dot : (past ? color.dot : "#4b5563")),
                                       boxShadow: isSelected ? `0 0 10px ${color.glow}, 0 0 20px ${color.glow}` : "none",
-                                      opacity: isCompleted ? 0.5 : isCancelled ? 0.3 : 1,
+                                      opacity: isCompleted ? 0.75 : isCancelled ? 0.5 : 1,
                                       animationDelay: `${idx * 60}ms`,
                                     }}
                                   >
@@ -1313,23 +1312,21 @@ export const BaselineReviewPage: React.FC = () => {
                         {hasDates && (
                           <div className="flex items-center gap-1.5">
                             <div className="w-2.5 h-2.5 rounded-full bg-orange-400" style={{ animation: "todayPulse 2s ease-in-out infinite" }}></div>
-                            <span className="text-[10px] text-gray-500">Today</span>
+                            <span className="text-[10px] text-gray-500 font-medium">Today</span>
                           </div>
                         )}
                         <div className="flex items-center gap-1.5">
-                          <div className="w-6 h-0.5 rounded-full" style={{ background: "linear-gradient(90deg, #06b6d4, #8b5cf6, #f59e0b)" }}></div>
-                          <span className="text-[10px] text-gray-500">Past</span>
+                          <div className="w-2.5 h-2.5 rounded-full bg-amber-500"></div>
+                          <span className="text-[10px] text-gray-500 font-medium">Pending</span>
                         </div>
                         <div className="flex items-center gap-1.5">
-                          <div className="w-6 h-0.5 rounded-full bg-gray-700"></div>
-                          <span className="text-[10px] text-gray-500">Future</span>
+                          <div className="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
+                          <span className="text-[10px] text-gray-500 font-medium">Completed</span>
                         </div>
-                        {parsedItems.some((i: any) => (i.completion_status || "ACTIVE") === "COMPLETED") && (
-                          <div className="flex items-center gap-1.5">
-                            <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-                            <span className="text-[10px] text-gray-500">Completed</span>
-                          </div>
-                        )}
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-2.5 h-2.5 rounded-full bg-red-500"></div>
+                          <span className="text-[10px] text-gray-500 font-medium">Cancelled</span>
+                        </div>
                       </div>
                     </div>
 
