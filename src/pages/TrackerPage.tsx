@@ -19,7 +19,14 @@ import {
 } from "lucide-react";
 import { useAuth } from "../auth/AuthContext";
 
-const steps = [
+interface TrackerStep {
+  key: string;
+  name: string;
+  desc: string;
+  metricKey?: string;
+}
+
+const steps: TrackerStep[] = [
   {
     key: "Loading Project Baseline",
     name: "Loading Project Baseline",
@@ -75,7 +82,7 @@ const steps = [
   },
 ];
 
-const baselineSteps = [
+const baselineSteps: TrackerStep[] = [
   { key: "Detecting Scope Sections", name: "Detect Sections", desc: "Identifying contract scope and deliverables sections." },
   { key: "Extracting Scope Candidates", name: "Extract Candidates", desc: "Extracting candidate sentences and clauses." },
   { key: "Classifying Scope Items", name: "Classify Items", desc: "Classifying items into IN_SCOPE/OUT_OF_SCOPE using LLM." },

@@ -9,6 +9,7 @@ interface EvaluationProgress {
   document_id?: number;
   document_type?: string;
   error?: string;
+  details?: Record<string, any>;
 }
 
 interface DocumentProgressContextType {
