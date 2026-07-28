@@ -158,7 +158,7 @@ export const ProjectOverviewPage: React.FC = () => {
   const totalItems = inScopeItems.length + outOfScopeItems.length + uncertainItems.length;
 
   const openRisks = risks.filter((r) => r.status !== "RESOLVED");
-  const criticalRisks = openRisks.filter((r) => r.severity === "HIGH" || r.severity === "CRITICAL");
+  const criticalRisks = openRisks.filter((r) => r.risk_level === "HIGH" || r.risk_level === "CRITICAL");
   const resolvedRisks = risks.filter((r) => r.status === "RESOLVED");
 
   const daysRemaining = getDaysRemaining(project.end_date);
@@ -173,9 +173,9 @@ export const ProjectOverviewPage: React.FC = () => {
   const monitoringDocsCount = documents.filter((d) => d.document_type !== "EL" && d.document_type !== "IFA").length;
 
   // ── Risk severity breakdown ──────────────────────────────────────────────
-  const riskHigh = openRisks.filter((r) => r.severity === "HIGH" || r.severity === "CRITICAL").length;
-  const riskMed = openRisks.filter((r) => r.severity === "MEDIUM").length;
-  const riskLow = openRisks.filter((r) => r.severity === "LOW").length;
+  const riskHigh = openRisks.filter((r) => r.risk_level === "HIGH" || r.risk_level === "CRITICAL").length;
+  const riskMed = openRisks.filter((r) => r.risk_level === "MEDIUM").length;
+  const riskLow = openRisks.filter((r) => r.risk_level === "LOW").length;
 
   return (
     <div className="flex-1 bg-[#080b14] text-white p-6 md:p-8 min-h-screen overflow-auto">
@@ -549,10 +549,8 @@ export const ProjectOverviewPage: React.FC = () => {
                       <p className={`text-xs font-semibold truncate ${item.present ? "text-gray-200" : "text-gray-500"}`}>{item.label}</p>
                       <p className="text-[10px] text-gray-600">{item.section}</p>
                     </div>
-                    {item.present ? (
+                    {item.present && (
                       <span className="text-[10px] text-emerald-400 font-bold">✓</span>
-                    ) : (
-                      <span className="text-[10px] text-amber-400 font-bold px-1.5 py-0.5 bg-amber-500/10 rounded border border-amber-500/20">Missing</span>
                     )}
                   </div>
                 ))}
@@ -684,20 +682,20 @@ export const ProjectOverviewPage: React.FC = () => {
                   {/* Severity breakdown bars */}
                   <div className="space-y-2.5 mb-4">
                     {[
-                      { label: "Critical / High", count: riskHigh, color: "bg-rose-500", textColor: "text-rose-400" },
-                      { label: "Medium", count: riskMed, color: "bg-amber-500", textColor: "text-amber-400" },
-                      { label: "Low", count: riskLow, color: "bg-blue-500", textColor: "text-blue-400" },
-                      { label: "Resolved", count: resolvedRisks.length, color: "bg-emerald-500", textColor: "text-emerald-400" },
+                      { label: "Critical / High", count: riskHigh, total: openRisks.length, color: "bg-rose-500", textColor: "text-rose-400" },
+                      { label: "Medium", count: riskMed, total: openRisks.length, color: "bg-amber-500", textColor: "text-amber-400" },
+                      { label: "Low", count: riskLow, total: openRisks.length, color: "bg-blue-500", textColor: "text-blue-400" },
+                      { label: "Resolved", count: resolvedRisks.length, total: risks.length, color: "bg-emerald-500", textColor: "text-emerald-400" },
                     ].map((bar) => (
                       <div key={bar.label}>
                         <div className="flex justify-between text-[10px] mb-1">
                           <span className="text-gray-500">{bar.label}</span>
-                          <span className={`font-bold ${bar.textColor}`}>{bar.count}</span>
+                          <span className={`font-bold ${bar.textColor}`}>{bar.count}/{bar.total}</span>
                         </div>
                         <div className="w-full h-1.5 bg-gray-800 rounded-full overflow-hidden">
                           <div
                             className={`h-full ${bar.color} rounded-full transition-all duration-700`}
-                            style={{ width: risks.length > 0 ? `${(bar.count / risks.length) * 100}%` : "0%" }}
+                            style={{ width: bar.total > 0 ? `${(bar.count / bar.total) * 100}%` : "0%" }}
                           />
                         </div>
                       </div>
@@ -709,12 +707,12 @@ export const ProjectOverviewPage: React.FC = () => {
                     {openRisks.slice(0, 4).map((risk) => (
                       <div key={risk.id} className="flex items-start gap-2 p-2 bg-gray-800/50 rounded-lg border border-gray-700/30">
                         <span className={`inline-block mt-0.5 w-2 h-2 rounded-full flex-shrink-0 ${
-                          risk.severity === "HIGH" || risk.severity === "CRITICAL" ? "bg-rose-400" :
-                          risk.severity === "MEDIUM" ? "bg-amber-400" : "bg-blue-400"
+                          risk.risk_level === "HIGH" || risk.risk_level === "CRITICAL" ? "bg-rose-400" :
+                          risk.risk_level === "MEDIUM" ? "bg-amber-400" : "bg-blue-400"
                         }`} />
                         <div className="min-w-0">
                           <p className="text-[11px] font-semibold text-gray-200 leading-tight truncate">{risk.title || risk.finding}</p>
-                          <p className="text-[10px] text-gray-500">{risk.severity}</p>
+                          <p className="text-[10px] text-gray-500">{risk.risk_level}</p>
                         </div>
                       </div>
                     ))}

@@ -69,7 +69,7 @@ export const Sidebar: React.FC = () => {
       </div>
 
       {/* Main Navigation */}
-      <div className="flex-1 px-4 py-6 space-y-7 overflow-y-auto">
+      <div className="flex-1 px-4 py-6 space-y-7 overflow-y-auto custom-scrollbar">
         <div className="space-y-1.5">
           <span className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-2">
             General
