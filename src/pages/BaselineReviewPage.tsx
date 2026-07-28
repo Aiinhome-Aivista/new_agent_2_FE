@@ -4,6 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import apiClient from "../api/apiClient";
 import { useAuth } from "../auth/AuthContext";
 import { Loader } from "../components/Loader";
+import { useDocumentProgress } from "../context/DocumentProgressContext";
 
 const formatDate = (dateStr: string | null | undefined) => {
   if (!dateStr) return "N/A";
@@ -20,6 +21,7 @@ const formatDate = (dateStr: string | null | undefined) => {
 import {
   Loader2,
   CheckCircle2,
+  CheckCheck,
   Clock,
   Download,
   FileText,
@@ -35,8 +37,18 @@ import {
   MapPin,
 } from "lucide-react";
 
+const baselineSteps = [
+  { key: "Detecting Scope Sections", name: "Detect Sections", desc: "Identifying contract scope and deliverables sections." },
+  { key: "Extracting Scope Candidates", name: "Extract Candidates", desc: "Extracting candidate sentences and clauses." },
+  { key: "Classifying Scope Items", name: "Classify Items", desc: "Classifying items into IN_SCOPE/OUT_OF_SCOPE using LLM." },
+  { key: "Deduplicating Candidates", name: "Deduplicate", desc: "Merging similar items and resolving overlaps." },
+  { key: "Extracting Milestones & Deadlines", name: "Enrich Dates", desc: "Extracting milestone tags and deadline dates." },
+  { key: "Saving Baseline Draft", name: "Save Draft", desc: "Saving draft baseline and performing smart diff checks." }
+];
+
 export const BaselineReviewPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const { isEvaluating, evaluationProgress, elapsedTime, startPolling, activeProjectId, checkActiveProgress, resetProgress } = useDocumentProgress();
   const [baseline, setBaseline] = useState<any>(null);
   const [project, setProject] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -46,6 +58,47 @@ export const BaselineReviewPage: React.FC = () => {
   const [expandedVersions, setExpandedVersions] = useState<
     Record<number, boolean>
   >({});
+
+  const isCurrentBaselineExtracting = (isEvaluating || evaluationProgress?.status === 'running' || evaluationProgress?.status === 'pending') && 
+    (!activeProjectId || Number(activeProjectId) === Number(id)) && 
+    (evaluationProgress?.document_type === 'EL' || 
+     evaluationProgress?.document_type === 'IFA' || 
+     evaluationProgress?.document_type?.toUpperCase() === 'EL' ||
+     evaluationProgress?.document_type?.toUpperCase() === 'IFA' ||
+     ["Detect Sections", "Extract Candidates", "Classify Items", "Deduplicate", "Enrich Dates", "Save Draft", "Detecting Scope Sections", "Extracting Scope Candidates", "Classifying Scope Items", "Deduplicating Candidates", "Extracting Milestones & Deadlines", "Saving Baseline Draft"].includes(evaluationProgress?.currentStage || ""));
+
+  useEffect(() => {
+    if (id) {
+      checkActiveProgress(Number(id));
+    }
+  }, [id]);
+
+  // Auto-refresh baseline data when background extraction completes
+  useEffect(() => {
+    if (evaluationProgress && evaluationProgress.status === 'completed' && 
+        (evaluationProgress.document_type === 'EL' || evaluationProgress.document_type === 'IFA' || evaluationProgress.document_type?.toUpperCase() === 'EL' || evaluationProgress.document_type?.toUpperCase() === 'IFA' || ["Detect Sections", "Extract Candidates", "Classify Items", "Deduplicate", "Enrich Dates", "Save Draft", "Detecting Scope Sections", "Extracting Scope Candidates", "Classifying Scope Items", "Deduplicating Candidates", "Extracting Milestones & Deadlines", "Saving Baseline Draft"].includes(evaluationProgress.currentStage || "")) &&
+        (!activeProjectId || activeProjectId === Number(id))) {
+      
+      const refreshBaseline = async () => {
+        try {
+          const [baselineRes, versionsRes] = await Promise.all([
+            apiClient.get(`/projects/${id}/baseline/`),
+            apiClient.get(`/projects/${id}/baseline/versions`),
+          ]);
+          if (baselineRes.data.success) {
+            setBaseline(baselineRes.data.data);
+          }
+          if (versionsRes.data.success) {
+            setVersions(versionsRes.data.data);
+          }
+          showNotification("Baseline data updated!", "success");
+        } catch (err) {
+          console.error("Failed to refresh baseline:", err);
+        }
+      };
+      refreshBaseline();
+    }
+  }, [evaluationProgress?.status]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -202,11 +255,7 @@ export const BaselineReviewPage: React.FC = () => {
   const [selectedDocIds, setSelectedDocIds] = useState<number[]>([]);
 
   const toggleDocSelection = (docId: number) => {
-    setSelectedDocIds((prev) =>
-      prev.includes(docId)
-        ? prev.filter((id) => id !== docId)
-        : [...prev, docId],
-    );
+    setSelectedDocIds([docId]);
   };
 
   const [isApproving, setIsApproving] = useState(false);
@@ -393,7 +442,7 @@ export const BaselineReviewPage: React.FC = () => {
         }
 
         setEligibleDocs(contracts);
-        setSelectedDocIds(contracts.map((d: any) => d.id));
+        setSelectedDocIds(contracts.length > 0 ? [contracts[0].id] : []);
         setShowExtractModal(true);
       }
     } catch (error) {
@@ -414,29 +463,18 @@ export const BaselineReviewPage: React.FC = () => {
         await apiClient.post(
           `/projects/${id}/baseline/extract?document_id=${doc.id}`,
         );
-        setCompletedDocIds((prev) => [...prev, doc.id]);
-      }
-
-      // Fetch baseline data in the background to update page
-      const [baselineRes, versionsRes] = await Promise.all([
-        apiClient.get(`/projects/${id}/baseline/`),
-        apiClient.get(`/projects/${id}/baseline/versions`),
-      ]);
-      if (baselineRes.data.success) {
-        setBaseline(baselineRes.data.data);
-      }
-      if (versionsRes.data.success) {
-        setVersions(versionsRes.data.data);
+        // Start polling immediately in the global context
+        startPolling(Number(id), doc.id, doc.document_name, 0, doc.document_type || 'EL');
       }
       setShowExtractModal(false);
       showNotification(
-        "Baseline extraction completed successfully!",
+        "Baseline extraction started in the background!",
         "success",
       );
     } catch (error: any) {
       showNotification(
         "Extraction failed: " +
-          (error.response?.data?.detail || "Server error"),
+          (error.response?.data?.message || error.response?.data?.detail || error.message || "Server error"),
         "error",
       );
     } finally {
@@ -686,6 +724,177 @@ export const BaselineReviewPage: React.FC = () => {
       (baseline.deliverables && baseline.deliverables.length > 0))
   );
 
+  const renderBaselineProgressTimeline = () => {
+    if (!evaluationProgress) return null;
+
+    const overallProgress = evaluationProgress.progress || 0;
+    const isFailed = evaluationProgress.status === "failed";
+    const errorText = evaluationProgress.error;
+
+    const getStepState = (index: number) => {
+      const status = evaluationProgress.status;
+      const currentStage = evaluationProgress.currentStage;
+      const activeIndex = baselineSteps.findIndex(
+        (s) => s.name === currentStage || s.key === currentStage || (currentStage && currentStage.toLowerCase().includes(s.name.toLowerCase().split(' ')[0]))
+      );
+
+      if (status === "completed") return "completed";
+      if (status === "failed") {
+        if (index < activeIndex) return "completed";
+        if (index === activeIndex) return "failed";
+        return "pending";
+      }
+
+      if (index < activeIndex) return "completed";
+      if (index === activeIndex) return "running";
+      return "pending";
+    };
+
+    return (
+      <div className="w-full bg-[#0b0e17]/90 border border-gray-800 rounded-3xl p-8 backdrop-blur-md shadow-2xl relative overflow-hidden max-w-4xl mx-auto my-8 animate-fade-in-up">
+        <div className="absolute -top-24 -right-24 w-48 h-48 rounded-full bg-cyan-500/10 blur-[60px]" />
+        <div className="absolute -bottom-24 -left-24 w-48 h-48 rounded-full bg-purple-500/10 blur-[60px]" />
+
+        {isFailed && (
+          <button
+            onClick={resetProgress}
+            className="absolute top-4 right-4 p-2 bg-gray-900/50 hover:bg-gray-800 border border-gray-800/50 hover:border-gray-700 rounded-lg text-gray-400 hover:text-white transition-colors cursor-pointer z-50 flex items-center justify-center"
+            title="Dismiss"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        )}
+
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-gray-800/60 pb-6 mb-8">
+          <div>
+            <h2 className="text-xl font-bold tracking-tight text-white flex items-center gap-2.5">
+              {!isFailed && evaluationProgress.status !== "completed" && (
+                <Loader2 className="w-5 h-5 text-cyan-400 animate-spin" />
+              )}
+              {evaluationProgress.status === "completed" && (
+                <CheckCircle2 className="w-5 h-5 text-green-400" />
+              )}
+              {isFailed && <AlertTriangle className="w-5 h-5 text-rose-500" />}
+              <span>Baseline Scope Extraction in Progress...</span>
+            </h2>
+            <p className="text-gray-400 text-xs mt-1">
+              AI agents are analyzing and classifying contract scope sections and deliverables.
+            </p>
+          </div>
+          <div className="flex items-center gap-6">
+            <div className="text-right">
+              <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+                Elapsed Time
+              </p>
+              <p className="text-lg font-black text-white font-mono">{elapsedTime}s</p>
+            </div>
+            <div className="h-8 w-px bg-gray-800" />
+            <div className="text-right">
+              <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+                Overall Progress
+              </p>
+              <p className="text-lg font-black text-cyan-400 font-mono">
+                {overallProgress}%
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Progress Bar */}
+        <div className="w-full h-3 bg-gray-950 border border-gray-900 rounded-full overflow-hidden p-0.5 mb-8 shadow-inner">
+          <div
+            className="h-full rounded-full bg-gradient-to-r from-blue-500 via-cyan-400 to-indigo-500 transition-all duration-500 ease-out shadow-[0_0_12px_rgba(6,182,212,0.4)]"
+            style={{ width: `${overallProgress}%` }}
+          />
+        </div>
+
+        {isFailed && errorText && (
+          <div className="mb-8 p-4 bg-rose-950/20 border border-rose-500/30 rounded-2xl flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 text-rose-400 flex-shrink-0 mt-0.5" />
+            <div>
+              <h4 className="text-sm font-bold text-rose-300">
+                Extraction Pipeline Error
+              </h4>
+              <p className="text-xs text-rose-200/80 mt-1 font-mono break-all">
+                {errorText}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Step-by-Step Vertical Timeline */}
+        <div className="relative border-l border-gray-800/80 ml-4 pl-8 space-y-6">
+          {baselineSteps.map((step, idx) => {
+            const state = getStepState(idx);
+
+            let iconElement;
+            let iconBgClass = "";
+            let textClass = "text-gray-500";
+
+            if (state === "completed") {
+              iconElement = <CheckCheck className="w-4 h-4 text-white" />;
+              iconBgClass =
+                "bg-gradient-to-r from-emerald-500 to-teal-500 border-transparent scale-100";
+              textClass = "text-gray-200";
+            } else if (state === "running") {
+              iconElement = (
+                <Loader2 className="w-4 h-4 text-cyan-400 animate-spin" />
+              );
+              iconBgClass =
+                "bg-gray-950 border-[#00e5ff] scale-110 shadow-lg shadow-cyan-500/10";
+              textClass = "text-white font-bold";
+            } else if (state === "failed") {
+              iconElement = <X className="w-4 h-4 text-white" />;
+              iconBgClass =
+                "bg-red-600 shadow-lg shadow-rose-500/20 border-transparent scale-100";
+              textClass = "text-rose-400 font-bold";
+            } else {
+              iconElement = <Circle className="w-3 h-3 text-gray-750" />;
+              iconBgClass = "bg-gray-950 border-gray-800 scale-90";
+              textClass = "text-gray-600";
+            }
+
+            return (
+              <div key={step.key} className="relative group">
+                <div
+                  className={`absolute -left-[41px] top-1 w-6 h-6 rounded-full border flex items-center justify-center transition-all duration-300 ${iconBgClass}`}
+                >
+                  {iconElement}
+                </div>
+                <div
+                  className={`p-4 rounded-2xl border transition-all duration-300 ${
+                    state === "running"
+                      ? "bg-gray-900/60 border-cyan-500/30 shadow-lg shadow-cyan-500/5"
+                      : state === "completed"
+                        ? "bg-gray-950/40 border-gray-850/80"
+                        : "bg-gray-950/20 border-gray-900/50 opacity-60"
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <h4 className={`text-sm font-semibold tracking-tight ${textClass}`}>
+                      {step.name}
+                    </h4>
+                    {state === "running" && (
+                      <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-widest bg-cyan-500/10 px-2.5 py-0.5 rounded-full border border-cyan-500/20 animate-pulse">
+                        Running...
+                      </span>
+                    )}
+                    {state === "completed" && (
+                      <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
+                        Done
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-400 mt-1">{step.desc}</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="flex-1 bg-transparent p-6 md:p-10 relative overflow-hidden">
       <div className="max-w-6xl mx-auto">
@@ -738,7 +947,10 @@ export const BaselineReviewPage: React.FC = () => {
         </div>
 
         {/* Status display section */}
-        {!isBaselineExtracted ? (
+        {/* Status display section */}
+        {isCurrentBaselineExtracting ? (
+          renderBaselineProgressTimeline()
+        ) : !isBaselineExtracted ? (
           <div className="text-center py-16 bg-amber-950/10 border border-amber-500/20 rounded-2xl animate-fade-in-up p-8 max-w-2xl mx-auto my-8">
             <AlertTriangle className="w-12 h-12 text-amber-500 mx-auto mb-4 animate-bounce" />
             <h3 className="text-lg font-bold text-white mb-2">
@@ -788,7 +1000,10 @@ export const BaselineReviewPage: React.FC = () => {
                   const raw = item.deadline || item.deadline_text || null;
                   let dateMs: number | null = null;
                   if (raw) {
-                    const d = new Date(typeof raw === "string" ? raw.replace(" ", "T") : raw);
+                    let d = new Date(raw);
+                    if (isNaN(d.getTime()) && typeof raw === "string") {
+                      d = new Date(raw.replace(" ", "T"));
+                    }
                     if (!isNaN(d.getTime())) {
                       d.setHours(0, 0, 0, 0);
                       dateMs = d.getTime();
@@ -848,7 +1063,10 @@ export const BaselineReviewPage: React.FC = () => {
                   const raw = item.deadline_text || item.deadline;
                   if (!raw) return item.milestone || `Item ${item._idx + 1}`;
                   try {
-                    const d = new Date(typeof raw === "string" ? raw.replace(" ", "T") : raw);
+                    let d = new Date(raw);
+                    if (isNaN(d.getTime()) && typeof raw === "string") {
+                      d = new Date(raw.replace(" ", "T"));
+                    }
                     if (isNaN(d.getTime())) return raw;
                     return d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
                   } catch { return raw; }
@@ -1118,7 +1336,21 @@ export const BaselineReviewPage: React.FC = () => {
                     {/* ── Selected Item Detail Card ── */}
                     {selectedItem && (() => {
                       const color = selectedItem._color;
-                      const completionStatus = selectedItem.completion_status || "ACTIVE";
+                      const latestProgress = selectedItem.latest_progress;
+                      const completionStatus = latestProgress?.status_code || selectedItem.completion_status || "ACTIVE";
+                      const statusLabel = latestProgress?.status_label || completionStatus.replace("_", " ");
+                      const progressPct = latestProgress?.progress_percentage;
+                      const executionSummary = latestProgress?.execution_summary;
+                      const updateSource = latestProgress?.document_name;
+                      const updateDate = latestProgress?.status_updated_at;
+                      let dependencies: string[] = [];
+                      try {
+                        if (latestProgress?.dependencies) {
+                          dependencies = typeof latestProgress.dependencies === 'string' ? JSON.parse(latestProgress.dependencies) : latestProgress.dependencies;
+                        }
+                      } catch (e) {
+                          console.error("Failed to parse dependencies", e);
+                      }
 
                       return (
                         <div
@@ -1147,21 +1379,73 @@ export const BaselineReviewPage: React.FC = () => {
                                   {selectedItem.scope_item_normalized || selectedItem.name}
                                 </h3>
                                 
-                                <details className="mt-3 group cursor-pointer">
+                                {executionSummary && (
+                                  <div className="mt-4 p-3 bg-blue-950/20 border border-blue-900/30 rounded-lg">
+                                    <h5 className="text-[10px] font-bold text-blue-400 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                                      <FileText className="w-3 h-3" /> Latest Update
+                                    </h5>
+                                    <p className="text-sm text-gray-200 leading-relaxed">{executionSummary}</p>
+                                  </div>
+                                )}
+
+                                {progressPct !== null && progressPct !== undefined && (
+                                  <div className="mt-4">
+                                    <div className="flex justify-between items-center mb-1.5">
+                                      <span className="text-xs font-semibold text-gray-400">Progress</span>
+                                      <span className="text-xs font-bold text-white">{progressPct}%</span>
+                                    </div>
+                                    <div className="w-full bg-gray-800 rounded-full h-1.5">
+                                      <div className="bg-emerald-500 h-1.5 rounded-full" style={{ width: `${progressPct}%` }}></div>
+                                    </div>
+                                  </div>
+                                )}
+
+                                {dependencies && dependencies.length > 0 && (
+                                  <div className="mt-4">
+                                    <h5 className="text-[10px] font-bold text-orange-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                                      <AlertTriangle className="w-3 h-3" /> Dependencies
+                                    </h5>
+                                    <ul className="space-y-1.5">
+                                      {dependencies.map((dep, idx) => (
+                                        <li key={idx} className="text-xs text-gray-300 flex items-start gap-2 bg-orange-950/10 px-2 py-1.5 rounded-md border border-orange-900/20">
+                                          <Circle className="w-1.5 h-1.5 mt-1 text-orange-500 fill-orange-500 flex-shrink-0" />
+                                          <span className="leading-tight">{dep}</span>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                )}
+                                
+                                <details className="mt-5 group cursor-pointer">
                                   <summary className="text-xs font-bold text-gray-400 uppercase tracking-wider hover:text-gray-200 transition-colors list-none flex items-center">
                                     <span className="mr-1.5 transition-transform group-open:rotate-90 text-[10px]">▶</span>
                                     AI Extraction Details
                                   </summary>
                                   <div className="mt-3 space-y-3 p-3 bg-gray-900/60 rounded-lg border border-gray-700/40">
+                                    {(updateSource || updateDate) && (
+                                      <div>
+                                        <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">Updated From</h5>
+                                        <p className="text-xs text-gray-300 italic">
+                                          {updateSource ? updateSource : 'Unknown Document'}
+                                          {updateDate && ` • ${formatDate(updateDate)}`}
+                                        </p>
+                                      </div>
+                                    )}
+                                    {latestProgress?.evidence_text && (
+                                      <div>
+                                        <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">Progress Evidence</h5>
+                                        <p className="text-xs text-gray-300 italic leading-relaxed">{latestProgress.evidence_text}</p>
+                                      </div>
+                                    )}
                                     {selectedItem.description && (
                                       <div>
-                                        <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">AI Reasoning</h5>
+                                        <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">AI Reasoning (Baseline)</h5>
                                         <p className="text-xs text-gray-300 italic leading-relaxed">{selectedItem.description}</p>
                                       </div>
                                     )}
                                     {selectedItem.evidence_text && (
                                       <div>
-                                        <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">Evidence</h5>
+                                        <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">Evidence (Baseline)</h5>
                                         <p className="text-xs text-gray-300 italic leading-relaxed">{selectedItem.evidence_text}</p>
                                       </div>
                                     )}
@@ -1177,17 +1461,19 @@ export const BaselineReviewPage: React.FC = () => {
 
                               {/* Status indicator */}
                               <div className="flex-shrink-0">
-                                <div className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider border ${
+                                <div className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider border shadow-sm ${
                                   completionStatus === "COMPLETED"
-                                    ? "bg-emerald-950/40 text-emerald-300 border-emerald-700/40"
-                                    : completionStatus === "CANCELLED"
-                                    ? "bg-red-950/40 text-red-300 border-red-700/40"
-                                    : "bg-gray-800/60 text-gray-300 border-gray-700/40"
+                                    ? "bg-emerald-950/60 text-emerald-300 border-emerald-700/50"
+                                    : completionStatus === "BLOCKED" || completionStatus === "DELAYED"
+                                    ? "bg-red-950/60 text-red-300 border-red-700/50"
+                                    : completionStatus === "IN_PROGRESS"
+                                    ? "bg-blue-950/60 text-blue-300 border-blue-700/50"
+                                    : "bg-gray-800/80 text-gray-300 border-gray-700/60"
                                 }`}>
-                                  {completionStatus === "COMPLETED" && <CheckCircle2 className="w-3 h-3 inline mr-1.5 -mt-0.5" />}
-                                  {completionStatus === "CANCELLED" && <X className="w-3 h-3 inline mr-1.5 -mt-0.5" />}
-                                  {completionStatus === "ACTIVE" && <Clock className="w-3 h-3 inline mr-1.5 -mt-0.5" />}
-                                  {completionStatus.replace("_", " ")}
+                                  {completionStatus === "COMPLETED" && <CheckCircle2 className="w-3.5 h-3.5 inline mr-1.5 -mt-0.5" />}
+                                  {completionStatus === "BLOCKED" && <X className="w-3.5 h-3.5 inline mr-1.5 -mt-0.5" />}
+                                  {(completionStatus === "IN_PROGRESS" || completionStatus === "ACTIVE") && <Clock className="w-3.5 h-3.5 inline mr-1.5 -mt-0.5" />}
+                                  {statusLabel}
                                 </div>
                               </div>
                             </div>
@@ -1955,11 +2241,12 @@ export const BaselineReviewPage: React.FC = () => {
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <input
-                          type="checkbox"
+                          type="radio"
+                          name="contract_selection"
                           checked={isChecked}
                           onChange={() => toggleDocSelection(doc.id)}
                           disabled={extracting}
-                          className="w-4 h-4 rounded border-gray-600 text-[#00e5ff] focus:ring-[#00e5ff] bg-gray-700 cursor-pointer"
+                          className="w-4 h-4 rounded-full border-gray-600 text-[#00e5ff] focus:ring-[#00e5ff] bg-gray-700 cursor-pointer"
                         />
                         <div className="flex flex-col min-w-0">
                           <span className="text-sm font-medium text-gray-200 truncate">

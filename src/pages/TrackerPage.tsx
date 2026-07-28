@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import apiClient from "../api/apiClient";
 import { Loader } from "../components/Loader";
+import { useDocumentProgress } from "../context/DocumentProgressContext";
 import {
   Loader2,
   Info,
@@ -70,6 +71,15 @@ const steps = [
   },
 ];
 
+const baselineSteps = [
+  { key: "Detecting Scope Sections", name: "Detect Sections", desc: "Identifying contract scope and deliverables sections." },
+  { key: "Extracting Scope Candidates", name: "Extract Candidates", desc: "Extracting candidate sentences and clauses." },
+  { key: "Classifying Scope Items", name: "Classify Items", desc: "Classifying items into IN_SCOPE/OUT_OF_SCOPE using LLM." },
+  { key: "Deduplicating Candidates", name: "Deduplicate", desc: "Merging similar items and resolving overlaps." },
+  { key: "Extracting Milestones & Deadlines", name: "Enrich Dates", desc: "Extracting milestone tags and deadline dates." },
+  { key: "Saving Baseline Draft", name: "Save Draft", desc: "Saving draft baseline and performing smart diff checks." }
+];
+
 export const TrackerPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -85,138 +95,50 @@ export const TrackerPage: React.FC = () => {
   const resolvedItems = items.filter((item) => item.status === "RESOLVED");
   const currentTabItems = activeTab === "ACTIVE" ? activeItems : resolvedItems;
 
+  const fetchTrackerAndProject = async () => {
+    try {
+      const [trackerRes, projectRes] = await Promise.all([
+        apiClient.get(`/projects/${id}/tracker/`),
+        apiClient.get(`/projects/${id}`),
+      ]);
+      if (trackerRes.data.success) setItems(trackerRes.data.data);
+      if (projectRes.data.success) setProject(projectRes.data.data);
+    } catch (error) {
+      console.error(
+        "Failed to fetch tracker items or project details:",
+        error,
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchTrackerAndProject = async () => {
-      try {
-        const [trackerRes, projectRes] = await Promise.all([
-          apiClient.get(`/projects/${id}/tracker/`),
-          apiClient.get(`/projects/${id}`),
-        ]);
-        if (trackerRes.data.success) setItems(trackerRes.data.data);
-        if (projectRes.data.success) setProject(projectRes.data.data);
-      } catch (error) {
-        console.error(
-          "Failed to fetch tracker items or project details:",
-          error,
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchTrackerAndProject();
   }, [id]);
 
-  const [isEvaluating, setIsEvaluating] = useState(false);
-  const [evaluationProgress, setEvaluationProgress] = useState<any>(null);
-  const [elapsedTime, setElapsedTime] = useState(0);
-  const activeDocIdRef = useRef<string | null>(null);
-  const eventSourceRef = useRef<EventSource | null>(null);
+  const {
+    isEvaluating,
+    evaluationProgress,
+    elapsedTime,
+    startSSEStream,
+    checkActiveProgress,
+    resetProgress
+  } = useDocumentProgress();
 
-  const startSSEStream = (docId: string) => {
-    // Close any existing stream first
-    if (eventSourceRef.current) {
-      eventSourceRef.current.close();
-      eventSourceRef.current = null;
-    }
-
-    const token = localStorage.getItem('token');
-    if (!token) {
-      showNotification("Authentication error. Please log in again.", "error");
-      setIsEvaluating(false);
-      return;
-    }
-
-    const url = `${import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8080/api'}/projects/${id}/monitoring/stream?document_id=${docId}&token=${encodeURIComponent(token)}`;
-    const es = new EventSource(url);
-    eventSourceRef.current = es;
-
-    es.onmessage = async (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        const { step, progress, status, error } = data;
-
-        if (status === 'completed') {
-          setEvaluationProgress({ currentStage: 'Completed', progress: 100, status: 'completed' });
-          es.close();
-          eventSourceRef.current = null;
-          activeDocIdRef.current = null;
-          setIsEvaluating(false);
-
-          // Short delay so user sees 100% before dashboard loads
-          await new Promise(r => setTimeout(r, 1200));
-          setEvaluationProgress(null);
-
-          const [trackerRes, projectRes] = await Promise.all([
-            apiClient.get(`/projects/${id}/tracker/`),
-            apiClient.get(`/projects/${id}`),
-          ]);
-          if (trackerRes.data.success) setItems(trackerRes.data.data);
-          if (projectRes.data.success) setProject(projectRes.data.data);
-          showNotification('Evaluation completed! Risk dashboard loaded.', 'success');
-
-        } else if (status === 'failed') {
-          es.close();
-          eventSourceRef.current = null;
-          activeDocIdRef.current = null;
-          setIsEvaluating(false);
-          setEvaluationProgress({
-            currentStage: step || 'FAILED',
-            progress: progress || 0,
-            status: 'failed',
-            error: error || 'Unknown error'
-          });
-          showNotification(`Evaluation failed: ${error || 'Unknown error'}`, 'error');
-
-        } else {
-          // running — update the timeline step
-          setEvaluationProgress({ currentStage: step, progress, status: 'running' });
-        }
-      } catch (e) {
-        console.error('SSE parse error:', e);
-      }
-    };
-
-    es.onerror = () => {
-      console.error('SSE connection error');
-      es.close();
-      eventSourceRef.current = null;
-      if (activeDocIdRef.current) {
-        setIsEvaluating(false);
-        setEvaluationProgress({
-          currentStage: 'FAILED',
-          progress: 0,
-          status: 'failed',
-          error: 'Connection lost during evaluation. Please check results.'
-        });
-        activeDocIdRef.current = null;
-        showNotification('Connection lost during evaluation. Please check results.', 'error');
-      }
-    };
-  };
-
-  // Cleanup EventSource on unmount
+  // Check active progress on mount
   useEffect(() => {
-    return () => {
-      if (eventSourceRef.current) {
-        eventSourceRef.current.close();
-      }
-    };
-  }, []);
-
-  useEffect(() => {
-    let timer: any;
-    if (isEvaluating) {
-      const startTime = Date.now();
-      timer = setInterval(() => {
-        setElapsedTime(Math.floor((Date.now() - startTime) / 1000));
-      }, 1000);
-    } else {
-      setElapsedTime(0);
+    if (id) {
+      checkActiveProgress(Number(id));
     }
-    return () => {
-      if (timer) clearInterval(timer);
-    };
-  }, [isEvaluating]);
+  }, [id]);
+
+  // Reload page data when evaluation completes
+  useEffect(() => {
+    if (evaluationProgress?.status === "completed") {
+      fetchTrackerAndProject();
+    }
+  }, [evaluationProgress?.status]);
 
   useEffect(() => {
     setSelectedItemIds([]);
@@ -623,22 +545,14 @@ export const TrackerPage: React.FC = () => {
     if (!selectedDocId) return;
     setProcessing(true);
     try {
-      const docId = selectedDocId;
+      const docId = Number(selectedDocId);
+      const documentName = eligibleDocs.find((d: any) => d.id === docId)?.document_name || "Document";
       setShowProcessModal(false);
       setSelectedDocId("");
       showNotification("AI Evaluation started!", "success");
-      setIsEvaluating(true);
-      activeDocIdRef.current = docId;
-
-      // Set initial progress state immediately so timeline shows
-      setEvaluationProgress({
-        currentStage: "Loading Project Baseline",
-        progress: 5,
-        status: "running",
-      });
-
-      // Open SSE stream — this drives all real-time step updates
-      startSSEStream(docId);
+      
+      // Start global SSE stream
+      startSSEStream(Number(id), docId, documentName);
 
     } catch (error: any) {
       showNotification(
@@ -646,11 +560,18 @@ export const TrackerPage: React.FC = () => {
           (error.response?.data?.detail || "Server error"),
         "error",
       );
-      setIsEvaluating(false);
     } finally {
       setProcessing(false);
     }
   };
+
+  const isBaselineExtraction = 
+    evaluationProgress?.document_type === 'EL' || 
+    evaluationProgress?.document_type === 'IFA' || 
+    evaluationProgress?.document_type?.toUpperCase() === 'EL' ||
+    evaluationProgress?.document_type?.toUpperCase() === 'IFA' ||
+    ["Detect Sections", "Extract Candidates", "Classify Items", "Deduplicate", "Enrich Dates", "Save Draft", "Detecting Scope Sections", "Extracting Scope Candidates", "Classifying Scope Items", "Deduplicating Candidates", "Extracting Milestones & Deadlines", "Saving Baseline Draft"].includes(evaluationProgress?.currentStage || "");
+  const currentSteps = isBaselineExtraction ? baselineSteps : steps;
 
   const getStepState = (index: number) => {
     if (!evaluationProgress) {
@@ -658,7 +579,7 @@ export const TrackerPage: React.FC = () => {
     }
     const status = evaluationProgress.status;
     const currentStage = evaluationProgress.currentStage;
-    const activeIndex = steps.findIndex((s) => s.name === currentStage);
+    const activeIndex = currentSteps.findIndex((s) => s.name === currentStage || s.key === currentStage || (currentStage && currentStage.toLowerCase().includes(s.name.toLowerCase().split(' ')[0])));
 
     if (status === "completed") return "completed";
     if (status === "failed") {
@@ -686,7 +607,7 @@ export const TrackerPage: React.FC = () => {
 
         {isFailed && (
           <button
-            onClick={() => setEvaluationProgress(null)}
+            onClick={resetProgress}
             className="absolute top-4 right-4 p-2 bg-gray-900/50 hover:bg-gray-800 border border-gray-800/50 hover:border-gray-700 rounded-lg text-gray-400 hover:text-white transition-colors cursor-pointer z-50 flex items-center justify-center"
             title="Dismiss"
           >
@@ -701,12 +622,16 @@ export const TrackerPage: React.FC = () => {
                 className={`w-5 h-5 text-cyan-400 ${isFailed ? "" : "animate-spin"}`}
               />
               {isFailed
-                ? "Risk Evaluation Failed"
+                ? "Evaluation Failed"
+                : isBaselineExtraction
+                ? "Baseline Scope Extraction in Progress..."
                 : "Analyzing Project Risks & Timeline..."}
             </h2>
             <p className="text-xs text-gray-400 mt-1">
               {isFailed
                 ? "An error occurred during evaluation."
+                : isBaselineExtraction
+                ? "AI agents are analyzing and classifying contract scope sections and deliverables."
                 : "AI agents are running automated checks against your project baseline."}
             </p>
           </div>
@@ -750,7 +675,7 @@ export const TrackerPage: React.FC = () => {
         )}
 
         <div className="relative border-l border-gray-800/80 ml-4 pl-8 space-y-8">
-          {steps.map((step, idx) => {
+          {currentSteps.map((step, idx) => {
             const state = getStepState(idx);
 
             let iconElement;

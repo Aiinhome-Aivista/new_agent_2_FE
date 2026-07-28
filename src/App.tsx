@@ -1,6 +1,8 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './auth/AuthContext';
+import { DocumentProgressProvider } from './context/DocumentProgressContext';
+import { GlobalProgressWidget } from './components/GlobalProgressWidget';
 import { LandingPage } from './pages/LandingPage';
 import { LoginPage } from './pages/LoginPage';
 import { UnauthorizedPage } from './pages/UnauthorizedPage';
@@ -22,6 +24,7 @@ const ProtectedLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
       <div className="flex-1 md:pl-64 min-h-screen pt-16 md:pt-0 flex flex-col">
         {children}
       </div>
+      <GlobalProgressWidget />
     </div>
   );
 };
@@ -29,48 +32,51 @@ const ProtectedLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
 const App: React.FC = () => {
   return (
     <AuthProvider>
-      <Router>
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/unauthorized" element={<UnauthorizedPage />} />
-          <Route 
-            path="/dashboard" 
-            element={<ProtectedRoute><ProtectedLayout><DashboardPage /></ProtectedLayout></ProtectedRoute>} 
-          />
-          <Route 
-            path="/projects" 
-            element={<ProtectedRoute><ProtectedLayout><ProjectsPage /></ProtectedLayout></ProtectedRoute>} 
-          />
-          <Route 
-            path="/projects/:id" 
-            element={<ProtectedRoute><ProtectedLayout><ProjectOverviewPage /></ProtectedLayout></ProtectedRoute>} 
-          />
-          <Route 
-            path="/projects/:id/cockpit" 
-            element={<ProtectedRoute><ProtectedLayout><ProjectDashboardPage /></ProtectedLayout></ProtectedRoute>} 
-          />
-          <Route 
-            path="/projects/:id/baseline" 
-            element={<ProtectedRoute><ProtectedLayout><BaselineReviewPage /></ProtectedLayout></ProtectedRoute>} 
-          />
-          <Route 
-            path="/projects/:id/tracker" 
-            element={<ProtectedRoute><ProtectedLayout><TrackerPage /></ProtectedLayout></ProtectedRoute>} 
-          />
-          <Route 
-            path="/projects/:id/assistant" 
-            element={<ProtectedRoute><ProtectedLayout><AIAssistantPage /></ProtectedLayout></ProtectedRoute>} 
-          />
-          <Route 
-            path="/projects/:id/members" 
-            element={<ProtectedRoute><ProtectedLayout><ProjectMembersPage /></ProtectedLayout></ProtectedRoute>} 
-          />
-        </Routes>
-      </Router>
+      <DocumentProgressProvider>
+        <Router>
+          <Routes>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/unauthorized" element={<UnauthorizedPage />} />
+            <Route 
+              path="/dashboard" 
+              element={<ProtectedRoute><ProtectedLayout><DashboardPage /></ProtectedLayout></ProtectedRoute>} 
+            />
+            <Route 
+              path="/projects" 
+              element={<ProtectedRoute><ProtectedLayout><ProjectsPage /></ProtectedLayout></ProtectedRoute>} 
+            />
+            <Route 
+              path="/projects/:id" 
+              element={<ProtectedRoute><ProtectedLayout><ProjectOverviewPage /></ProtectedLayout></ProtectedRoute>} 
+            />
+            <Route 
+              path="/projects/:id/cockpit" 
+              element={<ProtectedRoute><ProtectedLayout><ProjectDashboardPage /></ProtectedLayout></ProtectedRoute>} 
+            />
+            <Route 
+              path="/projects/:id/baseline" 
+              element={<ProtectedRoute><ProtectedLayout><BaselineReviewPage /></ProtectedLayout></ProtectedRoute>} 
+            />
+            <Route 
+              path="/projects/:id/tracker" 
+              element={<ProtectedRoute><ProtectedLayout><TrackerPage /></ProtectedLayout></ProtectedRoute>} 
+            />
+            <Route 
+              path="/projects/:id/assistant" 
+              element={<ProtectedRoute><ProtectedLayout><AIAssistantPage /></ProtectedLayout></ProtectedRoute>} 
+            />
+            <Route 
+              path="/projects/:id/members" 
+              element={<ProtectedRoute><ProtectedLayout><ProjectMembersPage /></ProtectedLayout></ProtectedRoute>} 
+            />
+          </Routes>
+        </Router>
+      </DocumentProgressProvider>
     </AuthProvider>
   );
 };
 
 export default App;
+
 
