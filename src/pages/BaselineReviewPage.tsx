@@ -1247,14 +1247,11 @@ export const BaselineReviewPage: React.FC = () => {
                                     {isCompleted ? (
                                       <CheckCircle2 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[18px] h-[18px] text-emerald-400 bg-gray-900 rounded-full z-10" style={{ filter: "drop-shadow(0 0 2px rgba(16,185,129,0.5))" }} />
                                     ) : isAlert ? (
-                                      <>
-                                        <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[18px] h-[18px] rounded-full bg-red-500/40 animate-pulse blur-[2px]"></span>
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[18px] h-[18px] z-10" style={{ filter: "drop-shadow(0 0 4px rgba(239,68,68,0.8))" }}>
-                                          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" fill="#ef4444" />
-                                          <line x1="12" y1="9" x2="12" y2="13" stroke="#ffffff" strokeWidth="2.5" strokeLinecap="round" />
-                                          <circle cx="12" cy="17" r="1.25" fill="#ffffff" />
-                                        </svg>
-                                      </>
+                                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[18px] h-[18px] z-10" style={{ filter: "drop-shadow(0 0 4px rgba(239,68,68,0.8))" }}>
+                                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" fill="#ef4444" />
+                                        <line x1="12" y1="9" x2="12" y2="13" stroke="#ffffff" strokeWidth="2.5" strokeLinecap="round" />
+                                        <circle cx="12" cy="17" r="1.25" fill="#ffffff" />
+                                      </svg>
                                     ) : null}
                                     {isSelected && (
                                       <span className="absolute inset-0 rounded-full animate-ping" style={{ backgroundColor: isAlert ? "#ef4444" : isCompleted ? "#10b981" : color.dot, opacity: 0.25 }}></span>
@@ -1278,14 +1275,11 @@ export const BaselineReviewPage: React.FC = () => {
                                     {isCompleted ? (
                                       <CheckCircle2 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[18px] h-[18px] text-emerald-400 bg-gray-900 rounded-full z-10" style={{ filter: "drop-shadow(0 0 2px rgba(16,185,129,0.5))" }} />
                                     ) : isAlert ? (
-                                      <>
-                                        <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[18px] h-[18px] rounded-full bg-red-500/40 animate-pulse blur-[2px]"></span>
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[18px] h-[18px] z-10" style={{ filter: "drop-shadow(0 0 4px rgba(239,68,68,0.8))" }}>
-                                          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" fill="#ef4444" />
-                                          <line x1="12" y1="9" x2="12" y2="13" stroke="#ffffff" strokeWidth="2.5" strokeLinecap="round" />
-                                          <circle cx="12" cy="17" r="1.25" fill="#ffffff" />
-                                        </svg>
-                                      </>
+                                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[18px] h-[18px] z-10" style={{ filter: "drop-shadow(0 0 4px rgba(239,68,68,0.8))" }}>
+                                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" fill="#ef4444" />
+                                        <line x1="12" y1="9" x2="12" y2="13" stroke="#ffffff" strokeWidth="2.5" strokeLinecap="round" />
+                                        <circle cx="12" cy="17" r="1.25" fill="#ffffff" />
+                                      </svg>
                                     ) : null}
                                     {isSelected && (
                                       <span className="absolute inset-0 rounded-full animate-ping" style={{ backgroundColor: isAlert ? "#ef4444" : isCompleted ? "#10b981" : color.dot, opacity: 0.25 }}></span>
