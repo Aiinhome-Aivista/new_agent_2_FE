@@ -31,7 +31,15 @@ interface ChatMessage {
 export const AIAssistantPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [sessions, setSessions] = useState<ChatSession[]>([]);
-  const [currentSessionId, setCurrentSessionId] = useState<number | null>(null);
+  const [currentSessionIdState, setCurrentSessionIdState] = useState<number | null>(null);
+  const currentSessionIdRef = useRef<number | null>(null);
+  const lastFetchedSessionIdRef = useRef<number | null>(null);
+
+  const currentSessionId = currentSessionIdState;
+  const setCurrentSessionId = (sessionId: number | null) => {
+    currentSessionIdRef.current = sessionId;
+    setCurrentSessionIdState(sessionId);
+  };
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [query, setQuery] = useState('');
   
@@ -84,10 +92,14 @@ export const AIAssistantPage: React.FC = () => {
   }, [id]);
 
   useEffect(() => {
+    currentSessionIdRef.current = currentSessionId;
     if (currentSessionId !== null) {
-      fetchMessages(currentSessionId);
+      if (lastFetchedSessionIdRef.current !== currentSessionId) {
+        fetchMessages(currentSessionId);
+      }
     } else {
       setMessages([]);
+      lastFetchedSessionIdRef.current = null;
     }
   }, [currentSessionId]);
 
@@ -105,7 +117,7 @@ export const AIAssistantPage: React.FC = () => {
       const res = await apiClient.get(`/projects/${id}/rag/sessions`);
       if (res.data.success) {
         setSessions(res.data.data);
-        if (res.data.data.length > 0 && currentSessionId === null) {
+        if (res.data.data.length > 0 && currentSessionIdRef.current === null) {
           setCurrentSessionId(res.data.data[0].id);
         }
       }
@@ -122,9 +134,11 @@ export const AIAssistantPage: React.FC = () => {
       const res = await apiClient.get(`/projects/${id}/rag/sessions/${sessionId}/messages`);
       if (res.data.success) {
         setMessages(res.data.data);
+        lastFetchedSessionIdRef.current = sessionId;
       }
     } catch (error) {
       console.error("Failed to fetch session messages:", error);
+      lastFetchedSessionIdRef.current = null;
     } finally {
       setLoadingMessages(false);
     }
@@ -139,7 +153,9 @@ export const AIAssistantPage: React.FC = () => {
       });
       if (res.data.success) {
         const newSession = res.data.data;
-        setSessions([newSession, ...sessions]);
+        setSessions(prev => [newSession, ...prev]);
+        lastFetchedSessionIdRef.current = newSession.id;
+        setMessages([]);
         setCurrentSessionId(newSession.id);
         return newSession.id;
       }
@@ -158,8 +174,8 @@ export const AIAssistantPage: React.FC = () => {
     try {
       const res = await apiClient.delete(`/projects/${id}/rag/sessions/${sessionId}`);
       if (res.data.success) {
-        setSessions(sessions.filter(s => s.id !== sessionId));
-        if (currentSessionId === sessionId) {
+        setSessions(prev => prev.filter(s => s.id !== sessionId));
+        if (currentSessionIdRef.current === sessionId) {
           const remaining = sessions.filter(s => s.id !== sessionId);
           setCurrentSessionId(remaining.length > 0 ? remaining[0].id : null);
         }
@@ -171,7 +187,7 @@ export const AIAssistantPage: React.FC = () => {
 
   const handleSendMessage = async (textToSend?: string, overrideSessionId?: number) => {
     const text = textToSend || query;
-    const sessionIdToUse = overrideSessionId !== undefined ? overrideSessionId : currentSessionId;
+    const sessionIdToUse = overrideSessionId !== undefined ? overrideSessionId : currentSessionIdRef.current;
     if (!text.trim() || sessionIdToUse === null || sendingSessionId !== null) return;
     
     setSendingSessionId(sessionIdToUse);
@@ -185,7 +201,7 @@ export const AIAssistantPage: React.FC = () => {
       citations: [],
       created_at: new Date().toISOString()
     };
-    if (currentSessionId === sessionIdToUse) {
+    if (currentSessionIdRef.current === sessionIdToUse) {
       setMessages(prev => [...prev, tempUserMsg]);
     }
 
@@ -196,7 +212,7 @@ export const AIAssistantPage: React.FC = () => {
       if (res.data.success) {
         // Replace temp messages with official list or append assistant message
         const assistantMsg = res.data.data;
-        if (currentSessionId === sessionIdToUse) {
+        if (currentSessionIdRef.current === sessionIdToUse) {
           setMessages(prev => {
             // Remove the temporary message and set official messages from server
             return prev.filter(m => m.id !== tempUserMsg.id).concat([
@@ -219,7 +235,7 @@ export const AIAssistantPage: React.FC = () => {
         citations: [],
         created_at: new Date().toISOString()
       };
-      if (currentSessionId === sessionIdToUse) {
+      if (currentSessionIdRef.current === sessionIdToUse) {
         setMessages(prev => [...prev, errorAssistantMsg]);
       }
     } finally {
@@ -470,36 +486,26 @@ export const AIAssistantPage: React.FC = () => {
                             <span className="text-[10px] uppercase font-bold tracking-wider text-cyan-400/80 block">
                               References & Citations:
                             </span>
-                            <div className="flex flex-col gap-2">
-                              {msg.citations.map((cit, cidx) => (
+                            <div className="flex flex-wrap gap-2.5">
+                              {Array.from(new Map(msg.citations.map(c => [c.document_name, c])).values()).map((cit, cidx) => (
                                 <div 
                                   key={cidx}
-                                  className="bg-white/[0.02] border border-white/5 hover:border-cyan-500/20 rounded-xl p-3 transition-all duration-200"
+                                  className="inline-flex items-center gap-3 bg-white/[0.03] border border-white/10 hover:border-cyan-500/30 rounded-xl px-3.5 py-2 transition-all duration-200 shadow-sm"
                                 >
-                                  <div className="flex items-center justify-between gap-4 mb-2">
-                                    <div className="flex flex-wrap items-center gap-2">
-                                      <FileText className="w-3.5 h-3.5 text-cyan-400" />
-                                      <span className="text-xs font-bold text-gray-300">
-                                        {cit.document_name}
-                                      </span>
-                                      <span className="text-[10px] bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 px-2 py-0.5 rounded font-semibold">
-                                        Page {cit.page}
-                                      </span>
-                                    </div>
-                                    {cit.document_id && (
-                                      <button
-                                        onClick={() => handleDownloadDoc(cit.document_id, cit.document_name)}
-                                        className="inline-flex items-center gap-1 px-2.5 py-1 bg-gray-800 hover:bg-cyan-500 hover:text-black border border-white/5 rounded-lg text-[10px] text-gray-400 font-semibold transition-all cursor-pointer"
-                                      >
-                                        <Download className="w-3 h-3" />
-                                        <span>Download</span>
-                                      </button>
-                                    )}
+                                  <div className="flex items-center gap-2">
+                                    <FileText className="w-4 h-4 text-cyan-400" />
+                                    <span className="text-xs font-bold text-gray-200">
+                                      {cit.document_name}
+                                    </span>
                                   </div>
-                                  {cit.text && (
-                                    <div className="text-[11px] text-gray-400 italic bg-black/20 border-l-2 border-cyan-500/50 p-2.5 rounded-r-lg leading-relaxed select-text">
-                                      "{cit.text}"
-                                    </div>
+                                  {cit.document_id && (
+                                    <button
+                                      onClick={() => handleDownloadDoc(cit.document_id, cit.document_name)}
+                                      className="inline-flex items-center gap-1 px-2 py-1 bg-gray-800/80 hover:bg-cyan-500 hover:text-black border border-white/5 rounded-lg text-[10px] text-gray-400 font-semibold transition-all cursor-pointer ml-1"
+                                    >
+                                      <Download className="w-3 h-3" />
+                                      <span>Download</span>
+                                    </button>
                                   )}
                                 </div>
                               ))}
