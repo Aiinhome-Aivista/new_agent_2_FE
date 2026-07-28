@@ -66,7 +66,12 @@ export const ProjectsPage: React.FC = () => {
     try {
       const res = await apiClient.get("/projects/");
       if (res.data.success) {
-        setProjects(res.data.data);
+        const sorted = (res.data.data || []).sort((a: Project, b: Project) => {
+          const timeA = a.created_at ? new Date(a.created_at).getTime() : 0;
+          const timeB = b.created_at ? new Date(b.created_at).getTime() : 0;
+          return timeB - timeA;
+        });
+        setProjects(sorted);
       }
     } catch (error) {
       console.error("Failed to fetch projects");
