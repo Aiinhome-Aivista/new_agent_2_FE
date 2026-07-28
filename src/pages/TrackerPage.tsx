@@ -12,6 +12,10 @@ import {
   AlertCircle,
   X,
   AlertTriangle,
+  ChevronRight,
+  ShieldAlert,
+  Briefcase,
+  Sparkles,
 } from "lucide-react";
 import { useAuth } from "../auth/AuthContext";
 
@@ -814,69 +818,98 @@ export const TrackerPage: React.FC = () => {
   if (loading) return <Loader message="Loading risk tracker & audits..." />;
 
   return (
-    <div className="flex-1 bg-transparent p-6 md:p-10 relative overflow-hidden">
-      <div className="max-w-6xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <div className="flex gap-3 items-center">
-            <h1 className="text-3xl font-bold">Risk Tracker & Audit</h1>
-            <div className="relative group flex items-center cursor-help text-gray-400 hover:text-cyan-400 transition-colors pt-1">
-              <Info className="w-5.5 h-5.5" />
+    <div className="flex-1 bg-[#080b14] text-white p-6 md:p-10 relative overflow-hidden min-h-screen">
+      {/* Background Glows */}
+      <div className="fixed top-[-20%] right-[-5%] w-[600px] h-[600px] rounded-full bg-cyan-500/5 blur-[150px] pointer-events-none" />
+      <div className="fixed bottom-[-20%] left-[10%] w-[400px] h-[400px] rounded-full bg-blue-500/5 blur-[120px] pointer-events-none" />
+
+      <div className="max-w-7xl mx-auto relative z-10 space-y-8">
+        {/* Modern Breadcrumb & Header Row */}
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 pb-6 border-b border-white/5">
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <Link
+                to="/dashboard"
+                className="text-[11px] font-bold text-gray-500 hover:text-cyan-400 transition-colors uppercase tracking-wider"
+              >
+                Cockpit
+              </Link>
+              <ChevronRight className="w-3 h-3 text-gray-650" />
+              <Link
+                to="/projects"
+                className="text-[11px] font-bold text-gray-500 hover:text-cyan-400 transition-colors uppercase tracking-wider"
+              >
+                Projects
+              </Link>
+              <ChevronRight className="w-3 h-3 text-gray-650" />
+              <span className="text-[11px] font-bold text-cyan-400 uppercase tracking-wider">
+                Risk Tracker
+              </span>
+            </div>
+            <h1 className="font-display text-3xl font-black tracking-tight text-white flex items-center gap-3">
+              <ShieldAlert className="w-8 h-8 text-rose-500 shrink-0" />
+              Risk Tracker & Audit
+            </h1>
+            <p className="text-gray-400 text-xs mt-1.5 leading-relaxed max-w-xl">
+              Track compliance alerts, scope creep warnings, and delay risks automatically extracted and analyzed by AI agents.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap gap-3 items-center">
+            {/* Scoring Rules Tooltip */}
+            <div className="relative group">
+              <button className="flex items-center gap-1.5 px-3.5 py-2 bg-gray-900 border border-gray-800 hover:border-gray-700 text-gray-400 hover:text-cyan-400 rounded-xl text-xs font-bold transition-all cursor-help shadow-lg">
+                <Info className="w-4 h-4 shrink-0" />
+                Scoring Rules
+              </button>
 
               {/* Tooltip Content */}
-              <div className="absolute left-1/2 -translate-x-1/2 md:left-0 md:translate-x-0 top-full mt-3 w-80 p-4 bg-gray-950/98 border border-gray-800 rounded-xl shadow-2xl backdrop-blur-md opacity-0 translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 z-50 text-left">
-                <h4 className="font-bold text-sm text-[#00e5ff] mb-2.5 border-b border-gray-850 pb-1.5 flex items-center gap-1.5">
+              <div className="absolute right-0 lg:right-1/2 lg:translate-x-1/2 top-full mt-3 w-80 p-5 bg-gray-950/98 border border-gray-800 rounded-2xl shadow-2xl backdrop-blur-md opacity-0 translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 z-50 text-left">
+                <h4 className="font-bold text-sm text-[#00e5ff] mb-3 border-b border-gray-850 pb-2 flex items-center gap-1.5">
                   Item Risk Scoring Rules
                 </h4>
-                <div className="space-y-3 text-xs text-gray-300">
+                <div className="space-y-4 text-xs text-gray-300">
                   <p className="text-gray-400 leading-relaxed font-medium">
-                    Individual item scores (out of 100) are determined by these
-                    rules in the code:
+                    Individual item scores (out of 100) are determined by these rules:
                   </p>
 
                   <div>
-                    <span className="font-semibold text-white block mb-1">
+                    <span className="font-bold text-white block mb-1">
                       Scope Creep (OutOfScope Agent)
                     </span>
                     <ul className="list-disc pl-4 space-y-1 text-gray-400 font-medium">
                       <li>
-                        <strong className="text-white">80/100</strong> for
-                        direct baseline violations (out of scope).
+                        <strong className="text-white">80/100</strong> for direct baseline violations (out of scope).
                       </li>
                       <li>
-                        <strong className="text-white">50/100</strong> for
-                        warnings or borderline review items.
+                        <strong className="text-white">50/100</strong> for warnings or borderline review items.
                       </li>
                     </ul>
                   </div>
 
                   <div>
-                    <span className="font-semibold text-white block mb-1">
+                    <span className="font-bold text-white block mb-1">
                       Timeline Delays & Risks (Timeline Agent)
                     </span>
                     <ul className="list-disc pl-4 space-y-1 text-gray-400 font-medium">
                       <li>
-                        <strong className="text-white">85/100</strong> for
-                        critical delays or active blockers.
+                        <strong className="text-white">85/100</strong> for critical delays or active blockers.
                       </li>
                       <li>
-                        <strong className="text-white">65/100</strong> for high
-                        timeline risk deliverables.
+                        <strong className="text-white">65/100</strong> for high timeline risk deliverables.
                       </li>
                       <li>
-                        <strong className="text-white">45/100</strong> for
-                        medium timeline risk.
+                        <strong className="text-white">45/100</strong> for medium timeline risk.
                       </li>
                       <li>
-                        <strong className="text-white">15/100</strong> for low
-                        timeline risk.
+                        <strong className="text-white">15/100</strong> for low timeline risk.
                       </li>
                     </ul>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-          <div className="flex gap-4">
+
             <button
               onClick={handleOpenProcessModal}
               disabled={
@@ -884,11 +917,16 @@ export const TrackerPage: React.FC = () => {
                 isEvaluating ||
                 project?.monitoring_status !== "ACTIVE"
               }
-              className={`px-4 py-2 rounded-md ${processing || isEvaluating || project?.monitoring_status !== "ACTIVE" ? "bg-gray-600 cursor-not-allowed opacity-50" : "bg-blue-600 hover:bg-blue-700"}`}
+              className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 active:scale-[0.98] shadow-lg flex items-center gap-2 border ${
+                processing || isEvaluating || project?.monitoring_status !== "ACTIVE"
+                  ? "bg-gray-800/40 border-gray-800 text-gray-500 cursor-not-allowed"
+                  : "bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white border-blue-500/20 shadow-cyan-500/10 cursor-pointer"
+              }`}
             >
+              <Sparkles className="w-3.5 h-3.5" />
               {processing || isEvaluating
-                ? "Processing AI..."
-                : "Process Status Document"}
+                ? "Processing Analysis..."
+                : "Analyze Status Document"}
             </button>
 
             {/* Global Export Dropdown */}
@@ -896,14 +934,15 @@ export const TrackerPage: React.FC = () => {
               <button
                 onClick={() => setShowExportDropdown(!showExportDropdown)}
                 disabled={items.length === 0}
-                className={`px-4 py-2 text-white font-medium rounded-md flex items-center gap-2 transition-colors shadow-md hover:shadow-lg ${
+                className={`px-4 py-2.5 text-xs font-bold rounded-xl flex items-center gap-2 border transition-all duration-200 active:scale-[0.98] shadow-lg ${
                   items.length === 0
-                    ? "bg-gray-600 cursor-not-allowed opacity-50"
-                    : "bg-cyan-600 hover:bg-cyan-700 cursor-pointer"
+                    ? "bg-gray-800/40 border-gray-800 text-gray-500 cursor-not-allowed"
+                    : "bg-gray-900 border-gray-700 hover:border-gray-600 text-gray-300 hover:text-white cursor-pointer shadow-black/30"
                 }`}
               >
+                <Download className="w-3.5 h-3.5 text-gray-400" />
                 <span>Export Report</span>
-                <span className="text-[10px]">▼</span>
+                <span className="text-[9px] text-gray-500">▼</span>
               </button>
 
               {showExportDropdown && (
@@ -1020,46 +1059,46 @@ export const TrackerPage: React.FC = () => {
         </div>
 
         {project?.monitoring_status !== "ACTIVE" ? (
-          <div className="text-center py-16 bg-amber-950/10 border border-amber-500/20 rounded-2xl animate-fade-in-up p-8 max-w-2xl mx-auto my-8">
-            <AlertTriangle className="w-12 h-12 text-amber-500 mx-auto mb-4 animate-bounce" />
-            <h3 className="text-lg font-bold text-white mb-2">
+          <div className="text-center py-20 bg-gradient-to-br from-gray-900/60 to-gray-950/80 border border-white/5 rounded-3xl animate-fade-in-up p-10 max-w-2xl mx-auto shadow-2xl backdrop-blur-md relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-[150px] h-[150px] bg-amber-500/5 blur-[50px] pointer-events-none" />
+            <AlertTriangle className="w-14 h-14 text-amber-500 mx-auto mb-5 animate-bounce" />
+            <h3 className="font-display text-xl font-extrabold text-white mb-3">
               {project?.monitoring_status === "DRAFT"
-                ? "Please extract baseline for risk calculation"
-                : "Baseline is not approved"}
+                ? "Extract Project Baseline First"
+                : "Baseline Awaiting Approval"}
             </h3>
-            <p className="text-gray-400 text-sm leading-relaxed mb-6">
-              To track risk items, a project baseline must first be extracted
-              and approved. Currently, the project's monitoring status is{" "}
-              <span className="text-amber-400 font-semibold">
-                {project?.monitoring_status || "DRAFT"}
-              </span>
-              .
+            <p className="text-gray-400 text-sm leading-relaxed mb-8 max-w-md mx-auto">
+              Before AI agents can analyze status updates for risks, deviations, and delay items, a contract baseline must be extracted and approved.
             </p>
-            <div className="flex justify-center gap-4">
+            <div>
               <Link
                 to={`/projects/${id}/baseline`}
-                className="px-5 py-2.5 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-550 hover:to-amber-650 text-white font-semibold rounded-xl text-xs transition-all shadow-md shadow-amber-500/10 cursor-pointer"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-white text-xs font-black rounded-xl transition-all shadow-lg shadow-amber-500/10 active:scale-[0.98]"
               >
                 Go to Baseline Review
+                <ChevronRight className="w-3.5 h-3.5" />
               </Link>
             </div>
           </div>
         ) : isEvaluating || evaluationProgress ? (
           renderProgressTimeline()
         ) : items.length === 0 ? (
-          <div className="text-center py-16 bg-gray-900/30 border border-gray-800 rounded-2xl animate-fade-in-up">
-            <p className="text-gray-400 text-lg">No tracker items found.</p>
-            <p className="text-gray-500 text-sm mt-1">
-              Select a processed document to analyze for risk and audit items.
+          <div className="text-center py-24 bg-gradient-to-br from-gray-900/60 to-gray-950/80 border border-white/5 rounded-3xl animate-fade-in-up shadow-2xl backdrop-blur-md max-w-xl mx-auto">
+            <div className="w-16 h-16 bg-gray-800/40 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-gray-700/30 shadow-inner">
+              <ShieldAlert className="w-8 h-8 text-gray-500" />
+            </div>
+            <h3 className="font-display text-lg font-bold text-white mb-2">No Risk Items Found</h3>
+            <p className="text-gray-400 text-xs max-w-sm mx-auto leading-relaxed">
+              No risk or audit findings have been recorded. Choose "Analyze Status Document" above to start evaluation.
             </p>
           </div>
         ) : (
           <>
             {/* Animated Capsule Tab Control */}
-            <div className="relative flex p-1 bg-gray-950/80 border border-gray-850 rounded-xl max-w-md mb-8 shadow-inner backdrop-blur-md">
+            <div className="relative flex p-1 bg-gray-900/60 backdrop-blur-md border border-white/5 rounded-2xl max-w-md mb-8 shadow-lg shadow-black/20">
               {/* Sliding Background Indicator */}
               <div
-                className="absolute top-1 bottom-1 rounded-lg bg-gradient-to-r from-blue-600/20 to-cyan-500/20 border border-blue-500/30 shadow-lg shadow-blue-500/5 transition-all duration-300 ease-out"
+                className="absolute top-1 bottom-1 rounded-xl bg-gradient-to-r from-cyan-600/30 to-blue-600/30 border border-cyan-500/30 shadow-lg shadow-cyan-500/5 transition-all duration-300 ease-out"
                 style={{
                   width: "calc(50% - 4px)",
                   left: activeTab === "ACTIVE" ? "4px" : "calc(50%)",
@@ -1069,18 +1108,18 @@ export const TrackerPage: React.FC = () => {
               {/* Active Risks Tab */}
               <button
                 onClick={() => setActiveTab("ACTIVE")}
-                className={`relative z-10 flex-1 flex items-center justify-center gap-2 py-2 text-sm font-semibold tracking-wide transition-all duration-300 cursor-pointer ${
+                className={`relative z-10 flex-1 flex items-center justify-center gap-2.5 py-2.5 text-xs font-bold uppercase tracking-wider transition-all duration-350 cursor-pointer ${
                   activeTab === "ACTIVE"
                     ? "text-white"
-                    : "text-gray-400 hover:text-gray-200"
+                    : "text-gray-400 hover:text-gray-205"
                 }`}
               >
                 <span>Active Risks</span>
                 <span
-                  className={`px-2 py-0.5 text-xs rounded-full border transition-all duration-300 font-bold ${
+                  className={`px-2.5 py-0.5 text-[10px] rounded-md border font-black font-mono transition-all duration-300 ${
                     activeTab === "ACTIVE"
-                      ? "bg-red-550/20 text-red-300 border-red-500/30 shadow-md"
-                      : "bg-gray-900 text-gray-400 border-gray-805"
+                      ? "bg-red-500/10 text-red-400 border-red-500/20 shadow-md shadow-red-500/5"
+                      : "bg-gray-800/40 text-gray-500 border-gray-700/30"
                   }`}
                 >
                   {activeItems.length}
@@ -1090,18 +1129,18 @@ export const TrackerPage: React.FC = () => {
               {/* Resolved Risks Tab */}
               <button
                 onClick={() => setActiveTab("RESOLVED")}
-                className={`relative z-10 flex-1 flex items-center justify-center gap-2 py-2 text-sm font-semibold tracking-wide transition-all duration-300 cursor-pointer ${
+                className={`relative z-10 flex-1 flex items-center justify-center gap-2.5 py-2.5 text-xs font-bold uppercase tracking-wider transition-all duration-355 cursor-pointer ${
                   activeTab === "RESOLVED"
                     ? "text-white"
-                    : "text-gray-400 hover:text-gray-200"
+                    : "text-gray-400 hover:text-gray-205"
                 }`}
               >
                 <span>Resolved</span>
                 <span
-                  className={`px-2 py-0.5 text-xs rounded-full border transition-all duration-300 font-bold ${
+                  className={`px-2.5 py-0.5 text-[10px] rounded-md border font-black font-mono transition-all duration-300 ${
                     activeTab === "RESOLVED"
-                      ? "bg-green-550/20 text-green-300 border-green-500/30 shadow-md"
-                      : "bg-gray-900 text-gray-400 border-gray-805"
+                      ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-md shadow-emerald-500/5"
+                      : "bg-gray-800/40 text-gray-500 border-gray-700/30"
                   }`}
                 >
                   {resolvedItems.length}
@@ -1111,44 +1150,45 @@ export const TrackerPage: React.FC = () => {
 
             {/* Filtered items list */}
             {currentTabItems.length === 0 ? (
-              <div className="text-center py-16 bg-gray-900/30 border border-gray-800 rounded-2xl animate-fade-in-up">
-                <p className="text-gray-400 text-lg">
-                  No {activeTab === "ACTIVE" ? "active" : "resolved"} risks
-                  found.
-                </p>
-                <p className="text-gray-500 text-sm mt-1">
+              <div className="text-center py-20 bg-gradient-to-br from-gray-900/60 to-gray-950/80 border border-white/5 rounded-3xl animate-fade-in-up shadow-2xl backdrop-blur-md max-w-xl mx-auto">
+                <div className="w-14 h-14 bg-gray-800/30 rounded-full flex items-center justify-center mx-auto mb-5 border border-gray-700/30">
+                  <CheckCheck className="w-6 h-6 text-emerald-500" />
+                </div>
+                <h3 className="font-display text-base font-bold text-white mb-1">
+                  No {activeTab === "ACTIVE" ? "Active" : "Resolved"} Risks
+                </h3>
+                <p className="text-gray-400 text-xs max-w-xs mx-auto leading-relaxed">
                   {activeTab === "ACTIVE"
-                    ? "All items are resolved! You have a clean board."
-                    : "Resolved items will appear here."}
+                    ? "Fantastic! All identified risks have been reviewed and resolved."
+                    : "No resolved items are currently in history."}
                 </p>
               </div>
             ) : (
-              <div key={activeTab} className="space-y-4">
+              <div key={activeTab} className="space-y-6">
                 {currentTabItems.map((item, index) => {
-                  // Risk level color mapping
                   const riskLevelConfig: Record<
                     string,
                     { bg: string; text: string; border: string }
                   > = {
                     LOW: {
-                      bg: "bg-green-900/50",
-                      text: "text-green-300",
-                      border: "border-green-500/30",
+                      bg: "bg-emerald-500/10",
+                      text: "text-emerald-400",
+                      border: "border-emerald-500/20",
                     },
                     MEDIUM: {
-                      bg: "bg-yellow-900/50",
-                      text: "text-yellow-300",
-                      border: "border-yellow-500/30",
+                      bg: "bg-yellow-500/10",
+                      text: "text-yellow-400",
+                      border: "border-yellow-500/20",
                     },
                     HIGH: {
-                      bg: "bg-orange-900/50",
-                      text: "text-orange-300",
-                      border: "border-orange-500/30",
+                      bg: "bg-orange-500/10",
+                      text: "text-orange-400",
+                      border: "border-orange-500/20",
                     },
                     CRITICAL: {
-                      bg: "bg-red-900/50",
-                      text: "text-red-300",
-                      border: "border-red-500/30",
+                      bg: "bg-rose-500/10",
+                      text: "text-rose-400",
+                      border: "border-rose-500/20",
                     },
                   };
                   const level = item.risk_level || "LOW";
@@ -1181,14 +1221,14 @@ export const TrackerPage: React.FC = () => {
                   // Border color based on risk level
                   const borderColor =
                     item.status === "RESOLVED"
-                      ? "border-gray-705"
+                      ? "border-emerald-500/20 bg-emerald-950/[0.01]"
                       : level === "CRITICAL"
-                        ? "border-red-500/50"
+                        ? "border-red-500/30"
                         : level === "HIGH"
-                          ? "border-orange-500/50"
+                          ? "border-orange-500/30"
                           : level === "MEDIUM"
-                            ? "border-yellow-500/50"
-                            : "border-gray-700";
+                            ? "border-yellow-500/20"
+                            : "border-emerald-500/20";
 
                   // Split reasoning into description and detailed reasoning
                   const reasoningParts = (item.reasoning || "").split("\n\n");
@@ -1199,264 +1239,145 @@ export const TrackerPage: React.FC = () => {
                   return (
                     <div
                       key={item.id}
-                      className={`rounded-xl border bg-gray-800 ${borderColor} animate-fade-in-up hover:shadow-xl hover:shadow-black/20 hover:border-gray-700 transition-all duration-300 overflow-hidden`}
-                      style={{ animationDelay: `${index * 50}ms` }}
-                    >
-                      {/* Scope Item Title Banner */}
-                      <div
-                        className={`px-6 py-3 border-b ${
-                          level === "CRITICAL"
-                            ? "bg-red-950/60 border-red-500/30"
-                            : level === "HIGH"
-                              ? "bg-orange-950/50 border-orange-500/30"
-                              : level === "MEDIUM"
-                                ? "bg-yellow-950/40 border-yellow-500/30"
-                                : "bg-green-950/30 border-green-500/20"
-                        }`}
-                      >
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span
-                            className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded ${
-                              level === "CRITICAL"
-                                ? "bg-red-500/20 text-red-300"
-                                : level === "HIGH"
-                                  ? "bg-orange-500/20 text-orange-300"
-                                  : level === "MEDIUM"
-                                    ? "bg-yellow-500/20 text-yellow-300"
-                                    : "bg-green-500/20 text-green-300"
-                            }`}
-                          >
-                            Scope Item
-                          </span>
-                          <h3
-                            className={`font-bold text-lg leading-tight ${
-                              level === "CRITICAL"
-                                ? "text-red-200"
-                                : level === "HIGH"
-                                  ? "text-orange-200"
-                                  : level === "MEDIUM"
-                                    ? "text-yellow-100"
-                                    : "text-green-200"
-                            }`}
-                          >
-                            {item.name ||
-                              `${typeLabels[item.item_type] || item.item_type} #${item.id}`}
-                          </h3>
-                          <span className="text-[10px] text-gray-500 ml-auto">
-                            {categoryLabel}
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="p-6">
-                        {/* Header Row: checkbox + doc metadata + badges */}
-                        <div className="flex justify-between items-start mb-4">
-                          <div className="flex items-center gap-3 flex-1 min-w-0 flex-wrap">
-                            {activeTab === "ACTIVE" && (
-                              <div className="flex-shrink-0">
-                                <input
-                                  type="checkbox"
-                                  checked={selectedItemIds.includes(item.id)}
-                                  onChange={() => toggleSelectItem(item.id)}
-                                  className="w-4 h-4 rounded border-gray-700 bg-gray-900 text-cyan-600 focus:ring-cyan-500/50 cursor-pointer accent-cyan-500"
-                                />
-                              </div>
-                            )}
-                            <span className="text-xs text-gray-400 bg-gray-700/50 px-2 py-0.5 rounded">
-                              {typeLabels[item.item_type] || item.item_type}
-                            </span>
-                            <span className="text-xs text-gray-300 font-medium flex items-center gap-1.5 bg-gray-900/50 px-2 py-1 rounded border border-gray-700/40">
-                              <span className="text-gray-500 font-semibold">
-                                Doc:
+                      className={`group rounded-2xl border ${borderColor} bg-gradient-to-br from-gray-900/70 to-gray-950/90 backdrop-blur-lg shadow-xl shadow-black/20 hover:shadow-2xl hover:shadow-cyan-500/[0.01] hover:border-gray-700/60 transition-all duration-300 ease-out overflow-hidden`}
+                      style={{ animationDelay: `${index * 50}ms` }}>
+                      <div className={`px-4 py-2.5 border-b flex items-center justify-between gap-3 ${
+                        level === "CRITICAL" ? "bg-red-500/[0.04]"
+                        : level === "HIGH" ? "bg-orange-500/[0.03]"
+                        : level === "MEDIUM" ? "bg-yellow-500/[0.02]"
+                        : "bg-white/[0.01]"
+                      }`}>
+                        {/* Left: checkbox + dot + title row */}
+                        <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                          {activeTab === "ACTIVE" && (
+                            <input
+                              type="checkbox"
+                              checked={selectedItemIds.includes(item.id)}
+                              onChange={() => toggleSelectItem(item.id)}
+                              className="w-3.5 h-3.5 rounded border-gray-700 bg-gray-950 text-cyan-500 focus:ring-cyan-500/30 cursor-pointer accent-cyan-500 shrink-0"
+                            />
+                          )}
+                          <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                            level === "CRITICAL" ? "bg-red-400 shadow-[0_0_6px_rgba(239,68,68,0.6)] animate-pulse"
+                            : level === "HIGH" ? "bg-orange-400 shadow-[0_0_6px_rgba(249,115,22,0.5)]"
+                            : level === "MEDIUM" ? "bg-yellow-400 shadow-[0_0_6px_rgba(234,179,8,0.5)]"
+                            : "bg-emerald-400 shadow-[0_0_6px_rgba(16,185,129,0.5)]"
+                          }`} />
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-[8px] font-extrabold text-gray-500 bg-gray-800/70 border border-gray-700/40 px-1.5 py-0.5 rounded uppercase tracking-wider shrink-0">
+                                {typeLabels[item.item_type] || item.item_type}
                               </span>
-                              <span
-                                className="text-gray-200 truncate max-w-[200px]"
-                                title={item.document_name}
-                              >
+                              <h3 className="font-semibold text-sm text-gray-200 truncate group-hover:text-white transition-colors">
+                                {item.name || `${typeLabels[item.item_type] || item.item_type} #${item.id}`}
+                              </h3>
+                            </div>
+                            {/* source doc inline */}
+                            <div className="flex items-center gap-1.5 mt-0.5">
+                              <Briefcase className="w-2.5 h-2.5 text-gray-600 shrink-0" />
+                              <span className="text-[10px] text-gray-500 truncate max-w-[260px]" title={item.document_name}>
                                 {item.document_name}
                               </span>
                               <button
-                                onClick={() =>
-                                  handleDownloadDocument(
-                                    item.source_document_id,
-                                    item.document_name,
-                                  )
-                                }
-                                title="Download Document"
-                                className="p-0.5 text-gray-400 hover:text-cyan-400 hover:bg-gray-800 rounded transition-all cursor-pointer flex-shrink-0"
+                                onClick={() => handleDownloadDocument(item.source_document_id, item.document_name)}
+                                className="text-[9px] text-cyan-500 hover:text-cyan-400 font-bold transition-colors cursor-pointer shrink-0"
                               >
-                                <Download className="w-3.5 h-3.5" />
+                                ↓ DL
                               </button>
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2 flex-shrink-0 ml-4 flex-wrap justify-end">
-                            {/* Risk Level Badge */}
-                            <span
-                              className={`px-3 py-1 rounded-full text-xs font-bold border ${levelStyle.bg} ${levelStyle.text} ${levelStyle.border}`}
-                            >
-                              {level}
-                            </span>
-                            {/* Risk Score */}
-                            <span
-                              className={`px-2 py-1 rounded text-xs font-mono font-bold ${
-                                item.risk_score >= 71
-                                  ? "bg-red-900/60 text-red-200"
-                                  : item.risk_score >= 41
-                                    ? "bg-orange-900/60 text-orange-200"
-                                    : item.risk_score >= 21
-                                      ? "bg-yellow-900/60 text-yellow-200"
-                                      : "bg-green-900/60 text-green-200"
-                              }`}
-                            >
-                              {item.risk_score}/100
-                            </span>
-                            {item.is_out_of_scope ? (
-                              <span className="px-2 py-1 bg-red-900/50 text-red-300 rounded text-xs border border-red-500/30">
-                                OOS
-                              </span>
-                            ) : null}
-                            {item.requires_escalation ? (
-                              <span className="px-2 py-1 bg-orange-900/50 text-orange-300 rounded text-xs border border-orange-500/30">
-                                Escalated
-                              </span>
-                            ) : null}
+                            </div>
                           </div>
                         </div>
 
-                        {/* Description (WHY this risk score) */}
-                        {description && (
-                          <div className="mb-3 p-3 bg-gray-900/80 border border-gray-700/50 rounded-lg">
-                            <h4 className="text-xs font-semibold text-gray-400 mb-1 uppercase tracking-wide">
-                              Risk Description
-                            </h4>
-                            <p className="text-gray-200 text-sm leading-relaxed">
-                              {description}
-                            </p>
-                          </div>
-                        )}
+                        {/* Right: badges */}
+                        <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
+                          {item.is_out_of_scope && (
+                            <span className="px-1.5 py-0.5 bg-red-500/10 text-red-400 border border-red-500/20 rounded text-[8px] font-bold uppercase tracking-wide">OOS</span>
+                          )}
+                          {item.requires_escalation && (
+                            <span className="px-1.5 py-0.5 bg-orange-500/10 text-orange-400 border border-orange-500/20 rounded text-[8px] font-bold uppercase tracking-wide">Esc</span>
+                          )}
+                          <span className="text-[8px] font-bold text-gray-500 bg-gray-800/40 px-1.5 py-0.5 rounded border border-gray-700/30 hidden sm:inline">
+                            {categoryLabel}
+                          </span>
+                          <span className={`px-1.5 py-0.5 rounded text-[9px] font-black border ${levelStyle.bg} ${levelStyle.text} ${levelStyle.border}`}>
+                            {level}
+                          </span>
+                          <span className={`px-1.5 py-0.5 rounded text-[9px] font-mono font-black ${
+                            item.risk_score >= 71 ? "bg-rose-500/10 text-rose-400 border border-rose-500/20"
+                            : item.risk_score >= 41 ? "bg-orange-500/10 text-orange-400 border border-orange-500/20"
+                            : item.risk_score >= 21 ? "bg-yellow-500/10 text-yellow-400 border border-yellow-500/20"
+                            : "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                          }`}>
+                            {item.risk_score}/100
+                          </span>
+                        </div>
+                      </div>
 
-                        {/* Detailed AI Reasoning (collapsible) */}
-                        {detailedReasoning && (
-                          <details className="mb-4 group">
-                            <summary className="text-xs font-semibold text-gray-500 cursor-pointer hover:text-gray-300 transition-colors">
-                              ▸ View Detailed AI Reasoning
+                      {/* ── Body ── */}
+                      <div className="px-4 py-3 space-y-2.5">
+                        {/* Description — always collapsed */}
+                        {(description || item.reasoning) && (
+                          <details className="group/desc border border-white/5 rounded-lg overflow-hidden bg-white/[0.01]">
+                            <summary className="flex items-center justify-between px-3 py-2 text-[10px] font-bold text-gray-400 hover:text-gray-200 cursor-pointer select-none transition-colors">
+                              <span className="flex items-center gap-1.5 truncate">
+                                <Info className="w-2.5 h-2.5 text-gray-500 shrink-0" />
+                                <span className="truncate">{description ? description.slice(0, 80) + (description.length > 80 ? "…" : "") : "View Reasoning"}</span>
+                              </span>
+                              <span className="text-gray-600 text-[8px] shrink-0 ml-2">▼</span>
                             </summary>
-                            <p className="text-gray-400 text-xs bg-gray-900/50 p-3 rounded mt-2 leading-relaxed">
-                              {detailedReasoning}
-                            </p>
+                            <div className="px-3 pb-3 pt-1 text-[11px] text-gray-400 leading-relaxed border-t border-white/[0.04] whitespace-pre-line">
+                              {description || item.reasoning}
+                            </div>
                           </details>
                         )}
 
-                        {/* If no split (legacy data), show full reasoning */}
-                        {!description &&
-                          !detailedReasoning &&
-                          item.reasoning && (
-                            <div className="mb-4">
-                              <h4 className="text-sm font-semibold text-gray-400 mb-1">
-                                AI Reasoning:
-                              </h4>
-                              <p className="text-gray-300 text-sm bg-gray-900 p-3 rounded">
-                                {item.reasoning}
-                              </p>
+                        {/* AI Detailed Reasoning — only if exists */}
+                        {detailedReasoning && (
+                          <details className="group/ai border border-purple-500/10 rounded-lg overflow-hidden bg-purple-500/[0.02]">
+                            <summary className="flex items-center justify-between px-3 py-2 text-[10px] font-bold text-gray-400 hover:text-gray-200 cursor-pointer select-none transition-colors">
+                              <span className="flex items-center gap-1.5">
+                                <Sparkles className="w-2.5 h-2.5 text-purple-400 shrink-0" />
+                                AI Reasoning & Recommendations
+                              </span>
+                              <span className="text-gray-600 text-[8px] shrink-0">▼</span>
+                            </summary>
+                            <div className="px-3 pb-3 pt-1 text-[11px] text-gray-400 leading-relaxed border-t border-purple-500/10 whitespace-pre-line">
+                              {detailedReasoning}
                             </div>
-                          )}
+                          </details>
+                        )}
 
+                        {/* Actions */}
                         {item.status === "RESOLVED" ? (
-                          <div className="mt-4 p-4 bg-green-950/20 border border-green-500/20 rounded-xl space-y-2.5 animate-fade-in-up">
-                            <div className="flex justify-between items-start gap-4">
-                              <div className="space-y-1 flex-1">
-                                <p className="text-sm text-green-300">
-                                  <span className="font-bold">Resolution:</span>{" "}
-                                  {item.resolution}
-                                </p>
-                              </div>
-                              <button
-                                onClick={() => handleReactivate(item.id)}
-                                className="px-3 py-1.5 bg-gray-800 hover:bg-gray-705 text-gray-200 hover:text-white rounded-lg text-xs font-semibold transition-all border border-gray-700 hover:border-gray-650 cursor-pointer active:scale-[0.98] shrink-0"
-                              >
-                                Move to Active Risks
-                              </button>
-                            </div>
-                            {(item.resolved_by_name || item.resolved_at) && (
-                              <div className="pt-2.5 border-t border-green-500/10 flex flex-wrap gap-x-4 gap-y-1 text-xs text-green-400/80 font-medium">
-                                {item.resolved_by_name && (
-                                  <span className="flex items-center gap-1">
-                                    <span className="font-semibold">
-                                      Resolved By:
-                                    </span>{" "}
-                                    {item.resolved_by_name}{" "}
-                                    {item.resolved_by_email
-                                      ? `(${item.resolved_by_email})`
-                                      : ""}
-                                  </span>
-                                )}
-                                {item.resolved_at && (
-                                  <span className="flex items-center gap-1">
-                                    <span className="font-semibold">
-                                      Resolved At:
-                                    </span>{" "}
-                                    {new Date(
-                                      item.resolved_at,
-                                    ).toLocaleString()}
-                                  </span>
-                                )}
-                              </div>
-                            )}
-                          </div>
-                        ) : (
-                          <div className="flex flex-wrap gap-3">
-                            <button
-                              onClick={() => openResolveModal(item.id)}
-                              className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-md text-sm transition-colors cursor-pointer font-medium shadow-md hover:shadow-lg active:scale-[0.98]"
-                            >
-                              Mark as Resolved
-                            </button>
-
-                            {/* Single Card Export */}
-                            <div className="relative">
-                              {/* <button onClick={(e) => { e.stopPropagation(); setOpenExportCardId(openExportCardId === item.id ? null : item.id); }} className="px-3 py-2 bg-gray-700 hover:bg-gray-650 rounded-md text-sm transition-colors cursor-pointer font-medium flex items-center gap-1.5 border border-gray-600/50">
-                              <span>Export</span>
-                              <span className="text-[10px] text-gray-400">▼</span>
-                            </button> */}
-
-                              {openExportCardId === item.id && (
-                                <>
-                                  {/* Click outside handler for card export */}
-                                  <div
-                                    className="fixed inset-0 z-20"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setOpenExportCardId(null);
-                                    }}
-                                  />
-
-                                  <div className="absolute left-0 bottom-full mb-1 w-32 bg-gray-950 border border-gray-800 rounded-lg shadow-xl z-30 overflow-hidden animate-fade-in-up">
-                                    <button
-                                      onClick={() => {
-                                        handleExportSingle(item, "pdf");
-                                        setOpenExportCardId(null);
-                                      }}
-                                      className="w-full text-left px-3 py-2 text-xs hover:bg-gray-900 text-gray-300 hover:text-white flex items-center gap-1.5 cursor-pointer"
-                                    >
-                                      <span>PDF</span>
-                                    </button>
-                                    <button
-                                      onClick={() => {
-                                        handleExportSingle(item, "docx");
-                                        setOpenExportCardId(null);
-                                      }}
-                                      className="w-full text-left px-3 py-2 text-xs hover:bg-gray-900 text-gray-305 hover:text-white flex items-center gap-1.5 border-t border-gray-900 cursor-pointer"
-                                    >
-                                      <span>Word</span>
-                                    </button>
-                                  </div>
-                                </>
+                          <div className="flex items-start justify-between gap-3 p-2.5 bg-emerald-500/[0.04] border border-emerald-500/15 rounded-lg">
+                            <div className="flex-1 min-w-0">
+                              <span className="text-[9px] font-bold text-emerald-500 uppercase tracking-wider">✓ Resolved — </span>
+                              <span className="text-[10px] text-gray-400">{item.resolution}</span>
+                              {(item.resolved_by_name || item.resolved_at) && (
+                                <div className="flex gap-2 mt-1 text-[9px] text-gray-600">
+                                  {item.resolved_by_name && <span>by <strong className="text-gray-500">{item.resolved_by_name}</strong></span>}
+                                  {item.resolved_at && <span>at <strong className="text-gray-500">{new Date(item.resolved_at).toLocaleDateString()}</strong></span>}
+                                </div>
                               )}
                             </div>
+                            <button
+                              onClick={() => handleReactivate(item.id)}
+                              className="px-2.5 py-1 bg-gray-900 border border-gray-800 hover:border-gray-700 text-gray-400 hover:text-white rounded-md text-[9px] font-bold transition-all cursor-pointer active:scale-[0.98] shrink-0 whitespace-nowrap"
+                            >
+                              ↺ Reactivate
+                            </button>
+                          </div>
+                        ) : (
+                          <div>
+                            <button
+                              onClick={() => openResolveModal(item.id)}
+                              className="px-4 py-1.5 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white rounded-lg text-[10px] font-bold transition-all cursor-pointer shadow-md shadow-emerald-500/10 active:scale-[0.98]"
+                            >
+                              ✓ Mark Resolved
+                            </button>
                           </div>
                         )}
                       </div>
-                      {/* end p-6 body wrapper */}
                     </div>
                   );
                 })}
@@ -1465,6 +1386,51 @@ export const TrackerPage: React.FC = () => {
           </>
         )}
       </div>
+
+      {/* Floating Bulk Action Bar */}
+      {selectedItemIds.length > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 w-full max-w-xl px-4 animate-fade-in-up">
+          <div className="bg-gray-950/90 backdrop-blur-xl border border-cyan-500/30 rounded-2xl p-4 shadow-2xl flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-5 h-5 rounded-md bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
+                <span className="text-[10px] text-cyan-400 font-bold font-mono">{selectedItemIds.length}</span>
+              </div>
+              <span className="text-xs text-gray-300 font-bold">risks selected</span>
+            </div>
+            
+            <div className="flex gap-2">
+              <button
+                onClick={() => setSelectedItemIds([])}
+                className="px-3 py-1.5 text-xs text-gray-400 hover:text-white bg-gray-900 border border-gray-800 hover:border-gray-700 rounded-xl transition-all cursor-pointer"
+              >
+                Clear Selection
+              </button>
+              
+              <button
+                onClick={() => handleExportBatch(
+                  activeItems.filter(i => selectedItemIds.includes(i.id)),
+                  "pdf",
+                  "Selected Active Risks"
+                )}
+                className="px-3.5 py-1.5 text-xs font-bold text-white bg-cyan-600 hover:bg-cyan-500 rounded-xl transition-all shadow-md shadow-cyan-500/10 cursor-pointer shadow-inner active:scale-[0.98]"
+              >
+                Export PDF
+              </button>
+              
+              <button
+                onClick={() => handleExportBatch(
+                  activeItems.filter(i => selectedItemIds.includes(i.id)),
+                  "docx",
+                  "Selected Active Risks"
+                )}
+                className="px-3.5 py-1.5 text-xs font-bold text-cyan-400 hover:text-cyan-305 bg-cyan-950/40 border border-cyan-500/20 rounded-xl transition-all cursor-pointer active:scale-[0.98]"
+              >
+                Export Word
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Resolve Modal */}
       {resolveModalState.isOpen && (
