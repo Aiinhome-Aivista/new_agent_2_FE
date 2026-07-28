@@ -32,6 +32,7 @@ import {
   Trash2,
   X,
   AlertTriangle,
+  AlertCircle,
   Circle,
   Calendar,
   MapPin,
@@ -1182,9 +1183,10 @@ export const BaselineReviewPage: React.FC = () => {
                           const isAbove = positionMap.get(item.id) ?? true;
                           const dateStr = formatItemDate(item);
                           const past = isPast(item);
-                          const completionStatus = item.completion_status || "ACTIVE";
+                          const completionStatus = item.latest_progress?.status_code || item.completion_status || "ACTIVE";
                           const isCompleted = completionStatus === "COMPLETED";
                           const isCancelled = completionStatus === "CANCELLED";
+                          const isAlert = past && !isCompleted && !isCancelled;
 
                           return (
                             <div
@@ -1236,17 +1238,26 @@ export const BaselineReviewPage: React.FC = () => {
                                       isSelected ? "scale-[1.4]" : "group-hover:scale-125"
                                     }`}
                                     style={{
-                                      backgroundColor: isSelected ? color.dot : (isCompleted || isCancelled ? color.dot : (past ? color.dot : "#4b5563")),
-                                      boxShadow: isSelected ? `0 0 10px ${color.glow}, 0 0 20px ${color.glow}` : "none",
+                                      backgroundColor: (isAlert || isCompleted) ? "transparent" : (isSelected ? color.dot : (isCancelled ? color.dot : "#4b5563")),
+                                      boxShadow: isSelected && !(isAlert || isCompleted) ? `0 0 10px ${color.glow}, 0 0 20px ${color.glow}` : "none",
                                       opacity: isCompleted ? 0.75 : isCancelled ? 0.5 : 1,
                                       animationDelay: `${idx * 60}ms`,
                                     }}
                                   >
-                                    {isCompleted && (
-                                      <CheckCircle2 className="absolute -top-1 -right-1 w-3 h-3 text-emerald-400" style={{ filter: "drop-shadow(0 0 2px rgba(16,185,129,0.5))" }} />
-                                    )}
+                                    {isCompleted ? (
+                                      <CheckCircle2 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[18px] h-[18px] text-emerald-400 bg-gray-900 rounded-full z-10" style={{ filter: "drop-shadow(0 0 2px rgba(16,185,129,0.5))" }} />
+                                    ) : isAlert ? (
+                                      <>
+                                        <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[18px] h-[18px] rounded-full bg-red-500/40 animate-pulse blur-[2px]"></span>
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[18px] h-[18px] z-10" style={{ filter: "drop-shadow(0 0 4px rgba(239,68,68,0.8))" }}>
+                                          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" fill="#ef4444" />
+                                          <line x1="12" y1="9" x2="12" y2="13" stroke="#ffffff" strokeWidth="2.5" strokeLinecap="round" />
+                                          <circle cx="12" cy="17" r="1.25" fill="#ffffff" />
+                                        </svg>
+                                      </>
+                                    ) : null}
                                     {isSelected && (
-                                      <span className="absolute inset-0 rounded-full animate-ping" style={{ backgroundColor: color.dot, opacity: 0.25 }}></span>
+                                      <span className="absolute inset-0 rounded-full animate-ping" style={{ backgroundColor: isAlert ? "#ef4444" : isCompleted ? "#10b981" : color.dot, opacity: 0.25 }}></span>
                                     )}
                                   </div>
                                 </>
@@ -1258,17 +1269,26 @@ export const BaselineReviewPage: React.FC = () => {
                                       isSelected ? "scale-[1.4]" : "group-hover:scale-125"
                                     }`}
                                     style={{
-                                      backgroundColor: isSelected ? color.dot : (isCompleted || isCancelled ? color.dot : (past ? color.dot : "#4b5563")),
-                                      boxShadow: isSelected ? `0 0 10px ${color.glow}, 0 0 20px ${color.glow}` : "none",
+                                      backgroundColor: (isAlert || isCompleted) ? "transparent" : (isSelected ? color.dot : (isCancelled ? color.dot : "#4b5563")),
+                                      boxShadow: isSelected && !(isAlert || isCompleted) ? `0 0 10px ${color.glow}, 0 0 20px ${color.glow}` : "none",
                                       opacity: isCompleted ? 0.75 : isCancelled ? 0.5 : 1,
                                       animationDelay: `${idx * 60}ms`,
                                     }}
                                   >
-                                    {isCompleted && (
-                                      <CheckCircle2 className="absolute -top-1 -right-1 w-3 h-3 text-emerald-400" style={{ filter: "drop-shadow(0 0 2px rgba(16,185,129,0.5))" }} />
-                                    )}
+                                    {isCompleted ? (
+                                      <CheckCircle2 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[18px] h-[18px] text-emerald-400 bg-gray-900 rounded-full z-10" style={{ filter: "drop-shadow(0 0 2px rgba(16,185,129,0.5))" }} />
+                                    ) : isAlert ? (
+                                      <>
+                                        <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[18px] h-[18px] rounded-full bg-red-500/40 animate-pulse blur-[2px]"></span>
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[18px] h-[18px] z-10" style={{ filter: "drop-shadow(0 0 4px rgba(239,68,68,0.8))" }}>
+                                          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" fill="#ef4444" />
+                                          <line x1="12" y1="9" x2="12" y2="13" stroke="#ffffff" strokeWidth="2.5" strokeLinecap="round" />
+                                          <circle cx="12" cy="17" r="1.25" fill="#ffffff" />
+                                        </svg>
+                                      </>
+                                    ) : null}
                                     {isSelected && (
-                                      <span className="absolute inset-0 rounded-full animate-ping" style={{ backgroundColor: color.dot, opacity: 0.25 }}></span>
+                                      <span className="absolute inset-0 rounded-full animate-ping" style={{ backgroundColor: isAlert ? "#ef4444" : isCompleted ? "#10b981" : color.dot, opacity: 0.25 }}></span>
                                     )}
                                   </div>
                                   {/* Connector line down from track */}
@@ -1498,13 +1518,21 @@ export const BaselineReviewPage: React.FC = () => {
                               </span>
                               {selectedItem._dateMs !== null && (
                                 <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium border ${
-                                  selectedItem._dateMs < todayMs
+                                  completionStatus === 'COMPLETED'
+                                    ? "bg-emerald-950/20 text-emerald-300/80 border-emerald-800/20"
+                                    : selectedItem._dateMs < todayMs
                                     ? "bg-red-950/20 text-red-300/80 border-red-800/20"
                                     : selectedItem._dateMs === todayMs
                                     ? "bg-orange-950/20 text-orange-300/80 border-orange-800/20"
                                     : "bg-green-950/20 text-green-300/80 border-green-800/20"
                                 }`}>
-                                  {selectedItem._dateMs < todayMs ? "⏰ Overdue" : selectedItem._dateMs === todayMs ? "📍 Due Today" : `📅 ${Math.ceil((selectedItem._dateMs - todayMs) / 86400000)} days left`}
+                                  {completionStatus === 'COMPLETED' 
+                                    ? "✅ Completed" 
+                                    : selectedItem._dateMs < todayMs 
+                                    ? "⏰ Overdue" 
+                                    : selectedItem._dateMs === todayMs 
+                                    ? "📍 Due Today" 
+                                    : `📅 ${Math.ceil((selectedItem._dateMs - todayMs) / 86400000)} days left`}
                                 </span>
                               )}
                             </div>
