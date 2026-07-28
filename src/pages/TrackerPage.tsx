@@ -453,6 +453,34 @@ export const TrackerPage: React.FC = () => {
     }
   };
 
+  const handleReactivate = async (itemId: number) => {
+    if (!window.confirm("Are you sure you want to reactivate this risk and move it back to Active Risks?")) return;
+    try {
+      const res = await apiClient.post(
+        `/projects/${id}/tracker/${itemId}/reactivate`
+      );
+      if (res.data.success) {
+        const updatedItem = res.data.data;
+        setItems(
+          items.map((i) =>
+            i.id === itemId
+              ? {
+                  ...i,
+                  ...updatedItem,
+                  status: "OPEN",
+                  resolution: null,
+                  resolved_by_name: null,
+                  resolved_at: null,
+                }
+              : i,
+          ),
+        );
+      }
+    } catch (error) {
+      alert("Failed to reactivate item");
+    }
+  };
+
   const handleDownloadDocument = async (
     documentId: number,
     documentName: string,
@@ -1335,10 +1363,20 @@ export const TrackerPage: React.FC = () => {
 
                         {item.status === "RESOLVED" ? (
                           <div className="mt-4 p-4 bg-green-950/20 border border-green-500/20 rounded-xl space-y-2.5 animate-fade-in-up">
-                            <p className="text-sm text-green-300">
-                              <span className="font-bold">Resolution:</span>{" "}
-                              {item.resolution}
-                            </p>
+                            <div className="flex justify-between items-start gap-4">
+                              <div className="space-y-1 flex-1">
+                                <p className="text-sm text-green-300">
+                                  <span className="font-bold">Resolution:</span>{" "}
+                                  {item.resolution}
+                                </p>
+                              </div>
+                              <button
+                                onClick={() => handleReactivate(item.id)}
+                                className="px-3 py-1.5 bg-gray-800 hover:bg-gray-705 text-gray-200 hover:text-white rounded-lg text-xs font-semibold transition-all border border-gray-700 hover:border-gray-650 cursor-pointer active:scale-[0.98] shrink-0"
+                              >
+                                Move to Active Risks
+                              </button>
+                            </div>
                             {(item.resolved_by_name || item.resolved_at) && (
                               <div className="pt-2.5 border-t border-green-500/10 flex flex-wrap gap-x-4 gap-y-1 text-xs text-green-400/80 font-medium">
                                 {item.resolved_by_name && (
