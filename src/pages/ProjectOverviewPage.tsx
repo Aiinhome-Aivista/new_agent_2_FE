@@ -152,9 +152,9 @@ export const ProjectOverviewPage: React.FC = () => {
   const hasBothInitDocs = hasEL && hasIFA;
 
   const baselineApproved = baseline?.status === "APPROVED";
-  const inScopeItems: any[] = baseline?.scope_items?.filter((i: any) => i.scope_type === "IN_SCOPE") ?? [];
-  const outOfScopeItems: any[] = baseline?.scope_items?.filter((i: any) => i.scope_type === "OUT_OF_SCOPE") ?? [];
-  const uncertainItems: any[] = baseline?.scope_items?.filter((i: any) => i.scope_type === "UNCERTAIN") ?? [];
+  const inScopeItems: any[] = baseline?.scope_items?.filter((i: any) => i.scope_type === "IN_SCOPE" && i.category !== "MILESTONE") ?? [];
+  const outOfScopeItems: any[] = baseline?.scope_items?.filter((i: any) => i.scope_type === "OUT_OF_SCOPE" && i.category !== "MILESTONE") ?? [];
+  const uncertainItems: any[] = baseline?.scope_items?.filter((i: any) => i.scope_type === "UNCERTAIN" && i.category !== "MILESTONE") ?? [];
   const totalItems = inScopeItems.length + outOfScopeItems.length + uncertainItems.length;
 
   const openRisks = risks.filter((r) => r.status !== "RESOLVED");

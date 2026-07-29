@@ -730,11 +730,11 @@ export const BaselineReviewPage: React.FC = () => {
 
   const inScopeItems =
     baseline?.scope_items?.filter(
-      (item: any) => item.scope_type === "IN_SCOPE",
+      (item: any) => item.scope_type === "IN_SCOPE" && item.category !== "MILESTONE",
     ) || [];
   const outOfScopeItems =
     baseline?.scope_items?.filter(
-      (item: any) => item.scope_type !== "IN_SCOPE",
+      (item: any) => item.scope_type !== "IN_SCOPE" && item.category !== "MILESTONE",
     ) || [];
 
   // timelineItems is now computed via useMemo above the handlers
