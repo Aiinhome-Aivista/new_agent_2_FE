@@ -83,12 +83,36 @@ const steps: TrackerStep[] = [
 ];
 
 const baselineSteps: TrackerStep[] = [
-  { key: "Detecting Scope Sections", name: "Detect Sections", desc: "Identifying contract scope and deliverables sections." },
-  { key: "Extracting Scope Candidates", name: "Extract Candidates", desc: "Extracting candidate sentences and clauses." },
-  { key: "Classifying Scope Items", name: "Classify Items", desc: "Classifying items into IN_SCOPE/OUT_OF_SCOPE using LLM." },
-  { key: "Deduplicating Candidates", name: "Deduplicate", desc: "Merging similar items and resolving overlaps." },
-  { key: "Extracting Milestones & Deadlines", name: "Enrich Dates", desc: "Extracting milestone tags and deadline dates." },
-  { key: "Saving Baseline Draft", name: "Save Draft", desc: "Saving draft baseline and performing smart diff checks." }
+  {
+    key: "Detecting Scope Sections",
+    name: "Detect Sections",
+    desc: "Identifying contract scope and deliverables sections.",
+  },
+  {
+    key: "Extracting Scope Candidates",
+    name: "Extract Candidates",
+    desc: "Extracting candidate sentences and clauses.",
+  },
+  {
+    key: "Classifying Scope Items",
+    name: "Classify Items",
+    desc: "Classifying items into IN_SCOPE/OUT_OF_SCOPE using LLM.",
+  },
+  {
+    key: "Deduplicating Candidates",
+    name: "Deduplicate",
+    desc: "Merging similar items and resolving overlaps.",
+  },
+  {
+    key: "Extracting Milestones & Deadlines",
+    name: "Enrich Dates",
+    desc: "Extracting milestone tags and deadline dates.",
+  },
+  {
+    key: "Saving Baseline Draft",
+    name: "Save Draft",
+    desc: "Saving draft baseline and performing smart diff checks.",
+  },
 ];
 
 export const TrackerPage: React.FC = () => {
@@ -115,10 +139,7 @@ export const TrackerPage: React.FC = () => {
       if (trackerRes.data.success) setItems(trackerRes.data.data);
       if (projectRes.data.success) setProject(projectRes.data.data);
     } catch (error) {
-      console.error(
-        "Failed to fetch tracker items or project details:",
-        error,
-      );
+      console.error("Failed to fetch tracker items or project details:", error);
     } finally {
       setLoading(false);
     }
@@ -134,7 +155,7 @@ export const TrackerPage: React.FC = () => {
     elapsedTime,
     startSSEStream,
     checkActiveProgress,
-    resetProgress
+    resetProgress,
   } = useDocumentProgress();
 
   // Check active progress on mount
@@ -465,10 +486,15 @@ export const TrackerPage: React.FC = () => {
   };
 
   const handleReactivate = async (itemId: number) => {
-    if (!window.confirm("Are you sure you want to reactivate this risk and move it back to Active Risks?")) return;
+    if (
+      !window.confirm(
+        "Are you sure you want to reactivate this risk and move it back to Active Risks?",
+      )
+    )
+      return;
     try {
       const res = await apiClient.post(
-        `/projects/${id}/tracker/${itemId}/reactivate`
+        `/projects/${id}/tracker/${itemId}/reactivate`,
       );
       if (res.data.success) {
         const updatedItem = res.data.data;
@@ -585,14 +611,15 @@ export const TrackerPage: React.FC = () => {
     setProcessing(true);
     try {
       const docId = Number(selectedDocId);
-      const documentName = eligibleDocs.find((d: any) => d.id === docId)?.document_name || "Document";
+      const documentName =
+        eligibleDocs.find((d: any) => d.id === docId)?.document_name ||
+        "Document";
       setShowProcessModal(false);
       setSelectedDocId("");
       showNotification("AI Evaluation started!", "success");
-      
+
       // Start global SSE stream
       startSSEStream(Number(id), docId, documentName);
-
     } catch (error: any) {
       showNotification(
         "Failed to start processing: " +
@@ -604,12 +631,25 @@ export const TrackerPage: React.FC = () => {
     }
   };
 
-  const isBaselineExtraction = 
-    evaluationProgress?.document_type === 'EL' || 
-    evaluationProgress?.document_type === 'IFA' || 
-    evaluationProgress?.document_type?.toUpperCase() === 'EL' ||
-    evaluationProgress?.document_type?.toUpperCase() === 'IFA' ||
-    ["Detect Sections", "Extract Candidates", "Classify Items", "Deduplicate", "Enrich Dates", "Save Draft", "Detecting Scope Sections", "Extracting Scope Candidates", "Classifying Scope Items", "Deduplicating Candidates", "Extracting Milestones & Deadlines", "Saving Baseline Draft"].includes(evaluationProgress?.currentStage || "");
+  const isBaselineExtraction =
+    evaluationProgress?.document_type === "EL" ||
+    evaluationProgress?.document_type === "IFA" ||
+    evaluationProgress?.document_type?.toUpperCase() === "EL" ||
+    evaluationProgress?.document_type?.toUpperCase() === "IFA" ||
+    [
+      "Detect Sections",
+      "Extract Candidates",
+      "Classify Items",
+      "Deduplicate",
+      "Enrich Dates",
+      "Save Draft",
+      "Detecting Scope Sections",
+      "Extracting Scope Candidates",
+      "Classifying Scope Items",
+      "Deduplicating Candidates",
+      "Extracting Milestones & Deadlines",
+      "Saving Baseline Draft",
+    ].includes(evaluationProgress?.currentStage || "");
   const currentSteps = isBaselineExtraction ? baselineSteps : steps;
 
   const getStepState = (index: number) => {
@@ -618,7 +658,15 @@ export const TrackerPage: React.FC = () => {
     }
     const status = evaluationProgress.status;
     const currentStage = evaluationProgress.currentStage;
-    const activeIndex = currentSteps.findIndex((s) => s.name === currentStage || s.key === currentStage || (currentStage && currentStage.toLowerCase().includes(s.name.toLowerCase().split(' ')[0])));
+    const activeIndex = currentSteps.findIndex(
+      (s) =>
+        s.name === currentStage ||
+        s.key === currentStage ||
+        (currentStage &&
+          currentStage
+            .toLowerCase()
+            .includes(s.name.toLowerCase().split(" ")[0])),
+    );
 
     if (status === "completed") return "completed";
     if (status === "failed") {
@@ -663,15 +711,15 @@ export const TrackerPage: React.FC = () => {
               {isFailed
                 ? "Evaluation Failed"
                 : isBaselineExtraction
-                ? "Baseline Scope Extraction in Progress..."
-                : "Analyzing Project Risks & Timeline..."}
+                  ? "Baseline Scope Extraction in Progress..."
+                  : "Analyzing Project Risks & Timeline..."}
             </h2>
             <p className="text-xs text-gray-400 mt-1">
               {isFailed
                 ? "An error occurred during evaluation."
                 : isBaselineExtraction
-                ? "AI agents are analyzing and classifying contract scope sections and deliverables."
-                : "AI agents are running automated checks against your project baseline."}
+                  ? "AI agents are analyzing and classifying contract scope sections and deliverables."
+                  : "AI agents are running automated checks against your project baseline."}
             </p>
           </div>
           <div className="flex items-center gap-6">
@@ -858,7 +906,8 @@ export const TrackerPage: React.FC = () => {
               Risk Tracker & Audit
             </h1>
             <p className="text-gray-400 text-xs mt-1.5 leading-relaxed max-w-xl">
-              Track compliance alerts, scope creep warnings, and delay risks automatically extracted and analyzed by AI agents.
+              Track compliance alerts, scope creep warnings, and delay risks
+              automatically extracted and analyzed by AI agents.
             </p>
           </div>
 
@@ -877,7 +926,8 @@ export const TrackerPage: React.FC = () => {
                 </h4>
                 <div className="space-y-4 text-xs text-gray-300">
                   <p className="text-gray-400 leading-relaxed font-medium">
-                    Individual item scores (out of 100) are determined by these rules:
+                    Individual item scores (out of 100) are determined by these
+                    rules:
                   </p>
 
                   <div>
@@ -886,10 +936,12 @@ export const TrackerPage: React.FC = () => {
                     </span>
                     <ul className="list-disc pl-4 space-y-1 text-gray-400 font-medium">
                       <li>
-                        <strong className="text-white">80/100</strong> for direct baseline violations (out of scope).
+                        <strong className="text-white">80/100</strong> for
+                        direct baseline violations (out of scope).
                       </li>
                       <li>
-                        <strong className="text-white">50/100</strong> for warnings or borderline review items.
+                        <strong className="text-white">50/100</strong> for
+                        warnings or borderline review items.
                       </li>
                     </ul>
                   </div>
@@ -900,16 +952,20 @@ export const TrackerPage: React.FC = () => {
                     </span>
                     <ul className="list-disc pl-4 space-y-1 text-gray-400 font-medium">
                       <li>
-                        <strong className="text-white">85/100</strong> for critical delays or active blockers.
+                        <strong className="text-white">85/100</strong> for
+                        critical delays or active blockers.
                       </li>
                       <li>
-                        <strong className="text-white">65/100</strong> for high timeline risk deliverables.
+                        <strong className="text-white">65/100</strong> for high
+                        timeline risk deliverables.
                       </li>
                       <li>
-                        <strong className="text-white">45/100</strong> for medium timeline risk.
+                        <strong className="text-white">45/100</strong> for
+                        medium timeline risk.
                       </li>
                       <li>
-                        <strong className="text-white">15/100</strong> for low timeline risk.
+                        <strong className="text-white">15/100</strong> for low
+                        timeline risk.
                       </li>
                     </ul>
                   </div>
@@ -925,7 +981,9 @@ export const TrackerPage: React.FC = () => {
                 project?.monitoring_status !== "ACTIVE"
               }
               className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 active:scale-[0.98] shadow-lg flex items-center gap-2 border ${
-                processing || isEvaluating || project?.monitoring_status !== "ACTIVE"
+                processing ||
+                isEvaluating ||
+                project?.monitoring_status !== "ACTIVE"
                   ? "bg-gray-800/40 border-gray-800 text-gray-500 cursor-not-allowed"
                   : "bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white border-blue-500/20 shadow-cyan-500/10 cursor-pointer"
               }`}
@@ -1075,7 +1133,9 @@ export const TrackerPage: React.FC = () => {
                 : "Baseline Awaiting Approval"}
             </h3>
             <p className="text-gray-400 text-sm leading-relaxed mb-8 max-w-md mx-auto">
-              Before AI agents can analyze status updates for risks, deviations, and delay items, a contract baseline must be extracted and approved.
+              Before AI agents can analyze status updates for risks, deviations,
+              and delay items, a contract baseline must be extracted and
+              approved.
             </p>
             <div>
               <Link
@@ -1094,9 +1154,12 @@ export const TrackerPage: React.FC = () => {
             <div className="w-16 h-16 bg-gray-800/40 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-gray-700/30 shadow-inner">
               <ShieldAlert className="w-8 h-8 text-gray-500" />
             </div>
-            <h3 className="font-display text-lg font-bold text-white mb-2">No Risk Items Found</h3>
+            <h3 className="font-display text-lg font-bold text-white mb-2">
+              No Risk Items Found
+            </h3>
             <p className="text-gray-400 text-xs max-w-sm mx-auto leading-relaxed">
-              No risk or audit findings have been recorded. Choose "Analyze Status Document" above to start evaluation.
+              No risk or audit findings have been recorded. Choose "Analyze
+              Status Document" above to start evaluation.
             </p>
           </div>
         ) : (
@@ -1106,38 +1169,54 @@ export const TrackerPage: React.FC = () => {
               <div className="mb-8 p-6 bg-gradient-to-br from-cyan-950/40 to-blue-900/20 border border-cyan-500/30 rounded-2xl shadow-lg shadow-cyan-500/5 backdrop-blur-md">
                 <div className="flex items-center gap-2 mb-4 pb-4 border-b border-cyan-500/20">
                   <Sparkles className="w-5 h-5 text-cyan-400" />
-                  <h3 className="font-display font-bold text-white text-lg">AI Recommendation: Highest Action Priority</h3>
+                  <h3 className="font-display font-bold text-white text-lg">
+                    AI Recommendation: Highest Action Priority
+                  </h3>
                 </div>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div className="col-span-1">
-                    <p className="text-[10px] uppercase font-bold text-gray-500 tracking-wider mb-1">Activity</p>
+                    <p className="text-[10px] uppercase font-bold text-gray-500 tracking-wider mb-1">
+                      Activity
+                    </p>
                     <p className="text-sm font-bold text-white bg-gray-900/50 p-3 rounded-lg border border-gray-700/50">
                       {project.highestActionPriority.activity}
                     </p>
-                    
+
                     <div className="mt-4 grid grid-cols-2 gap-3">
                       <div>
-                        <p className="text-[10px] uppercase font-bold text-gray-500 tracking-wider mb-1">Status</p>
-                        <p className="text-xs font-semibold text-cyan-400">{project.highestActionPriority.status}</p>
+                        <p className="text-[10px] uppercase font-bold text-gray-500 tracking-wider mb-1">
+                          Status
+                        </p>
+                        <p className="text-xs font-semibold text-cyan-400">
+                          {project.highestActionPriority.status}
+                        </p>
                       </div>
                       <div>
-                        <p className="text-[10px] uppercase font-bold text-gray-500 tracking-wider mb-1">Due Date</p>
-                        <p className="text-xs font-semibold text-rose-400">{project.highestActionPriority.dueDate}</p>
+                        <p className="text-[10px] uppercase font-bold text-gray-500 tracking-wider mb-1">
+                          Due Date
+                        </p>
+                        <p className="text-xs font-semibold text-rose-400">
+                          {project.highestActionPriority.dueDate}
+                        </p>
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="col-span-2 space-y-4">
                     <div>
-                      <p className="text-[10px] uppercase font-bold text-gray-500 tracking-wider mb-2">Blockers & Cascade Impact</p>
+                      <p className="text-[10px] uppercase font-bold text-gray-500 tracking-wider mb-2">
+                        Blockers & Cascade Impact
+                      </p>
                       <div className="text-xs text-gray-300 leading-relaxed bg-gray-900/30 p-3 rounded-lg border border-gray-800 whitespace-pre-line">
                         {project.highestActionPriority.reason}
                       </div>
                     </div>
-                    
+
                     <div>
-                      <p className="text-[10px] uppercase font-bold text-gray-500 tracking-wider mb-2">Recommended Action</p>
+                      <p className="text-[10px] uppercase font-bold text-gray-500 tracking-wider mb-2">
+                        Recommended Action
+                      </p>
                       <div className="text-xs font-semibold text-white leading-relaxed bg-cyan-500/10 p-3 rounded-lg border border-cyan-500/20 shadow-inner">
                         {project.highestActionPriority.recommendedAction}
                       </div>
@@ -1293,13 +1372,19 @@ export const TrackerPage: React.FC = () => {
                     <div
                       key={item.id}
                       className={`group rounded-2xl border ${borderColor} bg-gradient-to-br from-gray-900/70 to-gray-950/90 backdrop-blur-lg shadow-xl shadow-black/20 hover:shadow-2xl hover:shadow-cyan-500/[0.01] hover:border-gray-700/60 transition-all duration-300 ease-out overflow-hidden`}
-                      style={{ animationDelay: `${index * 50}ms` }}>
-                      <div className={`px-4 py-2.5 border-b flex items-center justify-between gap-3 ${
-                        level === "CRITICAL" ? "bg-red-500/[0.04]"
-                        : level === "HIGH" ? "bg-orange-500/[0.03]"
-                        : level === "MEDIUM" ? "bg-yellow-500/[0.02]"
-                        : "bg-white/[0.01]"
-                      }`}>
+                      style={{ animationDelay: `${index * 50}ms` }}
+                    >
+                      <div
+                        className={`px-4 py-2.5 border-b flex items-center justify-between gap-3 ${
+                          level === "CRITICAL"
+                            ? "bg-red-500/[0.04]"
+                            : level === "HIGH"
+                              ? "bg-orange-500/[0.03]"
+                              : level === "MEDIUM"
+                                ? "bg-yellow-500/[0.02]"
+                                : "bg-white/[0.01]"
+                        }`}
+                      >
                         {/* Left: checkbox + dot + title row */}
                         <div className="flex items-center gap-2.5 flex-1 min-w-0">
                           {activeTab === "ACTIVE" && (
@@ -1310,29 +1395,43 @@ export const TrackerPage: React.FC = () => {
                               className="w-3.5 h-3.5 rounded border-gray-700 bg-gray-950 text-cyan-500 focus:ring-cyan-500/30 cursor-pointer accent-cyan-500 shrink-0"
                             />
                           )}
-                          <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                            level === "CRITICAL" ? "bg-red-400 shadow-[0_0_6px_rgba(239,68,68,0.6)] animate-pulse"
-                            : level === "HIGH" ? "bg-orange-400 shadow-[0_0_6px_rgba(249,115,22,0.5)]"
-                            : level === "MEDIUM" ? "bg-yellow-400 shadow-[0_0_6px_rgba(234,179,8,0.5)]"
-                            : "bg-emerald-400 shadow-[0_0_6px_rgba(16,185,129,0.5)]"
-                          }`} />
+                          <span
+                            className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                              level === "CRITICAL"
+                                ? "bg-red-400 shadow-[0_0_6px_rgba(239,68,68,0.6)] animate-pulse"
+                                : level === "HIGH"
+                                  ? "bg-orange-400 shadow-[0_0_6px_rgba(249,115,22,0.5)]"
+                                  : level === "MEDIUM"
+                                    ? "bg-yellow-400 shadow-[0_0_6px_rgba(234,179,8,0.5)]"
+                                    : "bg-emerald-400 shadow-[0_0_6px_rgba(16,185,129,0.5)]"
+                            }`}
+                          />
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-2 flex-wrap">
                               <span className="text-[8px] font-extrabold text-gray-500 bg-gray-800/70 border border-gray-700/40 px-1.5 py-0.5 rounded uppercase tracking-wider shrink-0">
                                 {typeLabels[item.item_type] || item.item_type}
                               </span>
                               <h3 className="font-semibold text-sm text-gray-200 truncate group-hover:text-white transition-colors">
-                                {item.name || `${typeLabels[item.item_type] || item.item_type} #${item.id}`}
+                                {item.name ||
+                                  `${typeLabels[item.item_type] || item.item_type} #${item.id}`}
                               </h3>
                             </div>
                             {/* source doc inline */}
                             <div className="flex items-center gap-1.5 mt-0.5">
                               <Briefcase className="w-2.5 h-2.5 text-gray-600 shrink-0" />
-                              <span className="text-[10px] text-gray-500 truncate max-w-[260px]" title={item.document_name}>
+                              <span
+                                className="text-[10px] text-gray-500 truncate max-w-[260px]"
+                                title={item.document_name}
+                              >
                                 {item.document_name}
                               </span>
                               <button
-                                onClick={() => handleDownloadDocument(item.source_document_id, item.document_name)}
+                                onClick={() =>
+                                  handleDownloadDocument(
+                                    item.source_document_id,
+                                    item.document_name,
+                                  )
+                                }
                                 className="text-[9px] text-cyan-500 hover:text-cyan-400 font-bold transition-colors cursor-pointer shrink-0"
                               >
                                 ↓ DL
@@ -1344,23 +1443,34 @@ export const TrackerPage: React.FC = () => {
                         {/* Right: badges */}
                         <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
                           {!!item.is_out_of_scope && (
-                            <span className="px-1.5 py-0.5 bg-red-500/10 text-red-400 border border-red-500/20 rounded text-[8px] font-bold uppercase tracking-wide">OOS</span>
+                            <span className="px-1.5 py-0.5 bg-red-500/10 text-red-400 border border-red-500/20 rounded text-[8px] font-bold uppercase tracking-wide">
+                              OOS
+                            </span>
                           )}
                           {!!item.requires_escalation && (
-                            <span className="px-1.5 py-0.5 bg-orange-500/10 text-orange-400 border border-orange-500/20 rounded text-[8px] font-bold uppercase tracking-wide">Esc</span>
+                            <span className="px-1.5 py-0.5 bg-orange-500/10 text-orange-400 border border-orange-500/20 rounded text-[8px] font-bold uppercase tracking-wide">
+                              Esc
+                            </span>
                           )}
                           <span className="text-[8px] font-bold text-gray-500 bg-gray-800/40 px-1.5 py-0.5 rounded border border-gray-700/30 hidden sm:inline">
                             {categoryLabel}
                           </span>
-                          <span className={`px-1.5 py-0.5 rounded text-[9px] font-black border ${levelStyle.bg} ${levelStyle.text} ${levelStyle.border}`}>
+                          <span
+                            className={`px-1.5 py-0.5 rounded text-[9px] font-black border ${levelStyle.bg} ${levelStyle.text} ${levelStyle.border}`}
+                          >
                             {level}
                           </span>
-                          <span className={`px-1.5 py-0.5 rounded text-[9px] font-mono font-black ${
-                            item.risk_score >= 71 ? "bg-rose-500/10 text-rose-400 border border-rose-500/20"
-                            : item.risk_score >= 41 ? "bg-orange-500/10 text-orange-400 border border-orange-500/20"
-                            : item.risk_score >= 21 ? "bg-yellow-500/10 text-yellow-400 border border-yellow-500/20"
-                            : "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                          }`}>
+                          <span
+                            className={`px-1.5 py-0.5 rounded text-[9px] font-mono font-black ${
+                              item.risk_score >= 71
+                                ? "bg-rose-500/10 text-rose-400 border border-rose-500/20"
+                                : item.risk_score >= 41
+                                  ? "bg-orange-500/10 text-orange-400 border border-orange-500/20"
+                                  : item.risk_score >= 21
+                                    ? "bg-yellow-500/10 text-yellow-400 border border-yellow-500/20"
+                                    : "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                            }`}
+                          >
                             {item.risk_score}/100
                           </span>
                         </div>
@@ -1374,9 +1484,16 @@ export const TrackerPage: React.FC = () => {
                             <summary className="flex items-center justify-between px-3 py-2 text-[10px] font-bold text-gray-400 hover:text-gray-200 cursor-pointer select-none transition-colors">
                               <span className="flex items-center gap-1.5 truncate">
                                 <Info className="w-2.5 h-2.5 text-gray-500 shrink-0" />
-                                <span className="truncate">{description ? description.slice(0, 80) + (description.length > 80 ? "…" : "") : "View Reasoning"}</span>
+                                <span className="truncate">
+                                  {description
+                                    ? description.slice(0, 80) +
+                                      (description.length > 80 ? "…" : "")
+                                    : "View Reasoning"}
+                                </span>
                               </span>
-                              <span className="text-gray-600 text-[8px] shrink-0 ml-2">▼</span>
+                              <span className="text-gray-600 text-[8px] shrink-0 ml-2">
+                                ▼
+                              </span>
                             </summary>
                             <div className="px-3 pb-3 pt-1 text-[11px] text-gray-400 leading-relaxed border-t border-white/[0.04] whitespace-pre-line">
                               {description || item.reasoning}
@@ -1392,7 +1509,9 @@ export const TrackerPage: React.FC = () => {
                                 <Sparkles className="w-2.5 h-2.5 text-purple-400 shrink-0" />
                                 AI Reasoning & Recommendations
                               </span>
-                              <span className="text-gray-600 text-[8px] shrink-0">▼</span>
+                              <span className="text-gray-600 text-[8px] shrink-0">
+                                ▼
+                              </span>
                             </summary>
                             <div className="px-3 pb-3 pt-1 text-[11px] text-gray-400 leading-relaxed border-t border-purple-500/10 whitespace-pre-line">
                               {detailedReasoning}
@@ -1404,12 +1523,32 @@ export const TrackerPage: React.FC = () => {
                         {item.status === "RESOLVED" ? (
                           <div className="flex items-start justify-between gap-3 p-2.5 bg-emerald-500/[0.04] border border-emerald-500/15 rounded-lg">
                             <div className="flex-1 min-w-0">
-                              <span className="text-[9px] font-bold text-emerald-500 uppercase tracking-wider">✓ Resolved — </span>
-                              <span className="text-[10px] text-gray-400">{item.resolution}</span>
+                              <span className="text-[9px] font-bold text-emerald-500 uppercase tracking-wider">
+                                ✓ Resolved —{" "}
+                              </span>
+                              <span className="text-[10px] text-gray-400">
+                                {item.resolution}
+                              </span>
                               {(item.resolved_by_name || item.resolved_at) && (
                                 <div className="flex gap-2 mt-1 text-[9px] text-gray-600">
-                                  {item.resolved_by_name && <span>by <strong className="text-gray-500">{item.resolved_by_name}</strong></span>}
-                                  {item.resolved_at && <span>at <strong className="text-gray-500">{new Date(item.resolved_at).toLocaleDateString()}</strong></span>}
+                                  {item.resolved_by_name && (
+                                    <span>
+                                      by{" "}
+                                      <strong className="text-gray-500">
+                                        {item.resolved_by_name}
+                                      </strong>
+                                    </span>
+                                  )}
+                                  {item.resolved_at && (
+                                    <span>
+                                      at{" "}
+                                      <strong className="text-gray-500">
+                                        {new Date(
+                                          item.resolved_at,
+                                        ).toLocaleDateString()}
+                                      </strong>
+                                    </span>
+                                  )}
                                 </div>
                               )}
                             </div>
@@ -1446,11 +1585,15 @@ export const TrackerPage: React.FC = () => {
           <div className="bg-gray-950/90 backdrop-blur-xl border border-cyan-500/30 rounded-2xl p-4 shadow-2xl flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <div className="w-5 h-5 rounded-md bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
-                <span className="text-[10px] text-cyan-400 font-bold font-mono">{selectedItemIds.length}</span>
+                <span className="text-[10px] text-cyan-400 font-bold font-mono">
+                  {selectedItemIds.length}
+                </span>
               </div>
-              <span className="text-xs text-gray-300 font-bold">risks selected</span>
+              <span className="text-xs text-gray-300 font-bold">
+                risks selected
+              </span>
             </div>
-            
+
             <div className="flex gap-2">
               <button
                 onClick={() => setSelectedItemIds([])}
@@ -1458,24 +1601,28 @@ export const TrackerPage: React.FC = () => {
               >
                 Clear Selection
               </button>
-              
+
               <button
-                onClick={() => handleExportBatch(
-                  activeItems.filter(i => selectedItemIds.includes(i.id)),
-                  "pdf",
-                  "Selected Active Risks"
-                )}
+                onClick={() =>
+                  handleExportBatch(
+                    activeItems.filter((i) => selectedItemIds.includes(i.id)),
+                    "pdf",
+                    "Selected Active Risks",
+                  )
+                }
                 className="px-3.5 py-1.5 text-xs font-bold text-white bg-cyan-600 hover:bg-cyan-500 rounded-xl transition-all shadow-md shadow-cyan-500/10 cursor-pointer shadow-inner active:scale-[0.98]"
               >
                 Export PDF
               </button>
-              
+
               <button
-                onClick={() => handleExportBatch(
-                  activeItems.filter(i => selectedItemIds.includes(i.id)),
-                  "docx",
-                  "Selected Active Risks"
-                )}
+                onClick={() =>
+                  handleExportBatch(
+                    activeItems.filter((i) => selectedItemIds.includes(i.id)),
+                    "docx",
+                    "Selected Active Risks",
+                  )
+                }
                 className="px-3.5 py-1.5 text-xs font-bold text-cyan-400 hover:text-cyan-305 bg-cyan-950/40 border border-cyan-500/20 rounded-xl transition-all cursor-pointer active:scale-[0.98]"
               >
                 Export Word
@@ -1589,7 +1736,7 @@ export const TrackerPage: React.FC = () => {
                 disabled={
                   processing || !selectedDocId || eligibleDocs.length === 0
                 }
-                className={`px-4 py-2 rounded-lg font-medium transition-colors text-sm flex items-center ${
+                className={`px-4 py-2 rounded-lg font-medium transition-colors text-sm flex items-center cursor-pointer ${
                   processing || !selectedDocId || eligibleDocs.length === 0
                     ? "bg-blue-900/50 text-blue-700 cursor-not-allowed"
                     : "bg-[#00e5ff] text-black hover:bg-[#00cce5]"

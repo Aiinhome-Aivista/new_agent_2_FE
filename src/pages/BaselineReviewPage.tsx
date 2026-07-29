@@ -36,20 +36,53 @@ import {
   Circle,
   Calendar,
   MapPin,
+  Sparkles,
 } from "lucide-react";
 
 const baselineSteps = [
-  { key: "Detecting Scope Sections", name: "Detect Sections", desc: "Identifying contract scope and deliverables sections." },
-  { key: "Extracting Scope Candidates", name: "Extract Candidates", desc: "Extracting candidate sentences and clauses." },
-  { key: "Classifying Scope Items", name: "Classify Items", desc: "Classifying items into IN_SCOPE/OUT_OF_SCOPE using LLM." },
-  { key: "Deduplicating Candidates", name: "Deduplicate", desc: "Merging similar items and resolving overlaps." },
-  { key: "Extracting Milestones & Deadlines", name: "Enrich Dates", desc: "Extracting milestone tags and deadline dates." },
-  { key: "Saving Baseline Draft", name: "Save Draft", desc: "Saving draft baseline and performing smart diff checks." }
+  {
+    key: "Detecting Scope Sections",
+    name: "Detect Sections",
+    desc: "Identifying contract scope and deliverables sections.",
+  },
+  {
+    key: "Extracting Scope Candidates",
+    name: "Extract Candidates",
+    desc: "Extracting candidate sentences and clauses.",
+  },
+  {
+    key: "Classifying Scope Items",
+    name: "Classify Items",
+    desc: "Classifying items into IN_SCOPE/OUT_OF_SCOPE using LLM.",
+  },
+  {
+    key: "Deduplicating Candidates",
+    name: "Deduplicate",
+    desc: "Merging similar items and resolving overlaps.",
+  },
+  {
+    key: "Extracting Milestones & Deadlines",
+    name: "Enrich Dates",
+    desc: "Extracting milestone tags and deadline dates.",
+  },
+  {
+    key: "Saving Baseline Draft",
+    name: "Save Draft",
+    desc: "Saving draft baseline and performing smart diff checks.",
+  },
 ];
 
 export const BaselineReviewPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const { isEvaluating, evaluationProgress, elapsedTime, startPolling, activeProjectId, checkActiveProgress, resetProgress } = useDocumentProgress();
+  const {
+    isEvaluating,
+    evaluationProgress,
+    elapsedTime,
+    startPolling,
+    activeProjectId,
+    checkActiveProgress,
+    resetProgress,
+  } = useDocumentProgress();
   const [baseline, setBaseline] = useState<any>(null);
   const [project, setProject] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -60,13 +93,29 @@ export const BaselineReviewPage: React.FC = () => {
     Record<number, boolean>
   >({});
 
-  const isCurrentBaselineExtracting = (isEvaluating || evaluationProgress?.status === 'running' || evaluationProgress?.status === 'pending') && 
-    (!activeProjectId || Number(activeProjectId) === Number(id)) && 
-    (evaluationProgress?.document_type === 'EL' || 
-     evaluationProgress?.document_type === 'IFA' || 
-     evaluationProgress?.document_type?.toUpperCase() === 'EL' ||
-     evaluationProgress?.document_type?.toUpperCase() === 'IFA' ||
-     ["Detect Sections", "Extract Candidates", "Classify Items", "Deduplicate", "Enrich Dates", "Save Draft", "Detecting Scope Sections", "Extracting Scope Candidates", "Classifying Scope Items", "Deduplicating Candidates", "Extracting Milestones & Deadlines", "Saving Baseline Draft"].includes(evaluationProgress?.currentStage || ""));
+  const isCurrentBaselineExtracting =
+    (isEvaluating ||
+      evaluationProgress?.status === "running" ||
+      evaluationProgress?.status === "pending") &&
+    (!activeProjectId || Number(activeProjectId) === Number(id)) &&
+    (evaluationProgress?.document_type === "EL" ||
+      evaluationProgress?.document_type === "IFA" ||
+      evaluationProgress?.document_type?.toUpperCase() === "EL" ||
+      evaluationProgress?.document_type?.toUpperCase() === "IFA" ||
+      [
+        "Detect Sections",
+        "Extract Candidates",
+        "Classify Items",
+        "Deduplicate",
+        "Enrich Dates",
+        "Save Draft",
+        "Detecting Scope Sections",
+        "Extracting Scope Candidates",
+        "Classifying Scope Items",
+        "Deduplicating Candidates",
+        "Extracting Milestones & Deadlines",
+        "Saving Baseline Draft",
+      ].includes(evaluationProgress?.currentStage || ""));
 
   useEffect(() => {
     if (id) {
@@ -76,10 +125,29 @@ export const BaselineReviewPage: React.FC = () => {
 
   // Auto-refresh baseline data when background extraction completes
   useEffect(() => {
-    if (evaluationProgress && evaluationProgress.status === 'completed' && 
-        (evaluationProgress.document_type === 'EL' || evaluationProgress.document_type === 'IFA' || evaluationProgress.document_type?.toUpperCase() === 'EL' || evaluationProgress.document_type?.toUpperCase() === 'IFA' || ["Detect Sections", "Extract Candidates", "Classify Items", "Deduplicate", "Enrich Dates", "Save Draft", "Detecting Scope Sections", "Extracting Scope Candidates", "Classifying Scope Items", "Deduplicating Candidates", "Extracting Milestones & Deadlines", "Saving Baseline Draft"].includes(evaluationProgress.currentStage || "")) &&
-        (!activeProjectId || activeProjectId === Number(id))) {
-      
+    if (
+      evaluationProgress &&
+      evaluationProgress.status === "completed" &&
+      (evaluationProgress.document_type === "EL" ||
+        evaluationProgress.document_type === "IFA" ||
+        evaluationProgress.document_type?.toUpperCase() === "EL" ||
+        evaluationProgress.document_type?.toUpperCase() === "IFA" ||
+        [
+          "Detect Sections",
+          "Extract Candidates",
+          "Classify Items",
+          "Deduplicate",
+          "Enrich Dates",
+          "Save Draft",
+          "Detecting Scope Sections",
+          "Extracting Scope Candidates",
+          "Classifying Scope Items",
+          "Deduplicating Candidates",
+          "Extracting Milestones & Deadlines",
+          "Saving Baseline Draft",
+        ].includes(evaluationProgress.currentStage || "")) &&
+      (!activeProjectId || activeProjectId === Number(id))
+    ) {
       const refreshBaseline = async () => {
         try {
           const [baselineRes, versionsRes] = await Promise.all([
@@ -167,12 +235,12 @@ export const BaselineReviewPage: React.FC = () => {
 
   const getMilestoneData = (itemName: string, milestoneName: string) => {
     if (milestoneName) {
-        const m = milestoneMap.get(milestoneName.toLowerCase());
-        if (m) return m;
+      const m = milestoneMap.get(milestoneName.toLowerCase());
+      if (m) return m;
     }
     if (itemName) {
-        const m = milestoneMap.get(itemName.toLowerCase());
-        if (m) return m;
+      const m = milestoneMap.get(itemName.toLowerCase());
+      if (m) return m;
     }
     return null;
   };
@@ -219,7 +287,7 @@ export const BaselineReviewPage: React.FC = () => {
       const exists = timelineItems.some((item: any) => item.id === selectedId);
       if (exists) {
         setSelectedDeliverableId(selectedId);
-        
+
         // Execute automated status change if requested
         if (action === "completed") {
           handleUpdateCompletionStatus(selectedId, "COMPLETED");
@@ -235,7 +303,7 @@ export const BaselineReviewPage: React.FC = () => {
             }
           }, 500);
         }
-        
+
         // Clear parameters from URL so they don't re-run on subsequent page reloads
         const newUrl = window.location.pathname;
         window.history.replaceState({}, document.title, newUrl);
@@ -243,11 +311,8 @@ export const BaselineReviewPage: React.FC = () => {
     }
   }, [timelineItems]);
 
-
   const activeIndex =
-    timelineItems.findIndex(
-      (d: any) => d.id === selectedDeliverableId,
-    ) ?? -1;
+    timelineItems.findIndex((d: any) => d.id === selectedDeliverableId) ?? -1;
 
   const handlePrev = () => {
     if (timelineItems.length > 0 && activeIndex > 0) {
@@ -443,7 +508,6 @@ export const BaselineReviewPage: React.FC = () => {
     }
   };
 
-
   const handleExtractClick = async () => {
     try {
       const res = await apiClient.get(`/projects/${id}/documents/`);
@@ -486,7 +550,13 @@ export const BaselineReviewPage: React.FC = () => {
           `/projects/${id}/baseline/extract?document_id=${doc.id}`,
         );
         // Start polling immediately in the global context
-        startPolling(Number(id), doc.id, doc.document_name, 0, doc.document_type || 'EL');
+        startPolling(
+          Number(id),
+          doc.id,
+          doc.document_name,
+          0,
+          doc.document_type || "EL",
+        );
       }
       setShowExtractModal(false);
       showNotification(
@@ -496,7 +566,10 @@ export const BaselineReviewPage: React.FC = () => {
     } catch (error: any) {
       showNotification(
         "Extraction failed: " +
-          (error.response?.data?.message || error.response?.data?.detail || error.message || "Server error"),
+          (error.response?.data?.message ||
+            error.response?.data?.detail ||
+            error.message ||
+            "Server error"),
         "error",
       );
     } finally {
@@ -730,11 +803,13 @@ export const BaselineReviewPage: React.FC = () => {
 
   const inScopeItems =
     baseline?.scope_items?.filter(
-      (item: any) => item.scope_type === "IN_SCOPE" && item.category !== "MILESTONE",
+      (item: any) =>
+        item.scope_type === "IN_SCOPE" && item.category !== "MILESTONE",
     ) || [];
   const outOfScopeItems =
     baseline?.scope_items?.filter(
-      (item: any) => item.scope_type !== "IN_SCOPE" && item.category !== "MILESTONE",
+      (item: any) =>
+        item.scope_type !== "IN_SCOPE" && item.category !== "MILESTONE",
     ) || [];
 
   // timelineItems is now computed via useMemo above the handlers
@@ -757,7 +832,13 @@ export const BaselineReviewPage: React.FC = () => {
       const status = evaluationProgress.status;
       const currentStage = evaluationProgress.currentStage;
       const activeIndex = baselineSteps.findIndex(
-        (s) => s.name === currentStage || s.key === currentStage || (currentStage && currentStage.toLowerCase().includes(s.name.toLowerCase().split(' ')[0]))
+        (s) =>
+          s.name === currentStage ||
+          s.key === currentStage ||
+          (currentStage &&
+            currentStage
+              .toLowerCase()
+              .includes(s.name.toLowerCase().split(" ")[0])),
       );
 
       if (status === "completed") return "completed";
@@ -800,7 +881,8 @@ export const BaselineReviewPage: React.FC = () => {
               <span>Baseline Scope Extraction in Progress...</span>
             </h2>
             <p className="text-gray-400 text-xs mt-1">
-              AI agents are analyzing and classifying contract scope sections and deliverables.
+              AI agents are analyzing and classifying contract scope sections
+              and deliverables.
             </p>
           </div>
           <div className="flex items-center gap-6">
@@ -808,7 +890,9 @@ export const BaselineReviewPage: React.FC = () => {
               <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
                 Elapsed Time
               </p>
-              <p className="text-lg font-black text-white font-mono">{elapsedTime}s</p>
+              <p className="text-lg font-black text-white font-mono">
+                {elapsedTime}s
+              </p>
             </div>
             <div className="h-8 w-px bg-gray-800" />
             <div className="text-right">
@@ -893,7 +977,9 @@ export const BaselineReviewPage: React.FC = () => {
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <h4 className={`text-sm font-semibold tracking-tight ${textClass}`}>
+                    <h4
+                      className={`text-sm font-semibold tracking-tight ${textClass}`}
+                    >
                       {step.name}
                     </h4>
                     {state === "running" && (
@@ -941,9 +1027,11 @@ export const BaselineReviewPage: React.FC = () => {
             {user?.role !== "PROJECT_LEAD" && (
               <button
                 onClick={handleExtractClick}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-md"
+                className="group relative inline-flex items-center justify-center gap-2 px-6 py-2.5 font-semibold text-white transition-all duration-300 rounded-lg bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-400 hover:via-purple-400 hover:to-pink-400 shadow-[0_0_15px_rgba(168,85,247,0.4)] hover:shadow-[0_0_25px_rgba(236,72,153,0.6)] hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
               >
-                Extract Baseline
+                <Sparkles className="w-4 h-4 text-pink-100 group-hover:animate-pulse" />
+                <span className="tracking-wide text-sm">Extract Baseline</span>
+                <div className="absolute inset-0 rounded-lg ring-1 ring-inset ring-white/20 pointer-events-none"></div>
               </button>
             )}
             {baseline &&
@@ -953,16 +1041,20 @@ export const BaselineReviewPage: React.FC = () => {
                 <button
                   onClick={handleApprove}
                   disabled={isApproving}
-                  className="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-green-800 disabled:opacity-70 rounded-md flex items-center gap-2 cursor-pointer disabled:cursor-not-allowed transition-colors"
+                  className="group relative inline-flex items-center justify-center gap-2 px-6 py-2.5 font-semibold text-white transition-all duration-300 rounded-lg bg-gradient-to-r from-emerald-500 via-teal-500 to-green-600 hover:from-emerald-400 hover:via-teal-400 hover:to-green-500 shadow-[0_0_15px_rgba(16,185,129,0.4)] hover:shadow-[0_0_25px_rgba(20,184,166,0.6)] hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none cursor-pointer"
                 >
                   {isApproving ? (
                     <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Approving...
+                      <Loader2 className="w-4 h-4 animate-spin text-emerald-100" />
+                      <span className="tracking-wide text-sm">Approving...</span>
                     </>
                   ) : (
-                    "Approve Baseline"
+                    <>
+                      <CheckCircle2 className="w-4 h-4 text-emerald-100 group-hover:scale-110 transition-transform" />
+                      <span className="tracking-wide text-sm">Approve Baseline</span>
+                    </>
                   )}
+                  <div className="absolute inset-0 rounded-lg ring-1 ring-inset ring-white/20 pointer-events-none"></div>
                 </button>
               )}
           </div>
@@ -989,10 +1081,16 @@ export const BaselineReviewPage: React.FC = () => {
               {/* Section Header */}
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-1 h-7 rounded-full bg-gradient-to-b from-cyan-400 to-violet-500"></div>
-                <h2 className="text-xl font-bold tracking-tight">Deliverables Timeline</h2>
+                <h2 className="text-xl font-bold tracking-tight">
+                  Deliverables Timeline
+                </h2>
                 <span className="ml-auto text-xs font-medium text-gray-500 flex items-center gap-1.5">
                   <Calendar className="w-3.5 h-3.5" />
-                  {new Date().toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" })}
+                  {new Date().toLocaleDateString(undefined, {
+                    month: "long",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
                 </span>
               </div>
 
@@ -1000,690 +1098,1179 @@ export const BaselineReviewPage: React.FC = () => {
                 <p className="text-gray-400 mb-8">
                   No scheduled scope items found.
                 </p>
-              ) : (() => {
-                /* ── Parse dates & compute timeline bounds ── */
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-                const todayMs = today.getTime();
+              ) : (
+                (() => {
+                  /* ── Parse dates & compute timeline bounds ── */
+                  const today = new Date();
+                  today.setHours(0, 0, 0, 0);
+                  const todayMs = today.getTime();
 
-                const parsedItems = timelineItems.map((item: any, idx: number) => {
-                  const raw = item.deadline || item.deadline_text || null;
-                  let dateMs: number | null = null;
-                  if (raw) {
-                    let d = new Date(raw);
-                    if (isNaN(d.getTime()) && typeof raw === "string") {
-                      d = new Date(raw.replace(" ", "T"));
-                    }
-                    if (!isNaN(d.getTime())) {
-                      d.setHours(0, 0, 0, 0);
-                      dateMs = d.getTime();
+                  const parsedItems = timelineItems.map(
+                    (item: any, idx: number) => {
+                      const raw = item.deadline || item.deadline_text || null;
+                      let dateMs: number | null = null;
+                      if (raw) {
+                        let d = new Date(raw);
+                        if (isNaN(d.getTime()) && typeof raw === "string") {
+                          d = new Date(raw.replace(" ", "T"));
+                        }
+                        if (!isNaN(d.getTime())) {
+                          d.setHours(0, 0, 0, 0);
+                          dateMs = d.getTime();
+                        }
+                      }
+
+                      // Determine status-based color scheme
+                      const completionStatus =
+                        item.completion_status || "ACTIVE";
+                      let itemColor = {
+                        bg: "rgba(245,158,11,0.12)",
+                        border: "#f59e0b",
+                        text: "#fcd34d",
+                        dot: "#f59e0b",
+                        glow: "rgba(245,158,11,0.3)",
+                      }; // Pending/Active (Amber)
+                      if (completionStatus === "COMPLETED") {
+                        itemColor = {
+                          bg: "rgba(16,185,129,0.12)",
+                          border: "#10b981",
+                          text: "#6ee7b7",
+                          dot: "#10b981",
+                          glow: "rgba(16,185,129,0.3)",
+                        }; // Completed (Green)
+                      } else if (completionStatus === "CANCELLED") {
+                        itemColor = {
+                          bg: "rgba(244,63,94,0.12)",
+                          border: "#f43f5e",
+                          text: "#fda4af",
+                          dot: "#f43f5e",
+                          glow: "rgba(244,63,94,0.3)",
+                        }; // Cancelled (Red)
+                      }
+
+                      return {
+                        ...item,
+                        _dateMs: dateMs,
+                        _idx: idx,
+                        _color: itemColor,
+                      };
+                    },
+                  );
+
+                  const datedItems = parsedItems.filter(
+                    (i: any) => i._dateMs !== null,
+                  );
+                  const hasDates = datedItems.length >= 1;
+
+                  let minMs = todayMs;
+                  let maxMs = todayMs;
+                  if (hasDates) {
+                    const allMs = [
+                      ...datedItems.map((i: any) => i._dateMs as number),
+                      todayMs,
+                    ];
+                    minMs = Math.min(...allMs);
+                    maxMs = Math.max(...allMs);
+                    // Add padding on each side so edge items aren't clipped
+                    const range = maxMs - minMs || 86400000 * 30;
+                    minMs -= range * 0.08;
+                    maxMs += range * 0.08;
+                  }
+
+                  const totalRange = maxMs - minMs || 1;
+                  const toPercent = (ms: number) =>
+                    Math.max(
+                      2,
+                      Math.min(98, ((ms - minMs) / totalRange) * 100),
+                    );
+                  const todayPct = hasDates ? toPercent(todayMs) : -1;
+
+                  /* ── Generate month tick marks ── */
+                  const monthTicks: { pct: number; label: string }[] = [];
+                  if (hasDates) {
+                    const startDate = new Date(minMs);
+                    const endDate = new Date(maxMs);
+                    const cur = new Date(
+                      startDate.getFullYear(),
+                      startDate.getMonth(),
+                      1,
+                    );
+                    while (cur <= endDate) {
+                      const pct = ((cur.getTime() - minMs) / totalRange) * 100;
+                      if (pct >= 0 && pct <= 100) {
+                        monthTicks.push({
+                          pct,
+                          label: cur.toLocaleDateString(undefined, {
+                            month: "short",
+                            year: "2-digit",
+                          }),
+                        });
+                      }
+                      cur.setMonth(cur.getMonth() + 1);
                     }
                   }
 
-                  // Determine status-based color scheme
-                  const completionStatus = item.completion_status || "ACTIVE";
-                  let itemColor = { bg: "rgba(245,158,11,0.12)", border: "#f59e0b", text: "#fcd34d", dot: "#f59e0b", glow: "rgba(245,158,11,0.3)" }; // Pending/Active (Amber)
-                  if (completionStatus === "COMPLETED") {
-                    itemColor = { bg: "rgba(16,185,129,0.12)", border: "#10b981", text: "#6ee7b7", dot: "#10b981", glow: "rgba(16,185,129,0.3)" }; // Completed (Green)
-                  } else if (completionStatus === "CANCELLED") {
-                    itemColor = { bg: "rgba(244,63,94,0.12)", border: "#f43f5e", text: "#fda4af", dot: "#f43f5e", glow: "rgba(244,63,94,0.3)" }; // Cancelled (Red)
-                  }
+                  /* ── Position items ── */
+                  const getLeftPct = (item: any, idx: number) => {
+                    if (hasDates && item._dateMs !== null) {
+                      return toPercent(item._dateMs);
+                    }
+                    // Fallback: evenly spaced between 8% and 92%
+                    const count = parsedItems.length;
+                    return count === 1 ? 50 : 8 + (idx / (count - 1)) * 84;
+                  };
 
-                  return { ...item, _dateMs: dateMs, _idx: idx, _color: itemColor };
-                });
-
-
-                const datedItems = parsedItems.filter((i: any) => i._dateMs !== null);
-                const hasDates = datedItems.length >= 1;
-
-                let minMs = todayMs;
-                let maxMs = todayMs;
-                if (hasDates) {
-                  const allMs = [...datedItems.map((i: any) => i._dateMs as number), todayMs];
-                  minMs = Math.min(...allMs);
-                  maxMs = Math.max(...allMs);
-                  // Add padding on each side so edge items aren't clipped
-                  const range = maxMs - minMs || 86400000 * 30;
-                  minMs -= range * 0.08;
-                  maxMs += range * 0.08;
-                }
-
-                const totalRange = maxMs - minMs || 1;
-                const toPercent = (ms: number) => Math.max(2, Math.min(98, ((ms - minMs) / totalRange) * 100));
-                const todayPct = hasDates ? toPercent(todayMs) : -1;
-
-                /* ── Generate month tick marks ── */
-                const monthTicks: { pct: number; label: string }[] = [];
-                if (hasDates) {
-                  const startDate = new Date(minMs);
-                  const endDate = new Date(maxMs);
-                  const cur = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
-                  while (cur <= endDate) {
-                    const pct = ((cur.getTime() - minMs) / totalRange) * 100;
-                    if (pct >= 0 && pct <= 100) {
-                      monthTicks.push({
-                        pct,
-                        label: cur.toLocaleDateString(undefined, { month: "short", year: "2-digit" }),
+                  const formatItemDate = (item: any) => {
+                    const raw = item.deadline_text || item.deadline;
+                    if (!raw) return item.milestone || `Item ${item._idx + 1}`;
+                    try {
+                      let d = new Date(raw);
+                      if (isNaN(d.getTime()) && typeof raw === "string") {
+                        d = new Date(raw.replace(" ", "T"));
+                      }
+                      if (isNaN(d.getTime())) return raw;
+                      return d.toLocaleDateString(undefined, {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
                       });
+                    } catch {
+                      return raw;
                     }
-                    cur.setMonth(cur.getMonth() + 1);
-                  }
-                }
+                  };
 
-                /* ── Position items ── */
-                const getLeftPct = (item: any, idx: number) => {
-                  if (hasDates && item._dateMs !== null) {
-                    return toPercent(item._dateMs);
-                  }
-                  // Fallback: evenly spaced between 8% and 92%
-                  const count = parsedItems.length;
-                  return count === 1 ? 50 : 8 + (idx / (count - 1)) * 84;
-                };
+                  const isPast = (item: any) =>
+                    item._dateMs !== null && item._dateMs < todayMs;
 
-                const formatItemDate = (item: any) => {
-                  const raw = item.deadline_text || item.deadline;
-                  if (!raw) return item.milestone || `Item ${item._idx + 1}`;
-                  try {
-                    let d = new Date(raw);
-                    if (isNaN(d.getTime()) && typeof raw === "string") {
-                      d = new Date(raw.replace(" ", "T"));
-                    }
-                    if (isNaN(d.getTime())) return raw;
-                    return d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
-                  } catch { return raw; }
-                };
+                  const selectedItem =
+                    parsedItems.find(
+                      (d: any) => d.id === selectedDeliverableId,
+                    ) || parsedItems[0];
 
-                const isPast = (item: any) => item._dateMs !== null && item._dateMs < todayMs;
+                  /* ── Determine alternating above/below positions ── */
+                  const sortedByPosition = [...parsedItems].sort(
+                    (a: any, b: any) =>
+                      getLeftPct(a, a._idx) - getLeftPct(b, b._idx),
+                  );
+                  const positionMap = new Map<number, boolean>();
+                  sortedByPosition.forEach((item: any, i: number) => {
+                    positionMap.set(item.id, i % 2 === 0); // true = above, false = below
+                  });
 
-                const selectedItem = parsedItems.find((d: any) => d.id === selectedDeliverableId) || parsedItems[0];
+                  /* ── Track midpoint Y for consistent reference ── */
+                  const TRACK_Y = 120;
+                  const ABOVE_LABEL_TOP = 16;
+                  const BELOW_LABEL_START = TRACK_Y + 8;
 
-                /* ── Determine alternating above/below positions ── */
-                const sortedByPosition = [...parsedItems].sort((a: any, b: any) => getLeftPct(a, a._idx) - getLeftPct(b, b._idx));
-                const positionMap = new Map<number, boolean>();
-                sortedByPosition.forEach((item: any, i: number) => {
-                  positionMap.set(item.id, i % 2 === 0); // true = above, false = below
-                });
-
-                /* ── Track midpoint Y for consistent reference ── */
-                const TRACK_Y = 120;
-                const ABOVE_LABEL_TOP = 16;
-                const BELOW_LABEL_START = TRACK_Y + 8;
-
-                return (
-                  <div>
-                    {/* ── Navigation row ── */}
-                    <div className="flex items-center gap-3 mb-3">
-                      <button
-                        onClick={handlePrev}
-                        disabled={activeIndex <= 0}
-                        className="flex-shrink-0 w-9 h-9 rounded-full bg-gray-900/80 border border-gray-700/60 text-gray-400 hover:text-white hover:bg-gray-800 hover:border-gray-600 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-all cursor-pointer z-10 shadow-md backdrop-blur-sm"
-                      >
-                        <ChevronLeft className="w-4 h-4" />
-                      </button>
-                      <div className="flex-1 flex items-center justify-center">
-                        <span className="text-[11px] text-gray-500 tracking-wide">
-                          {activeIndex + 1} of {timelineItems.length} deliverables
-                        </span>
+                  return (
+                    <div>
+                      {/* ── Navigation row ── */}
+                      <div className="flex items-center gap-3 mb-3">
+                        <button
+                          onClick={handlePrev}
+                          disabled={activeIndex <= 0}
+                          className="flex-shrink-0 w-9 h-9 rounded-full bg-gray-900/80 border border-gray-700/60 text-gray-400 hover:text-white hover:bg-gray-800 hover:border-gray-600 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-all cursor-pointer z-10 shadow-md backdrop-blur-sm"
+                        >
+                          <ChevronLeft className="w-4 h-4" />
+                        </button>
+                        <div className="flex-1 flex items-center justify-center">
+                          <span className="text-[11px] text-gray-500 tracking-wide">
+                            {activeIndex + 1} of {timelineItems.length}{" "}
+                            deliverables
+                          </span>
+                        </div>
+                        <button
+                          onClick={handleNext}
+                          disabled={activeIndex >= timelineItems.length - 1}
+                          className="flex-shrink-0 w-9 h-9 rounded-full bg-gray-900/80 border border-gray-700/60 text-gray-400 hover:text-white hover:bg-gray-800 hover:border-gray-600 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-all cursor-pointer z-10 shadow-md backdrop-blur-sm"
+                        >
+                          <ChevronRight className="w-4 h-4" />
+                        </button>
                       </div>
-                      <button
-                        onClick={handleNext}
-                        disabled={activeIndex >= timelineItems.length - 1}
-                        className="flex-shrink-0 w-9 h-9 rounded-full bg-gray-900/80 border border-gray-700/60 text-gray-400 hover:text-white hover:bg-gray-800 hover:border-gray-600 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-all cursor-pointer z-10 shadow-md backdrop-blur-sm"
-                      >
-                        <ChevronRight className="w-4 h-4" />
-                      </button>
-                    </div>
 
-                    {/* ── Timeline Canvas ── */}
-                    <div className="relative rounded-2xl border border-gray-800/60 bg-gradient-to-br from-gray-900/60 via-gray-950/80 to-gray-900/60 backdrop-blur-sm overflow-visible">
-                      {/* Subtle grid background pattern */}
-                      <div className="absolute inset-0 rounded-2xl overflow-hidden opacity-[0.03]" style={{
-                        backgroundImage: "radial-gradient(circle, #fff 1px, transparent 1px)",
-                        backgroundSize: "24px 24px"
-                      }}></div>
-
-                      {/* Responsive track container — no horizontal scroll, uses % positioning */}
-                      <div
-                        ref={timelineContainerRef}
-                        className="relative w-full"
-                        style={{ height: "260px", padding: "0 16px" }}
-                      >
-
-                        {/* ── Month tick marks ── */}
-                        {monthTicks.map((tick, i) => (
-                          <div key={`tick-${i}`} className="absolute flex flex-col items-center pointer-events-none" style={{ left: `${tick.pct}%`, top: "10px", bottom: "40px" }}>
-                            <span className="text-[9px] text-gray-600 font-medium tracking-wider uppercase whitespace-nowrap" style={{ transform: "translateX(-50%)" }}>
-                              {tick.label}
-                            </span>
-                            <div className="w-px flex-1 bg-gray-800/40 mt-1"></div>
-                          </div>
-                        ))}
-
-                        {/* ── Main track line ── */}
+                      {/* ── Timeline Canvas ── */}
+                      <div className="relative rounded-2xl border border-gray-800/60 bg-gradient-to-br from-gray-900/60 via-gray-950/80 to-gray-900/60 backdrop-blur-sm overflow-visible">
+                        {/* Subtle grid background pattern */}
                         <div
-                          className="absolute h-[3px] rounded-full timeline-track-shimmer"
-                          style={{ top: `${TRACK_Y}px`, left: "16px", right: "16px" }}
+                          className="absolute inset-0 rounded-2xl overflow-hidden opacity-[0.03]"
+                          style={{
+                            backgroundImage:
+                              "radial-gradient(circle, #fff 1px, transparent 1px)",
+                            backgroundSize: "24px 24px",
+                          }}
                         ></div>
 
-                        {/* ── Gradient overlay on track (past = colored, future = dim) ── */}
-                        {hasDates && todayPct >= 0 && todayPct <= 100 && (
+                        {/* Responsive track container — no horizontal scroll, uses % positioning */}
+                        <div
+                          ref={timelineContainerRef}
+                          className="relative w-full"
+                          style={{ height: "260px", padding: "0 16px" }}
+                        >
+                          {/* ── Month tick marks ── */}
+                          {monthTicks.map((tick, i) => (
+                            <div
+                              key={`tick-${i}`}
+                              className="absolute flex flex-col items-center pointer-events-none"
+                              style={{
+                                left: `${tick.pct}%`,
+                                top: "10px",
+                                bottom: "40px",
+                              }}
+                            >
+                              <span
+                                className="text-[9px] text-gray-600 font-medium tracking-wider uppercase whitespace-nowrap"
+                                style={{ transform: "translateX(-50%)" }}
+                              >
+                                {tick.label}
+                              </span>
+                              <div className="w-px flex-1 bg-gray-800/40 mt-1"></div>
+                            </div>
+                          ))}
+
+                          {/* ── Main track line ── */}
                           <div
-                            className="absolute h-[3px] rounded-l-full"
+                            className="absolute h-[3px] rounded-full timeline-track-shimmer"
                             style={{
                               top: `${TRACK_Y}px`,
                               left: "16px",
-                              width: `calc(${todayPct}% - 16px)`,
-                              background: "linear-gradient(90deg, #06b6d4, #8b5cf6, #f59e0b)",
-                              opacity: 0.6,
+                              right: "16px",
                             }}
                           ></div>
-                        )}
 
-                        {/* ── TODAY marker ── */}
-                        {hasDates && todayPct >= 0 && todayPct <= 100 && (
-                          <div className="absolute flex flex-col items-center z-30 pointer-events-none" style={{ left: `${todayPct}%`, top: `${TRACK_Y - 46}px`, transform: "translateX(-50%)" }}>
-                            {/* Label */}
-                            <div className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-widest bg-orange-500/20 text-orange-300 border border-orange-500/40 shadow-lg whitespace-nowrap"
-                              style={{ animation: "todayPulse 2s ease-in-out infinite" }}>
-                              ● Today
+                          {/* ── Gradient overlay on track (past = colored, future = dim) ── */}
+                          {hasDates && todayPct >= 0 && todayPct <= 100 && (
+                            <div
+                              className="absolute h-[3px] rounded-l-full"
+                              style={{
+                                top: `${TRACK_Y}px`,
+                                left: "16px",
+                                width: `calc(${todayPct}% - 16px)`,
+                                background:
+                                  "linear-gradient(90deg, #06b6d4, #8b5cf6, #f59e0b)",
+                                opacity: 0.6,
+                              }}
+                            ></div>
+                          )}
+
+                          {/* ── TODAY marker ── */}
+                          {hasDates && todayPct >= 0 && todayPct <= 100 && (
+                            <div
+                              className="absolute flex flex-col items-center z-30 pointer-events-none"
+                              style={{
+                                left: `${todayPct}%`,
+                                top: `${TRACK_Y - 46}px`,
+                                transform: "translateX(-50%)",
+                              }}
+                            >
+                              {/* Label */}
+                              <div
+                                className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-widest bg-orange-500/20 text-orange-300 border border-orange-500/40 shadow-lg whitespace-nowrap"
+                                style={{
+                                  animation:
+                                    "todayPulse 2s ease-in-out infinite",
+                                }}
+                              >
+                                ● Today
+                              </div>
+                              {/* Vertical line from label down through track and below */}
+                              <div
+                                className="w-0.5 bg-orange-400/60 rounded-full mt-1"
+                                style={{
+                                  height: `${46 + 50}px`,
+                                  animation:
+                                    "todayLinePulse 2s ease-in-out infinite",
+                                }}
+                              ></div>
+                              {/* Date below */}
+                              <span className="text-[9px] text-orange-400/70 mt-0.5 whitespace-nowrap font-medium">
+                                {today.toLocaleDateString(undefined, {
+                                  month: "short",
+                                  day: "numeric",
+                                })}
+                              </span>
                             </div>
-                            {/* Vertical line from label down through track and below */}
-                            <div className="w-0.5 bg-orange-400/60 rounded-full mt-1" style={{ height: `${46 + 50}px`, animation: "todayLinePulse 2s ease-in-out infinite" }}></div>
-                            {/* Date below */}
-                            <span className="text-[9px] text-orange-400/70 mt-0.5 whitespace-nowrap font-medium">
-                              {today.toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                          )}
+
+                          {/* ── Deliverable Nodes ── */}
+                          {parsedItems.map((item: any, idx: number) => {
+                            const isSelected =
+                              selectedDeliverableId === item.id;
+                            const leftPct = getLeftPct(item, idx);
+                            const color = item._color;
+                            const isAbove = positionMap.get(item.id) ?? true;
+                            const dateStr = formatItemDate(item);
+                            const past = isPast(item);
+                            const completionStatus =
+                              item.latest_progress?.status_code ||
+                              item.completion_status ||
+                              "ACTIVE";
+                            const isCompleted =
+                              completionStatus === "COMPLETED";
+                            const isCancelled =
+                              completionStatus === "CANCELLED";
+                            const isAlert =
+                              past && !isCompleted && !isCancelled;
+
+                            return (
+                              <div
+                                key={item.id}
+                                data-active={isSelected}
+                                className="absolute flex flex-col items-center cursor-pointer group"
+                                style={{
+                                  left: `${leftPct}%`,
+                                  top: isAbove
+                                    ? `${ABOVE_LABEL_TOP}px`
+                                    : `${TRACK_Y - 6}px`,
+                                  transform: "translateX(-50%)",
+                                  zIndex: isSelected ? 20 : 10,
+                                }}
+                                onClick={() =>
+                                  setSelectedDeliverableId(item.id)
+                                }
+                              >
+                                {isAbove ? (
+                                  <>
+                                    {/* Date label */}
+                                    <div
+                                      className="px-2 py-0.5 rounded-md text-[10px] font-semibold shadow-md transition-all duration-300 border whitespace-nowrap max-w-[110px] truncate text-center"
+                                      style={
+                                        isSelected
+                                          ? {
+                                              borderColor: color.border,
+                                              backgroundColor: color.bg,
+                                              color: color.text,
+                                              boxShadow: `0 2px 12px ${color.glow}`,
+                                            }
+                                          : {
+                                              borderColor: "rgba(55,65,81,0.5)",
+                                              backgroundColor:
+                                                "rgba(17,24,39,0.85)",
+                                              color: "#9ca3af",
+                                            }
+                                      }
+                                      title={dateStr}
+                                    >
+                                      {dateStr}
+                                    </div>
+                                    {/* Name */}
+                                    <span
+                                      className={`text-[9px] mt-0.5 max-w-[100px] truncate text-center leading-tight transition-colors ${
+                                        isSelected
+                                          ? "font-semibold"
+                                          : "text-gray-600 group-hover:text-gray-400"
+                                      }`}
+                                      style={
+                                        isSelected ? { color: color.text } : {}
+                                      }
+                                      title={
+                                        item.scope_item_normalized || item.name
+                                      }
+                                    >
+                                      {item.scope_item_normalized || item.name}
+                                    </span>
+                                    {/* Badges */}
+                                    {(() => {
+                                      const mData = getMilestoneData(
+                                        item.name,
+                                        item.milestone_normalized,
+                                      );
+                                      if (!mData) return null;
+                                      const blockingCount = mData.blocking_ids
+                                        ? mData.blocking_ids.split(",").length
+                                        : 0;
+                                      const blockedByCount =
+                                        mData.blocked_by_ids
+                                          ? mData.blocked_by_ids.split(",")
+                                              .length
+                                          : 0;
+                                      if (
+                                        blockingCount === 0 &&
+                                        blockedByCount === 0
+                                      )
+                                        return null;
+                                      return (
+                                        <div className="flex flex-col gap-0.5 mt-1 items-center">
+                                          {blockedByCount > 0 && (
+                                            <span
+                                              className="text-[8px] bg-red-900/40 text-red-300 border border-red-800/50 px-1 rounded truncate max-w-[90px]"
+                                              title={`Blocked By ${blockedByCount} Milestones`}
+                                            >
+                                              Blocked By: {blockedByCount}
+                                            </span>
+                                          )}
+                                          {blockingCount > 0 && (
+                                            <span
+                                              className="text-[8px] bg-orange-900/40 text-orange-300 border border-orange-800/50 px-1 rounded truncate max-w-[90px]"
+                                              title={`Blocking ${blockingCount} Milestones`}
+                                            >
+                                              Blocking: {blockingCount}
+                                            </span>
+                                          )}
+                                        </div>
+                                      );
+                                    })()}
+                                    {/* Connector line down to track */}
+                                    <div
+                                      className="w-px transition-colors duration-300"
+                                      style={{
+                                        height: `${TRACK_Y - ABOVE_LABEL_TOP - 40}px`,
+                                        backgroundColor: isSelected
+                                          ? color.border
+                                          : "#374151",
+                                        minHeight: "12px",
+                                      }}
+                                    ></div>
+                                    {/* Node dot on the track */}
+                                    <div
+                                      className={`relative w-[14px] h-[14px] rounded-full timeline-node-enter transition-all duration-300 flex-shrink-0 ${
+                                        isSelected
+                                          ? "scale-[1.4]"
+                                          : "group-hover:scale-125"
+                                      }`}
+                                      style={{
+                                        backgroundColor:
+                                          isAlert || isCompleted
+                                            ? "transparent"
+                                            : isSelected
+                                              ? color.dot
+                                              : isCancelled
+                                                ? color.dot
+                                                : "#4b5563",
+                                        boxShadow:
+                                          isSelected &&
+                                          !(isAlert || isCompleted)
+                                            ? `0 0 10px ${color.glow}, 0 0 20px ${color.glow}`
+                                            : "none",
+                                        opacity: isCompleted
+                                          ? 0.75
+                                          : isCancelled
+                                            ? 0.5
+                                            : 1,
+                                        animationDelay: `${idx * 60}ms`,
+                                      }}
+                                    >
+                                      {isCompleted ? (
+                                        <CheckCircle2
+                                          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[18px] h-[18px] text-emerald-400 bg-gray-900 rounded-full z-10"
+                                          style={{
+                                            filter:
+                                              "drop-shadow(0 0 2px rgba(16,185,129,0.5))",
+                                          }}
+                                        />
+                                      ) : isAlert ? (
+                                        <svg
+                                          xmlns="http://www.w3.org/2000/svg"
+                                          viewBox="0 0 24 24"
+                                          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[18px] h-[18px] z-10"
+                                          style={{
+                                            filter:
+                                              "drop-shadow(0 0 4px rgba(239,68,68,0.8))",
+                                          }}
+                                        >
+                                          <path
+                                            d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
+                                            fill="#ef4444"
+                                          />
+                                          <line
+                                            x1="12"
+                                            y1="9"
+                                            x2="12"
+                                            y2="13"
+                                            stroke="#ffffff"
+                                            strokeWidth="2.5"
+                                            strokeLinecap="round"
+                                          />
+                                          <circle
+                                            cx="12"
+                                            cy="17"
+                                            r="1.25"
+                                            fill="#ffffff"
+                                          />
+                                        </svg>
+                                      ) : null}
+                                      {isSelected && (
+                                        <span
+                                          className="absolute inset-0 rounded-full animate-ping"
+                                          style={{
+                                            backgroundColor: isAlert
+                                              ? "#ef4444"
+                                              : isCompleted
+                                                ? "#10b981"
+                                                : color.dot,
+                                            opacity: 0.25,
+                                          }}
+                                        ></span>
+                                      )}
+                                    </div>
+                                  </>
+                                ) : (
+                                  <>
+                                    {/* Node dot on the track */}
+                                    <div
+                                      className={`relative w-[14px] h-[14px] rounded-full timeline-node-enter transition-all duration-300 flex-shrink-0 ${
+                                        isSelected
+                                          ? "scale-[1.4]"
+                                          : "group-hover:scale-125"
+                                      }`}
+                                      style={{
+                                        backgroundColor:
+                                          isAlert || isCompleted
+                                            ? "transparent"
+                                            : isSelected
+                                              ? color.dot
+                                              : isCancelled
+                                                ? color.dot
+                                                : "#4b5563",
+                                        boxShadow:
+                                          isSelected &&
+                                          !(isAlert || isCompleted)
+                                            ? `0 0 10px ${color.glow}, 0 0 20px ${color.glow}`
+                                            : "none",
+                                        opacity: isCompleted
+                                          ? 0.75
+                                          : isCancelled
+                                            ? 0.5
+                                            : 1,
+                                        animationDelay: `${idx * 60}ms`,
+                                      }}
+                                    >
+                                      {isCompleted ? (
+                                        <CheckCircle2
+                                          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[18px] h-[18px] text-emerald-400 bg-gray-900 rounded-full z-10"
+                                          style={{
+                                            filter:
+                                              "drop-shadow(0 0 2px rgba(16,185,129,0.5))",
+                                          }}
+                                        />
+                                      ) : isAlert ? (
+                                        <svg
+                                          xmlns="http://www.w3.org/2000/svg"
+                                          viewBox="0 0 24 24"
+                                          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[18px] h-[18px] z-10"
+                                          style={{
+                                            filter:
+                                              "drop-shadow(0 0 4px rgba(239,68,68,0.8))",
+                                          }}
+                                        >
+                                          <path
+                                            d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
+                                            fill="#ef4444"
+                                          />
+                                          <line
+                                            x1="12"
+                                            y1="9"
+                                            x2="12"
+                                            y2="13"
+                                            stroke="#ffffff"
+                                            strokeWidth="2.5"
+                                            strokeLinecap="round"
+                                          />
+                                          <circle
+                                            cx="12"
+                                            cy="17"
+                                            r="1.25"
+                                            fill="#ffffff"
+                                          />
+                                        </svg>
+                                      ) : null}
+                                      {isSelected && (
+                                        <span
+                                          className="absolute inset-0 rounded-full animate-ping"
+                                          style={{
+                                            backgroundColor: isAlert
+                                              ? "#ef4444"
+                                              : isCompleted
+                                                ? "#10b981"
+                                                : color.dot,
+                                            opacity: 0.25,
+                                          }}
+                                        ></span>
+                                      )}
+                                    </div>
+                                    {/* Connector line down from track */}
+                                    <div
+                                      className="w-px transition-colors duration-300"
+                                      style={{
+                                        height: "16px",
+                                        backgroundColor: isSelected
+                                          ? color.border
+                                          : "#374151",
+                                      }}
+                                    ></div>
+                                    {/* Date label */}
+                                    <div
+                                      className="px-2 py-0.5 rounded-md text-[10px] font-semibold shadow-md transition-all duration-300 border whitespace-nowrap max-w-[110px] truncate text-center"
+                                      style={
+                                        isSelected
+                                          ? {
+                                              borderColor: color.border,
+                                              backgroundColor: color.bg,
+                                              color: color.text,
+                                              boxShadow: `0 2px 12px ${color.glow}`,
+                                            }
+                                          : {
+                                              borderColor: "rgba(55,65,81,0.5)",
+                                              backgroundColor:
+                                                "rgba(17,24,39,0.85)",
+                                              color: "#9ca3af",
+                                            }
+                                      }
+                                      title={dateStr}
+                                    >
+                                      {dateStr}
+                                    </div>
+                                    {/* Name */}
+                                    <span
+                                      className={`text-[9px] mt-0.5 max-w-[100px] truncate text-center leading-tight transition-colors ${
+                                        isSelected
+                                          ? "font-semibold"
+                                          : "text-gray-600 group-hover:text-gray-400"
+                                      }`}
+                                      style={
+                                        isSelected ? { color: color.text } : {}
+                                      }
+                                      title={
+                                        item.scope_item_normalized || item.name
+                                      }
+                                    >
+                                      {item.scope_item_normalized || item.name}
+                                    </span>
+                                    {/* Badges */}
+                                    {(() => {
+                                      const mData = getMilestoneData(
+                                        item.name,
+                                        item.milestone_normalized,
+                                      );
+                                      if (!mData) return null;
+                                      const blockingCount = mData.blocking_ids
+                                        ? mData.blocking_ids.split(",").length
+                                        : 0;
+                                      const blockedByCount =
+                                        mData.blocked_by_ids
+                                          ? mData.blocked_by_ids.split(",")
+                                              .length
+                                          : 0;
+                                      if (
+                                        blockingCount === 0 &&
+                                        blockedByCount === 0
+                                      )
+                                        return null;
+                                      return (
+                                        <div className="flex flex-col gap-0.5 mt-1 items-center">
+                                          {blockedByCount > 0 && (
+                                            <span
+                                              className="text-[8px] bg-red-900/40 text-red-300 border border-red-800/50 px-1 rounded truncate max-w-[90px]"
+                                              title={`Blocked By ${blockedByCount} Milestones`}
+                                            >
+                                              Blocked By: {blockedByCount}
+                                            </span>
+                                          )}
+                                          {blockingCount > 0 && (
+                                            <span
+                                              className="text-[8px] bg-orange-900/40 text-orange-300 border border-orange-800/50 px-1 rounded truncate max-w-[90px]"
+                                              title={`Blocking ${blockingCount} Milestones`}
+                                            >
+                                              Blocking: {blockingCount}
+                                            </span>
+                                          )}
+                                        </div>
+                                      );
+                                    })()}
+                                  </>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        {/* ── Legend ── */}
+                        <div className="flex items-center gap-4 px-5 py-3 border-t border-gray-800/40 flex-wrap">
+                          {hasDates && (
+                            <div className="flex items-center gap-1.5">
+                              <div
+                                className="w-2.5 h-2.5 rounded-full bg-orange-400"
+                                style={{
+                                  animation:
+                                    "todayPulse 2s ease-in-out infinite",
+                                }}
+                              ></div>
+                              <span className="text-[10px] text-gray-500 font-medium">
+                                Today
+                              </span>
+                            </div>
+                          )}
+                          <div className="flex items-center gap-1.5">
+                            <div className="w-2.5 h-2.5 rounded-full bg-amber-500"></div>
+                            <span className="text-[10px] text-gray-500 font-medium">
+                              Pending
                             </span>
                           </div>
-                        )}
+                          <div className="flex items-center gap-1.5">
+                            <div className="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
+                            <span className="text-[10px] text-gray-500 font-medium">
+                              Completed
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <div className="w-2.5 h-2.5 rounded-full bg-red-500"></div>
+                            <span className="text-[10px] text-gray-500 font-medium">
+                              Cancelled
+                            </span>
+                          </div>
+                        </div>
+                      </div>
 
-                        {/* ── Deliverable Nodes ── */}
-                        {parsedItems.map((item: any, idx: number) => {
-                          const isSelected = selectedDeliverableId === item.id;
-                          const leftPct = getLeftPct(item, idx);
-                          const color = item._color;
-                          const isAbove = positionMap.get(item.id) ?? true;
-                          const dateStr = formatItemDate(item);
-                          const past = isPast(item);
-                          const completionStatus = item.latest_progress?.status_code || item.completion_status || "ACTIVE";
-                          const isCompleted = completionStatus === "COMPLETED";
-                          const isCancelled = completionStatus === "CANCELLED";
-                          const isAlert = past && !isCompleted && !isCancelled;
+                      {/* ── Selected Item Detail Card ── */}
+                      {selectedItem &&
+                        (() => {
+                          const color = selectedItem._color;
+                          const latestProgress = selectedItem.latest_progress;
+                          const completionStatus =
+                            latestProgress?.status_code ||
+                            selectedItem.completion_status ||
+                            "ACTIVE";
+                          const statusLabel =
+                            latestProgress?.status_label ||
+                            completionStatus.replace("_", " ");
+                          const progressPct =
+                            latestProgress?.progress_percentage;
+                          const executionSummary =
+                            latestProgress?.execution_summary;
+                          const updateSource = latestProgress?.document_name;
+                          const updateDate = latestProgress?.status_updated_at;
+                          let dependencies: string[] = [];
+                          try {
+                            if (latestProgress?.dependencies) {
+                              dependencies =
+                                typeof latestProgress.dependencies === "string"
+                                  ? JSON.parse(latestProgress.dependencies)
+                                  : latestProgress.dependencies;
+                            }
+                          } catch (e) {
+                            console.error("Failed to parse dependencies", e);
+                          }
 
                           return (
                             <div
-                              key={item.id}
-                              data-active={isSelected}
-                              className="absolute flex flex-col items-center cursor-pointer group"
+                              key={selectedItem.id}
+                              className="relative mt-5 rounded-2xl border backdrop-blur-sm shadow-2xl timeline-detail-enter overflow-hidden"
                               style={{
-                                left: `${leftPct}%`,
-                                top: isAbove ? `${ABOVE_LABEL_TOP}px` : `${TRACK_Y - 6}px`,
-                                transform: "translateX(-50%)",
-                                zIndex: isSelected ? 20 : 10,
+                                borderColor: `${color.border}25`,
+                                background: `linear-gradient(135deg, ${color.bg}, rgba(17,24,39,0.95))`,
                               }}
-                              onClick={() => setSelectedDeliverableId(item.id)}
                             >
-                              {isAbove ? (
-                                <>
-                                  {/* Date label */}
-                                  <div
-                                    className="px-2 py-0.5 rounded-md text-[10px] font-semibold shadow-md transition-all duration-300 border whitespace-nowrap max-w-[110px] truncate text-center"
-                                    style={isSelected ? {
-                                      borderColor: color.border,
-                                      backgroundColor: color.bg,
-                                      color: color.text,
-                                      boxShadow: `0 2px 12px ${color.glow}`,
-                                    } : {
-                                      borderColor: "rgba(55,65,81,0.5)",
-                                      backgroundColor: "rgba(17,24,39,0.85)",
-                                      color: "#9ca3af",
-                                    }}
-                                    title={dateStr}
-                                  >
-                                    {dateStr}
-                                  </div>
-                                  {/* Name */}
-                                  <span
-                                    className={`text-[9px] mt-0.5 max-w-[100px] truncate text-center leading-tight transition-colors ${
-                                      isSelected ? "font-semibold" : "text-gray-600 group-hover:text-gray-400"
-                                    }`}
-                                    style={isSelected ? { color: color.text } : {}}
-                                    title={item.scope_item_normalized || item.name}
-                                  >
-                                    {item.scope_item_normalized || item.name}
-                                  </span>
-                                  {/* Badges */}
-                                  {(() => {
-                                    const mData = getMilestoneData(item.name, item.milestone_normalized);
-                                    if (!mData) return null;
-                                    const blockingCount = mData.blocking_ids ? mData.blocking_ids.split(',').length : 0;
-                                    const blockedByCount = mData.blocked_by_ids ? mData.blocked_by_ids.split(',').length : 0;
-                                    if (blockingCount === 0 && blockedByCount === 0) return null;
-                                    return (
-                                        <div className="flex flex-col gap-0.5 mt-1 items-center">
-                                            {blockedByCount > 0 && <span className="text-[8px] bg-red-900/40 text-red-300 border border-red-800/50 px-1 rounded truncate max-w-[90px]" title={`Blocked By ${blockedByCount} Milestones`}>Blocked By: {blockedByCount}</span>}
-                                            {blockingCount > 0 && <span className="text-[8px] bg-orange-900/40 text-orange-300 border border-orange-800/50 px-1 rounded truncate max-w-[90px]" title={`Blocking ${blockingCount} Milestones`}>Blocking: {blockingCount}</span>}
-                                        </div>
-                                    );
-                                  })()}
-                                  {/* Connector line down to track */}
-                                  <div className="w-px transition-colors duration-300" style={{ height: `${TRACK_Y - ABOVE_LABEL_TOP - 40}px`, backgroundColor: isSelected ? color.border : "#374151", minHeight: "12px" }}></div>
-                                  {/* Node dot on the track */}
-                                  <div
-                                    className={`relative w-[14px] h-[14px] rounded-full timeline-node-enter transition-all duration-300 flex-shrink-0 ${
-                                      isSelected ? "scale-[1.4]" : "group-hover:scale-125"
-                                    }`}
-                                    style={{
-                                      backgroundColor: (isAlert || isCompleted) ? "transparent" : (isSelected ? color.dot : (isCancelled ? color.dot : "#4b5563")),
-                                      boxShadow: isSelected && !(isAlert || isCompleted) ? `0 0 10px ${color.glow}, 0 0 20px ${color.glow}` : "none",
-                                      opacity: isCompleted ? 0.75 : isCancelled ? 0.5 : 1,
-                                      animationDelay: `${idx * 60}ms`,
-                                    }}
-                                  >
-                                    {isCompleted ? (
-                                      <CheckCircle2 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[18px] h-[18px] text-emerald-400 bg-gray-900 rounded-full z-10" style={{ filter: "drop-shadow(0 0 2px rgba(16,185,129,0.5))" }} />
-                                    ) : isAlert ? (
-                                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[18px] h-[18px] z-10" style={{ filter: "drop-shadow(0 0 4px rgba(239,68,68,0.8))" }}>
-                                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" fill="#ef4444" />
-                                        <line x1="12" y1="9" x2="12" y2="13" stroke="#ffffff" strokeWidth="2.5" strokeLinecap="round" />
-                                        <circle cx="12" cy="17" r="1.25" fill="#ffffff" />
-                                      </svg>
-                                    ) : null}
-                                    {isSelected && (
-                                      <span className="absolute inset-0 rounded-full animate-ping" style={{ backgroundColor: isAlert ? "#ef4444" : isCompleted ? "#10b981" : color.dot, opacity: 0.25 }}></span>
-                                    )}
-                                  </div>
-                                </>
-                              ) : (
-                                <>
-                                  {/* Node dot on the track */}
-                                  <div
-                                    className={`relative w-[14px] h-[14px] rounded-full timeline-node-enter transition-all duration-300 flex-shrink-0 ${
-                                      isSelected ? "scale-[1.4]" : "group-hover:scale-125"
-                                    }`}
-                                    style={{
-                                      backgroundColor: (isAlert || isCompleted) ? "transparent" : (isSelected ? color.dot : (isCancelled ? color.dot : "#4b5563")),
-                                      boxShadow: isSelected && !(isAlert || isCompleted) ? `0 0 10px ${color.glow}, 0 0 20px ${color.glow}` : "none",
-                                      opacity: isCompleted ? 0.75 : isCancelled ? 0.5 : 1,
-                                      animationDelay: `${idx * 60}ms`,
-                                    }}
-                                  >
-                                    {isCompleted ? (
-                                      <CheckCircle2 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[18px] h-[18px] text-emerald-400 bg-gray-900 rounded-full z-10" style={{ filter: "drop-shadow(0 0 2px rgba(16,185,129,0.5))" }} />
-                                    ) : isAlert ? (
-                                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[18px] h-[18px] z-10" style={{ filter: "drop-shadow(0 0 4px rgba(239,68,68,0.8))" }}>
-                                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" fill="#ef4444" />
-                                        <line x1="12" y1="9" x2="12" y2="13" stroke="#ffffff" strokeWidth="2.5" strokeLinecap="round" />
-                                        <circle cx="12" cy="17" r="1.25" fill="#ffffff" />
-                                      </svg>
-                                    ) : null}
-                                    {isSelected && (
-                                      <span className="absolute inset-0 rounded-full animate-ping" style={{ backgroundColor: isAlert ? "#ef4444" : isCompleted ? "#10b981" : color.dot, opacity: 0.25 }}></span>
-                                    )}
-                                  </div>
-                                  {/* Connector line down from track */}
-                                  <div className="w-px transition-colors duration-300" style={{ height: "16px", backgroundColor: isSelected ? color.border : "#374151" }}></div>
-                                  {/* Date label */}
-                                  <div
-                                    className="px-2 py-0.5 rounded-md text-[10px] font-semibold shadow-md transition-all duration-300 border whitespace-nowrap max-w-[110px] truncate text-center"
-                                    style={isSelected ? {
-                                      borderColor: color.border,
-                                      backgroundColor: color.bg,
-                                      color: color.text,
-                                      boxShadow: `0 2px 12px ${color.glow}`,
-                                    } : {
-                                      borderColor: "rgba(55,65,81,0.5)",
-                                      backgroundColor: "rgba(17,24,39,0.85)",
-                                      color: "#9ca3af",
-                                    }}
-                                    title={dateStr}
-                                  >
-                                    {dateStr}
-                                  </div>
-                                  {/* Name */}
-                                  <span
-                                    className={`text-[9px] mt-0.5 max-w-[100px] truncate text-center leading-tight transition-colors ${
-                                      isSelected ? "font-semibold" : "text-gray-600 group-hover:text-gray-400"
-                                    }`}
-                                    style={isSelected ? { color: color.text } : {}}
-                                    title={item.scope_item_normalized || item.name}
-                                  >
-                                    {item.scope_item_normalized || item.name}
-                                  </span>
-                                  {/* Badges */}
-                                  {(() => {
-                                    const mData = getMilestoneData(item.name, item.milestone_normalized);
-                                    if (!mData) return null;
-                                    const blockingCount = mData.blocking_ids ? mData.blocking_ids.split(',').length : 0;
-                                    const blockedByCount = mData.blocked_by_ids ? mData.blocked_by_ids.split(',').length : 0;
-                                    if (blockingCount === 0 && blockedByCount === 0) return null;
-                                    return (
-                                        <div className="flex flex-col gap-0.5 mt-1 items-center">
-                                            {blockedByCount > 0 && <span className="text-[8px] bg-red-900/40 text-red-300 border border-red-800/50 px-1 rounded truncate max-w-[90px]" title={`Blocked By ${blockedByCount} Milestones`}>Blocked By: {blockedByCount}</span>}
-                                            {blockingCount > 0 && <span className="text-[8px] bg-orange-900/40 text-orange-300 border border-orange-800/50 px-1 rounded truncate max-w-[90px]" title={`Blocking ${blockingCount} Milestones`}>Blocking: {blockingCount}</span>}
-                                        </div>
-                                    );
-                                  })()}
-                                </>
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
+                              {/* Accent bar */}
+                              <div
+                                className="absolute top-0 left-0 right-0 h-[2px] rounded-t-2xl"
+                                style={{
+                                  background: `linear-gradient(90deg, ${color.dot}, transparent)`,
+                                }}
+                              ></div>
 
-                      {/* ── Legend ── */}
-                      <div className="flex items-center gap-4 px-5 py-3 border-t border-gray-800/40 flex-wrap">
-                        {hasDates && (
-                          <div className="flex items-center gap-1.5">
-                            <div className="w-2.5 h-2.5 rounded-full bg-orange-400" style={{ animation: "todayPulse 2s ease-in-out infinite" }}></div>
-                            <span className="text-[10px] text-gray-500 font-medium">Today</span>
-                          </div>
-                        )}
-                        <div className="flex items-center gap-1.5">
-                          <div className="w-2.5 h-2.5 rounded-full bg-amber-500"></div>
-                          <span className="text-[10px] text-gray-500 font-medium">Pending</span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <div className="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
-                          <span className="text-[10px] text-gray-500 font-medium">Completed</span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <div className="w-2.5 h-2.5 rounded-full bg-red-500"></div>
-                          <span className="text-[10px] text-gray-500 font-medium">Cancelled</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* ── Selected Item Detail Card ── */}
-                    {selectedItem && (() => {
-                      const color = selectedItem._color;
-                      const latestProgress = selectedItem.latest_progress;
-                      const completionStatus = latestProgress?.status_code || selectedItem.completion_status || "ACTIVE";
-                      const statusLabel = latestProgress?.status_label || completionStatus.replace("_", " ");
-                      const progressPct = latestProgress?.progress_percentage;
-                      const executionSummary = latestProgress?.execution_summary;
-                      const updateSource = latestProgress?.document_name;
-                      const updateDate = latestProgress?.status_updated_at;
-                      let dependencies: string[] = [];
-                      try {
-                        if (latestProgress?.dependencies) {
-                          dependencies = typeof latestProgress.dependencies === 'string' ? JSON.parse(latestProgress.dependencies) : latestProgress.dependencies;
-                        }
-                      } catch (e) {
-                          console.error("Failed to parse dependencies", e);
-                      }
-
-                      return (
-                        <div
-                          key={selectedItem.id}
-                          className="relative mt-5 rounded-2xl border backdrop-blur-sm shadow-2xl timeline-detail-enter overflow-hidden"
-                          style={{
-                            borderColor: `${color.border}25`,
-                            background: `linear-gradient(135deg, ${color.bg}, rgba(17,24,39,0.95))`,
-                          }}
-                        >
-                          {/* Accent bar */}
-                          <div className="absolute top-0 left-0 right-0 h-[2px] rounded-t-2xl" style={{
-                            background: `linear-gradient(90deg, ${color.dot}, transparent)`,
-                          }}></div>
-
-                          <div className="p-5">
-                            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 mb-1">
-                                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: color.dot }}></span>
-                                  <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: color.text }}>
-                                    Selected Deliverable
-                                  </span>
-                                </div>
-                                <h3 className="font-bold text-lg text-white mt-0.5 leading-snug">
-                                  {selectedItem.scope_item_normalized || selectedItem.name}
-                                </h3>
-                                
-                                {executionSummary && (
-                                  <div className="mt-4 p-3 bg-blue-950/20 border border-blue-900/30 rounded-lg">
-                                    <h5 className="text-[10px] font-bold text-blue-400 uppercase tracking-wider mb-1 flex items-center gap-1.5">
-                                      <FileText className="w-3 h-3" /> Latest Update
-                                    </h5>
-                                    <p className="text-sm text-gray-200 leading-relaxed">{executionSummary}</p>
-                                  </div>
-                                )}
-
-                                {progressPct !== null && progressPct !== undefined && (
-                                  <div className="mt-4">
-                                    <div className="flex justify-between items-center mb-1.5">
-                                      <span className="text-xs font-semibold text-gray-400">Progress</span>
-                                      <span className="text-xs font-bold text-white">{progressPct}%</span>
+                              <div className="p-5">
+                                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2 mb-1">
+                                      <span
+                                        className="w-2 h-2 rounded-full"
+                                        style={{ backgroundColor: color.dot }}
+                                      ></span>
+                                      <span
+                                        className="text-[10px] font-bold uppercase tracking-widest"
+                                        style={{ color: color.text }}
+                                      >
+                                        Selected Deliverable
+                                      </span>
                                     </div>
-                                    <div className="w-full bg-gray-800 rounded-full h-1.5">
-                                      <div className="bg-emerald-500 h-1.5 rounded-full" style={{ width: `${progressPct}%` }}></div>
-                                    </div>
-                                  </div>
-                                )}
+                                    <h3 className="font-bold text-lg text-white mt-0.5 leading-snug">
+                                      {selectedItem.scope_item_normalized ||
+                                        selectedItem.name}
+                                    </h3>
 
-                                {(() => {
-                                  const mData = getMilestoneData(selectedItem.name, selectedItem.milestone_normalized);
-                                  const blockingCount = mData?.blocking_ids ? mData.blocking_ids.split(',').length : 0;
-                                  const blockedByCount = mData?.blocked_by_ids ? mData.blocked_by_ids.split(',').length : 0;
-                                  const blockedByIds = mData?.blocked_by_ids ? mData.blocked_by_ids.split(',') : [];
-                                  const blockingIds = mData?.blocking_ids ? mData.blocking_ids.split(',') : [];
-                                  
-                                  const getNames = (ids: string[]) => ids.map(id => {
-                                      const m = milestoneMap.get(id);
-                                      return m ? m.name : id;
-                                  });
-                                  
-                                  if (!mData || (blockingCount === 0 && blockedByCount === 0)) return null;
-                                  
-                                  return (
-                                    <div className="mt-4 p-3 bg-gray-900/40 border border-gray-700/50 rounded-lg">
-                                      <h5 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                                        <AlertTriangle className="w-3 h-3 text-orange-400" /> Milestone Dependencies
-                                      </h5>
-                                      {blockedByCount > 0 && (
-                                        <div className="mb-2">
-                                          <span className="text-xs text-red-400 font-semibold mb-1 block">Blocked By:</span>
-                                          <ul className="space-y-1">
-                                            {getNames(blockedByIds).map((n, i) => (
-                                              <li key={i} className="text-xs text-gray-300 flex items-start gap-2 bg-red-950/10 px-2 py-1 rounded border border-red-900/20">
-                                                <Circle className="w-1.5 h-1.5 mt-1 text-red-500 fill-red-500 flex-shrink-0" />
-                                                <span className="leading-tight">{n}</span>
-                                              </li>
-                                            ))}
-                                          </ul>
-                                        </div>
-                                      )}
-                                      {blockingCount > 0 && (
-                                        <div>
-                                          <span className="text-xs text-orange-400 font-semibold mb-1 block">Blocking {blockingCount} Milestone(s):</span>
-                                          <ul className="space-y-1">
-                                            {getNames(blockingIds).map((n, i) => (
-                                              <li key={i} className="text-xs text-gray-300 flex items-start gap-2 bg-orange-950/10 px-2 py-1 rounded border border-orange-900/20">
-                                                <Circle className="w-1.5 h-1.5 mt-1 text-orange-500 fill-orange-500 flex-shrink-0" />
-                                                <span className="leading-tight">{n}</span>
-                                              </li>
-                                            ))}
-                                          </ul>
-                                        </div>
-                                      )}
-                                    </div>
-                                  );
-                                })()}
-                                
-                                {dependencies && dependencies.length > 0 && (
-                                  <div className="mt-4">
-                                    <h5 className="text-[10px] font-bold text-orange-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                                      <AlertTriangle className="w-3 h-3" /> Dependencies
-                                    </h5>
-                                    <ul className="space-y-1.5">
-                                      {dependencies.map((dep, idx) => (
-                                        <li key={idx} className="text-xs text-gray-300 flex items-start gap-2 bg-orange-950/10 px-2 py-1.5 rounded-md border border-orange-900/20">
-                                          <Circle className="w-1.5 h-1.5 mt-1 text-orange-500 fill-orange-500 flex-shrink-0" />
-                                          <span className="leading-tight">{dep}</span>
-                                        </li>
-                                      ))}
-                                    </ul>
-                                  </div>
-                                )}
-                                
-                                <details className="mt-5 group cursor-pointer">
-                                  <summary className="text-xs font-bold text-gray-400 uppercase tracking-wider hover:text-gray-200 transition-colors list-none flex items-center">
-                                    <span className="mr-1.5 transition-transform group-open:rotate-90 text-[10px]">▶</span>
-                                    AI Extraction Details
-                                  </summary>
-                                  <div className="mt-3 space-y-3 p-3 bg-gray-900/60 rounded-lg border border-gray-700/40">
-                                    {(updateSource || updateDate) && (
-                                      <div>
-                                        <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">Updated From</h5>
-                                        <p className="text-xs text-gray-300 italic">
-                                          {updateSource ? updateSource : 'Unknown Document'}
-                                          {updateDate && ` • ${formatDate(updateDate)}`}
+                                    {executionSummary && (
+                                      <div className="mt-4 p-3 bg-blue-950/20 border border-blue-900/30 rounded-lg">
+                                        <h5 className="text-[10px] font-bold text-blue-400 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                                          <FileText className="w-3 h-3" />{" "}
+                                          Latest Update
+                                        </h5>
+                                        <p className="text-sm text-gray-200 leading-relaxed">
+                                          {executionSummary}
                                         </p>
                                       </div>
                                     )}
-                                    {latestProgress?.evidence_text && (
-                                      <div>
-                                        <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">Progress Evidence</h5>
-                                        <p className="text-xs text-gray-300 italic leading-relaxed">{latestProgress.evidence_text}</p>
-                                      </div>
-                                    )}
-                                    {selectedItem.description && (
-                                      <div>
-                                        <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">AI Reasoning (Baseline)</h5>
-                                        <p className="text-xs text-gray-300 italic leading-relaxed">{selectedItem.description}</p>
-                                      </div>
-                                    )}
-                                    {selectedItem.evidence_text && (
-                                      <div>
-                                        <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">Evidence (Baseline)</h5>
-                                        <p className="text-xs text-gray-300 italic leading-relaxed">{selectedItem.evidence_text}</p>
-                                      </div>
-                                    )}
-                                    {(selectedItem.name && selectedItem.scope_item_normalized) && (
-                                      <div>
-                                        <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">Original Text</h5>
-                                        <p className="text-xs text-gray-300 font-serif italic">{selectedItem.name}</p>
-                                      </div>
-                                    )}
-                                  </div>
-                                </details>
-                              </div>
 
-                              {/* Status indicator */}
-                              <div className="flex-shrink-0">
-                                <div className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider border shadow-sm ${
-                                  completionStatus === "COMPLETED"
-                                    ? "bg-emerald-950/60 text-emerald-300 border-emerald-700/50"
-                                    : completionStatus === "BLOCKED" || completionStatus === "DELAYED"
-                                    ? "bg-red-950/60 text-red-300 border-red-700/50"
-                                    : completionStatus === "IN_PROGRESS"
-                                    ? "bg-blue-950/60 text-blue-300 border-blue-700/50"
-                                    : "bg-gray-800/80 text-gray-300 border-gray-700/60"
-                                }`}>
-                                  {completionStatus === "COMPLETED" && <CheckCircle2 className="w-3.5 h-3.5 inline mr-1.5 -mt-0.5" />}
-                                  {completionStatus === "BLOCKED" && <X className="w-3.5 h-3.5 inline mr-1.5 -mt-0.5" />}
-                                  {(completionStatus === "IN_PROGRESS" || completionStatus === "ACTIVE") && <Clock className="w-3.5 h-3.5 inline mr-1.5 -mt-0.5" />}
-                                  {statusLabel}
+                                    {progressPct !== null &&
+                                      progressPct !== undefined && (
+                                        <div className="mt-4">
+                                          <div className="flex justify-between items-center mb-1.5">
+                                            <span className="text-xs font-semibold text-gray-400">
+                                              Progress
+                                            </span>
+                                            <span className="text-xs font-bold text-white">
+                                              {progressPct}%
+                                            </span>
+                                          </div>
+                                          <div className="w-full bg-gray-800 rounded-full h-1.5">
+                                            <div
+                                              className="bg-emerald-500 h-1.5 rounded-full"
+                                              style={{
+                                                width: `${progressPct}%`,
+                                              }}
+                                            ></div>
+                                          </div>
+                                        </div>
+                                      )}
+
+                                    {(() => {
+                                      const mData = getMilestoneData(
+                                        selectedItem.name,
+                                        selectedItem.milestone_normalized,
+                                      );
+                                      const blockingCount = mData?.blocking_ids
+                                        ? mData.blocking_ids.split(",").length
+                                        : 0;
+                                      const blockedByCount =
+                                        mData?.blocked_by_ids
+                                          ? mData.blocked_by_ids.split(",")
+                                              .length
+                                          : 0;
+                                      const blockedByIds = mData?.blocked_by_ids
+                                        ? mData.blocked_by_ids.split(",")
+                                        : [];
+                                      const blockingIds = mData?.blocking_ids
+                                        ? mData.blocking_ids.split(",")
+                                        : [];
+
+                                      const getNames = (ids: string[]) =>
+                                        ids.map((id) => {
+                                          const m = milestoneMap.get(id);
+                                          return m ? m.name : id;
+                                        });
+
+                                      if (
+                                        !mData ||
+                                        (blockingCount === 0 &&
+                                          blockedByCount === 0)
+                                      )
+                                        return null;
+
+                                      return (
+                                        <div className="mt-4 p-3 bg-gray-900/40 border border-gray-700/50 rounded-lg">
+                                          <h5 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                                            <AlertTriangle className="w-3 h-3 text-orange-400" />{" "}
+                                            Milestone Dependencies
+                                          </h5>
+                                          {blockedByCount > 0 && (
+                                            <div className="mb-2">
+                                              <span className="text-xs text-red-400 font-semibold mb-1 block">
+                                                Blocked By:
+                                              </span>
+                                              <ul className="space-y-1">
+                                                {getNames(blockedByIds).map(
+                                                  (n, i) => (
+                                                    <li
+                                                      key={i}
+                                                      className="text-xs text-gray-300 flex items-start gap-2 bg-red-950/10 px-2 py-1 rounded border border-red-900/20"
+                                                    >
+                                                      <Circle className="w-1.5 h-1.5 mt-1 text-red-500 fill-red-500 flex-shrink-0" />
+                                                      <span className="leading-tight">
+                                                        {n}
+                                                      </span>
+                                                    </li>
+                                                  ),
+                                                )}
+                                              </ul>
+                                            </div>
+                                          )}
+                                          {blockingCount > 0 && (
+                                            <div>
+                                              <span className="text-xs text-orange-400 font-semibold mb-1 block">
+                                                Blocking {blockingCount}{" "}
+                                                Milestone(s):
+                                              </span>
+                                              <ul className="space-y-1">
+                                                {getNames(blockingIds).map(
+                                                  (n, i) => (
+                                                    <li
+                                                      key={i}
+                                                      className="text-xs text-gray-300 flex items-start gap-2 bg-orange-950/10 px-2 py-1 rounded border border-orange-900/20"
+                                                    >
+                                                      <Circle className="w-1.5 h-1.5 mt-1 text-orange-500 fill-orange-500 flex-shrink-0" />
+                                                      <span className="leading-tight">
+                                                        {n}
+                                                      </span>
+                                                    </li>
+                                                  ),
+                                                )}
+                                              </ul>
+                                            </div>
+                                          )}
+                                        </div>
+                                      );
+                                    })()}
+
+                                    {dependencies &&
+                                      dependencies.length > 0 && (
+                                        <div className="mt-4">
+                                          <h5 className="text-[10px] font-bold text-orange-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                                            <AlertTriangle className="w-3 h-3" />{" "}
+                                            Dependencies
+                                          </h5>
+                                          <ul className="space-y-1.5">
+                                            {dependencies.map((dep, idx) => (
+                                              <li
+                                                key={idx}
+                                                className="text-xs text-gray-300 flex items-start gap-2 bg-orange-950/10 px-2 py-1.5 rounded-md border border-orange-900/20"
+                                              >
+                                                <Circle className="w-1.5 h-1.5 mt-1 text-orange-500 fill-orange-500 flex-shrink-0" />
+                                                <span className="leading-tight">
+                                                  {dep}
+                                                </span>
+                                              </li>
+                                            ))}
+                                          </ul>
+                                        </div>
+                                      )}
+
+                                    <details className="mt-5 group cursor-pointer">
+                                      <summary className="text-xs font-bold text-gray-400 uppercase tracking-wider hover:text-gray-200 transition-colors list-none flex items-center">
+                                        <span className="mr-1.5 transition-transform group-open:rotate-90 text-[10px]">
+                                          ▶
+                                        </span>
+                                        AI Extraction Details
+                                      </summary>
+                                      <div className="mt-3 space-y-3 p-3 bg-gray-900/60 rounded-lg border border-gray-700/40">
+                                        {(updateSource || updateDate) && (
+                                          <div>
+                                            <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">
+                                              Updated From
+                                            </h5>
+                                            <p className="text-xs text-gray-300 italic">
+                                              {updateSource
+                                                ? updateSource
+                                                : "Unknown Document"}
+                                              {updateDate &&
+                                                ` • ${formatDate(updateDate)}`}
+                                            </p>
+                                          </div>
+                                        )}
+                                        {latestProgress?.evidence_text && (
+                                          <div>
+                                            <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">
+                                              Progress Evidence
+                                            </h5>
+                                            <p className="text-xs text-gray-300 italic leading-relaxed">
+                                              {latestProgress.evidence_text}
+                                            </p>
+                                          </div>
+                                        )}
+                                        {selectedItem.description && (
+                                          <div>
+                                            <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">
+                                              AI Reasoning (Baseline)
+                                            </h5>
+                                            <p className="text-xs text-gray-300 italic leading-relaxed">
+                                              {selectedItem.description}
+                                            </p>
+                                          </div>
+                                        )}
+                                        {selectedItem.evidence_text && (
+                                          <div>
+                                            <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">
+                                              Evidence (Baseline)
+                                            </h5>
+                                            <p className="text-xs text-gray-300 italic leading-relaxed">
+                                              {selectedItem.evidence_text}
+                                            </p>
+                                          </div>
+                                        )}
+                                        {selectedItem.name &&
+                                          selectedItem.scope_item_normalized && (
+                                            <div>
+                                              <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">
+                                                Original Text
+                                              </h5>
+                                              <p className="text-xs text-gray-300 font-serif italic">
+                                                {selectedItem.name}
+                                              </p>
+                                            </div>
+                                          )}
+                                      </div>
+                                    </details>
+                                  </div>
+
+                                  {/* Status indicator */}
+                                  <div className="flex-shrink-0">
+                                    <div
+                                      className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider border shadow-sm ${
+                                        completionStatus === "COMPLETED"
+                                          ? "bg-emerald-950/60 text-emerald-300 border-emerald-700/50"
+                                          : completionStatus === "BLOCKED" ||
+                                              completionStatus === "DELAYED"
+                                            ? "bg-red-950/60 text-red-300 border-red-700/50"
+                                            : completionStatus === "IN_PROGRESS"
+                                              ? "bg-blue-950/60 text-blue-300 border-blue-700/50"
+                                              : "bg-gray-800/80 text-gray-300 border-gray-700/60"
+                                      }`}
+                                    >
+                                      {completionStatus === "COMPLETED" && (
+                                        <CheckCircle2 className="w-3.5 h-3.5 inline mr-1.5 -mt-0.5" />
+                                      )}
+                                      {completionStatus === "BLOCKED" && (
+                                        <X className="w-3.5 h-3.5 inline mr-1.5 -mt-0.5" />
+                                      )}
+                                      {(completionStatus === "IN_PROGRESS" ||
+                                        completionStatus === "ACTIVE") && (
+                                        <Clock className="w-3.5 h-3.5 inline mr-1.5 -mt-0.5" />
+                                      )}
+                                      {statusLabel}
+                                    </div>
+                                  </div>
                                 </div>
+
+                                {/* Meta badges */}
+                                <div className="flex flex-wrap gap-2 mt-3">
+                                  {(selectedItem.milestone_normalized ||
+                                    selectedItem.milestone) && (
+                                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-blue-950/30 text-blue-300 border border-blue-800/25 shadow-sm">
+                                      <MapPin className="w-3 h-3" />
+                                      {selectedItem.milestone_normalized ||
+                                        selectedItem.milestone}
+                                    </span>
+                                  )}
+                                  {(selectedItem.deadline_text ||
+                                    selectedItem.deadline) && (
+                                    <span
+                                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border shadow-sm"
+                                      style={{
+                                        backgroundColor: `${color.bg}`,
+                                        borderColor: `${color.border}30`,
+                                        color: color.text,
+                                      }}
+                                    >
+                                      <Calendar className="w-3 h-3" />
+                                      {formatItemDate(selectedItem)}
+                                    </span>
+                                  )}
+                                  <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-gray-800/50 border border-gray-700/40 text-gray-400 text-xs font-medium">
+                                    {selectedItem.scope_type?.replace(
+                                      "_",
+                                      " ",
+                                    ) || "Scope Item"}
+                                  </span>
+                                  {selectedItem._dateMs !== null && (
+                                    <span
+                                      className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium border ${
+                                        completionStatus === "COMPLETED"
+                                          ? "bg-emerald-950/20 text-emerald-300/80 border-emerald-800/20"
+                                          : selectedItem._dateMs < todayMs
+                                            ? "bg-red-950/20 text-red-300/80 border-red-800/20"
+                                            : selectedItem._dateMs === todayMs
+                                              ? "bg-orange-950/20 text-orange-300/80 border-orange-800/20"
+                                              : "bg-green-950/20 text-green-300/80 border-green-800/20"
+                                      }`}
+                                    >
+                                      {completionStatus === "COMPLETED"
+                                        ? "✅ Completed"
+                                        : selectedItem._dateMs < todayMs
+                                          ? "⏰ Overdue"
+                                          : selectedItem._dateMs === todayMs
+                                            ? "📍 Due Today"
+                                            : `📅 ${Math.ceil((selectedItem._dateMs - todayMs) / 86400000)} days left`}
+                                    </span>
+                                  )}
+                                </div>
+
+                                {/* Interactive Update & Reschedule Controls */}
+                                {(user?.role === "ADMIN" ||
+                                  user?.role === "ENGAGEMENT_MANAGER" ||
+                                  user?.role === "PROJECT_LEAD") && (
+                                  <div className="mt-5 pt-4 border-t border-gray-800/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                    <div className="flex items-center gap-2.5">
+                                      <span className="text-xs font-bold uppercase tracking-wider text-gray-500">
+                                        Update Status:
+                                      </span>
+                                      <div className="flex rounded-lg overflow-hidden border border-gray-700 bg-gray-900/60 p-0.5">
+                                        {[
+                                          {
+                                            value: "ACTIVE",
+                                            label: "Pending",
+                                            color:
+                                              "hover:bg-blue-600/80 hover:text-white",
+                                          },
+                                          {
+                                            value: "COMPLETED",
+                                            label: "Completed",
+                                            color:
+                                              "hover:bg-emerald-600/80 hover:text-white",
+                                          },
+                                          {
+                                            value: "CANCELLED",
+                                            label: "Cancelled",
+                                            color:
+                                              "hover:bg-red-600/80 hover:text-white",
+                                          },
+                                        ].map((opt) => (
+                                          <button
+                                            key={opt.value}
+                                            onClick={() =>
+                                              handleUpdateCompletionStatus(
+                                                selectedItem.id,
+                                                opt.value,
+                                              )
+                                            }
+                                            className={`px-3 py-1 text-[11px] font-bold rounded-md transition-all cursor-pointer ${
+                                              completionStatus === opt.value
+                                                ? opt.value === "COMPLETED"
+                                                  ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/25"
+                                                  : opt.value === "CANCELLED"
+                                                    ? "bg-red-600 text-white shadow-md shadow-red-600/25"
+                                                    : "bg-blue-600 text-white shadow-md shadow-blue-600/25"
+                                                : `text-gray-400 ${opt.color}`
+                                            }`}
+                                          >
+                                            {opt.label}
+                                          </button>
+                                        ))}
+                                      </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-2.5">
+                                      <span className="text-xs font-bold uppercase tracking-wider text-gray-500">
+                                        Reschedule:
+                                      </span>
+                                      <input
+                                        id="reschedule-date-input"
+                                        type="date"
+                                        className="px-2.5 py-1 text-xs font-semibold rounded-md border border-gray-700 bg-gray-900/60 text-white focus:outline-none focus:border-violet-500 cursor-pointer shadow-inner"
+                                        value={
+                                          selectedItem.deadline
+                                            ? new Date(selectedItem.deadline)
+                                                .toISOString()
+                                                .split("T")[0]
+                                            : ""
+                                        }
+                                        onChange={(e) =>
+                                          handleRescheduleDeadline(
+                                            selectedItem.id,
+                                            e.target.value,
+                                          )
+                                        }
+                                      />
+                                    </div>
+                                  </div>
+                                )}
                               </div>
                             </div>
-
-                            {/* Meta badges */}
-                            <div className="flex flex-wrap gap-2 mt-3">
-                              {(selectedItem.milestone_normalized || selectedItem.milestone) && (
-                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-blue-950/30 text-blue-300 border border-blue-800/25 shadow-sm">
-                                  <MapPin className="w-3 h-3" />
-                                  {selectedItem.milestone_normalized || selectedItem.milestone}
-                                </span>
-                              )}
-                              {(selectedItem.deadline_text || selectedItem.deadline) && (
-                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border shadow-sm" style={{
-                                  backgroundColor: `${color.bg}`,
-                                  borderColor: `${color.border}30`,
-                                  color: color.text,
-                                }}>
-                                  <Calendar className="w-3 h-3" />
-                                  {formatItemDate(selectedItem)}
-                                </span>
-                              )}
-                              <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-gray-800/50 border border-gray-700/40 text-gray-400 text-xs font-medium">
-                                {selectedItem.scope_type?.replace("_", " ") || "Scope Item"}
-                              </span>
-                              {selectedItem._dateMs !== null && (
-                                <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium border ${
-                                  completionStatus === 'COMPLETED'
-                                    ? "bg-emerald-950/20 text-emerald-300/80 border-emerald-800/20"
-                                    : selectedItem._dateMs < todayMs
-                                    ? "bg-red-950/20 text-red-300/80 border-red-800/20"
-                                    : selectedItem._dateMs === todayMs
-                                    ? "bg-orange-950/20 text-orange-300/80 border-orange-800/20"
-                                    : "bg-green-950/20 text-green-300/80 border-green-800/20"
-                                }`}>
-                                  {completionStatus === 'COMPLETED' 
-                                    ? "✅ Completed" 
-                                    : selectedItem._dateMs < todayMs 
-                                    ? "⏰ Overdue" 
-                                    : selectedItem._dateMs === todayMs 
-                                    ? "📍 Due Today" 
-                                    : `📅 ${Math.ceil((selectedItem._dateMs - todayMs) / 86400000)} days left`}
-                                </span>
-                              )}
-                            </div>
-
-                            {/* Interactive Update & Reschedule Controls */}
-                            {(user?.role === "ADMIN" ||
-                              user?.role === "ENGAGEMENT_MANAGER" ||
-                              user?.role === "PROJECT_LEAD") && (
-                              <div className="mt-5 pt-4 border-t border-gray-800/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                                <div className="flex items-center gap-2.5">
-                                  <span className="text-xs font-bold uppercase tracking-wider text-gray-500">Update Status:</span>
-                                  <div className="flex rounded-lg overflow-hidden border border-gray-700 bg-gray-900/60 p-0.5">
-                                    {[
-                                      { value: "ACTIVE", label: "Pending", color: "hover:bg-blue-600/80 hover:text-white" },
-                                      { value: "COMPLETED", label: "Completed", color: "hover:bg-emerald-600/80 hover:text-white" },
-                                      { value: "CANCELLED", label: "Cancelled", color: "hover:bg-red-600/80 hover:text-white" }
-                                    ].map((opt) => (
-                                      <button
-                                        key={opt.value}
-                                        onClick={() => handleUpdateCompletionStatus(selectedItem.id, opt.value)}
-                                        className={`px-3 py-1 text-[11px] font-bold rounded-md transition-all cursor-pointer ${
-                                          completionStatus === opt.value
-                                            ? opt.value === "COMPLETED"
-                                              ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/25"
-                                              : opt.value === "CANCELLED"
-                                              ? "bg-red-600 text-white shadow-md shadow-red-600/25"
-                                              : "bg-blue-600 text-white shadow-md shadow-blue-600/25"
-                                            : `text-gray-400 ${opt.color}`
-                                        }`}
-                                      >
-                                        {opt.label}
-                                      </button>
-                                    ))}
-                                  </div>
-                                </div>
-
-                                <div className="flex items-center gap-2.5">
-                                  <span className="text-xs font-bold uppercase tracking-wider text-gray-500">Reschedule:</span>
-                                  <input
-                                    id="reschedule-date-input"
-                                    type="date"
-                                    className="px-2.5 py-1 text-xs font-semibold rounded-md border border-gray-700 bg-gray-900/60 text-white focus:outline-none focus:border-violet-500 cursor-pointer shadow-inner"
-                                    value={selectedItem.deadline ? new Date(selectedItem.deadline).toISOString().split('T')[0] : ""}
-                                    onChange={(e) => handleRescheduleDeadline(selectedItem.id, e.target.value)}
-                                  />
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })()}
-                  </div>
-                );
-              })()}
+                          );
+                        })()}
+                    </div>
+                  );
+                })()
+              )}
             </div>
             <div className="mb-12 border-b border-gray-800"></div>
 
-            
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold">Scope Items Baseline</h2>
               <div className="flex items-center gap-3">
@@ -1821,26 +2408,40 @@ export const BaselineReviewPage: React.FC = () => {
                           </div>
                           <details className="mt-3 mb-4 group cursor-pointer">
                             <summary className="text-xs font-bold text-gray-400 uppercase tracking-wider hover:text-gray-200 transition-colors list-none flex items-center">
-                              <span className="mr-1.5 transition-transform group-open:rotate-90 text-[10px]">▶</span>
+                              <span className="mr-1.5 transition-transform group-open:rotate-90 text-[10px]">
+                                ▶
+                              </span>
                               AI Extraction Details
                             </summary>
                             <div className="mt-3 space-y-3 p-3 bg-gray-900/60 rounded-lg border border-gray-700/40">
                               {item.description && (
                                 <div>
-                                  <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">AI Reasoning</h5>
-                                  <p className="text-xs text-gray-300 italic leading-relaxed">{item.description}</p>
+                                  <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">
+                                    AI Reasoning
+                                  </h5>
+                                  <p className="text-xs text-gray-300 italic leading-relaxed">
+                                    {item.description}
+                                  </p>
                                 </div>
                               )}
                               {item.evidence_text && (
                                 <div>
-                                  <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">Evidence</h5>
-                                  <p className="text-xs text-gray-300 italic leading-relaxed">{item.evidence_text}</p>
+                                  <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">
+                                    Evidence
+                                  </h5>
+                                  <p className="text-xs text-gray-300 italic leading-relaxed">
+                                    {item.evidence_text}
+                                  </p>
                                 </div>
                               )}
-                              {(item.name && item.scope_item_normalized) && (
+                              {item.name && item.scope_item_normalized && (
                                 <div>
-                                  <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">Original Text</h5>
-                                  <p className="text-xs text-gray-300 font-serif italic">{item.name}</p>
+                                  <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">
+                                    Original Text
+                                  </h5>
+                                  <p className="text-xs text-gray-300 font-serif italic">
+                                    {item.name}
+                                  </p>
                                 </div>
                               )}
                             </div>
@@ -1979,26 +2580,40 @@ export const BaselineReviewPage: React.FC = () => {
                           </div>
                           <details className="mt-3 mb-4 group cursor-pointer">
                             <summary className="text-xs font-bold text-gray-400 uppercase tracking-wider hover:text-gray-200 transition-colors list-none flex items-center">
-                              <span className="mr-1.5 transition-transform group-open:rotate-90 text-[10px]">▶</span>
+                              <span className="mr-1.5 transition-transform group-open:rotate-90 text-[10px]">
+                                ▶
+                              </span>
                               AI Extraction Details
                             </summary>
                             <div className="mt-3 space-y-3 p-3 bg-gray-900/60 rounded-lg border border-gray-700/40">
                               {item.description && (
                                 <div>
-                                  <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">AI Reasoning</h5>
-                                  <p className="text-xs text-gray-300 italic leading-relaxed">{item.description}</p>
+                                  <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">
+                                    AI Reasoning
+                                  </h5>
+                                  <p className="text-xs text-gray-300 italic leading-relaxed">
+                                    {item.description}
+                                  </p>
                                 </div>
                               )}
                               {item.evidence_text && (
                                 <div>
-                                  <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">Evidence</h5>
-                                  <p className="text-xs text-gray-300 italic leading-relaxed">{item.evidence_text}</p>
+                                  <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">
+                                    Evidence
+                                  </h5>
+                                  <p className="text-xs text-gray-300 italic leading-relaxed">
+                                    {item.evidence_text}
+                                  </p>
                                 </div>
                               )}
-                              {(item.name && item.scope_item_normalized) && (
+                              {item.name && item.scope_item_normalized && (
                                 <div>
-                                  <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">Original Text</h5>
-                                  <p className="text-xs text-gray-300 font-serif italic">{item.name}</p>
+                                  <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">
+                                    Original Text
+                                  </h5>
+                                  <p className="text-xs text-gray-300 font-serif italic">
+                                    {item.name}
+                                  </p>
                                 </div>
                               )}
                             </div>
@@ -2181,32 +2796,48 @@ export const BaselineReviewPage: React.FC = () => {
                                         >
                                           <div>
                                             <p className="text-xs font-semibold text-gray-200">
-                                              {item.scope_item_normalized || item.name}
+                                              {item.scope_item_normalized ||
+                                                item.name}
                                             </p>
                                             <details className="mt-1 group cursor-pointer">
                                               <summary className="text-[10px] font-bold text-gray-500 uppercase tracking-wider hover:text-gray-300 transition-colors list-none flex items-center">
-                                                <span className="mr-1 transition-transform group-open:rotate-90">▶</span>
+                                                <span className="mr-1 transition-transform group-open:rotate-90">
+                                                  ▶
+                                                </span>
                                                 Details
                                               </summary>
                                               <div className="mt-2 space-y-2">
                                                 {item.description && (
                                                   <div>
-                                                    <h5 className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">Reasoning</h5>
-                                                    <p className="text-[11px] text-gray-400 italic">{item.description}</p>
+                                                    <h5 className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">
+                                                      Reasoning
+                                                    </h5>
+                                                    <p className="text-[11px] text-gray-400 italic">
+                                                      {item.description}
+                                                    </p>
                                                   </div>
                                                 )}
                                                 {item.evidence_text && (
                                                   <div>
-                                                    <h5 className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">Evidence</h5>
-                                                    <p className="text-[11px] text-gray-400 italic">{item.evidence_text}</p>
+                                                    <h5 className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">
+                                                      Evidence
+                                                    </h5>
+                                                    <p className="text-[11px] text-gray-400 italic">
+                                                      {item.evidence_text}
+                                                    </p>
                                                   </div>
                                                 )}
-                                                {(item.name && item.scope_item_normalized) && (
-                                                  <div>
-                                                    <h5 className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">Original</h5>
-                                                    <p className="text-[11px] text-gray-400 font-serif italic">{item.name}</p>
-                                                  </div>
-                                                )}
+                                                {item.name &&
+                                                  item.scope_item_normalized && (
+                                                    <div>
+                                                      <h5 className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">
+                                                        Original
+                                                      </h5>
+                                                      <p className="text-[11px] text-gray-400 font-serif italic">
+                                                        {item.name}
+                                                      </p>
+                                                    </div>
+                                                  )}
                                               </div>
                                             </details>
                                           </div>
@@ -2241,32 +2872,48 @@ export const BaselineReviewPage: React.FC = () => {
                                             className="p-3 bg-gray-850/40 rounded-lg border border-gray-800/50"
                                           >
                                             <p className="text-xs font-semibold text-gray-200">
-                                              {item.scope_item_normalized || item.name}
+                                              {item.scope_item_normalized ||
+                                                item.name}
                                             </p>
                                             <details className="mt-1 group cursor-pointer">
                                               <summary className="text-[10px] font-bold text-gray-500 uppercase tracking-wider hover:text-gray-300 transition-colors list-none flex items-center">
-                                                <span className="mr-1 transition-transform group-open:rotate-90">▶</span>
+                                                <span className="mr-1 transition-transform group-open:rotate-90">
+                                                  ▶
+                                                </span>
                                                 Details
                                               </summary>
                                               <div className="mt-2 space-y-2">
                                                 {item.description && (
                                                   <div>
-                                                    <h5 className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">Reasoning</h5>
-                                                    <p className="text-[11px] text-gray-400 italic">{item.description}</p>
+                                                    <h5 className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">
+                                                      Reasoning
+                                                    </h5>
+                                                    <p className="text-[11px] text-gray-400 italic">
+                                                      {item.description}
+                                                    </p>
                                                   </div>
                                                 )}
                                                 {item.evidence_text && (
                                                   <div>
-                                                    <h5 className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">Evidence</h5>
-                                                    <p className="text-[11px] text-gray-400 italic">{item.evidence_text}</p>
+                                                    <h5 className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">
+                                                      Evidence
+                                                    </h5>
+                                                    <p className="text-[11px] text-gray-400 italic">
+                                                      {item.evidence_text}
+                                                    </p>
                                                   </div>
                                                 )}
-                                                {(item.name && item.scope_item_normalized) && (
-                                                  <div>
-                                                    <h5 className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">Original</h5>
-                                                    <p className="text-[11px] text-gray-400 font-serif italic">{item.name}</p>
-                                                  </div>
-                                                )}
+                                                {item.name &&
+                                                  item.scope_item_normalized && (
+                                                    <div>
+                                                      <h5 className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">
+                                                        Original
+                                                      </h5>
+                                                      <p className="text-[11px] text-gray-400 font-serif italic">
+                                                        {item.name}
+                                                      </p>
+                                                    </div>
+                                                  )}
                                               </div>
                                             </details>
                                           </div>
@@ -2288,32 +2935,48 @@ export const BaselineReviewPage: React.FC = () => {
                                             className="p-3 bg-gray-850/40 rounded-lg border border-gray-800/50"
                                           >
                                             <p className="text-xs font-semibold text-gray-200">
-                                              {item.scope_item_normalized || item.name}
+                                              {item.scope_item_normalized ||
+                                                item.name}
                                             </p>
                                             <details className="mt-1 group cursor-pointer">
                                               <summary className="text-[10px] font-bold text-gray-500 uppercase tracking-wider hover:text-gray-300 transition-colors list-none flex items-center">
-                                                <span className="mr-1 transition-transform group-open:rotate-90">▶</span>
+                                                <span className="mr-1 transition-transform group-open:rotate-90">
+                                                  ▶
+                                                </span>
                                                 Details
                                               </summary>
                                               <div className="mt-2 space-y-2">
                                                 {item.description && (
                                                   <div>
-                                                    <h5 className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">Reasoning</h5>
-                                                    <p className="text-[11px] text-gray-400 italic">{item.description}</p>
+                                                    <h5 className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">
+                                                      Reasoning
+                                                    </h5>
+                                                    <p className="text-[11px] text-gray-400 italic">
+                                                      {item.description}
+                                                    </p>
                                                   </div>
                                                 )}
                                                 {item.evidence_text && (
                                                   <div>
-                                                    <h5 className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">Evidence</h5>
-                                                    <p className="text-[11px] text-gray-400 italic">{item.evidence_text}</p>
+                                                    <h5 className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">
+                                                      Evidence
+                                                    </h5>
+                                                    <p className="text-[11px] text-gray-400 italic">
+                                                      {item.evidence_text}
+                                                    </p>
                                                   </div>
                                                 )}
-                                                {(item.name && item.scope_item_normalized) && (
-                                                  <div>
-                                                    <h5 className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">Original</h5>
-                                                    <p className="text-[11px] text-gray-400 font-serif italic">{item.name}</p>
-                                                  </div>
-                                                )}
+                                                {item.name &&
+                                                  item.scope_item_normalized && (
+                                                    <div>
+                                                      <h5 className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">
+                                                        Original
+                                                      </h5>
+                                                      <p className="text-[11px] text-gray-400 font-serif italic">
+                                                        {item.name}
+                                                      </p>
+                                                    </div>
+                                                  )}
                                               </div>
                                             </details>
                                           </div>
