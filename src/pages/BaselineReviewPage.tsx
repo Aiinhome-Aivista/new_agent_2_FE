@@ -773,21 +773,21 @@ export const BaselineReviewPage: React.FC = () => {
     };
 
     return (
-      <div className="w-full bg-[#0b0e17]/90 border border-gray-800 rounded-3xl p-8 backdrop-blur-md shadow-2xl relative overflow-hidden max-w-4xl mx-auto my-8 animate-fade-in-up">
+      <div className="w-full bg-[#0b0e17]/90 border border-transparent rounded-3xl p-8 backdrop-blur-md shadow-2xl relative overflow-hidden max-w-4xl mx-auto my-8 animate-fade-in-up">
         <div className="absolute -top-24 -right-24 w-48 h-48 rounded-full bg-cyan-500/10 blur-[60px]" />
         <div className="absolute -bottom-24 -left-24 w-48 h-48 rounded-full bg-purple-500/10 blur-[60px]" />
 
         {isFailed && (
           <button
             onClick={resetProgress}
-            className="absolute top-4 right-4 p-2 bg-gray-900/50 hover:bg-gray-800 border border-gray-800/50 hover:border-gray-700 rounded-lg text-gray-400 hover:text-white transition-colors cursor-pointer z-50 flex items-center justify-center"
+            className="absolute top-4 right-4 p-2 bg-white/[0.03]/50 hover:bg-white/[0.06] border border-transparent hover:border-transparent rounded-lg text-gray-400 hover:text-white transition-colors duration-200 cursor-pointer active:scale-[0.98] z-50 flex items-center justify-center"
             title="Dismiss"
           >
             <X className="w-4 h-4" />
           </button>
         )}
 
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-gray-800/60 pb-6 mb-8">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-transparent pb-6 mb-8">
           <div>
             <h2 className="text-xl font-bold tracking-tight text-white flex items-center gap-2.5">
               {!isFailed && evaluationProgress.status !== "completed" && (
@@ -845,7 +845,7 @@ export const BaselineReviewPage: React.FC = () => {
         )}
 
         {/* Step-by-Step Vertical Timeline */}
-        <div className="relative border-l border-gray-800/80 ml-4 pl-8 space-y-6">
+        <div className="relative border-l border-transparent ml-4 pl-8 space-y-6">
           {baselineSteps.map((step, idx) => {
             const state = getStepState(idx);
 
@@ -872,7 +872,7 @@ export const BaselineReviewPage: React.FC = () => {
               textClass = "text-rose-400 font-bold";
             } else {
               iconElement = <Circle className="w-3 h-3 text-gray-750" />;
-              iconBgClass = "bg-gray-950 border-gray-800 scale-90";
+              iconBgClass = "bg-gray-950 border-transparent scale-90";
               textClass = "text-gray-600";
             }
 
@@ -886,7 +886,7 @@ export const BaselineReviewPage: React.FC = () => {
                 <div
                   className={`p-4 rounded-2xl border transition-all duration-300 ${
                     state === "running"
-                      ? "bg-gray-900/60 border-cyan-500/30 shadow-lg shadow-cyan-500/5"
+                      ? "bg-white/[0.03]/60 border-cyan-500/30 shadow-lg shadow-cyan-500/5"
                       : state === "completed"
                         ? "bg-gray-950/40 border-gray-850/80"
                         : "bg-gray-950/20 border-gray-900/50 opacity-60"
@@ -897,7 +897,7 @@ export const BaselineReviewPage: React.FC = () => {
                       {step.name}
                     </h4>
                     {state === "running" && (
-                      <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-widest bg-cyan-500/10 px-2.5 py-0.5 rounded-full border border-cyan-500/20 animate-pulse">
+                      <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-widest bg-cyan-500/10 px-2.5 py-0.5 rounded-full border border-cyan-500/20 animate-pulse-ring">
                         Running...
                       </span>
                     )}
@@ -982,7 +982,7 @@ export const BaselineReviewPage: React.FC = () => {
           </div>
         ) : (
           <div>
-            <div className="mb-8 border-b border-gray-800"></div>
+            <div className="mb-8 border-b border-transparent"></div>
 
             {/* Deliverables timeline */}
             <div className="mb-8">
@@ -1116,7 +1116,7 @@ export const BaselineReviewPage: React.FC = () => {
                       <button
                         onClick={handlePrev}
                         disabled={activeIndex <= 0}
-                        className="flex-shrink-0 w-9 h-9 rounded-full bg-gray-900/80 border border-gray-700/60 text-gray-400 hover:text-white hover:bg-gray-800 hover:border-gray-600 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-all cursor-pointer z-10 shadow-md backdrop-blur-sm"
+                        className="flex-shrink-0 w-9 h-9 rounded-full bg-white/[0.03]/80 border border-transparent text-gray-400 hover:text-white hover:bg-white/[0.06] hover:border-gray-600 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-all cursor-pointer z-10 shadow-md backdrop-blur-sm"
                       >
                         <ChevronLeft className="w-4 h-4" />
                       </button>
@@ -1128,14 +1128,14 @@ export const BaselineReviewPage: React.FC = () => {
                       <button
                         onClick={handleNext}
                         disabled={activeIndex >= timelineItems.length - 1}
-                        className="flex-shrink-0 w-9 h-9 rounded-full bg-gray-900/80 border border-gray-700/60 text-gray-400 hover:text-white hover:bg-gray-800 hover:border-gray-600 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-all cursor-pointer z-10 shadow-md backdrop-blur-sm"
+                        className="flex-shrink-0 w-9 h-9 rounded-full bg-white/[0.03]/80 border border-transparent text-gray-400 hover:text-white hover:bg-white/[0.06] hover:border-gray-600 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-all cursor-pointer z-10 shadow-md backdrop-blur-sm"
                       >
                         <ChevronRight className="w-4 h-4" />
                       </button>
                     </div>
 
                     {/* ── Timeline Canvas ── */}
-                    <div className="relative rounded-2xl border border-gray-800/60 bg-gradient-to-br from-gray-900/60 via-gray-950/80 to-gray-900/60 backdrop-blur-sm overflow-visible">
+                    <div className="relative rounded-2xl border border-transparent bg-gradient-to-br from-gray-900/60 via-gray-950/80 to-gray-900/60 backdrop-blur-sm overflow-visible">
                       {/* Subtle grid background pattern */}
                       <div className="absolute inset-0 rounded-2xl overflow-hidden opacity-[0.03]" style={{
                         backgroundImage: "radial-gradient(circle, #fff 1px, transparent 1px)",
@@ -1280,7 +1280,7 @@ export const BaselineReviewPage: React.FC = () => {
                                     }}
                                   >
                                     {isCompleted ? (
-                                      <CheckCircle2 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[18px] h-[18px] text-emerald-400 bg-gray-900 rounded-full z-10" style={{ filter: "drop-shadow(0 0 2px rgba(16,185,129,0.5))" }} />
+                                      <CheckCircle2 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[18px] h-[18px] text-emerald-400 bg-white/[0.03] rounded-full z-10" style={{ filter: "drop-shadow(0 0 2px rgba(16,185,129,0.5))" }} />
                                     ) : isAlert ? (
                                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[18px] h-[18px] z-10" style={{ filter: "drop-shadow(0 0 4px rgba(239,68,68,0.8))" }}>
                                         <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" fill="#ef4444" />
@@ -1308,7 +1308,7 @@ export const BaselineReviewPage: React.FC = () => {
                                     }}
                                   >
                                     {isCompleted ? (
-                                      <CheckCircle2 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[18px] h-[18px] text-emerald-400 bg-gray-900 rounded-full z-10" style={{ filter: "drop-shadow(0 0 2px rgba(16,185,129,0.5))" }} />
+                                      <CheckCircle2 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[18px] h-[18px] text-emerald-400 bg-white/[0.03] rounded-full z-10" style={{ filter: "drop-shadow(0 0 2px rgba(16,185,129,0.5))" }} />
                                     ) : isAlert ? (
                                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[18px] h-[18px] z-10" style={{ filter: "drop-shadow(0 0 4px rgba(239,68,68,0.8))" }}>
                                         <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" fill="#ef4444" />
@@ -1371,7 +1371,7 @@ export const BaselineReviewPage: React.FC = () => {
                       </div>
 
                       {/* ── Legend ── */}
-                      <div className="flex items-center gap-4 px-5 py-3 border-t border-gray-800/40 flex-wrap">
+                      <div className="flex items-center gap-4 px-5 py-3 border-t border-transparent flex-wrap">
                         {hasDates && (
                           <div className="flex items-center gap-1.5">
                             <div className="w-2.5 h-2.5 rounded-full bg-orange-400" style={{ animation: "todayPulse 2s ease-in-out infinite" }}></div>
@@ -1475,7 +1475,7 @@ export const BaselineReviewPage: React.FC = () => {
                                   if (!mData || (blockingCount === 0 && blockedByCount === 0)) return null;
                                   
                                   return (
-                                    <div className="mt-4 p-3 bg-gray-900/40 border border-gray-700/50 rounded-lg">
+                                    <div className="mt-4 p-3 bg-white/[0.03]/40 border border-transparent rounded-lg">
                                       <h5 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
                                         <AlertTriangle className="w-3 h-3 text-orange-400" /> Milestone Dependencies
                                       </h5>
@@ -1484,7 +1484,7 @@ export const BaselineReviewPage: React.FC = () => {
                                           <span className="text-xs text-red-400 font-semibold mb-1 block">Blocked By:</span>
                                           <ul className="space-y-1">
                                             {getNames(blockedByIds).map((n, i) => (
-                                              <li key={i} className="text-xs text-gray-300 flex items-start gap-2 bg-red-950/10 px-2 py-1 rounded border border-red-900/20">
+                                              <li key={i} className="text-xs text-gray-200 flex items-start gap-2 bg-red-950/10 px-2 py-1 rounded border border-red-900/20">
                                                 <Circle className="w-1.5 h-1.5 mt-1 text-red-500 fill-red-500 flex-shrink-0" />
                                                 <span className="leading-tight">{n}</span>
                                               </li>
@@ -1497,7 +1497,7 @@ export const BaselineReviewPage: React.FC = () => {
                                           <span className="text-xs text-orange-400 font-semibold mb-1 block">Blocking {blockingCount} Milestone(s):</span>
                                           <ul className="space-y-1">
                                             {getNames(blockingIds).map((n, i) => (
-                                              <li key={i} className="text-xs text-gray-300 flex items-start gap-2 bg-orange-950/10 px-2 py-1 rounded border border-orange-900/20">
+                                              <li key={i} className="text-xs text-gray-200 flex items-start gap-2 bg-orange-950/10 px-2 py-1 rounded border border-orange-900/20">
                                                 <Circle className="w-1.5 h-1.5 mt-1 text-orange-500 fill-orange-500 flex-shrink-0" />
                                                 <span className="leading-tight">{n}</span>
                                               </li>
@@ -1516,7 +1516,7 @@ export const BaselineReviewPage: React.FC = () => {
                                     </h5>
                                     <ul className="space-y-1.5">
                                       {dependencies.map((dep, idx) => (
-                                        <li key={idx} className="text-xs text-gray-300 flex items-start gap-2 bg-orange-950/10 px-2 py-1.5 rounded-md border border-orange-900/20">
+                                        <li key={idx} className="text-xs text-gray-200 flex items-start gap-2 bg-orange-950/10 px-2 py-1.5 rounded-md border border-orange-900/20">
                                           <Circle className="w-1.5 h-1.5 mt-1 text-orange-500 fill-orange-500 flex-shrink-0" />
                                           <span className="leading-tight">{dep}</span>
                                         </li>
@@ -1530,11 +1530,11 @@ export const BaselineReviewPage: React.FC = () => {
                                     <span className="mr-1.5 transition-transform group-open:rotate-90 text-[10px]">▶</span>
                                     AI Extraction Details
                                   </summary>
-                                  <div className="mt-3 space-y-3 p-3 bg-gray-900/60 rounded-lg border border-gray-700/40">
+                                  <div className="mt-3 space-y-3 p-3 bg-white/[0.03]/60 rounded-lg border border-transparent">
                                     {(updateSource || updateDate) && (
                                       <div>
                                         <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">Updated From</h5>
-                                        <p className="text-xs text-gray-300 italic">
+                                        <p className="text-xs text-gray-200 italic">
                                           {updateSource ? updateSource : 'Unknown Document'}
                                           {updateDate && ` • ${formatDate(updateDate)}`}
                                         </p>
@@ -1543,25 +1543,25 @@ export const BaselineReviewPage: React.FC = () => {
                                     {latestProgress?.evidence_text && (
                                       <div>
                                         <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">Progress Evidence</h5>
-                                        <p className="text-xs text-gray-300 italic leading-relaxed">{latestProgress.evidence_text}</p>
+                                        <p className="text-xs text-gray-200 italic leading-relaxed">{latestProgress.evidence_text}</p>
                                       </div>
                                     )}
                                     {selectedItem.description && (
                                       <div>
                                         <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">AI Reasoning (Baseline)</h5>
-                                        <p className="text-xs text-gray-300 italic leading-relaxed">{selectedItem.description}</p>
+                                        <p className="text-xs text-gray-200 italic leading-relaxed">{selectedItem.description}</p>
                                       </div>
                                     )}
                                     {selectedItem.evidence_text && (
                                       <div>
                                         <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">Evidence (Baseline)</h5>
-                                        <p className="text-xs text-gray-300 italic leading-relaxed">{selectedItem.evidence_text}</p>
+                                        <p className="text-xs text-gray-200 italic leading-relaxed">{selectedItem.evidence_text}</p>
                                       </div>
                                     )}
                                     {(selectedItem.name && selectedItem.scope_item_normalized) && (
                                       <div>
                                         <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">Original Text</h5>
-                                        <p className="text-xs text-gray-300 font-serif italic">{selectedItem.name}</p>
+                                        <p className="text-xs text-gray-200 font-serif italic">{selectedItem.name}</p>
                                       </div>
                                     )}
                                   </div>
@@ -1577,7 +1577,7 @@ export const BaselineReviewPage: React.FC = () => {
                                     ? "bg-red-950/60 text-red-300 border-red-700/50"
                                     : completionStatus === "IN_PROGRESS"
                                     ? "bg-blue-950/60 text-blue-300 border-blue-700/50"
-                                    : "bg-gray-800/80 text-gray-300 border-gray-700/60"
+                                    : "bg-gray-800/80 text-gray-200 border-transparent"
                                 }`}>
                                   {completionStatus === "COMPLETED" && <CheckCircle2 className="w-3.5 h-3.5 inline mr-1.5 -mt-0.5" />}
                                   {completionStatus === "BLOCKED" && <X className="w-3.5 h-3.5 inline mr-1.5 -mt-0.5" />}
@@ -1605,7 +1605,7 @@ export const BaselineReviewPage: React.FC = () => {
                                   {formatItemDate(selectedItem)}
                                 </span>
                               )}
-                              <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-gray-800/50 border border-gray-700/40 text-gray-400 text-xs font-medium">
+                              <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-gray-800/50 border border-transparent text-gray-400 text-xs font-medium">
                                 {selectedItem.scope_type?.replace("_", " ") || "Scope Item"}
                               </span>
                               {selectedItem._dateMs !== null && (
@@ -1633,10 +1633,10 @@ export const BaselineReviewPage: React.FC = () => {
                             {(user?.role === "ADMIN" ||
                               user?.role === "ENGAGEMENT_MANAGER" ||
                               user?.role === "PROJECT_LEAD") && (
-                              <div className="mt-5 pt-4 border-t border-gray-800/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                              <div className="mt-5 pt-4 border-t border-transparent flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                                 <div className="flex items-center gap-2.5">
                                   <span className="text-xs font-bold uppercase tracking-wider text-gray-500">Update Status:</span>
-                                  <div className="flex rounded-lg overflow-hidden border border-gray-700 bg-gray-900/60 p-0.5">
+                                  <div className="flex rounded-lg overflow-hidden border border-transparent bg-white/[0.03]/60 p-0.5">
                                     {[
                                       { value: "ACTIVE", label: "Pending", color: "hover:bg-blue-600/80 hover:text-white" },
                                       { value: "COMPLETED", label: "Completed", color: "hover:bg-emerald-600/80 hover:text-white" },
@@ -1666,7 +1666,7 @@ export const BaselineReviewPage: React.FC = () => {
                                   <input
                                     id="reschedule-date-input"
                                     type="date"
-                                    className="px-2.5 py-1 text-xs font-semibold rounded-md border border-gray-700 bg-gray-900/60 text-white focus:outline-none focus:border-violet-500 cursor-pointer shadow-inner"
+                                    className="px-2.5 py-1 text-xs font-semibold rounded-md border border-transparent bg-white/[0.03]/60 text-white focus:outline-none focus:border-violet-500 cursor-pointer shadow-inner"
                                     value={selectedItem.deadline ? new Date(selectedItem.deadline).toISOString().split('T')[0] : ""}
                                     onChange={(e) => handleRescheduleDeadline(selectedItem.id, e.target.value)}
                                   />
@@ -1681,7 +1681,7 @@ export const BaselineReviewPage: React.FC = () => {
                 );
               })()}
             </div>
-            <div className="mb-12 border-b border-gray-800"></div>
+            <div className="mb-12 border-b border-transparent"></div>
 
             
             <div className="flex justify-between items-center mb-6">
@@ -1701,7 +1701,7 @@ export const BaselineReviewPage: React.FC = () => {
                   <div className="relative">
                     <button
                       onClick={() => setShowExportDropdown(!showExportDropdown)}
-                      className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-200 border border-gray-700 hover:border-gray-600 rounded-md flex items-center gap-2 cursor-pointer transition-colors"
+                      className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-200 border border-transparent hover:border-gray-600 rounded-md flex items-center gap-2 cursor-pointer transition-colors"
                     >
                       <Download className="w-4 h-4" />
                       <span>Export</span>
@@ -1712,13 +1712,13 @@ export const BaselineReviewPage: React.FC = () => {
                           className="fixed inset-0 z-10"
                           onClick={() => setShowExportDropdown(false)}
                         ></div>
-                        <div className="absolute right-0 mt-2 w-48 bg-gray-900 border border-gray-700 rounded-lg shadow-xl py-1 z-25 animate-fadeIn">
+                        <div className="absolute right-0 mt-2 w-48 bg-white/[0.03] border border-transparent rounded-lg shadow-xl py-1 z-25 animate-fadeIn">
                           <button
                             onClick={() => {
                               handleExportWord();
                               setShowExportDropdown(false);
                             }}
-                            className="w-full text-left px-4 py-2.5 text-sm text-gray-200 hover:bg-gray-800 hover:text-white transition-colors flex items-center gap-2.5 cursor-pointer"
+                            className="w-full text-left px-4 py-2.5 text-sm text-gray-200 hover:bg-white/[0.06] hover:text-white transition-colors flex items-center gap-2.5 cursor-pointer"
                           >
                             <FileText className="w-4 h-4 text-blue-400" />
                             <span>Word Document (.doc)</span>
@@ -1728,7 +1728,7 @@ export const BaselineReviewPage: React.FC = () => {
                               handleExportPDF();
                               setShowExportDropdown(false);
                             }}
-                            className="w-full text-left px-4 py-2.5 text-sm text-gray-200 hover:bg-gray-800 hover:text-white transition-colors flex items-center gap-2.5 cursor-pointer"
+                            className="w-full text-left px-4 py-2.5 text-sm text-gray-200 hover:bg-white/[0.06] hover:text-white transition-colors flex items-center gap-2.5 cursor-pointer"
                           >
                             <FileText className="w-4 h-4 text-rose-400" />
                             <span>PDF Report</span>
@@ -1742,8 +1742,8 @@ export const BaselineReviewPage: React.FC = () => {
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
               {/* Left Column - In Scope */}
-              <div className="flex flex-col bg-gray-900/30 backdrop-blur-md rounded-2xl p-6 border border-gray-800/80 shadow-2xl">
-                <div className="flex items-center justify-between pb-4 mb-5 border-b border-gray-800">
+              <div className="flex flex-col bg-white/[0.03]/30 backdrop-blur-md rounded-2xl p-6 border border-transparent shadow-2xl">
+                <div className="flex items-center justify-between pb-4 mb-5 border-b border-transparent">
                   <div className="flex items-center gap-3">
                     <span className="relative flex h-3.5 w-3.5">
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -1770,7 +1770,7 @@ export const BaselineReviewPage: React.FC = () => {
                     {inScopeItems.map((item: any) => (
                       <div
                         key={item.id}
-                        className="group p-5 bg-gray-800/60 hover:bg-gray-800/90 rounded-xl border border-gray-700/60 hover:border-emerald-500/30 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col justify-between min-h-[160px]"
+                        className="group p-5 bg-gray-800/60 hover:bg-white/[0.06]/90 rounded-xl border border-transparent hover:border-emerald-500/30 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col justify-between min-h-[160px]"
                       >
                         <div>
                           <div className="flex justify-between items-start gap-2 mb-2">
@@ -1824,23 +1824,23 @@ export const BaselineReviewPage: React.FC = () => {
                               <span className="mr-1.5 transition-transform group-open:rotate-90 text-[10px]">▶</span>
                               AI Extraction Details
                             </summary>
-                            <div className="mt-3 space-y-3 p-3 bg-gray-900/60 rounded-lg border border-gray-700/40">
+                            <div className="mt-3 space-y-3 p-3 bg-white/[0.03]/60 rounded-lg border border-transparent">
                               {item.description && (
                                 <div>
                                   <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">AI Reasoning</h5>
-                                  <p className="text-xs text-gray-300 italic leading-relaxed">{item.description}</p>
+                                  <p className="text-xs text-gray-200 italic leading-relaxed">{item.description}</p>
                                 </div>
                               )}
                               {item.evidence_text && (
                                 <div>
                                   <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">Evidence</h5>
-                                  <p className="text-xs text-gray-300 italic leading-relaxed">{item.evidence_text}</p>
+                                  <p className="text-xs text-gray-200 italic leading-relaxed">{item.evidence_text}</p>
                                 </div>
                               )}
                               {(item.name && item.scope_item_normalized) && (
                                 <div>
                                   <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">Original Text</h5>
-                                  <p className="text-xs text-gray-300 font-serif italic">{item.name}</p>
+                                  <p className="text-xs text-gray-200 font-serif italic">{item.name}</p>
                                 </div>
                               )}
                             </div>
@@ -1856,7 +1856,7 @@ export const BaselineReviewPage: React.FC = () => {
                           )}
                         </div>
 
-                        <div className="flex flex-col gap-2 mt-auto pt-3 border-t border-gray-700/20">
+                        <div className="flex flex-col gap-2 mt-auto pt-3 border-t border-transparent">
                           {/* Milestone & Deadline Row */}
                           <div className="flex flex-wrap items-center gap-2 text-xs">
                             {item.milestone && (
@@ -1900,8 +1900,8 @@ export const BaselineReviewPage: React.FC = () => {
               </div>
 
               {/* Right Column - Out of Scope */}
-              <div className="flex flex-col bg-gray-900/30 backdrop-blur-md rounded-2xl p-6 border border-gray-800/80 shadow-2xl">
-                <div className="flex items-center justify-between pb-4 mb-5 border-b border-gray-800">
+              <div className="flex flex-col bg-white/[0.03]/30 backdrop-blur-md rounded-2xl p-6 border border-transparent shadow-2xl">
+                <div className="flex items-center justify-between pb-4 mb-5 border-b border-transparent">
                   <div className="flex items-center gap-3">
                     <span className="relative flex h-3.5 w-3.5">
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
@@ -1928,7 +1928,7 @@ export const BaselineReviewPage: React.FC = () => {
                     {outOfScopeItems.map((item: any) => (
                       <div
                         key={item.id}
-                        className="group p-5 bg-gray-800/60 hover:bg-gray-800/90 rounded-xl border border-gray-700/60 hover:border-rose-500/30 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col justify-between min-h-[160px]"
+                        className="group p-5 bg-gray-800/60 hover:bg-white/[0.06]/90 rounded-xl border border-transparent hover:border-rose-500/30 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col justify-between min-h-[160px]"
                       >
                         <div>
                           <div className="flex justify-between items-start gap-2 mb-2">
@@ -1982,23 +1982,23 @@ export const BaselineReviewPage: React.FC = () => {
                               <span className="mr-1.5 transition-transform group-open:rotate-90 text-[10px]">▶</span>
                               AI Extraction Details
                             </summary>
-                            <div className="mt-3 space-y-3 p-3 bg-gray-900/60 rounded-lg border border-gray-700/40">
+                            <div className="mt-3 space-y-3 p-3 bg-white/[0.03]/60 rounded-lg border border-transparent">
                               {item.description && (
                                 <div>
                                   <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">AI Reasoning</h5>
-                                  <p className="text-xs text-gray-300 italic leading-relaxed">{item.description}</p>
+                                  <p className="text-xs text-gray-200 italic leading-relaxed">{item.description}</p>
                                 </div>
                               )}
                               {item.evidence_text && (
                                 <div>
                                   <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">Evidence</h5>
-                                  <p className="text-xs text-gray-300 italic leading-relaxed">{item.evidence_text}</p>
+                                  <p className="text-xs text-gray-200 italic leading-relaxed">{item.evidence_text}</p>
                                 </div>
                               )}
                               {(item.name && item.scope_item_normalized) && (
                                 <div>
                                   <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">Original Text</h5>
-                                  <p className="text-xs text-gray-300 font-serif italic">{item.name}</p>
+                                  <p className="text-xs text-gray-200 font-serif italic">{item.name}</p>
                                 </div>
                               )}
                             </div>
@@ -2014,7 +2014,7 @@ export const BaselineReviewPage: React.FC = () => {
                           )}
                         </div>
 
-                        <div className="flex flex-col gap-2 mt-auto pt-3 border-t border-gray-700/20">
+                        <div className="flex flex-col gap-2 mt-auto pt-3 border-t border-transparent">
                           {/* Milestone & Deadline Row */}
                           <div className="flex flex-wrap items-center gap-2 text-xs">
                             {item.milestone && (
@@ -2067,7 +2067,7 @@ export const BaselineReviewPage: React.FC = () => {
             {/* Baseline Version History */}
             {versions && versions.length > 0 && (
               <div className="mt-16">
-                <div className="mb-12 border-b border-gray-800"></div>
+                <div className="mb-12 border-b border-transparent"></div>
                 <h2 className="text-2xl font-bold mb-6">
                   Baseline Version History
                 </h2>
@@ -2105,7 +2105,7 @@ export const BaselineReviewPage: React.FC = () => {
                     return (
                       <div
                         key={ver.id}
-                        className="border border-gray-800 rounded-xl bg-gray-900/30 backdrop-blur-md overflow-hidden transition-all duration-300"
+                        className="border border-transparent rounded-xl bg-white/[0.03]/30 backdrop-blur-md overflow-hidden transition-all duration-300"
                       >
                         {/* Header */}
                         <button
@@ -2164,8 +2164,8 @@ export const BaselineReviewPage: React.FC = () => {
                             ) : (
                               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-4">
                                 {/* In Scope */}
-                                <div className="bg-gray-900/40 p-5 rounded-lg border border-gray-800/80">
-                                  <h4 className="text-sm font-bold text-emerald-400 uppercase tracking-wider mb-4 border-b border-gray-800 pb-2">
+                                <div className="bg-white/[0.03]/40 p-5 rounded-lg border border-transparent">
+                                  <h4 className="text-sm font-bold text-emerald-400 uppercase tracking-wider mb-4 border-b border-transparent pb-2">
                                     In Scope ({inScope.length})
                                   </h4>
                                   {inScope.length === 0 ? (
@@ -2177,14 +2177,14 @@ export const BaselineReviewPage: React.FC = () => {
                                       {inScope.map((item: any) => (
                                         <div
                                           key={item.id}
-                                          className="p-3 bg-gray-850/40 rounded-lg border border-gray-800/50 flex flex-col justify-between gap-2"
+                                          className="p-3 bg-gray-850/40 rounded-lg border border-transparent flex flex-col justify-between gap-2"
                                         >
                                           <div>
                                             <p className="text-xs font-semibold text-gray-200">
                                               {item.scope_item_normalized || item.name}
                                             </p>
                                             <details className="mt-1 group cursor-pointer">
-                                              <summary className="text-[10px] font-bold text-gray-500 uppercase tracking-wider hover:text-gray-300 transition-colors list-none flex items-center">
+                                              <summary className="text-[10px] font-bold text-gray-500 uppercase tracking-wider hover:text-gray-200 transition-colors list-none flex items-center">
                                                 <span className="mr-1 transition-transform group-open:rotate-90">▶</span>
                                                 Details
                                               </summary>
@@ -2225,8 +2225,8 @@ export const BaselineReviewPage: React.FC = () => {
                                 {/* Out of Scope & Uncertain */}
                                 <div className="space-y-6">
                                   {/* Out of Scope */}
-                                  <div className="bg-gray-900/40 p-5 rounded-lg border border-gray-800/80">
-                                    <h4 className="text-sm font-bold text-rose-400 uppercase tracking-wider mb-4 border-b border-gray-800 pb-2">
+                                  <div className="bg-white/[0.03]/40 p-5 rounded-lg border border-transparent">
+                                    <h4 className="text-sm font-bold text-rose-400 uppercase tracking-wider mb-4 border-b border-transparent pb-2">
                                       Out of Scope ({outOfScope.length})
                                     </h4>
                                     {outOfScope.length === 0 ? (
@@ -2238,13 +2238,13 @@ export const BaselineReviewPage: React.FC = () => {
                                         {outOfScope.map((item: any) => (
                                           <div
                                             key={item.id}
-                                            className="p-3 bg-gray-850/40 rounded-lg border border-gray-800/50"
+                                            className="p-3 bg-gray-850/40 rounded-lg border border-transparent"
                                           >
                                             <p className="text-xs font-semibold text-gray-200">
                                               {item.scope_item_normalized || item.name}
                                             </p>
                                             <details className="mt-1 group cursor-pointer">
-                                              <summary className="text-[10px] font-bold text-gray-500 uppercase tracking-wider hover:text-gray-300 transition-colors list-none flex items-center">
+                                              <summary className="text-[10px] font-bold text-gray-500 uppercase tracking-wider hover:text-gray-200 transition-colors list-none flex items-center">
                                                 <span className="mr-1 transition-transform group-open:rotate-90">▶</span>
                                                 Details
                                               </summary>
@@ -2277,21 +2277,21 @@ export const BaselineReviewPage: React.FC = () => {
 
                                   {/* Uncertain */}
                                   {uncertain.length > 0 && (
-                                    <div className="bg-gray-900/40 p-5 rounded-lg border border-gray-800/80">
-                                      <h4 className="text-sm font-bold text-amber-400 uppercase tracking-wider mb-4 border-b border-gray-800 pb-2">
+                                    <div className="bg-white/[0.03]/40 p-5 rounded-lg border border-transparent">
+                                      <h4 className="text-sm font-bold text-amber-400 uppercase tracking-wider mb-4 border-b border-transparent pb-2">
                                         Uncertain ({uncertain.length})
                                       </h4>
                                       <div className="space-y-3">
                                         {uncertain.map((item: any) => (
                                           <div
                                             key={item.id}
-                                            className="p-3 bg-gray-850/40 rounded-lg border border-gray-800/50"
+                                            className="p-3 bg-gray-850/40 rounded-lg border border-transparent"
                                           >
                                             <p className="text-xs font-semibold text-gray-200">
                                               {item.scope_item_normalized || item.name}
                                             </p>
                                             <details className="mt-1 group cursor-pointer">
-                                              <summary className="text-[10px] font-bold text-gray-500 uppercase tracking-wider hover:text-gray-300 transition-colors list-none flex items-center">
+                                              <summary className="text-[10px] font-bold text-gray-500 uppercase tracking-wider hover:text-gray-200 transition-colors list-none flex items-center">
                                                 <span className="mr-1 transition-transform group-open:rotate-90">▶</span>
                                                 Details
                                               </summary>
@@ -2337,7 +2337,7 @@ export const BaselineReviewPage: React.FC = () => {
 
         {showExtractModal && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-[#111827] border border-gray-700 rounded-2xl p-6 w-full max-w-md shadow-2xl">
+            <div className="bg-[#111827] border border-transparent rounded-2xl p-6 w-full max-w-md shadow-2xl">
               <h2 className="text-xl font-bold mb-2 text-white">
                 Select Contract for Baseline
               </h2>
@@ -2354,7 +2354,7 @@ export const BaselineReviewPage: React.FC = () => {
                   return (
                     <div
                       key={doc.id}
-                      className="flex justify-between items-center bg-gray-800 p-3 rounded-lg border border-gray-700 gap-4"
+                      className="flex justify-between items-center bg-gray-800 p-3 rounded-lg border border-transparent gap-4"
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <input
@@ -2400,7 +2400,7 @@ export const BaselineReviewPage: React.FC = () => {
               <div className="flex justify-end gap-3">
                 <button
                   onClick={() => setShowExtractModal(false)}
-                  className="px-4 py-2 rounded-lg font-medium text-gray-300 hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  className="px-4 py-2 rounded-lg font-medium text-gray-200 hover:bg-white/[0.06] transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                   disabled={extracting}
                 >
                   Cancel
@@ -2427,7 +2427,7 @@ export const BaselineReviewPage: React.FC = () => {
         {showAddItemModal &&
           createPortal(
             <div className="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center z-[9999] p-4 overflow-y-auto animate-fadeIn">
-              <div className="bg-[#0b0e17] border border-gray-700/80 rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 md:p-8 shadow-2xl relative my-auto">
+              <div className="bg-[#0b0e17] border border-transparent rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 md:p-8 shadow-2xl relative my-auto">
                 <button
                   onClick={() => setShowAddItemModal(false)}
                   className="absolute top-4 right-4 text-gray-400 hover:text-white p-1"
@@ -2455,7 +2455,7 @@ export const BaselineReviewPage: React.FC = () => {
                         className={`py-2 px-3 rounded-xl border text-xs font-semibold flex items-center justify-center gap-2 ${
                           newItemScopeType === "IN_SCOPE"
                             ? "bg-emerald-500/20 border-emerald-500 text-emerald-300"
-                            : "bg-gray-900 border-gray-700 text-gray-400"
+                            : "bg-white/[0.03] border-transparent text-gray-400"
                         }`}
                       >
                         In Scope
@@ -2466,7 +2466,7 @@ export const BaselineReviewPage: React.FC = () => {
                         className={`py-2 px-3 rounded-xl border text-xs font-semibold flex items-center justify-center gap-2 ${
                           newItemScopeType === "OUT_OF_SCOPE"
                             ? "bg-rose-500/20 border-rose-500 text-rose-300"
-                            : "bg-gray-900 border-gray-700 text-gray-400"
+                            : "bg-white/[0.03] border-transparent text-gray-400"
                         }`}
                       >
                         Out of Scope
@@ -2484,7 +2484,7 @@ export const BaselineReviewPage: React.FC = () => {
                       placeholder="e.g. SOC 2 Type II Audit Compliance"
                       value={newItemName}
                       onChange={(e) => setNewItemName(e.target.value)}
-                      className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-2.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-teal-500"
+                      className="w-full bg-white/[0.03] border border-transparent rounded-xl px-4 py-2.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-teal-500"
                     />
                   </div>
 
@@ -2497,7 +2497,7 @@ export const BaselineReviewPage: React.FC = () => {
                       placeholder="Summarize the scope requirement or exclusion details..."
                       value={newItemDescription}
                       onChange={(e) => setNewItemDescription(e.target.value)}
-                      className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-2.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-teal-500 resize-none"
+                      className="w-full bg-white/[0.03] border border-transparent rounded-xl px-4 py-2.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-teal-500 resize-none"
                     />
                   </div>
 
@@ -2510,16 +2510,16 @@ export const BaselineReviewPage: React.FC = () => {
                       placeholder="e.g. Manually added during EM baseline review"
                       value={newItemEvidence}
                       onChange={(e) => setNewItemEvidence(e.target.value)}
-                      className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-2.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-teal-500"
+                      className="w-full bg-white/[0.03] border border-transparent rounded-xl px-4 py-2.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-teal-500"
                     />
                   </div>
 
-                  <div className="flex gap-3 pt-4 border-t border-gray-800">
+                  <div className="flex gap-3 pt-4 border-t border-transparent">
                     <button
                       type="button"
                       onClick={() => setShowAddItemModal(false)}
                       disabled={addingItem}
-                      className="flex-1 py-2.5 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-xl text-xs font-semibold transition-all"
+                      className="flex-1 py-2.5 bg-gray-800 hover:bg-gray-700 text-gray-200 rounded-xl text-xs font-semibold transition-all"
                     >
                       Cancel
                     </button>
@@ -2545,7 +2545,7 @@ export const BaselineReviewPage: React.FC = () => {
         {deletingItemId !== null &&
           createPortal(
             <div className="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center z-[9999] p-4 overflow-y-auto animate-fadeIn">
-              <div className="bg-[#0b0e17] border border-gray-700/80 rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl text-center my-auto">
+              <div className="bg-[#0b0e17] border border-transparent rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl text-center my-auto">
                 <div className="w-12 h-12 rounded-full bg-rose-500/10 border border-rose-500/30 flex items-center justify-center mx-auto mb-4 text-rose-400">
                   <Trash2 className="w-6 h-6" />
                 </div>
@@ -2562,7 +2562,7 @@ export const BaselineReviewPage: React.FC = () => {
                   <button
                     onClick={() => setDeletingItemId(null)}
                     disabled={deletingItem}
-                    className="flex-1 py-2.5 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-xl text-xs font-semibold transition-all"
+                    className="flex-1 py-2.5 bg-gray-800 hover:bg-gray-700 text-gray-200 rounded-xl text-xs font-semibold transition-all"
                   >
                     Cancel
                   </button>
@@ -2584,7 +2584,7 @@ export const BaselineReviewPage: React.FC = () => {
           )}
 
         {notification && (
-          <div className="fixed top-6 right-6 z-50 max-w-sm w-full bg-[#111827] border border-white/10 rounded-2xl p-4 shadow-2xl flex gap-3 animate-slideIn select-none">
+          <div className="fixed top-6 right-6 z-50 max-w-sm w-full bg-[#111827] border border-transparent rounded-2xl p-4 shadow-2xl flex gap-3 animate-slideIn select-none">
             <div className="flex-1">
               <p
                 className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${

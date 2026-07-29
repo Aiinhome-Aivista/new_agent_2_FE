@@ -6,11 +6,43 @@
 }
 
 @layer base {
+  :root {
+    /* ── Design Tokens (UI/UX Pro Max: Soft UI Evolution) ── */
+    --color-bg-base: #020617;
+    --color-bg-surface: #0b0e17;
+    --color-bg-elevated: #0f1320;
+    --color-bg-card: rgba(255, 255, 255, 0.02);
+    --color-bg-card-hover: rgba(255, 255, 255, 0.045);
+
+    --color-border-default: rgba(255, 255, 255, 0.03);
+    --color-border-hover: rgba(255, 255, 255, 0.06);
+    --color-border-active: rgba(20, 184, 166, 0.3);
+
+    --color-accent: #14b8a6;
+    --color-accent-soft: rgba(20, 184, 166, 0.1);
+    --color-accent-glow: rgba(20, 184, 166, 0.15);
+    --color-blue: #3b82f6;
+
+    --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.2), 0 4px 12px rgba(0, 0, 0, 0.1);
+    --shadow-card-hover: 0 4px 16px rgba(0, 0, 0, 0.3), 0 8px 32px rgba(20, 184, 166, 0.06);
+    --shadow-glow-teal: 0 0 20px rgba(20, 184, 166, 0.08);
+    --shadow-glow-blue: 0 0 20px rgba(59, 130, 246, 0.08);
+
+    --radius-card: 16px;
+    --radius-button: 12px;
+    --radius-input: 12px;
+
+    --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-smooth: 250ms cubic-bezier(0.16, 1, 0.3, 1);
+    --transition-spring: 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
   body {
-    @apply bg-[#0c101d] text-gray-100 font-sans antialiased selection:bg-teal-500/30;
+    @apply bg-[#020617] text-gray-100 font-sans antialiased selection:bg-teal-500/30;
   }
 }
 
+/* ── Stagger Entrance Animations ── */
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -22,9 +54,130 @@
   }
 }
 
+@keyframes staggerFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes cardEntrance {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes subtleFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes shimmerProgress {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes pulseRing {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(20, 184, 166, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(20, 184, 166, 0);
+  }
+}
+
+@keyframes glowPulse {
+  0%, 100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
 .animate-fade-in-up {
   opacity: 0;
   animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-stagger-fade-in {
+  opacity: 0;
+  animation: staggerFadeIn 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.animate-card-entrance {
+  opacity: 0;
+  animation: cardEntrance 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-shimmer-progress {
+  background: linear-gradient(90deg, rgba(20,184,166,0.3) 0%, rgba(59,130,246,0.5) 50%, rgba(20,184,166,0.3) 100%);
+  background-size: 200% 100%;
+  animation: shimmerProgress 2s ease-in-out infinite;
+}
+
+.animate-pulse-ring {
+  animation: pulseRing 2s ease-in-out infinite;
+}
+
+/* ── Glassmorphic Card Utility ── */
+.glass-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid transparent;
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: border-color var(--transition-smooth),
+              box-shadow var(--transition-smooth),
+              background var(--transition-smooth),
+              transform var(--transition-smooth);
+}
+
+.glass-card:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.06);
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-2px);
+}
+
+/* ── Accent Top-Border Card ── */
+.card-accent-top {
+  position: relative;
+  overflow: hidden;
+}
+
+.card-accent-top::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(20,184,166,0.6), rgba(59,130,246,0.4));
+  opacity: 0;
+  transition: opacity var(--transition-smooth);
+}
+
+.card-accent-top:hover::before {
+  opacity: 1;
 }
 
 /* ── Deliverables Timeline ── */
@@ -72,27 +225,39 @@
   overflow: hidden;
 }
 
-/* Custom Scrollbar Styles */
+/* ── Custom Scrollbar Styles ── */
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;
 }
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 3px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: #374151; /* gray-700 */
+  background-color: rgba(148, 163, 184, 0.2);
   border-radius: 20px;
+  transition: background-color 0.2s;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background-color: #4b5563; /* gray-600 */
+  background-color: rgba(148, 163, 184, 0.35);
 }
 
-/* Hide scrollbars completely styling */
+/* ── Hide scrollbars completely styling ── */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
 .no-scrollbar {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
+/* ── Reduced Motion ── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

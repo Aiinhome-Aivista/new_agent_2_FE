@@ -56,32 +56,76 @@ export const Sidebar: React.FC = () => {
     },
   ];
 
+  const projectLinks = projectId
+    ? [
+        {
+          to: `/projects/${projectId}`,
+          label: "Overview",
+          icon: <LayoutGrid className="w-5 h-5" />,
+          match: () => isActive(`/projects/${projectId}`),
+        },
+        {
+          to: `/projects/${projectId}/members`,
+          label: "Project Members",
+          icon: <Users className="w-5 h-5" />,
+          match: () => isProjectActive("members"),
+        },
+        {
+          to: `/projects/${projectId}/cockpit`,
+          label: "Document Cockpit",
+          icon: <Briefcase className="w-5 h-5" />,
+          match: () => isProjectActive("cockpit"),
+        },
+        {
+          to: `/projects/${projectId}/baseline`,
+          label: "Baseline Review",
+          icon: <ScrollText className="w-5 h-5" />,
+          match: () => isProjectActive("baseline"),
+        },
+        {
+          to: `/projects/${projectId}/tracker`,
+          label: "Risk Tracker",
+          icon: <Activity className="w-5 h-5" />,
+          match: () => isProjectActive("tracker"),
+        },
+        {
+          to: `/projects/${projectId}/assistant`,
+          label: "AI Assistant",
+          icon: <MessageSquare className="w-5 h-5" />,
+          match: () => isProjectActive("assistant"),
+        },
+      ]
+    : [];
+
+  const activeLinkClasses =
+    "bg-gradient-to-r from-teal-500/10 to-blue-600/10 border border-teal-500/20 text-teal-400 font-semibold shadow-[inset_3px_0_0_0_rgb(20_184_166)]";
+  const inactiveLinkClasses =
+    "hover:bg-white/[0.04] text-gray-400 hover:text-white border border-transparent";
+
   const sidebarContent = (
-    <div className="flex flex-col h-full bg-[#0b0e17] text-gray-200">
+    <div className="flex flex-col h-full bg-[#070a12] text-gray-200">
       {/* Brand Logo Header */}
-      <div className="px-6 py-6 border-b border-white/5 flex items-center gap-3">
-        <div className="p-2 bg-gradient-to-tr from-teal-500 to-blue-600 rounded-xl shadow-lg shadow-teal-500/20">
+      <div className="px-6 py-5 border-b border-transparent flex items-center gap-3">
+        <div className="p-2 bg-gradient-to-tr from-teal-500 to-blue-600 rounded-xl shadow-lg shadow-teal-500/20 ring-1 ring-transparent">
           <ShieldCheck className="w-5 h-5 text-white" />
         </div>
-        <span className="font-display text-xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-teal-300">
+        <span className="font-display text-xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-100 to-teal-300">
           ACSE Portal
         </span>
       </div>
 
       {/* Main Navigation */}
-      <div className="flex-1 px-4 py-6 space-y-7 overflow-y-auto custom-scrollbar">
-        <div className="space-y-1.5">
-          <span className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-2">
+      <div className="flex-1 px-3 py-5 space-y-6 overflow-y-auto custom-scrollbar">
+        <div className="space-y-1">
+          <span className="px-3 text-[10px] font-bold text-gray-500 uppercase tracking-[0.15em] block mb-2.5">
             General
           </span>
           {navLinks.map((link) => (
             <Link
               key={link.to}
               to={link.to}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
-                isActive(link.to)
-                  ? "bg-gradient-to-r from-teal-500/10 to-blue-600/10 border border-teal-500/20 text-teal-400 font-semibold"
-                  : "hover:bg-white/[0.03] text-gray-400 hover:text-white border border-transparent"
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer ${
+                isActive(link.to) ? activeLinkClasses : inactiveLinkClasses
               }`}
             >
               {link.icon}
@@ -92,100 +136,39 @@ export const Sidebar: React.FC = () => {
 
         {/* Project Specific Actions (Contextual Submenu) */}
         {projectId && (
-          <div className="space-y-1.5 border-t border-white/5 pt-6 animate-fadeIn">
-            <div className="flex items-center justify-between px-3 mb-2">
-              <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+          <div className="space-y-1 border-t border-transparent pt-5">
+            <div className="flex items-center justify-between px-3 mb-2.5">
+              <span className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.15em]">
                 Project Panel
               </span>
               <Link
                 to="/projects"
-                className="text-xs text-teal-400 hover:text-teal-300 flex items-center gap-1"
+                className="text-[10px] text-teal-400 hover:text-teal-300 flex items-center gap-1 font-semibold cursor-pointer transition-colors duration-200"
               >
                 <ArrowLeft className="w-3 h-3" /> List
               </Link>
             </div>
 
-             <Link
-              to={`/projects/${projectId}`}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
-                isActive(`/projects/${projectId}`)
-                  ? "bg-gradient-to-r from-teal-500/10 to-blue-600/10 border border-teal-500/20 text-teal-400 font-semibold"
-                  : "hover:bg-white/[0.03] text-gray-400 hover:text-white border border-transparent"
-              }`}
-            >
-              <LayoutGrid className="w-5 h-5" />
-              Overview
-            </Link>
-
-            <Link
-              to={`/projects/${projectId}/members`}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
-                isProjectActive("members")
-                  ? "bg-gradient-to-r from-teal-500/10 to-blue-600/10 border border-teal-500/20 text-teal-400 font-semibold"
-                  : "hover:bg-white/[0.03] text-gray-400 hover:text-white border border-transparent"
-              }`}
-            >
-              <Users className="w-5 h-5" />
-              Project Members
-            </Link>
-
-           
-
-            <Link
-              to={`/projects/${projectId}/cockpit`}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
-                isProjectActive("cockpit")
-                  ? "bg-gradient-to-r from-teal-500/10 to-blue-600/10 border border-teal-500/20 text-teal-400 font-semibold"
-                  : "hover:bg-white/[0.03] text-gray-400 hover:text-white border border-transparent"
-              }`}
-            >
-              <Briefcase className="w-5 h-5" />
-              Document Cockpit
-            </Link>
-
-            <Link
-              to={`/projects/${projectId}/baseline`}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
-                isProjectActive("baseline")
-                  ? "bg-gradient-to-r from-teal-500/10 to-blue-600/10 border border-teal-500/20 text-teal-400 font-semibold"
-                  : "hover:bg-white/[0.03] text-gray-400 hover:text-white border border-transparent"
-              }`}
-            >
-              <ScrollText className="w-5 h-5" />
-              Baseline Review
-            </Link>
-
-            <Link
-              to={`/projects/${projectId}/tracker`}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
-                isProjectActive("tracker")
-                  ? "bg-gradient-to-r from-teal-500/10 to-blue-600/10 border border-teal-500/20 text-teal-400 font-semibold"
-                  : "hover:bg-white/[0.03] text-gray-400 hover:text-white border border-transparent"
-              }`}
-            >
-              <Activity className="w-5 h-5" />
-              Risk Tracker
-            </Link>
-
-            <Link
-              to={`/projects/${projectId}/assistant`}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
-                isProjectActive("assistant")
-                  ? "bg-gradient-to-r from-teal-500/10 to-blue-600/10 border border-teal-500/20 text-teal-400 font-semibold"
-                  : "hover:bg-white/[0.03] text-gray-400 hover:text-white border border-transparent"
-              }`}
-            >
-              <MessageSquare className="w-5 h-5" />
-              AI Assistant
-            </Link>
+            {projectLinks.map((link) => (
+              <Link
+                key={link.to}
+                to={link.to}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer ${
+                  link.match() ? activeLinkClasses : inactiveLinkClasses
+                }`}
+              >
+                {link.icon}
+                {link.label}
+              </Link>
+            ))}
           </div>
         )}
       </div>
 
       {/* User Section / Bottom Profile */}
-      <div className="p-4 border-t border-white/5 bg-[#080b13]">
-        <div className="flex items-center gap-3 p-2 rounded-xl bg-white/[0.02] border border-white/5 mb-3">
-          <div className="p-2 bg-teal-500/10 rounded-lg">
+      <div className="p-3 border-t border-transparent bg-[#060911]">
+        <div className="flex items-center gap-3 p-2.5 rounded-xl bg-white/[0.02] border border-transparent mb-2.5">
+          <div className="p-2 bg-teal-500/10 rounded-lg ring-1 ring-teal-500/20">
             <User className="w-4 h-4 text-teal-400" />
           </div>
           <div className="flex-1 min-w-0">
@@ -197,7 +180,7 @@ export const Sidebar: React.FC = () => {
         </div>
         <button
           onClick={handleLogout}
-          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-rose-950/20 hover:bg-rose-900/30 border border-rose-500/10 hover:border-rose-500/20 text-rose-300 hover:text-rose-200 rounded-xl text-sm font-medium transition-all duration-200 active:scale-[0.98]"
+          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-rose-950/20 hover:bg-rose-900/30 border border-rose-500/10 hover:border-rose-500/20 text-rose-300 hover:text-rose-200 rounded-xl text-sm font-medium transition-all duration-200 active:scale-[0.98] cursor-pointer"
         >
           <LogOut className="w-4 h-4" />
           Sign Out
@@ -209,7 +192,7 @@ export const Sidebar: React.FC = () => {
   return (
     <>
       {/* Mobile Top Header */}
-      <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-[#0b0e17] border-b border-white/5 flex items-center justify-between px-6 z-30">
+      <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-[#070a12]/95 backdrop-blur-md border-b border-transparent flex items-center justify-between px-6 z-30">
         <div className="flex items-center gap-3">
           <div className="p-1.5 bg-gradient-to-tr from-teal-500 to-blue-600 rounded-lg">
             <ShieldCheck className="w-5 h-5 text-white" />
@@ -220,14 +203,14 @@ export const Sidebar: React.FC = () => {
         </div>
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="p-2 text-gray-400 hover:text-white rounded-lg focus:outline-none focus:bg-white/5"
+          className="p-2 text-gray-400 hover:text-white rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/50 cursor-pointer transition-colors"
         >
           {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
         </button>
       </div>
 
       {/* Desktop Fixed Sidebar */}
-      <aside className="hidden md:block fixed top-0 left-0 bottom-0 w-64 border-r border-white/5 z-20">
+      <aside className="hidden md:block fixed top-0 left-0 bottom-0 w-64 border-r border-transparent z-20 bg-[#070a12]">
         {sidebarContent}
       </aside>
 
@@ -237,13 +220,13 @@ export const Sidebar: React.FC = () => {
       >
         {/* Backdrop overlay */}
         <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm"
           onClick={() => setIsOpen(false)}
         />
 
         {/* Drawer container */}
         <aside
-          className={`fixed top-0 left-0 bottom-0 w-64 bg-[#0b0e17] z-50 transform transition-transform duration-300 ${isOpen ? "translate-x-0" : "-translate-x-full"}`}
+          className={`fixed top-0 left-0 bottom-0 w-64 bg-[#070a12] z-50 transform transition-transform duration-300 ease-out ${isOpen ? "translate-x-0" : "-translate-x-full"}`}
         >
           {sidebarContent}
         </aside>

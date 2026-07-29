@@ -640,21 +640,21 @@ export const TrackerPage: React.FC = () => {
     const errorText = evaluationProgress.error;
 
     return (
-      <div className="w-full bg-[#0b0e17]/80 border border-gray-800 rounded-3xl p-8 backdrop-blur-md shadow-2xl relative overflow-hidden max-w-4xl mx-auto my-8 animate-fade-in-up">
+      <div className="w-full bg-[#0b0e17]/80 border border-transparent rounded-3xl p-8 backdrop-blur-md shadow-2xl relative overflow-hidden max-w-4xl mx-auto my-8 animate-fade-in-up">
         <div className="absolute -top-24 -right-24 w-48 h-48 rounded-full bg-cyan-500/10 blur-[60px]" />
         <div className="absolute -bottom-24 -left-24 w-48 h-48 rounded-full bg-blue-500/10 blur-[60px]" />
 
         {isFailed && (
           <button
             onClick={resetProgress}
-            className="absolute top-4 right-4 p-2 bg-gray-900/50 hover:bg-gray-800 border border-gray-800/50 hover:border-gray-700 rounded-lg text-gray-400 hover:text-white transition-colors cursor-pointer z-50 flex items-center justify-center"
+            className="absolute top-4 right-4 p-2 bg-white/[0.03]/50 hover:bg-white/[0.06] border border-transparent hover:border-transparent rounded-lg text-gray-400 hover:text-white transition-colors duration-200 cursor-pointer active:scale-[0.98] z-50 flex items-center justify-center"
             title="Dismiss"
           >
             <X className="w-4 h-4" />
           </button>
         )}
 
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-gray-800/60 pb-6 mb-8">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-transparent pb-6 mb-8">
           <div>
             <h2 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
               <Loader2
@@ -693,7 +693,7 @@ export const TrackerPage: React.FC = () => {
         </div>
 
         <div className="mb-10">
-          <div className="w-full h-3 bg-gray-900 rounded-full border border-gray-800/80 overflow-hidden p-0.5">
+          <div className="w-full h-3 bg-white/[0.03] rounded-full border border-transparent overflow-hidden p-0.5">
             <div
               className={`h-full rounded-full bg-gradient-to-r ${isFailed ? "from-rose-600 to-red-500 shadow-rose-500/20" : "from-blue-600 to-cyan-500 shadow-cyan-500/20"} shadow-lg transition-all duration-500 ease-out`}
               style={{ width: `${overallProgress}%` }}
@@ -713,7 +713,7 @@ export const TrackerPage: React.FC = () => {
           </div>
         )}
 
-        <div className="relative border-l border-gray-800/80 ml-4 pl-8 space-y-8">
+        <div className="relative border-l border-transparent ml-4 pl-8 space-y-8">
           {currentSteps.map((step, idx) => {
             const state = getStepState(idx);
 
@@ -740,7 +740,7 @@ export const TrackerPage: React.FC = () => {
               textClass = "text-rose-400 font-bold";
             } else {
               iconElement = <Circle className="w-3 h-3 text-gray-750" />;
-              iconBgClass = "bg-gray-950 border-gray-800 scale-90";
+              iconBgClass = "bg-gray-950 border-transparent scale-90";
               textClass = "text-gray-600";
             }
 
@@ -804,7 +804,7 @@ export const TrackerPage: React.FC = () => {
                   >
                     {step.name}
                     {state === "running" && (
-                      <span className="text-[10px] font-bold px-1.5 py-0.5 bg-cyan-500/10 text-cyan-400 border border-cyan-500/25 rounded uppercase tracking-wider animate-pulse">
+                      <span className="text-[10px] font-bold px-1.5 py-0.5 bg-cyan-500/10 text-cyan-400 border border-cyan-500/25 rounded uppercase tracking-wider animate-pulse-ring">
                         Running
                       </span>
                     )}
@@ -832,7 +832,7 @@ export const TrackerPage: React.FC = () => {
 
       <div className="max-w-7xl mx-auto relative z-10 space-y-8">
         {/* Modern Breadcrumb & Header Row */}
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 pb-6 border-b border-white/5">
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 pb-6 border-b border-transparent">
           <div>
             <div className="flex items-center gap-2 mb-2">
               <Link
@@ -865,17 +865,17 @@ export const TrackerPage: React.FC = () => {
           <div className="flex flex-wrap gap-3 items-center">
             {/* Scoring Rules Tooltip */}
             <div className="relative group">
-              <button className="flex items-center gap-1.5 px-3.5 py-2 bg-gray-900 border border-gray-800 hover:border-gray-700 text-gray-400 hover:text-cyan-400 rounded-xl text-xs font-bold transition-all cursor-help shadow-lg">
+              <button className="flex items-center gap-1.5 px-3.5 py-2 glass-card border-transparent hover:border-transparent text-gray-400 hover:text-cyan-400 rounded-xl text-xs font-bold transition-all cursor-help shadow-lg">
                 <Info className="w-4 h-4 shrink-0" />
                 Scoring Rules
               </button>
 
               {/* Tooltip Content */}
-              <div className="absolute right-0 lg:right-1/2 lg:translate-x-1/2 top-full mt-3 w-80 p-5 bg-gray-950/98 border border-gray-800 rounded-2xl shadow-2xl backdrop-blur-md opacity-0 translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 z-50 text-left">
+              <div className="absolute right-0 lg:right-1/2 lg:translate-x-1/2 top-full mt-3 w-80 p-5 bg-gray-950/98 border border-transparent rounded-2xl shadow-2xl backdrop-blur-md opacity-0 translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 z-50 text-left">
                 <h4 className="font-bold text-sm text-[#00e5ff] mb-3 border-b border-gray-850 pb-2 flex items-center gap-1.5">
                   Item Risk Scoring Rules
                 </h4>
-                <div className="space-y-4 text-xs text-gray-300">
+                <div className="space-y-4 text-xs text-gray-200">
                   <p className="text-gray-400 leading-relaxed font-medium">
                     Individual item scores (out of 100) are determined by these rules:
                   </p>
@@ -926,7 +926,7 @@ export const TrackerPage: React.FC = () => {
               }
               className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 active:scale-[0.98] shadow-lg flex items-center gap-2 border ${
                 processing || isEvaluating || project?.monitoring_status !== "ACTIVE"
-                  ? "bg-gray-800/40 border-gray-800 text-gray-500 cursor-not-allowed"
+                  ? "bg-gray-800/40 border-transparent text-gray-500 cursor-not-allowed"
                   : "bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white border-blue-500/20 shadow-cyan-500/10 cursor-pointer"
               }`}
             >
@@ -943,8 +943,8 @@ export const TrackerPage: React.FC = () => {
                 disabled={items.length === 0}
                 className={`px-4 py-2.5 text-xs font-bold rounded-xl flex items-center gap-2 border transition-all duration-200 active:scale-[0.98] shadow-lg ${
                   items.length === 0
-                    ? "bg-gray-800/40 border-gray-800 text-gray-500 cursor-not-allowed"
-                    : "bg-gray-900 border-gray-700 hover:border-gray-600 text-gray-300 hover:text-white cursor-pointer shadow-black/30"
+                    ? "bg-gray-800/40 border-transparent text-gray-500 cursor-not-allowed"
+                    : "bg-white/[0.03] border-transparent hover:border-gray-600 text-gray-200 hover:text-white cursor-pointer shadow-black/30"
                 }`}
               >
                 <Download className="w-3.5 h-3.5 text-gray-400" />
@@ -960,7 +960,7 @@ export const TrackerPage: React.FC = () => {
                     onClick={() => setShowExportDropdown(false)}
                   />
 
-                  <div className="absolute right-0 top-full mt-2 w-56 bg-gray-950 border border-gray-800 rounded-xl shadow-2xl backdrop-blur-md z-50 text-left p-2 space-y-1 animate-fade-in-up">
+                  <div className="absolute right-0 top-full mt-2 w-56 glass-card rounded-xl shadow-2xl backdrop-blur-md z-50 text-left p-2 space-y-1 animate-fade-in-up">
                     <div className="px-2.5 py-1 text-[10px] font-bold text-gray-500 uppercase tracking-wider border-b border-gray-850 mb-1">
                       Active Risks
                     </div>
@@ -973,7 +973,7 @@ export const TrackerPage: React.FC = () => {
                         );
                         setShowExportDropdown(false);
                       }}
-                      className="w-full text-left px-2.5 py-2 text-xs hover:bg-gray-900 text-gray-300 hover:text-white rounded-lg flex items-center gap-2 cursor-pointer transition-colors"
+                      className="w-full text-left px-2.5 py-2 text-xs hover:bg-white/[0.03] text-gray-200 hover:text-white rounded-lg flex items-center gap-2 cursor-pointer transition-colors"
                     >
                       <span>All Active Risks (PDF)</span>
                     </button>
@@ -986,7 +986,7 @@ export const TrackerPage: React.FC = () => {
                         );
                         setShowExportDropdown(false);
                       }}
-                      className="w-full text-left px-2.5 py-2 text-xs hover:bg-gray-900 text-gray-300 hover:text-white rounded-lg flex items-center gap-2 cursor-pointer transition-colors mb-2"
+                      className="w-full text-left px-2.5 py-2 text-xs hover:bg-white/[0.03] text-gray-200 hover:text-white rounded-lg flex items-center gap-2 cursor-pointer transition-colors mb-2"
                     >
                       <span>All Active Risks (Word)</span>
                     </button>
@@ -1041,7 +1041,7 @@ export const TrackerPage: React.FC = () => {
                         );
                         setShowExportDropdown(false);
                       }}
-                      className="w-full text-left px-2.5 py-2 text-xs hover:bg-gray-900 text-gray-300 hover:text-white rounded-lg flex items-center gap-2 cursor-pointer transition-colors"
+                      className="w-full text-left px-2.5 py-2 text-xs hover:bg-white/[0.03] text-gray-200 hover:text-white rounded-lg flex items-center gap-2 cursor-pointer transition-colors"
                     >
                       <span>All Resolved Risks (PDF)</span>
                     </button>
@@ -1054,7 +1054,7 @@ export const TrackerPage: React.FC = () => {
                         );
                         setShowExportDropdown(false);
                       }}
-                      className="w-full text-left px-2.5 py-2 text-xs hover:bg-gray-900 text-gray-300 hover:text-white rounded-lg flex items-center gap-2 cursor-pointer transition-colors"
+                      className="w-full text-left px-2.5 py-2 text-xs hover:bg-white/[0.03] text-gray-200 hover:text-white rounded-lg flex items-center gap-2 cursor-pointer transition-colors"
                     >
                       <span>All Resolved Risks (Word)</span>
                     </button>
@@ -1066,7 +1066,7 @@ export const TrackerPage: React.FC = () => {
         </div>
 
         {project?.monitoring_status !== "ACTIVE" ? (
-          <div className="text-center py-20 bg-gradient-to-br from-gray-900/60 to-gray-950/80 border border-white/5 rounded-3xl animate-fade-in-up p-10 max-w-2xl mx-auto shadow-2xl backdrop-blur-md relative overflow-hidden">
+          <div className="text-center py-20 bg-gradient-to-br from-gray-900/60 to-gray-950/80 border border-transparent rounded-3xl animate-fade-in-up p-10 max-w-2xl mx-auto shadow-2xl backdrop-blur-md relative overflow-hidden">
             <div className="absolute top-0 right-0 w-[150px] h-[150px] bg-amber-500/5 blur-[50px] pointer-events-none" />
             <AlertTriangle className="w-14 h-14 text-amber-500 mx-auto mb-5 animate-bounce" />
             <h3 className="font-display text-xl font-extrabold text-white mb-3">
@@ -1090,8 +1090,8 @@ export const TrackerPage: React.FC = () => {
         ) : isEvaluating || evaluationProgress ? (
           renderProgressTimeline()
         ) : items.length === 0 ? (
-          <div className="text-center py-24 bg-gradient-to-br from-gray-900/60 to-gray-950/80 border border-white/5 rounded-3xl animate-fade-in-up shadow-2xl backdrop-blur-md max-w-xl mx-auto">
-            <div className="w-16 h-16 bg-gray-800/40 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-gray-700/30 shadow-inner">
+          <div className="text-center py-24 bg-gradient-to-br from-gray-900/60 to-gray-950/80 border border-transparent rounded-3xl animate-fade-in-up shadow-2xl backdrop-blur-md max-w-xl mx-auto">
+            <div className="w-16 h-16 bg-gray-800/40 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-transparent shadow-inner">
               <ShieldAlert className="w-8 h-8 text-gray-500" />
             </div>
             <h3 className="font-display text-lg font-bold text-white mb-2">No Risk Items Found</h3>
@@ -1112,7 +1112,7 @@ export const TrackerPage: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div className="col-span-1">
                     <p className="text-[10px] uppercase font-bold text-gray-500 tracking-wider mb-1">Activity</p>
-                    <p className="text-sm font-bold text-white bg-gray-900/50 p-3 rounded-lg border border-gray-700/50">
+                    <p className="text-sm font-bold text-white bg-white/[0.03]/50 p-3 rounded-lg border border-transparent">
                       {project.highestActionPriority.activity}
                     </p>
                     
@@ -1131,7 +1131,7 @@ export const TrackerPage: React.FC = () => {
                   <div className="col-span-2 space-y-4">
                     <div>
                       <p className="text-[10px] uppercase font-bold text-gray-500 tracking-wider mb-2">Blockers & Cascade Impact</p>
-                      <div className="text-xs text-gray-300 leading-relaxed bg-gray-900/30 p-3 rounded-lg border border-gray-800 whitespace-pre-line">
+                      <div className="text-xs text-gray-200 leading-relaxed bg-white/[0.03]/30 p-3 rounded-lg border border-transparent whitespace-pre-line">
                         {project.highestActionPriority.reason}
                       </div>
                     </div>
@@ -1148,7 +1148,7 @@ export const TrackerPage: React.FC = () => {
             )}
 
             {/* Animated Capsule Tab Control */}
-            <div className="relative flex p-1 bg-gray-900/60 backdrop-blur-md border border-white/5 rounded-2xl max-w-md mb-8 shadow-lg shadow-black/20">
+            <div className="relative flex p-1 glass-card rounded-2xl max-w-md mb-8 shadow-lg shadow-black/20">
               {/* Sliding Background Indicator */}
               <div
                 className="absolute top-1 bottom-1 rounded-xl bg-gradient-to-r from-cyan-600/30 to-blue-600/30 border border-cyan-500/30 shadow-lg shadow-cyan-500/5 transition-all duration-300 ease-out"
@@ -1172,7 +1172,7 @@ export const TrackerPage: React.FC = () => {
                   className={`px-2.5 py-0.5 text-[10px] rounded-md border font-black font-mono transition-all duration-300 ${
                     activeTab === "ACTIVE"
                       ? "bg-red-500/10 text-red-400 border-red-500/20 shadow-md shadow-red-500/5"
-                      : "bg-gray-800/40 text-gray-500 border-gray-700/30"
+                      : "bg-gray-800/40 text-gray-500 border-transparent"
                   }`}
                 >
                   {activeItems.length}
@@ -1193,7 +1193,7 @@ export const TrackerPage: React.FC = () => {
                   className={`px-2.5 py-0.5 text-[10px] rounded-md border font-black font-mono transition-all duration-300 ${
                     activeTab === "RESOLVED"
                       ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-md shadow-emerald-500/5"
-                      : "bg-gray-800/40 text-gray-500 border-gray-700/30"
+                      : "bg-gray-800/40 text-gray-500 border-transparent"
                   }`}
                 >
                   {resolvedItems.length}
@@ -1203,8 +1203,8 @@ export const TrackerPage: React.FC = () => {
 
             {/* Filtered items list */}
             {currentTabItems.length === 0 ? (
-              <div className="text-center py-20 bg-gradient-to-br from-gray-900/60 to-gray-950/80 border border-white/5 rounded-3xl animate-fade-in-up shadow-2xl backdrop-blur-md max-w-xl mx-auto">
-                <div className="w-14 h-14 bg-gray-800/30 rounded-full flex items-center justify-center mx-auto mb-5 border border-gray-700/30">
+              <div className="text-center py-20 bg-gradient-to-br from-gray-900/60 to-gray-950/80 border border-transparent rounded-3xl animate-fade-in-up shadow-2xl backdrop-blur-md max-w-xl mx-auto">
+                <div className="w-14 h-14 bg-gray-800/30 rounded-full flex items-center justify-center mx-auto mb-5 border border-transparent">
                   <CheckCheck className="w-6 h-6 text-emerald-500" />
                 </div>
                 <h3 className="font-display text-base font-bold text-white mb-1">
@@ -1292,7 +1292,7 @@ export const TrackerPage: React.FC = () => {
                   return (
                     <div
                       key={item.id}
-                      className={`group rounded-2xl border ${borderColor} bg-gradient-to-br from-gray-900/70 to-gray-950/90 backdrop-blur-lg shadow-xl shadow-black/20 hover:shadow-2xl hover:shadow-cyan-500/[0.01] hover:border-gray-700/60 transition-all duration-300 ease-out overflow-hidden`}
+                      className={`group rounded-2xl border ${borderColor} bg-gradient-to-br from-gray-900/70 to-gray-950/90 backdrop-blur-lg shadow-xl shadow-black/20 hover:shadow-2xl hover:shadow-cyan-500/[0.01] hover:border-transparent transition-all duration-300 ease-out overflow-hidden`}
                       style={{ animationDelay: `${index * 50}ms` }}>
                       <div className={`px-4 py-2.5 border-b flex items-center justify-between gap-3 ${
                         level === "CRITICAL" ? "bg-red-500/[0.04]"
@@ -1307,18 +1307,18 @@ export const TrackerPage: React.FC = () => {
                               type="checkbox"
                               checked={selectedItemIds.includes(item.id)}
                               onChange={() => toggleSelectItem(item.id)}
-                              className="w-3.5 h-3.5 rounded border-gray-700 bg-gray-950 text-cyan-500 focus:ring-cyan-500/30 cursor-pointer accent-cyan-500 shrink-0"
+                              className="w-3.5 h-3.5 rounded border-transparent bg-gray-950 text-cyan-500 focus:ring-cyan-500/30 cursor-pointer accent-cyan-500 shrink-0"
                             />
                           )}
                           <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                            level === "CRITICAL" ? "bg-red-400 shadow-[0_0_6px_rgba(239,68,68,0.6)] animate-pulse"
+                            level === "CRITICAL" ? "bg-red-400 shadow-[0_0_6px_rgba(239,68,68,0.6)] animate-pulse-ring"
                             : level === "HIGH" ? "bg-orange-400 shadow-[0_0_6px_rgba(249,115,22,0.5)]"
                             : level === "MEDIUM" ? "bg-yellow-400 shadow-[0_0_6px_rgba(234,179,8,0.5)]"
                             : "bg-emerald-400 shadow-[0_0_6px_rgba(16,185,129,0.5)]"
                           }`} />
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-2 flex-wrap">
-                              <span className="text-[8px] font-extrabold text-gray-500 bg-gray-800/70 border border-gray-700/40 px-1.5 py-0.5 rounded uppercase tracking-wider shrink-0">
+                              <span className="text-[8px] font-extrabold text-gray-500 bg-gray-800/70 border border-transparent px-1.5 py-0.5 rounded uppercase tracking-wider shrink-0">
                                 {typeLabels[item.item_type] || item.item_type}
                               </span>
                               <h3 className="font-semibold text-sm text-gray-200 truncate group-hover:text-white transition-colors">
@@ -1349,7 +1349,7 @@ export const TrackerPage: React.FC = () => {
                           {!!item.requires_escalation && (
                             <span className="px-1.5 py-0.5 bg-orange-500/10 text-orange-400 border border-orange-500/20 rounded text-[8px] font-bold uppercase tracking-wide">Esc</span>
                           )}
-                          <span className="text-[8px] font-bold text-gray-500 bg-gray-800/40 px-1.5 py-0.5 rounded border border-gray-700/30 hidden sm:inline">
+                          <span className="text-[8px] font-bold text-gray-500 bg-gray-800/40 px-1.5 py-0.5 rounded border border-transparent hidden sm:inline">
                             {categoryLabel}
                           </span>
                           <span className={`px-1.5 py-0.5 rounded text-[9px] font-black border ${levelStyle.bg} ${levelStyle.text} ${levelStyle.border}`}>
@@ -1370,7 +1370,7 @@ export const TrackerPage: React.FC = () => {
                       <div className="px-4 py-3 space-y-2.5">
                         {/* Description — always collapsed */}
                         {(description || item.reasoning) && (
-                          <details className="group/desc border border-white/5 rounded-lg overflow-hidden bg-white/[0.01]">
+                          <details className="group/desc border border-transparent rounded-lg overflow-hidden bg-white/[0.01]">
                             <summary className="flex items-center justify-between px-3 py-2 text-[10px] font-bold text-gray-400 hover:text-gray-200 cursor-pointer select-none transition-colors">
                               <span className="flex items-center gap-1.5 truncate">
                                 <Info className="w-2.5 h-2.5 text-gray-500 shrink-0" />
@@ -1378,7 +1378,7 @@ export const TrackerPage: React.FC = () => {
                               </span>
                               <span className="text-gray-600 text-[8px] shrink-0 ml-2">▼</span>
                             </summary>
-                            <div className="px-3 pb-3 pt-1 text-[11px] text-gray-400 leading-relaxed border-t border-white/[0.04] whitespace-pre-line">
+                            <div className="px-3 pb-3 pt-1 text-[11px] text-gray-400 leading-relaxed border-t border-transparent whitespace-pre-line">
                               {description || item.reasoning}
                             </div>
                           </details>
@@ -1415,7 +1415,7 @@ export const TrackerPage: React.FC = () => {
                             </div>
                             <button
                               onClick={() => handleReactivate(item.id)}
-                              className="px-2.5 py-1 bg-gray-900 border border-gray-800 hover:border-gray-700 text-gray-400 hover:text-white rounded-md text-[9px] font-bold transition-all cursor-pointer active:scale-[0.98] shrink-0 whitespace-nowrap"
+                              className="px-2.5 py-1 glass-card border-transparent hover:border-transparent text-gray-400 hover:text-white rounded-md text-[9px] font-bold transition-all cursor-pointer active:scale-[0.98] shrink-0 whitespace-nowrap"
                             >
                               ↺ Reactivate
                             </button>
@@ -1443,18 +1443,18 @@ export const TrackerPage: React.FC = () => {
       {/* Floating Bulk Action Bar */}
       {selectedItemIds.length > 0 && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 w-full max-w-xl px-4 animate-fade-in-up">
-          <div className="bg-gray-950/90 backdrop-blur-xl border border-cyan-500/30 rounded-2xl p-4 shadow-2xl flex items-center justify-between gap-4">
+          <div className="glass-card border-cyan-500/30 shadow-cyan-500/10 animate-fade-in-up rounded-2xl p-4 shadow-2xl flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <div className="w-5 h-5 rounded-md bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
                 <span className="text-[10px] text-cyan-400 font-bold font-mono">{selectedItemIds.length}</span>
               </div>
-              <span className="text-xs text-gray-300 font-bold">risks selected</span>
+              <span className="text-xs text-gray-200 font-bold">risks selected</span>
             </div>
             
             <div className="flex gap-2">
               <button
                 onClick={() => setSelectedItemIds([])}
-                className="px-3 py-1.5 text-xs text-gray-400 hover:text-white bg-gray-900 border border-gray-800 hover:border-gray-700 rounded-xl transition-all cursor-pointer"
+                className="px-3 py-1.5 text-xs text-gray-400 hover:text-white glass-card border-transparent hover:border-transparent rounded-xl transition-all cursor-pointer"
               >
                 Clear Selection
               </button>
@@ -1488,7 +1488,7 @@ export const TrackerPage: React.FC = () => {
       {/* Resolve Modal */}
       {resolveModalState.isOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-[#111827] border border-gray-700 rounded-2xl p-6 w-full max-w-lg shadow-2xl">
+          <div className="bg-[#111827] border border-transparent rounded-2xl p-6 w-full max-w-lg shadow-2xl">
             <h2 className="text-2xl font-bold mb-4 text-white">
               Resolve Risk Item
             </h2>
@@ -1497,7 +1497,7 @@ export const TrackerPage: React.FC = () => {
               is being handled.
             </p>
             <textarea
-              className="w-full bg-gray-900 border border-gray-700 rounded-xl p-4 text-white focus:outline-none focus:ring-2 focus:ring-[#00e5ff] transition-all resize-none mb-6"
+              className="w-full bg-white/[0.03] border border-transparent rounded-xl p-4 text-white focus:outline-none focus:ring-2 focus:ring-[#00e5ff] transition-all resize-none mb-6"
               rows={4}
               placeholder="e.g. Discussed with client. Added as Change Request #102..."
               value={resolutionText}
@@ -1508,7 +1508,7 @@ export const TrackerPage: React.FC = () => {
                 onClick={() =>
                   setResolveModalState({ isOpen: false, itemId: null })
                 }
-                className="px-5 py-2.5 rounded-lg font-medium text-gray-300 hover:bg-gray-800 transition-colors"
+                className="px-5 py-2.5 rounded-lg font-medium text-gray-200 hover:bg-white/[0.06] transition-colors"
               >
                 Cancel
               </button>
@@ -1527,7 +1527,7 @@ export const TrackerPage: React.FC = () => {
       {/* Process Status Document Modal */}
       {showProcessModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-[#111827] border border-gray-700 rounded-2xl p-6 w-full max-w-md shadow-2xl">
+          <div className="bg-[#111827] border border-transparent rounded-2xl p-6 w-full max-w-md shadow-2xl">
             <h2 className="text-xl font-bold mb-2 text-white">
               Process Status Document
             </h2>
@@ -1561,7 +1561,7 @@ export const TrackerPage: React.FC = () => {
                     value={selectedDocId}
                     onChange={(e) => setSelectedDocId(e.target.value)}
                     disabled={processing}
-                    className="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-[#00e5ff] disabled:opacity-50"
+                    className="w-full bg-white/[0.03] border border-transparent rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-[#00e5ff] disabled:opacity-50"
                   >
                     {eligibleDocs.map((doc) => (
                       <option key={doc.id} value={String(doc.id)}>
@@ -1580,7 +1580,7 @@ export const TrackerPage: React.FC = () => {
                   setSelectedDocId("");
                 }}
                 disabled={processing}
-                className={`px-4 py-2 rounded-lg font-medium text-gray-300 hover:bg-gray-800 transition-colors text-sm ${processing ? "opacity-50 cursor-not-allowed" : ""}`}
+                className={`px-4 py-2 rounded-lg font-medium text-gray-200 hover:bg-white/[0.06] transition-colors text-sm ${processing ? "opacity-50 cursor-not-allowed" : ""}`}
               >
                 Cancel
               </button>

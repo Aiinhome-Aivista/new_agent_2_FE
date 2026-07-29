@@ -311,10 +311,10 @@ export const AIAssistantPage: React.FC = () => {
     <div className="flex-1 flex flex-col md:flex-row bg-[#080b14] h-[calc(100vh-4rem)] md:h-screen max-h-[calc(100vh-4rem)] md:max-h-screen overflow-hidden">
       
       {/* LEFT PANEL: Session Directory */}
-      <div className="w-full md:w-80 bg-gray-900/30 border-r border-white/5 flex flex-col h-1/3 md:h-full flex-shrink-0">
+      <div className="w-full md:w-80 bg-white/[0.03]/30 border-r border-transparent flex flex-col h-1/3 md:h-full flex-shrink-0">
         
         {/* Sidebar Header */}
-        <div className="p-4 border-b border-white/5 flex items-center justify-between">
+        <div className="p-4 border-b border-transparent flex items-center justify-between">
           <div className="flex items-center gap-2">
             <MessageSquare className="w-5 h-5 text-cyan-400" />
             <h2 className="font-display font-bold text-white text-base">Chat History</h2>
@@ -349,12 +349,12 @@ export const AIAssistantPage: React.FC = () => {
                 className={`group p-3 rounded-xl border transition-all duration-200 cursor-pointer flex items-center justify-between ${
                   currentSessionId === session.id
                     ? "bg-cyan-950/30 border-cyan-500/30 shadow-lg shadow-cyan-500/5"
-                    : "bg-gray-800/20 border-white/5 hover:bg-gray-800/40 hover:border-white/10"
+                    : "bg-gray-800/20 border-transparent hover:bg-white/[0.06]/40 hover:border-transparent"
                 }`}
               >
                 <div className="min-w-0 pr-2">
                   <p className={`text-xs font-semibold truncate ${
-                    currentSessionId === session.id ? "text-cyan-200" : "text-gray-300"
+                    currentSessionId === session.id ? "text-cyan-200" : "text-gray-200"
                   }`}>
                     {session.session_name}
                   </p>
@@ -407,7 +407,7 @@ export const AIAssistantPage: React.FC = () => {
                         handleSendMessage(p, newId);
                       }
                     }}
-                    className="text-left px-4 py-2.5 bg-gray-800/30 hover:bg-gray-800/60 border border-white/5 hover:border-cyan-500/20 text-gray-300 hover:text-cyan-200 text-xs rounded-xl transition-all cursor-pointer active:scale-[0.99]"
+                    className="text-left px-4 py-2.5 bg-gray-800/30 hover:bg-white/[0.06]/60 border border-transparent hover:border-cyan-500/20 text-gray-200 hover:text-cyan-200 text-xs rounded-xl transition-all cursor-pointer active:scale-[0.99]"
                   >
                     {p} &rarr;
                   </button>
@@ -419,7 +419,7 @@ export const AIAssistantPage: React.FC = () => {
           /* Active Chat Workspace */
           <>
             {/* Chat header */}
-            <div className="p-4 border-b border-white/5 bg-gray-900/10 flex items-center justify-between flex-shrink-0">
+            <div className="p-4 border-b border-transparent bg-white/[0.03]/10 flex items-center justify-between flex-shrink-0">
               <div>
                 <h3 className="text-sm font-bold text-white">
                   {sessions.find(s => s.id === currentSessionId)?.session_name}
@@ -446,7 +446,7 @@ export const AIAssistantPage: React.FC = () => {
                       <button
                         key={idx}
                         onClick={() => handleSendMessage(p)}
-                        className="px-3 py-1.5 bg-gray-900/50 hover:bg-gray-800 border border-white/5 hover:border-cyan-500/20 text-gray-300 hover:text-cyan-300 rounded-lg text-xs transition-all cursor-pointer"
+                        className="px-3 py-1.5 bg-white/[0.03]/50 hover:bg-white/[0.06] border border-transparent hover:border-cyan-500/20 text-gray-200 hover:text-cyan-300 rounded-lg text-xs transition-all cursor-pointer"
                       >
                         {p}
                       </button>
@@ -475,14 +475,14 @@ export const AIAssistantPage: React.FC = () => {
                         <div className={`p-4 rounded-2xl text-sm leading-relaxed ${
                           isUser
                             ? 'bg-gradient-to-r from-cyan-600/90 to-blue-600/90 text-white rounded-tr-none shadow-lg shadow-cyan-500/10'
-                            : 'bg-gray-800/60 border border-white/5 text-gray-200 rounded-tl-none'
+                            : 'bg-gray-800/60 border border-transparent text-gray-200 rounded-tl-none'
                         }`}>
                           <div className="whitespace-pre-wrap">{formatMessageContent(msg.content)}</div>
                         </div>
 
                         {/* Citations Footer */}
                         {!isUser && msg.citations && msg.citations.length > 0 && (
-                          <div className="pl-2 pt-3 border-t border-white/5 mt-3 space-y-2">
+                          <div className="pl-2 pt-3 border-t border-transparent mt-3 space-y-2">
                             <span className="text-[10px] uppercase font-bold tracking-wider text-cyan-400/80 block">
                               References & Citations:
                             </span>
@@ -490,7 +490,7 @@ export const AIAssistantPage: React.FC = () => {
                               {Array.from(new Map(msg.citations.map(c => [c.document_name, c])).values()).map((cit, cidx) => (
                                 <div 
                                   key={cidx}
-                                  className="inline-flex items-center gap-3 bg-white/[0.03] border border-white/10 hover:border-cyan-500/30 rounded-xl px-3.5 py-2 transition-all duration-200 shadow-sm"
+                                  className="inline-flex items-center gap-3 glass-card card-accent-top hover:border-transparent transition-all duration-300 animate-fade-in-up cursor-pointer rounded-xl px-3.5 py-2 transition-all duration-200 shadow-sm"
                                 >
                                   <div className="flex items-center gap-2">
                                     <FileText className="w-4 h-4 text-cyan-400" />
@@ -501,7 +501,7 @@ export const AIAssistantPage: React.FC = () => {
                                   {cit.document_id && (
                                     <button
                                       onClick={() => handleDownloadDoc(cit.document_id, cit.document_name)}
-                                      className="inline-flex items-center gap-1 px-2 py-1 bg-gray-800/80 hover:bg-cyan-500 hover:text-black border border-white/5 rounded-lg text-[10px] text-gray-400 font-semibold transition-all cursor-pointer ml-1"
+                                      className="inline-flex items-center gap-1 px-2 py-1 bg-gray-800/80 hover:bg-cyan-500 hover:text-black border border-transparent rounded-lg text-[10px] text-gray-400 font-semibold transition-all cursor-pointer ml-1"
                                     >
                                       <Download className="w-3 h-3" />
                                       <span>Download</span>
@@ -521,10 +521,10 @@ export const AIAssistantPage: React.FC = () => {
               {/* Sending / Thinking state */}
               {sendingSessionId === currentSessionId && (
                 <div className="flex gap-3 max-w-3xl mr-auto">
-                  <div className="w-8 h-8 rounded-xl bg-indigo-500/15 text-indigo-400 flex items-center justify-center flex-shrink-0 animate-pulse">
+                  <div className="w-8 h-8 rounded-xl bg-indigo-500/15 text-indigo-400 flex items-center justify-center flex-shrink-0 animate-pulse-ring">
                     <Bot className="w-4 h-4" />
                   </div>
-                  <div className="bg-gray-800/40 border border-white/5 px-5 py-3.5 rounded-2xl rounded-tl-none flex items-center gap-1.5 min-w-[70px] justify-center">
+                  <div className="bg-gray-800/40 border border-transparent px-5 py-3.5 rounded-2xl rounded-tl-none flex items-center gap-1.5 min-w-[70px] justify-center">
                     <div className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-bounce [animation-delay:-0.3s]" />
                     <div className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-bounce [animation-delay:-0.15s]" />
                     <div className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-bounce" />
@@ -536,10 +536,10 @@ export const AIAssistantPage: React.FC = () => {
             </div>
 
             {/* Input Bar */}
-            <div className="p-4 border-t border-white/5 bg-gray-900/10 flex-shrink-0">
+            <div className="p-4 border-t border-transparent bg-white/[0.03]/10 flex-shrink-0">
               <form
                 onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }}
-                className="w-full flex gap-2 relative bg-gray-800/30 border border-white/10 rounded-2xl focus-within:border-cyan-500/50 focus-within:ring-2 focus-within:ring-cyan-500/10 transition-all p-1"
+                className="w-full flex gap-2 relative bg-gray-800/30 border border-transparent rounded-2xl focus-within:border-cyan-500/50 focus-within:ring-2 focus-within:ring-cyan-500/10 transition-all p-1"
               >
                 <input
                   type="text"

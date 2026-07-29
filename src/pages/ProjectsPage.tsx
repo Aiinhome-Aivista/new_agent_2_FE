@@ -182,7 +182,7 @@ export const ProjectsPage: React.FC = () => {
           {(user?.role === "ADMIN" || user?.role === "ENGAGEMENT_MANAGER") && (
             <button
               onClick={() => setIsModalOpen(true)}
-              className="px-5 py-2.5 bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-400 hover:to-blue-500 text-white font-semibold rounded-xl text-xs transition-all duration-300 shadow-md shadow-teal-500/10 active:scale-[0.98]"
+              className="px-5 py-2.5 bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-400 hover:to-blue-500 text-white font-semibold rounded-xl text-xs transition-all duration-300 shadow-md shadow-teal-500/10 active:scale-[0.98] cursor-pointer"
             >
               Create Project
             </button>
@@ -190,17 +190,18 @@ export const ProjectsPage: React.FC = () => {
         </div>
 
         {!projects || projects.length === 0 ? (
-          <div className="p-12 rounded-2xl bg-white/[0.01] border border-white/5 text-center">
+          <div className="p-12 rounded-2xl bg-white/[0.01] border border-transparent text-center">
             <p className="text-gray-500 text-sm">
               No projects currently initialized.
             </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {(projects || []).map((p) => (
+            {(projects || []).map((p, idx) => (
               <div
                 key={p.id}
-                className="group p-6 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-teal-500/30 hover:bg-white/[0.04] transition-all duration-300 hover:shadow-2xl hover:shadow-teal-500/5 hover:-translate-y-1 flex flex-col justify-between"
+                className="group glass-card card-accent-top p-6 flex flex-col justify-between animate-card-entrance"
+                style={{ animationDelay: `${idx * 80}ms` }}
               >
                 <div>
                   <h3 className="font-display text-lg font-bold mb-1 text-white group-hover:text-teal-300 transition-colors duration-300">
@@ -211,7 +212,7 @@ export const ProjectsPage: React.FC = () => {
                   </p>
 
                   {/* Project Dates */}
-                  <div className="text-gray-400 text-xs mt-3 mb-4 space-y-1.5 border-t border-white/5 pt-3">
+                  <div className="text-gray-400 text-xs mt-3 mb-4 space-y-1.5 border-t border-transparent pt-3">
                     <div className="flex items-center justify-between">
                       <span className="text-gray-500 font-medium">
                         Start Date:
@@ -230,7 +231,7 @@ export const ProjectsPage: React.FC = () => {
                             type="date"
                             value={editingEndDate}
                             onChange={(e) => setEditingEndDate(e.target.value)}
-                            className="bg-gray-800 border border-gray-700 rounded px-1.5 py-0.5 text-[11px] text-white focus:outline-none focus:border-teal-500"
+                            className="bg-gray-800 border border-transparent rounded px-1.5 py-0.5 text-[11px] text-white focus:outline-none focus:border-teal-500"
                           />
                           <button
                             onClick={() => handleSaveEndDate(p.id)}
@@ -269,24 +270,24 @@ export const ProjectsPage: React.FC = () => {
                     </div>
                   </div>
                 </div>
-                <div className="flex justify-between items-center border-t border-white/5 pt-4 mt-2">
+                <div className="flex justify-between items-center border-t border-transparent pt-4 mt-2">
                   <span
-                    className={`text-[10px] font-semibold px-2.5 py-1 rounded-full uppercase tracking-wider ${
+                    className={`text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-wider ${
                       p.monitoring_status === "ACTIVE"
-                        ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/20"
+                        ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.1)]"
                         : p.monitoring_status === "DRAFT"
                           ? "bg-gray-500/15 text-gray-400 border border-gray-500/20"
-                          : "bg-amber-500/15 text-amber-400 border border-amber-500/20"
+                          : "bg-amber-500/15 text-amber-400 border border-amber-500/20 shadow-[0_0_10px_rgba(245,158,11,0.1)]"
                     }`}
                   >
                     {p.monitoring_status}
                   </span>
                   <Link
                     to={`/projects/${p.id}`}
-                    className="text-xs font-semibold text-teal-400 hover:text-teal-300 flex items-center gap-1 group/btn transition-colors"
+                    className="text-xs font-semibold text-teal-400 hover:text-teal-300 flex items-center gap-1 group/btn transition-colors duration-200 cursor-pointer"
                   >
                     Open Dashboard
-                    <span className="group-hover/btn:translate-x-1 transition-transform">
+                    <span className="group-hover/btn:translate-x-1 transition-transform duration-200">
                       &rarr;
                     </span>
                   </Link>
@@ -299,7 +300,7 @@ export const ProjectsPage: React.FC = () => {
 
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
-          <div className="max-w-md w-full bg-[#0b0e17] p-8 rounded-2xl border border-white/5 shadow-2xl relative">
+          <div className="max-w-md w-full bg-[#0b0e17] p-8 rounded-2xl border border-transparent shadow-2xl relative">
             <button
               onClick={() => {
                 setIsModalOpen(false);
@@ -335,7 +336,7 @@ export const ProjectsPage: React.FC = () => {
                   type="text"
                   value={projectName}
                   onChange={(e) => setProjectName(e.target.value)}
-                  className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 text-white placeholder-gray-500 text-sm transition-all"
+                  className="w-full bg-white/[0.03] border border-transparent rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 text-white placeholder-gray-500 text-sm transition-all"
                   placeholder="e.g. Acme Audit 2026"
                 />
               </div>
@@ -347,7 +348,7 @@ export const ProjectsPage: React.FC = () => {
                   type="text"
                   value={clientName}
                   onChange={(e) => setClientName(e.target.value)}
-                  className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 text-white placeholder-gray-500 text-sm transition-all"
+                  className="w-full bg-white/[0.03] border border-transparent rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 text-white placeholder-gray-500 text-sm transition-all"
                   placeholder="e.g. Acme Corp"
                 />
               </div>
@@ -360,7 +361,7 @@ export const ProjectsPage: React.FC = () => {
                     type="date"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
-                    className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 text-white text-xs transition-all"
+                    className="w-full bg-white/[0.03] border border-transparent rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 text-white text-xs transition-all"
                   />
                 </div>
                 <div>
@@ -371,7 +372,7 @@ export const ProjectsPage: React.FC = () => {
                     type="date"
                     value={endDate}
                     onChange={(e) => setEndDate(e.target.value)}
-                    className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 text-white text-xs transition-all"
+                    className="w-full bg-white/[0.03] border border-transparent rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 text-white text-xs transition-all"
                   />
                 </div>
               </div>
@@ -382,7 +383,7 @@ export const ProjectsPage: React.FC = () => {
                 <select
                   value={assignedLeadId}
                   onChange={(e) => setAssignedLeadId(e.target.value)}
-                  className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 text-white text-sm transition-all"
+                  className="w-full bg-white/[0.03] border border-transparent rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 text-white text-sm transition-all"
                 >
                   <option value="" className="bg-[#0b0e17] text-gray-400">
                     -- Select Project Lead --
@@ -429,7 +430,7 @@ export const ProjectsPage: React.FC = () => {
                     setDescription(e.target.value);
                     setIsDescriptionManuallyEdited(true);
                   }}
-                  className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 text-white placeholder-gray-500 text-sm transition-all"
+                  className="w-full bg-white/[0.03] border border-transparent rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 text-white placeholder-gray-500 text-sm transition-all"
                   placeholder="Summarize project requirements..."
                   rows={4}
                 />
@@ -449,7 +450,7 @@ export const ProjectsPage: React.FC = () => {
                     setIsDescriptionManuallyEdited(false);
                     setIsCreating(false);
                   }}
-                  className="flex-1 py-2.5 bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 rounded-xl text-xs font-semibold transition-all"
+                  className="flex-1 py-2.5 bg-white/5 hover:bg-white/10 border border-transparent hover:border-transparent rounded-xl text-xs font-semibold transition-all"
                 >
                   Cancel
                 </button>

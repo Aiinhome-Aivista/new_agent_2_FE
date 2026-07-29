@@ -201,7 +201,7 @@ export const ProjectOverviewPage: React.FC = () => {
 
           {/* Quick Actions */}
           <div className="flex flex-wrap gap-2 flex-shrink-0">
-            <Link to={`/projects/${id}/cockpit`} className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-gray-800/80 hover:bg-gray-700/80 border border-gray-700 text-gray-300 text-xs font-semibold rounded-xl transition-all">
+            <Link to={`/projects/${id}/cockpit`} className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-gray-800/80 hover:bg-gray-700/80 border border-transparent text-gray-200 text-xs font-semibold rounded-xl transition-all">
               <UploadCloud className="w-3.5 h-3.5" /> Upload Documents
             </Link>
             <Link to={`/projects/${id}/baseline`} className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/40 text-purple-300 text-xs font-semibold rounded-xl transition-all">
@@ -224,7 +224,7 @@ export const ProjectOverviewPage: React.FC = () => {
               rag.label === "HEALTHY" ? "bg-emerald-400" : 
               rag.label === "AT RISK" ? "bg-amber-400" : 
               "bg-rose-400"
-            } animate-pulse`} />
+            } animate-pulse-ring`} />
             Project Status: {rag.label}
           </span>
           <span className="text-xs text-gray-400 flex-1">
@@ -243,18 +243,18 @@ export const ProjectOverviewPage: React.FC = () => {
         <div className="grid grid-cols-12 gap-5">
 
           {/* Health Score Gauge */}
-          <div className="col-span-12 md:col-span-3 bg-gray-900/50 border border-gray-800 rounded-2xl p-5 flex flex-col items-center justify-center text-center backdrop-blur-md relative z-10 hover:z-30 transition-all">
+          <div className="col-span-12 md:col-span-3 bg-white/[0.03]/50 border border-transparent rounded-2xl p-5 flex flex-col items-center justify-center text-center backdrop-blur-md relative z-10 hover:z-30 transition-all">
             <div className="flex items-center gap-1.5 mb-3 text-gray-500 relative">
               <p className="text-[10px] font-bold uppercase tracking-widest">Project Health Score</p>
               <div className="relative group flex items-center cursor-help hover:text-cyan-400 transition-colors">
                 <Info className="w-3.5 h-3.5" />
                 
                 {/* Tooltip Content */}
-                <div className="absolute left-1/2 -translate-x-1/2 md:left-0 md:translate-x-0 top-full mt-2 w-72 p-4 bg-[#0b0e17] border border-gray-800 rounded-xl shadow-2xl backdrop-blur-md opacity-0 translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 z-50 text-left">
+                <div className="absolute left-1/2 -translate-x-1/2 md:left-0 md:translate-x-0 top-full mt-2 w-72 p-4 bg-[#0b0e17] border border-transparent rounded-xl shadow-2xl backdrop-blur-md opacity-0 translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 z-50 text-left">
                   <h4 className="font-bold text-xs text-[#00e5ff] mb-2 border-b border-gray-850 pb-1 flex items-center gap-1.5">
                     Health Score Logic & Weights
                   </h4>
-                  <div className="space-y-3 text-[10px] text-gray-300">
+                  <div className="space-y-3 text-[10px] text-gray-200">
                     <div>
                       <span className="font-semibold text-white block mb-0.5">Setup Phase (Onboarding)</span>
                       <ul className="list-disc pl-4 space-y-0.5 text-gray-400 font-medium">
@@ -388,7 +388,7 @@ export const ProjectOverviewPage: React.FC = () => {
           {/* KPI Cards 2×2 */}
           <div className="col-span-12 md:col-span-9 grid grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Documents */}
-            <div className="bg-gray-900/50 border border-gray-800 rounded-2xl p-5 backdrop-blur-md flex flex-col justify-between">
+            <div className="bg-white/[0.03]/50 border border-transparent rounded-2xl p-5 backdrop-blur-md flex flex-col justify-between">
               <div className="flex justify-between items-start mb-2">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Documents</span>
                 <div className="p-1.5 bg-blue-500/10 rounded-lg"><FileText className="w-4 h-4 text-blue-400" /></div>
@@ -404,7 +404,7 @@ export const ProjectOverviewPage: React.FC = () => {
             </div>
 
             {/* Open Risks */}
-            <div className="bg-gray-900/50 border border-gray-800 rounded-2xl p-5 backdrop-blur-md flex flex-col justify-between">
+            <div className="bg-white/[0.03]/50 border border-transparent rounded-2xl p-5 backdrop-blur-md flex flex-col justify-between">
               <div className="flex justify-between items-start mb-3">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Open Risks</span>
                 <div className="p-1.5 bg-rose-500/10 rounded-lg"><AlertTriangle className="w-4 h-4 text-rose-400" /></div>
@@ -419,7 +419,7 @@ export const ProjectOverviewPage: React.FC = () => {
             </div>
 
             {/* Baseline */}
-            <div className="bg-gray-900/50 border border-gray-800 rounded-2xl p-5 backdrop-blur-md flex flex-col justify-between">
+            <div className="bg-white/[0.03]/50 border border-transparent rounded-2xl p-5 backdrop-blur-md flex flex-col justify-between">
               <div className="flex justify-between items-start mb-3">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Baseline</span>
                 <div className="p-1.5 bg-purple-500/10 rounded-lg"><Shield className="w-4 h-4 text-purple-400" /></div>
@@ -436,7 +436,7 @@ export const ProjectOverviewPage: React.FC = () => {
             </div>
 
             {/* Timeline */}
-            <div className="bg-gray-900/50 border border-gray-800 rounded-2xl p-5 backdrop-blur-md flex flex-col justify-between">
+            <div className="bg-white/[0.03]/50 border border-transparent rounded-2xl p-5 backdrop-blur-md flex flex-col justify-between">
               <div className="flex justify-between items-start mb-3">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Timeline</span>
                 <div className="p-1.5 bg-teal-500/10 rounded-lg"><Calendar className="w-4 h-4 text-teal-400" /></div>
@@ -464,7 +464,7 @@ export const ProjectOverviewPage: React.FC = () => {
             </div>
 
             {/* Members */}
-            <div className="col-span-2 lg:col-span-2 bg-gray-900/50 border border-gray-800 rounded-2xl p-5 backdrop-blur-md flex flex-col justify-between">
+            <div className="col-span-2 lg:col-span-2 bg-white/[0.03]/50 border border-transparent rounded-2xl p-5 backdrop-blur-md flex flex-col justify-between">
               <div className="flex justify-between items-start mb-3">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Team Size</span>
                 <div className="p-1.5 bg-indigo-500/10 rounded-lg"><Users className="w-4 h-4 text-indigo-400" /></div>
@@ -483,7 +483,7 @@ export const ProjectOverviewPage: React.FC = () => {
             </div>
 
             {/* Project Status */}
-            <div className="col-span-2 lg:col-span-2 bg-gray-900/50 border border-gray-800 rounded-2xl p-5 backdrop-blur-md flex flex-col justify-between">
+            <div className="col-span-2 lg:col-span-2 bg-white/[0.03]/50 border border-transparent rounded-2xl p-5 backdrop-blur-md flex flex-col justify-between">
               <div className="flex justify-between items-start mb-3">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Project Status</span>
                 <div className="p-1.5 bg-emerald-500/10 rounded-lg"><Zap className="w-4 h-4 text-emerald-400" /></div>
@@ -498,7 +498,7 @@ export const ProjectOverviewPage: React.FC = () => {
                       : "bg-amber-500/15 text-amber-400 border border-amber-500/30"
                   }`}>
                     <span className={`w-1.5 h-1.5 rounded-full inline-block ${
-                      project.monitoring_status === "ACTIVE" ? "bg-emerald-400 animate-pulse" : "bg-amber-400"
+                      project.monitoring_status === "ACTIVE" ? "bg-emerald-400 animate-pulse-ring" : "bg-amber-400"
                     }`} />
                     {project.monitoring_status}
                   </span>
@@ -519,7 +519,7 @@ export const ProjectOverviewPage: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
           {/* DOCUMENT CHECKLIST */}
-          <div className="bg-gray-900/50 border border-gray-800 rounded-2xl p-5 backdrop-blur-md flex flex-col justify-between h-full">
+          <div className="bg-white/[0.03]/50 border border-transparent rounded-2xl p-5 backdrop-blur-md flex flex-col justify-between h-full">
             <div>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-bold text-white flex items-center gap-2">
@@ -539,7 +539,7 @@ export const ProjectOverviewPage: React.FC = () => {
                   { label: "Status Report", type: "STATUS_REPORT", present: hasStatusReport, section: "Execution" },
                 ].map((item) => (
                   <div key={item.type} className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${
-                    item.present ? "bg-emerald-950/20 border-emerald-500/20" : "bg-gray-800/50 border-gray-700/50"
+                    item.present ? "bg-emerald-950/20 border-emerald-500/20" : "bg-gray-800/50 border-transparent"
                   }`}>
                     {item.present
                       ? <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
@@ -566,7 +566,7 @@ export const ProjectOverviewPage: React.FC = () => {
                       <span className="text-gray-400 truncate max-w-[150px]">{doc.document_name}</span>
                       <span className={`font-semibold px-1 rounded ${
                         doc.processing_status === "COMPLETED" ? "text-emerald-400" :
-                        doc.processing_status === "PROCESSING" ? "text-amber-400 animate-pulse" :
+                        doc.processing_status === "PROCESSING" ? "text-amber-400 animate-pulse-ring" :
                         "text-gray-500"
                       }`}>{doc.processing_status}</span>
                     </div>
@@ -577,7 +577,7 @@ export const ProjectOverviewPage: React.FC = () => {
           </div>
 
           {/* SCOPE BASELINE */}
-          <div className="bg-gray-900/50 border border-gray-800 rounded-2xl p-5 backdrop-blur-md flex flex-col justify-between h-full">
+          <div className="bg-white/[0.03]/50 border border-transparent rounded-2xl p-5 backdrop-blur-md flex flex-col justify-between h-full">
             <div>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-bold text-white flex items-center gap-2">
@@ -637,7 +637,7 @@ export const ProjectOverviewPage: React.FC = () => {
                   {/* Top scope items preview */}
                   <div className="space-y-2 max-h-[250px] overflow-y-auto pr-1 custom-scrollbar">
                     {(showAllScopeItems ? inScopeItems : inScopeItems.slice(0, 3)).map((item: any) => (
-                      <div key={item.id} className="flex items-start gap-2 p-2 bg-gray-800/50 rounded-lg border border-gray-700/30">
+                      <div key={item.id} className="flex items-start gap-2 p-2 bg-gray-800/50 rounded-lg border border-transparent">
                         <CheckCheck className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0 mt-0.5" />
                         <div>
                           <p className="text-[11px] font-semibold text-gray-200 leading-tight">{item.name}</p>
@@ -660,7 +660,7 @@ export const ProjectOverviewPage: React.FC = () => {
           </div>
 
           {/* RISK SUMMARY */}
-          <div className="bg-gray-900/50 border border-gray-800 rounded-2xl p-5 backdrop-blur-md flex flex-col justify-between h-full">
+          <div className="bg-white/[0.03]/50 border border-transparent rounded-2xl p-5 backdrop-blur-md flex flex-col justify-between h-full">
             <div>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-bold text-white flex items-center gap-2">
@@ -705,7 +705,7 @@ export const ProjectOverviewPage: React.FC = () => {
                   {/* Recent risks */}
                   <div className="space-y-2 max-h-[250px] overflow-y-auto pr-1 custom-scrollbar">
                     {openRisks.slice(0, 4).map((risk) => (
-                      <div key={risk.id} className="flex items-start gap-2 p-2 bg-gray-800/50 rounded-lg border border-gray-700/30">
+                      <div key={risk.id} className="flex items-start gap-2 p-2 bg-gray-800/50 rounded-lg border border-transparent">
                         <span className={`inline-block mt-0.5 w-2 h-2 rounded-full flex-shrink-0 ${
                           risk.risk_level === "HIGH" || risk.risk_level === "CRITICAL" ? "bg-rose-400" :
                           risk.risk_level === "MEDIUM" ? "bg-amber-400" : "bg-blue-400"
@@ -727,7 +727,7 @@ export const ProjectOverviewPage: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
 
           {/* TEAM MEMBERS */}
-          <div className="bg-gray-900/50 border border-gray-800 rounded-2xl p-5 backdrop-blur-md">
+          <div className="bg-white/[0.03]/50 border border-transparent rounded-2xl p-5 backdrop-blur-md">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-bold text-white flex items-center gap-2">
                 <Users className="w-4 h-4 text-indigo-400" />
@@ -751,11 +751,11 @@ export const ProjectOverviewPage: React.FC = () => {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[280px] overflow-y-auto pr-1">
                 {members.map((member) => (
-                  <div key={member.id} className="flex items-center gap-3 p-3 bg-gray-800/50 rounded-xl border border-gray-700/30 hover:border-teal-500/30 transition-all">
+                  <div key={member.id} className="flex items-center gap-3 p-3 bg-gray-800/50 rounded-xl border border-transparent hover:border-teal-500/30 transition-all">
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black flex-shrink-0 ${
                       member.role === "STAKEHOLDER" ? "bg-indigo-500/20 text-indigo-300" :
                       member.role === "TEAM_LEAD" ? "bg-teal-500/20 text-teal-300" :
-                      "bg-gray-700 text-gray-300"
+                      "bg-gray-700 text-gray-200"
                     }`}>
                       {member.name?.charAt(0)?.toUpperCase() ?? "?"}
                     </div>
@@ -773,7 +773,7 @@ export const ProjectOverviewPage: React.FC = () => {
           </div>
 
           {/* WHAT NEEDS ATTENTION */}
-          <div className="bg-gray-900/50 border border-gray-800 rounded-2xl p-5 backdrop-blur-md">
+          <div className="bg-white/[0.03]/50 border border-transparent rounded-2xl p-5 backdrop-blur-md">
             <div className="flex items-center gap-2 mb-4">
               <h3 className="text-sm font-bold text-white flex items-center gap-2">
                 <Zap className="w-4 h-4 text-amber-400" />

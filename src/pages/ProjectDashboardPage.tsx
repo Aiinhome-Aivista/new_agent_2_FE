@@ -383,8 +383,8 @@ export const ProjectDashboardPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-gray-900/40 border border-gray-800 rounded-2xl p-6 md:p-8 backdrop-blur-md shadow-xl">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-6 border-b border-gray-800 mb-6">
+        <div className="bg-white/[0.03]/40 border border-transparent rounded-2xl p-6 md:p-8 backdrop-blur-md shadow-xl">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-6 border-b border-transparent mb-6">
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 uppercase tracking-wider">
@@ -423,7 +423,7 @@ export const ProjectDashboardPage: React.FC = () => {
                   className={`p-4 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
                     baselineDocType === "EL"
                       ? "bg-gradient-to-r from-emerald-950/50 to-teal-950/40 border-emerald-500/60 shadow-lg shadow-emerald-500/10 ring-1 ring-emerald-500/30"
-                      : "bg-gray-800/40 border-gray-700/60 hover:bg-gray-800/80"
+                      : "bg-gray-800/40 border-transparent hover:bg-white/[0.06]/80"
                   }`}
                 >
                   <div className="flex items-center gap-3">
@@ -451,7 +451,7 @@ export const ProjectDashboardPage: React.FC = () => {
                   className={`p-4 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
                     baselineDocType === "IFA"
                       ? "bg-gradient-to-r from-emerald-950/50 to-teal-950/40 border-emerald-500/60 shadow-lg shadow-emerald-500/10 ring-1 ring-emerald-500/30"
-                      : "bg-gray-800/40 border-gray-700/60 hover:bg-gray-800/80"
+                      : "bg-gray-800/40 border-transparent hover:bg-white/[0.06]/80"
                   }`}
                 >
                   <div className="flex items-center gap-3">
@@ -473,10 +473,10 @@ export const ProjectDashboardPage: React.FC = () => {
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="bg-gray-800/50 p-5 rounded-xl border border-gray-700/70 flex flex-col justify-between relative overflow-hidden min-h-[300px]">
+                <div className="bg-gray-800/50 p-5 rounded-xl border border-transparent flex flex-col justify-between relative overflow-hidden min-h-[300px]">
                   <div>
                     <div className="flex items-center justify-between mb-3">
-                      <h4 className="text-xs font-semibold text-gray-300 uppercase tracking-wider flex items-center gap-2">
+                      <h4 className="text-xs font-semibold text-gray-200 uppercase tracking-wider flex items-center gap-2">
                         <UploadCloud className="w-4 h-4 text-emerald-400" />
                         Target Category:{" "}
                         <span className="text-emerald-300 font-bold">
@@ -500,12 +500,12 @@ export const ProjectDashboardPage: React.FC = () => {
                         }
                         className={`border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center transition-all duration-200 ${
                           uploading
-                            ? "border-gray-700 bg-gray-900/10 cursor-not-allowed opacity-50"
+                            ? "border-transparent bg-white/[0.03]/10 cursor-not-allowed opacity-50"
                             : isDragging
                               ? "border-emerald-400 bg-emerald-950/20 cursor-pointer"
                               : baselineFile
                                 ? "border-green-500 bg-green-950/10 cursor-pointer"
-                                : "border-gray-600 hover:border-gray-400 bg-gray-900/40 hover:bg-gray-900/60 cursor-pointer"
+                                : "border-gray-600 hover:border-gray-400 bg-white/[0.03]/40 hover:bg-white/[0.03]/60 cursor-pointer"
                         }`}
                       >
                         <input
@@ -523,7 +523,7 @@ export const ProjectDashboardPage: React.FC = () => {
 
                         {baselineFile ? (
                           <div className="flex flex-col items-center w-full">
-                            <div className="flex items-center justify-between bg-gray-800/80 border border-gray-700 rounded-lg p-3 w-full max-w-xs">
+                            <div className="flex items-center justify-between bg-gray-800/80 border border-transparent rounded-lg p-3 w-full max-w-xs">
                               <div className="flex items-center gap-2 overflow-hidden mr-2">
                                 <FileText className="h-5 w-5 text-green-400 flex-shrink-0" />
                                 <span className="text-sm truncate text-gray-200">
@@ -554,7 +554,7 @@ export const ProjectDashboardPage: React.FC = () => {
                               <UploadCloud className="w-8 h-8 text-emerald-400" />
                             </div>
                             <div className="text-center">
-                              <p className="text-sm text-gray-300 font-medium">
+                              <p className="text-sm text-gray-200 font-medium">
                                 Upload{" "}
                                 <strong className="text-emerald-300">
                                   {getDocTypeLabel(baselineDocType)}
@@ -581,14 +581,14 @@ export const ProjectDashboardPage: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="bg-gray-800/50 p-5 rounded-xl border border-gray-700/70 flex flex-col justify-between">
+                <div className="bg-gray-800/50 p-5 rounded-xl border border-transparent flex flex-col justify-between">
                   <div>
-                    <h4 className="text-xs font-semibold text-gray-300 uppercase tracking-wider mb-3">
+                    <h4 className="text-xs font-semibold text-gray-200 uppercase tracking-wider mb-3">
                       Initiation Baseline Artifacts ({initiationDocs.length})
                     </h4>
 
                     {initiationDocs.length === 0 ? (
-                      <div className="py-10 text-center border border-dashed border-gray-750 rounded-xl bg-gray-900/20">
+                      <div className="py-10 text-center border border-dashed border-gray-750 rounded-xl bg-white/[0.03]/20">
                         <FileCheck className="w-8 h-8 text-gray-600 mx-auto mb-2" />
                         <p className="text-xs text-gray-400 font-medium">
                           No initiation documents uploaded yet.
@@ -602,7 +602,7 @@ export const ProjectDashboardPage: React.FC = () => {
                         {initiationDocs.map((doc) => (
                           <li
                             key={doc.id}
-                            className="flex justify-between items-center p-3 bg-gray-900/60 rounded-xl border border-gray-700/50 hover:border-emerald-500/30 transition-all"
+                            className="flex justify-between items-center p-3 bg-white/[0.03]/60 rounded-xl border border-transparent hover:border-emerald-500/30 transition-all"
                           >
                             <div className="flex flex-col min-w-0 pr-2 w-full">
                               <span className="truncate font-semibold text-xs text-gray-200">
@@ -627,7 +627,7 @@ export const ProjectDashboardPage: React.FC = () => {
                                     ? "bg-green-500/20 text-green-400 border border-green-500/30"
                                     : doc.processing_status === "PROCESSING" ||
                                         doc.processing_status === "PARSING"
-                                      ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 animate-pulse"
+                                      ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 animate-pulse-ring"
                                       : doc.processing_status === "FAILED"
                                         ? "bg-red-500/20 text-red-400 border border-red-500/30"
                                         : "bg-blue-500/20 text-blue-400 border border-blue-500/30"
@@ -668,14 +668,14 @@ export const ProjectDashboardPage: React.FC = () => {
               </div>
             </>
           ) : (
-            <div className="bg-gray-800/50 p-5 rounded-xl border border-gray-700/70 flex flex-col justify-between w-full">
+            <div className="bg-gray-800/50 p-5 rounded-xl border border-transparent flex flex-col justify-between w-full">
               <div>
-                <h4 className="text-xs font-semibold text-gray-300 uppercase tracking-wider mb-3">
+                <h4 className="text-xs font-semibold text-gray-200 uppercase tracking-wider mb-3">
                   Initiation Baseline Artifacts ({initiationDocs.length})
                 </h4>
 
                 {initiationDocs.length === 0 ? (
-                  <div className="py-10 text-center border border-dashed border-gray-750 rounded-xl bg-gray-900/20">
+                  <div className="py-10 text-center border border-dashed border-gray-750 rounded-xl bg-white/[0.03]/20">
                     <FileCheck className="w-8 h-8 text-gray-600 mx-auto mb-2" />
                     <p className="text-xs text-gray-400 font-medium">
                       No initiation documents uploaded yet.
@@ -686,7 +686,7 @@ export const ProjectDashboardPage: React.FC = () => {
                     {initiationDocs.map((doc) => (
                       <li
                         key={doc.id}
-                        className="flex justify-between items-center p-3 bg-gray-900/60 rounded-xl border border-gray-700/50 transition-all"
+                        className="flex justify-between items-center p-3 bg-white/[0.03]/60 rounded-xl border border-transparent transition-all"
                       >
                         <div className="flex flex-col min-w-0 pr-2">
                           <span className="truncate font-semibold text-xs text-gray-200">
@@ -706,7 +706,7 @@ export const ProjectDashboardPage: React.FC = () => {
                                 ? "bg-green-500/20 text-green-400 border border-green-500/30"
                                 : doc.processing_status === "PROCESSING" ||
                                     doc.processing_status === "PARSING"
-                                  ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 animate-pulse"
+                                  ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 animate-pulse-ring"
                                   : doc.processing_status === "FAILED"
                                     ? "bg-red-500/20 text-red-400 border border-red-500/30"
                                     : "bg-blue-500/20 text-blue-400 border border-blue-500/30"
@@ -724,8 +724,8 @@ export const ProjectDashboardPage: React.FC = () => {
           )}
         </div>
 
-        <div className="bg-gray-900/40 border border-gray-800 rounded-2xl p-6 md:p-8 backdrop-blur-md shadow-xl">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-6 border-b border-gray-800 mb-6">
+        <div className="bg-white/[0.03]/40 border border-transparent rounded-2xl p-6 md:p-8 backdrop-blur-md shadow-xl">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-6 border-b border-transparent mb-6">
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-indigo-500/15 text-indigo-400 border border-indigo-500/30 uppercase tracking-wider">
@@ -779,7 +779,7 @@ export const ProjectDashboardPage: React.FC = () => {
                   className={`p-4 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
                     monitoringDocType === "MOM"
                       ? "bg-gradient-to-r from-indigo-950/50 to-blue-950/40 border-indigo-500/60 shadow-lg shadow-indigo-500/10 ring-1 ring-indigo-500/30"
-                      : "bg-gray-800/40 border-gray-700/60 hover:bg-gray-800/80"
+                      : "bg-gray-800/40 border-transparent hover:bg-white/[0.06]/80"
                   }`}
                 >
                   <div className="flex items-center gap-3">
@@ -807,7 +807,7 @@ export const ProjectDashboardPage: React.FC = () => {
                   className={`p-4 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
                     monitoringDocType === "STATUS_REPORT"
                       ? "bg-gradient-to-r from-indigo-950/50 to-blue-950/40 border-indigo-500/60 shadow-lg shadow-indigo-500/10 ring-1 ring-indigo-500/30"
-                      : "bg-gray-800/40 border-gray-700/60 hover:bg-gray-800/80"
+                      : "bg-gray-800/40 border-transparent hover:bg-white/[0.06]/80"
                   }`}
                 >
                   <div className="flex items-center gap-3">
@@ -829,7 +829,7 @@ export const ProjectDashboardPage: React.FC = () => {
 
                 <div
                   onClick={() => setShowCustomModal(true)}
-                  className="p-4 rounded-xl border border-dashed border-gray-700 hover:border-indigo-500/50 bg-gray-800/20 hover:bg-gray-800/60 transition-all cursor-pointer flex items-center justify-between"
+                  className="p-4 rounded-xl border border-dashed border-transparent hover:border-indigo-500/50 bg-gray-800/20 hover:bg-white/[0.06]/60 transition-all cursor-pointer flex items-center justify-between"
                 >
                   <div className="flex items-center gap-3">
                     <div className="p-2.5 rounded-xl bg-gray-800 text-indigo-400">
@@ -848,10 +848,10 @@ export const ProjectDashboardPage: React.FC = () => {
               </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="bg-gray-800/50 p-5 rounded-xl border border-gray-700/70 flex flex-col justify-between relative overflow-hidden min-h-[300px]">
+              <div className="bg-gray-800/50 p-5 rounded-xl border border-transparent flex flex-col justify-between relative overflow-hidden min-h-[300px]">
                 {!(user?.role === "PROJECT_LEAD" || user?.role === "ENGAGEMENT_MANAGER" || user?.role === "ADMIN") ? (
                   <div className="flex-1 flex flex-col items-center justify-center py-12 px-4 text-center">
-                    <div className="bg-amber-500/10 p-3 rounded-full mb-3 border border-amber-500/20 shadow-sm animate-pulse">
+                    <div className="bg-amber-500/10 p-3 rounded-full mb-3 border border-amber-500/20 shadow-sm animate-pulse-ring">
                       <Lock className="w-6 h-6 text-amber-400" />
                     </div>
                     <h4 className="text-sm font-bold text-gray-200 mb-1">
@@ -864,7 +864,7 @@ export const ProjectDashboardPage: React.FC = () => {
                 ) : (
                   <div>
                     <div className="flex items-center justify-between mb-3">
-                      <h4 className="text-xs font-semibold text-gray-300 uppercase tracking-wider flex items-center gap-2">
+                      <h4 className="text-xs font-semibold text-gray-200 uppercase tracking-wider flex items-center gap-2">
                         <UploadCloud className="w-4 h-4 text-indigo-400" />
                         Target Category:{" "}
                         <span className="text-indigo-300 font-bold">
@@ -888,12 +888,12 @@ export const ProjectDashboardPage: React.FC = () => {
                         }
                         className={`border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center transition-all duration-200 ${
                           uploading
-                            ? "border-gray-700 bg-gray-900/10 cursor-not-allowed opacity-50"
+                            ? "border-transparent bg-white/[0.03]/10 cursor-not-allowed opacity-50"
                             : isDragging
                               ? "border-indigo-400 bg-indigo-950/20 cursor-pointer"
                               : monitoringFile
                                 ? "border-green-500 bg-green-950/10 cursor-pointer"
-                                : "border-gray-600 hover:border-gray-400 bg-gray-900/40 hover:bg-gray-900/60 cursor-pointer"
+                                : "border-gray-600 hover:border-gray-400 bg-white/[0.03]/40 hover:bg-white/[0.03]/60 cursor-pointer"
                         }`}
                       >
                         <input
@@ -914,7 +914,7 @@ export const ProjectDashboardPage: React.FC = () => {
 
                         {monitoringFile ? (
                           <div className="flex flex-col items-center w-full">
-                            <div className="flex items-center justify-between bg-gray-800/80 border border-gray-700 rounded-lg p-3 w-full max-w-xs">
+                            <div className="flex items-center justify-between bg-gray-800/80 border border-transparent rounded-lg p-3 w-full max-w-xs">
                               <div className="flex items-center gap-2 overflow-hidden mr-2">
                                 <FileText className="h-5 w-5 text-green-400 flex-shrink-0" />
                                 <span className="text-sm truncate text-gray-200">
@@ -945,7 +945,7 @@ export const ProjectDashboardPage: React.FC = () => {
                               <UploadCloud className="w-8 h-8 text-indigo-400" />
                             </div>
                             <div className="text-center">
-                              <p className="text-sm text-gray-300 font-medium">
+                              <p className="text-sm text-gray-200 font-medium">
                                 Upload{" "}
                                 <strong className="text-indigo-300">
                                   {getDocTypeLabel(monitoringDocType)}
@@ -974,14 +974,14 @@ export const ProjectDashboardPage: React.FC = () => {
                 )}
               </div>
 
-                <div className="bg-gray-800/50 p-5 rounded-xl border border-gray-700/70 flex flex-col justify-between">
+                <div className="bg-gray-800/50 p-5 rounded-xl border border-transparent flex flex-col justify-between">
                   <div>
-                    <h4 className="text-xs font-semibold text-gray-300 uppercase tracking-wider mb-3">
+                    <h4 className="text-xs font-semibold text-gray-200 uppercase tracking-wider mb-3">
                       Execution & Progress History ({trackerDocs.length})
                     </h4>
 
                     {trackerDocs.length === 0 ? (
-                      <div className="py-10 text-center border border-dashed border-gray-750 rounded-xl bg-gray-900/20">
+                      <div className="py-10 text-center border border-dashed border-gray-750 rounded-xl bg-white/[0.03]/20">
                         <Clock className="w-8 h-8 text-gray-600 mx-auto mb-2" />
                         <p className="text-xs text-gray-400 font-medium">
                           No progress tracking documents ingested yet.
@@ -995,7 +995,7 @@ export const ProjectDashboardPage: React.FC = () => {
                         {trackerDocs.map((doc) => (
                           <li
                             key={doc.id}
-                            className="flex justify-between items-center p-3 bg-gray-900/60 rounded-xl border border-gray-700/50 hover:border-indigo-500/30 transition-all"
+                            className="flex justify-between items-center p-3 bg-white/[0.03]/60 rounded-xl border border-transparent hover:border-indigo-500/30 transition-all"
                           >
                             <div className="flex flex-col min-w-0 pr-2 w-full">
                               <span className="truncate font-semibold text-xs text-gray-200">
@@ -1020,7 +1020,7 @@ export const ProjectDashboardPage: React.FC = () => {
                                     ? "bg-green-500/20 text-green-400 border border-green-500/30"
                                     : doc.processing_status === "PROCESSING" ||
                                         doc.processing_status === "PARSING"
-                                      ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 animate-pulse"
+                                      ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 animate-pulse-ring"
                                       : doc.processing_status === "FAILED"
                                         ? "bg-red-500/20 text-red-400 border border-red-500/30"
                                         : "bg-blue-500/20 text-blue-400 border border-blue-500/30"
@@ -1067,7 +1067,7 @@ export const ProjectDashboardPage: React.FC = () => {
 
       {showCustomModal && (
         <div className="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-[#111827] border border-gray-700 rounded-2xl p-6 w-full max-w-md shadow-2xl">
+          <div className="bg-[#111827] border border-transparent rounded-2xl p-6 w-full max-w-md shadow-2xl">
             <h2 className="text-xl font-bold mb-4 text-white">
               Add Custom Document Type
             </h2>
@@ -1082,7 +1082,7 @@ export const ProjectDashboardPage: React.FC = () => {
                   value={customName}
                   onChange={(e) => setCustomName(e.target.value)}
                   placeholder="e.g. Technical Spec"
-                  className="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-[#00e5ff]"
+                  className="w-full bg-white/[0.03] border border-transparent rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-[#00e5ff]"
                 />
               </div>
               <div>
@@ -1094,7 +1094,7 @@ export const ProjectDashboardPage: React.FC = () => {
                   onChange={(e) => setCustomDesc(e.target.value)}
                   placeholder="What is this document used for?"
                   rows={3}
-                  className="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-[#00e5ff] resize-none"
+                  className="w-full bg-white/[0.03] border border-transparent rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-[#00e5ff] resize-none"
                 />
               </div>
             </div>
@@ -1105,7 +1105,7 @@ export const ProjectDashboardPage: React.FC = () => {
                   setShowCustomModal(false);
                 }}
                 disabled={addingCustomType}
-                className={`px-4 py-2 rounded-lg font-medium text-gray-300 hover:bg-gray-800 transition-colors text-sm ${addingCustomType ? "opacity-50 cursor-not-allowed" : ""}`}
+                className={`px-4 py-2 rounded-lg font-medium text-gray-200 hover:bg-white/[0.06] transition-colors text-sm ${addingCustomType ? "opacity-50 cursor-not-allowed" : ""}`}
               >
                 Cancel
               </button>
@@ -1130,7 +1130,7 @@ export const ProjectDashboardPage: React.FC = () => {
 
       {deletingDocId !== null && (
         <div className="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-[#111827] border border-gray-700 rounded-2xl p-6 w-full max-w-md shadow-2xl">
+          <div className="bg-[#111827] border border-transparent rounded-2xl p-6 w-full max-w-md shadow-2xl">
             <h2 className="text-xl font-bold mb-2 text-white">
               Delete Document
             </h2>
@@ -1142,7 +1142,7 @@ export const ProjectDashboardPage: React.FC = () => {
 
             <div className="space-y-4 mb-6">
               <div>
-                <label className="block text-gray-300 text-xs font-semibold mb-1.5 uppercase tracking-wide">
+                <label className="block text-gray-200 text-xs font-semibold mb-1.5 uppercase tracking-wide">
                   Why are you deleting this uploaded document?
                 </label>
                 <textarea
@@ -1151,7 +1151,7 @@ export const ProjectDashboardPage: React.FC = () => {
                   onChange={(e) => setDeleteReason(e.target.value)}
                   placeholder="Provide a reason for deletion (required)..."
                   rows={3}
-                  className="w-full bg-gray-900 border border-gray-700 rounded-xl p-3.5 text-white focus:outline-none focus:ring-2 focus:ring-[#00e5ff] resize-none text-sm placeholder-gray-500"
+                  className="w-full bg-white/[0.03] border border-transparent rounded-xl p-3.5 text-white focus:outline-none focus:ring-2 focus:ring-[#00e5ff] resize-none text-sm placeholder-gray-500"
                 />
               </div>
             </div>
@@ -1162,7 +1162,7 @@ export const ProjectDashboardPage: React.FC = () => {
                   setDeletingDocId(null);
                   setDeleteReason("");
                 }}
-                className="px-4 py-2 rounded-lg font-medium text-gray-300 hover:bg-gray-800 transition-colors text-sm"
+                className="px-4 py-2 rounded-lg font-medium text-gray-200 hover:bg-white/[0.06] transition-colors text-sm"
               >
                 Cancel
               </button>
@@ -1184,7 +1184,7 @@ export const ProjectDashboardPage: React.FC = () => {
 
       {processingDocId !== null && (
         <div className="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-[#111827] border border-gray-700 rounded-2xl p-6 w-full max-w-md shadow-2xl">
+          <div className="bg-[#111827] border border-transparent rounded-2xl p-6 w-full max-w-md shadow-2xl">
             <div className="w-12 h-12 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center mx-auto mb-4 text-amber-400">
               <AlertTriangle className="w-6 h-6" />
             </div>
@@ -1202,7 +1202,7 @@ export const ProjectDashboardPage: React.FC = () => {
             <div className="flex gap-3">
               <button
                 onClick={() => setProcessingDocId(null)}
-                className="flex-1 py-2.5 bg-gray-800 hover:bg-gray-750 text-gray-300 rounded-xl text-xs font-semibold transition-all border border-gray-700 cursor-pointer"
+                className="flex-1 py-2.5 bg-gray-800 hover:bg-gray-750 text-gray-200 rounded-xl text-xs font-semibold transition-all border border-transparent cursor-pointer"
               >
                 Cancel
               </button>
@@ -1219,7 +1219,7 @@ export const ProjectDashboardPage: React.FC = () => {
 
       {/* showRelevancePopup && relevanceCheckResult && (
         <div className="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-[#111827] border border-gray-700 rounded-2xl p-6 w-full max-w-md shadow-2xl">
+          <div className="bg-[#111827] border border-transparent rounded-2xl p-6 w-full max-w-md shadow-2xl">
             <h2 className="text-xl font-bold mb-2 text-white">
               AI Relevance Check
             </h2>
@@ -1233,7 +1233,7 @@ export const ProjectDashboardPage: React.FC = () => {
             </p>
 
             <div className="space-y-4 mb-6">
-              <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 flex flex-col items-center">
+              <div className="glass-card border-transparent rounded-xl p-4 flex flex-col items-center">
                 <span className="text-xs text-gray-400 font-semibold uppercase tracking-wide">
                   Relevance Score
                 </span>
@@ -1276,7 +1276,7 @@ export const ProjectDashboardPage: React.FC = () => {
                   setRelevanceCheckResult(null);
                 }}
                 disabled={confirmingUpload}
-                className="px-4 py-2 rounded-lg font-medium text-gray-300 hover:bg-gray-800 transition-colors text-sm disabled:opacity-50"
+                className="px-4 py-2 rounded-lg font-medium text-gray-200 hover:bg-white/[0.06] transition-colors text-sm disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -1305,7 +1305,7 @@ export const ProjectDashboardPage: React.FC = () => {
 
       {/* TOAST NOTIFICATION */}
       {notification && (
-        <div className="fixed top-6 right-6 z-50 max-w-sm w-full bg-[#111827] border border-white/10 rounded-2xl p-4 shadow-2xl flex gap-3 animate-slideIn select-none">
+        <div className="fixed top-6 right-6 z-50 max-w-sm w-full bg-[#111827] border border-transparent rounded-2xl p-4 shadow-2xl flex gap-3 animate-slideIn select-none">
           <div className="flex-1">
             <p
               className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${

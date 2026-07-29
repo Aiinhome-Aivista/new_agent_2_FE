@@ -57,7 +57,7 @@ export const ProjectMembersPage: React.FC = () => {
           <div className="flex gap-3">
             <Link
               to={`/projects/${id}`}
-              className="px-4 py-3 bg-slate-500 hover:bg-slate-600 text-gray-300 rounded-xl text-xs font-semibold border border-gray-700 transition-colors"
+              className="px-4 py-3 bg-slate-500 hover:bg-slate-600 text-gray-200 rounded-xl text-xs font-semibold border border-transparent transition-colors"
             >
               Cockpit
             </Link>
