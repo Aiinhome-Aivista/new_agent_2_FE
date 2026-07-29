@@ -242,20 +242,64 @@ const buildAuditTrail = (item: any) => {
   // Additional audit entries from audit_trail field if it exists
   if (item.audit_trail && Array.isArray(item.audit_trail)) {
     item.audit_trail.forEach((entry: any, idx: number) => {
+      // Skip CREATED event from backend since we manually add a richer "Risk Identified" entry
+      if (entry.action === "CREATED" || entry.action === "CREATE_TRACKER_ITEM") {
+        return;
+      }
+      
+      let actionLabel = entry.action || "Updated";
+      let type: "created" | "resolved" | "reactivated" | "updated" = "updated";
+      let note = "";
+      
+      if (entry.action === "RESOLVE_TRACKER_ITEM") {
+        actionLabel = "Marked as Resolved";
+        type = "resolved";
+        note = entry.details?.resolution || "";
+      } else if (entry.action === "REACTIVATE_TRACKER_ITEM") {
+        actionLabel = "Reactivated";
+        type = "reactivated";
+        note = entry.details?.reason || "";
+      } else {
+        note = typeof entry.details === "object" ? JSON.stringify(entry.details) : String(entry.details || "");
+      }
+      
+      // Check if this is a duplicate of the current status resolution to avoid double entries
+      if (type === "resolved" && item.status === "RESOLVED" && item.resolved_at === entry.created_at) {
+        // Skip adding from audit_trail if we already added it in the basic block, OR 
+        // we can just remove the basic block entirely and rely only on audit_trail.
+        // Actually we will let it add, but we need to deduplicate.
+      }
+      
       entries.push({
         id: `${item.id}-trail-${idx}`,
-        action: entry.action || "Updated",
-        actor: entry.user_name || entry.actor || "System",
+        action: actionLabel,
+        actor: entry.user_name || entry.agent_name || "System",
         email: entry.user_email,
-        timestamp: entry.timestamp || entry.created_at,
-        note: entry.note || entry.details,
-        type: entry.type || "updated",
+        timestamp: entry.created_at,
+        note: note,
+        type: type,
       });
     });
   }
 
+  // Deduplicate entries by timestamp and type
+  const uniqueEntries = [];
+  const seenKeys = new Set();
+  
+  for (const entry of entries) {
+    if (!entry.timestamp) {
+      uniqueEntries.push(entry);
+      continue;
+    }
+    const key = `${entry.type}-${new Date(entry.timestamp).getTime()}`;
+    if (!seenKeys.has(key)) {
+      seenKeys.add(key);
+      uniqueEntries.push(entry);
+    }
+  }
+
   // Sort by timestamp ascending
-  return entries.sort((a, b) => {
+  return uniqueEntries.sort((a, b) => {
     if (!a.timestamp) return -1;
     if (!b.timestamp) return 1;
     return new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
@@ -1230,13 +1274,30 @@ export const TrackerPage: React.FC = () => {
 
               {/* AI Priority Banner */}
               {project?.highestActionPriority && (
-                <div className="mx-4 mt-4 p-3 bg-gradient-to-r from-cyan-950/50 to-blue-900/30 border border-cyan-500/25 rounded-xl flex-shrink-0">
-                  <div className="flex items-center gap-1.5 mb-1.5">
-                    <Sparkles className="w-3 h-3 text-cyan-400" />
-                    <span className="text-[9px] font-black text-cyan-400 uppercase tracking-widest">AI Top Priority</span>
+                <div className="mx-4 mt-4 p-3 bg-gradient-to-r from-cyan-950/50 to-blue-900/30 border border-cyan-500/25 rounded-xl flex-shrink-0 relative overflow-hidden group">
+                  <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/0 via-cyan-500/5 to-cyan-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+                  <div className="flex items-center justify-between mb-1.5 relative z-10">
+                    <div className="flex items-center gap-1.5">
+                      <Sparkles className="w-3 h-3 text-cyan-400" />
+                      <span className="text-[9px] font-black text-cyan-400 uppercase tracking-widest">AI Top Priority</span>
+                    </div>
+                    {project.highestActionPriority.id && (
+                      <button 
+                        onClick={() => {
+                          const item = activeItems.find(i => i.id === project.highestActionPriority.id);
+                          if (item) {
+                            setActiveTab("active");
+                            setSelectedItem(item);
+                          }
+                        }}
+                        className="px-2 py-0.5 bg-cyan-500/10 hover:bg-cyan-500/25 border border-cyan-500/20 hover:border-cyan-500/40 text-cyan-300 rounded text-[9px] font-bold transition-all cursor-pointer shadow-[0_0_10px_rgba(6,182,212,0.1)] hover:shadow-[0_0_15px_rgba(6,182,212,0.2)]"
+                      >
+                        View Details
+                      </button>
+                    )}
                   </div>
-                  <p className="text-[11px] font-semibold text-white truncate">{project.highestActionPriority.activity}</p>
-                  <p className="text-[10px] text-gray-400 mt-0.5 line-clamp-2 leading-relaxed">{project.highestActionPriority.reason}</p>
+                  <p className="text-[11px] font-semibold text-white truncate relative z-10">{project.highestActionPriority.activity}</p>
+                  <p className="text-[10px] text-gray-400 mt-0.5 line-clamp-2 leading-relaxed relative z-10">{project.highestActionPriority.reason}</p>
                 </div>
               )}
 
