@@ -157,13 +157,19 @@ export const BaselineReviewPage: React.FC = () => {
 
   // Compute timelineItems early so handlers can reference it
   const timelineItems = React.useMemo(() => {
-    return (baseline?.scope_items || [])
-      .filter((item: any) => item.deadline || item.milestone)
-      .sort((a: any, b: any) => {
-        if (!a.deadline) return 1;
-        if (!b.deadline) return -1;
-        return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
-      });
+    const scopeItems = (baseline?.scope_items || []).filter((item: any) => item.deadline || item.milestone);
+    const deliverables = (baseline?.deliverables || []).map((d: any) => ({
+      ...d,
+      completion_status: d.delivery_status || "ACTIVE"
+    })).filter((item: any) => item.deadline);
+
+    const combined = [...scopeItems, ...deliverables];
+
+    return combined.sort((a: any, b: any) => {
+      if (!a.deadline) return 1;
+      if (!b.deadline) return -1;
+      return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
+    });
   }, [baseline]);
 
   useEffect(() => {
