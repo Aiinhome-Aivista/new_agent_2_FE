@@ -4,6 +4,7 @@ import apiClient from "../api/apiClient";
 import { useAuth } from "../auth/AuthContext";
 import { Link } from "react-router-dom";
 import { Loader } from "../components/Loader";
+import { Sparkles, Loader2 } from "lucide-react";
 
 const formatDate = (dateStr: string | null | undefined) => {
   if (!dateStr) return "Not Specified";
@@ -98,34 +99,30 @@ export const ProjectsPage: React.FC = () => {
     }
   }, [user]);
 
-  useEffect(() => {
-    if (
-      !(projectName || "").trim() ||
-      !(clientName || "").trim() ||
-      isDescriptionManuallyEdited
-    )
+  const handleGenerateDescription = async () => {
+    if (!(projectName || "").trim() || !(clientName || "").trim()) {
+      setFormError("Please enter Project Name and Client Name first to generate a description.");
       return;
-
-    const timer = setTimeout(async () => {
-      setIsGeneratingDesc(true);
-      try {
-        const res = await apiClient.post("/projects/generate-description", {
-          project_name: projectName,
-          client_name: clientName,
-        });
-        if (res.data.success && !isDescriptionManuallyEdited) {
-          const desc = res.data.data?.description || res.data.description || "";
-          setDescription(desc);
-        }
-      } catch (error) {
-        console.error("Failed to auto-generate description", error);
-      } finally {
-        setIsGeneratingDesc(false);
+    }
+    setFormError("");
+    setIsGeneratingDesc(true);
+    try {
+      const res = await apiClient.post("/projects/generate-description", {
+        project_name: projectName,
+        client_name: clientName,
+      });
+      if (res.data.success) {
+        const desc = res.data.data?.description || res.data.description || "";
+        setDescription(desc);
+        setIsDescriptionManuallyEdited(false);
       }
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, [projectName, clientName, isDescriptionManuallyEdited]);
+    } catch (error) {
+      console.error("Failed to generate description", error);
+      setFormError("Failed to generate description with AI. Please try again.");
+    } finally {
+      setIsGeneratingDesc(false);
+    }
+  };
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -396,14 +393,30 @@ export const ProjectsPage: React.FC = () => {
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-400 mb-1.5 flex justify-between items-center">
-                  <span>Description</span>
-                  {isGeneratingDesc && (
-                    <span className="text-[10px] text-teal-400 animate-pulse font-semibold">
-                      AI Generating...
-                    </span>
-                  )}
-                </label>
+                <div className="flex justify-between items-center mb-1.5">
+                  <label className="block text-xs font-medium text-gray-400">
+                    Description
+                  </label>
+                  <button
+                    type="button"
+                    onClick={handleGenerateDescription}
+                    disabled={isGeneratingDesc}
+                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-teal-500/10 hover:bg-teal-500/20 border border-teal-500/30 hover:border-teal-500/50 text-[11px] text-teal-400 hover:text-teal-300 font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                    title="Generate description with AI"
+                  >
+                    {isGeneratingDesc ? (
+                      <>
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        <span>Generating...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="h-3.5 w-3.5" />
+                        <span>AI Suggestion</span>
+                      </>
+                    )}
+                  </button>
+                </div>
                 <textarea
                   value={description}
                   onChange={(e) => {
