@@ -241,7 +241,7 @@ export const TrackerPage: React.FC = () => {
                         SCOPE_CREEP: "Scope Creep",
                         DELAY: "Delay Risk",
                         MISSING_DELIVERABLE: "Missing Deliverable",
-                        DEPENDENCY: "Dependency Risk",
+                        DEPENDENCY: "Customer Dependency",
                         STAKEHOLDER: "Stakeholder Risk",
                         GENERAL: "General Risk",
                       };
@@ -1101,6 +1101,52 @@ export const TrackerPage: React.FC = () => {
           </div>
         ) : (
           <>
+            {/* Highest Action Priority AI Summary */}
+            {project?.highestActionPriority && (
+              <div className="mb-8 p-6 bg-gradient-to-br from-cyan-950/40 to-blue-900/20 border border-cyan-500/30 rounded-2xl shadow-lg shadow-cyan-500/5 backdrop-blur-md">
+                <div className="flex items-center gap-2 mb-4 pb-4 border-b border-cyan-500/20">
+                  <Sparkles className="w-5 h-5 text-cyan-400" />
+                  <h3 className="font-display font-bold text-white text-lg">AI Recommendation: Highest Action Priority</h3>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="col-span-1">
+                    <p className="text-[10px] uppercase font-bold text-gray-500 tracking-wider mb-1">Activity</p>
+                    <p className="text-sm font-bold text-white bg-gray-900/50 p-3 rounded-lg border border-gray-700/50">
+                      {project.highestActionPriority.activity}
+                    </p>
+                    
+                    <div className="mt-4 grid grid-cols-2 gap-3">
+                      <div>
+                        <p className="text-[10px] uppercase font-bold text-gray-500 tracking-wider mb-1">Status</p>
+                        <p className="text-xs font-semibold text-cyan-400">{project.highestActionPriority.status}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] uppercase font-bold text-gray-500 tracking-wider mb-1">Due Date</p>
+                        <p className="text-xs font-semibold text-rose-400">{project.highestActionPriority.dueDate}</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="col-span-2 space-y-4">
+                    <div>
+                      <p className="text-[10px] uppercase font-bold text-gray-500 tracking-wider mb-2">Blockers & Cascade Impact</p>
+                      <div className="text-xs text-gray-300 leading-relaxed bg-gray-900/30 p-3 rounded-lg border border-gray-800 whitespace-pre-line">
+                        {project.highestActionPriority.reason}
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <p className="text-[10px] uppercase font-bold text-gray-500 tracking-wider mb-2">Recommended Action</p>
+                      <div className="text-xs font-semibold text-white leading-relaxed bg-cyan-500/10 p-3 rounded-lg border border-cyan-500/20 shadow-inner">
+                        {project.highestActionPriority.recommendedAction}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Animated Capsule Tab Control */}
             <div className="relative flex p-1 bg-gray-900/60 backdrop-blur-md border border-white/5 rounded-2xl max-w-md mb-8 shadow-lg shadow-black/20">
               {/* Sliding Background Indicator */}
@@ -1207,7 +1253,7 @@ export const TrackerPage: React.FC = () => {
                     SCOPE_CREEP: "Scope Creep",
                     DELAY: "Delay Risk",
                     MISSING_DELIVERABLE: "Missing Deliverable",
-                    DEPENDENCY: "Dependency Risk",
+                    DEPENDENCY: "Customer Dependency",
                     STAKEHOLDER: "Stakeholder Risk",
                     GENERAL: "General",
                   };
@@ -1297,10 +1343,10 @@ export const TrackerPage: React.FC = () => {
 
                         {/* Right: badges */}
                         <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
-                          {item.is_out_of_scope && (
+                          {!!item.is_out_of_scope && (
                             <span className="px-1.5 py-0.5 bg-red-500/10 text-red-400 border border-red-500/20 rounded text-[8px] font-bold uppercase tracking-wide">OOS</span>
                           )}
-                          {item.requires_escalation && (
+                          {!!item.requires_escalation && (
                             <span className="px-1.5 py-0.5 bg-orange-500/10 text-orange-400 border border-orange-500/20 rounded text-[8px] font-bold uppercase tracking-wide">Esc</span>
                           )}
                           <span className="text-[8px] font-bold text-gray-500 bg-gray-800/40 px-1.5 py-0.5 rounded border border-gray-700/30 hidden sm:inline">

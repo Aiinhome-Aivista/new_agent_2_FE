@@ -156,6 +156,27 @@ export const BaselineReviewPage: React.FC = () => {
     number | null
   >(null);
 
+  const milestoneMap = React.useMemo(() => {
+    const map = new Map();
+    (baseline?.milestones || []).forEach((m: any) => {
+      map.set(m.id.toString(), m);
+      if (m.name) map.set(m.name.toLowerCase(), m);
+    });
+    return map;
+  }, [baseline]);
+
+  const getMilestoneData = (itemName: string, milestoneName: string) => {
+    if (milestoneName) {
+        const m = milestoneMap.get(milestoneName.toLowerCase());
+        if (m) return m;
+    }
+    if (itemName) {
+        const m = milestoneMap.get(itemName.toLowerCase());
+        if (m) return m;
+    }
+    return null;
+  };
+
   // Compute timelineItems early so handlers can reference it
   const timelineItems = React.useMemo(() => {
     return (baseline?.scope_items || [])
@@ -1230,6 +1251,20 @@ export const BaselineReviewPage: React.FC = () => {
                                   >
                                     {item.scope_item_normalized || item.name}
                                   </span>
+                                  {/* Badges */}
+                                  {(() => {
+                                    const mData = getMilestoneData(item.name, item.milestone_normalized);
+                                    if (!mData) return null;
+                                    const blockingCount = mData.blocking_ids ? mData.blocking_ids.split(',').length : 0;
+                                    const blockedByCount = mData.blocked_by_ids ? mData.blocked_by_ids.split(',').length : 0;
+                                    if (blockingCount === 0 && blockedByCount === 0) return null;
+                                    return (
+                                        <div className="flex flex-col gap-0.5 mt-1 items-center">
+                                            {blockedByCount > 0 && <span className="text-[8px] bg-red-900/40 text-red-300 border border-red-800/50 px-1 rounded truncate max-w-[90px]" title={`Blocked By ${blockedByCount} Milestones`}>Blocked By: {blockedByCount}</span>}
+                                            {blockingCount > 0 && <span className="text-[8px] bg-orange-900/40 text-orange-300 border border-orange-800/50 px-1 rounded truncate max-w-[90px]" title={`Blocking ${blockingCount} Milestones`}>Blocking: {blockingCount}</span>}
+                                        </div>
+                                    );
+                                  })()}
                                   {/* Connector line down to track */}
                                   <div className="w-px transition-colors duration-300" style={{ height: `${TRACK_Y - ABOVE_LABEL_TOP - 40}px`, backgroundColor: isSelected ? color.border : "#374151", minHeight: "12px" }}></div>
                                   {/* Node dot on the track */}
@@ -1314,6 +1349,20 @@ export const BaselineReviewPage: React.FC = () => {
                                   >
                                     {item.scope_item_normalized || item.name}
                                   </span>
+                                  {/* Badges */}
+                                  {(() => {
+                                    const mData = getMilestoneData(item.name, item.milestone_normalized);
+                                    if (!mData) return null;
+                                    const blockingCount = mData.blocking_ids ? mData.blocking_ids.split(',').length : 0;
+                                    const blockedByCount = mData.blocked_by_ids ? mData.blocked_by_ids.split(',').length : 0;
+                                    if (blockingCount === 0 && blockedByCount === 0) return null;
+                                    return (
+                                        <div className="flex flex-col gap-0.5 mt-1 items-center">
+                                            {blockedByCount > 0 && <span className="text-[8px] bg-red-900/40 text-red-300 border border-red-800/50 px-1 rounded truncate max-w-[90px]" title={`Blocked By ${blockedByCount} Milestones`}>Blocked By: {blockedByCount}</span>}
+                                            {blockingCount > 0 && <span className="text-[8px] bg-orange-900/40 text-orange-300 border border-orange-800/50 px-1 rounded truncate max-w-[90px]" title={`Blocking ${blockingCount} Milestones`}>Blocking: {blockingCount}</span>}
+                                        </div>
+                                    );
+                                  })()}
                                 </>
                               )}
                             </div>
@@ -1411,6 +1460,55 @@ export const BaselineReviewPage: React.FC = () => {
                                   </div>
                                 )}
 
+                                {(() => {
+                                  const mData = getMilestoneData(selectedItem.name, selectedItem.milestone_normalized);
+                                  const blockingCount = mData?.blocking_ids ? mData.blocking_ids.split(',').length : 0;
+                                  const blockedByCount = mData?.blocked_by_ids ? mData.blocked_by_ids.split(',').length : 0;
+                                  const blockedByIds = mData?.blocked_by_ids ? mData.blocked_by_ids.split(',') : [];
+                                  const blockingIds = mData?.blocking_ids ? mData.blocking_ids.split(',') : [];
+                                  
+                                  const getNames = (ids: string[]) => ids.map(id => {
+                                      const m = milestoneMap.get(id);
+                                      return m ? m.name : id;
+                                  });
+                                  
+                                  if (!mData || (blockingCount === 0 && blockedByCount === 0)) return null;
+                                  
+                                  return (
+                                    <div className="mt-4 p-3 bg-gray-900/40 border border-gray-700/50 rounded-lg">
+                                      <h5 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                                        <AlertTriangle className="w-3 h-3 text-orange-400" /> Milestone Dependencies
+                                      </h5>
+                                      {blockedByCount > 0 && (
+                                        <div className="mb-2">
+                                          <span className="text-xs text-red-400 font-semibold mb-1 block">Blocked By:</span>
+                                          <ul className="space-y-1">
+                                            {getNames(blockedByIds).map((n, i) => (
+                                              <li key={i} className="text-xs text-gray-300 flex items-start gap-2 bg-red-950/10 px-2 py-1 rounded border border-red-900/20">
+                                                <Circle className="w-1.5 h-1.5 mt-1 text-red-500 fill-red-500 flex-shrink-0" />
+                                                <span className="leading-tight">{n}</span>
+                                              </li>
+                                            ))}
+                                          </ul>
+                                        </div>
+                                      )}
+                                      {blockingCount > 0 && (
+                                        <div>
+                                          <span className="text-xs text-orange-400 font-semibold mb-1 block">Blocking {blockingCount} Milestone(s):</span>
+                                          <ul className="space-y-1">
+                                            {getNames(blockingIds).map((n, i) => (
+                                              <li key={i} className="text-xs text-gray-300 flex items-start gap-2 bg-orange-950/10 px-2 py-1 rounded border border-orange-900/20">
+                                                <Circle className="w-1.5 h-1.5 mt-1 text-orange-500 fill-orange-500 flex-shrink-0" />
+                                                <span className="leading-tight">{n}</span>
+                                              </li>
+                                            ))}
+                                          </ul>
+                                        </div>
+                                      )}
+                                    </div>
+                                  );
+                                })()}
+                                
                                 {dependencies && dependencies.length > 0 && (
                                   <div className="mt-4">
                                     <h5 className="text-[10px] font-bold text-orange-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
