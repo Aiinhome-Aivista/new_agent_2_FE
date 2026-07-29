@@ -639,7 +639,7 @@ export const ProjectDashboardPage: React.FC = () => {
                                 (doc.processing_status === "UPLOADED" ||
                                   doc.processing_status === "FAILED") && (
                                   <button
-                                    onClick={() => handleProcessDocument(doc.id, doc.document_type)}
+                                    onClick={() => setProcessingDocId(doc.id)}
                                     title="Extract and process document"
                                     className="p-1.5 bg-green-600/20 hover:bg-green-600 border border-green-500/30 text-green-400 hover:text-white rounded-lg transition-all"
                                   >
