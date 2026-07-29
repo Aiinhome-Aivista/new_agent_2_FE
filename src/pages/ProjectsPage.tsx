@@ -36,6 +36,7 @@ export const ProjectsPage: React.FC = () => {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [formError, setFormError] = useState("");
+  const [isCreating, setIsCreating] = useState(false);
 
   const [editingProjectId, setEditingProjectId] = useState<number | null>(null);
   const [editingEndDate, setEditingEndDate] = useState("");
@@ -126,11 +127,13 @@ export const ProjectsPage: React.FC = () => {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isCreating) return;
     if (startDate && endDate && startDate > endDate) {
       setFormError("Start Date cannot be after End Date");
       return;
     }
     setFormError("");
+    setIsCreating(true);
     try {
       const res = await apiClient.post("/projects/", {
         project_name: projectName,
@@ -154,6 +157,8 @@ export const ProjectsPage: React.FC = () => {
       }
     } catch (error) {
       console.error("Failed to create project");
+    } finally {
+      setIsCreating(false);
     }
   };
 
@@ -306,6 +311,7 @@ export const ProjectsPage: React.FC = () => {
                 setEndDate("");
                 setFormError("");
                 setIsDescriptionManuallyEdited(false);
+                setIsCreating(false);
               }}
               className="absolute top-4 right-4 text-gray-400 hover:text-white text-xl transition-colors"
             >
@@ -441,6 +447,7 @@ export const ProjectsPage: React.FC = () => {
                     setEndDate("");
                     setFormError("");
                     setIsDescriptionManuallyEdited(false);
+                    setIsCreating(false);
                   }}
                   className="flex-1 py-2.5 bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 rounded-xl text-xs font-semibold transition-all"
                 >
@@ -453,11 +460,12 @@ export const ProjectsPage: React.FC = () => {
                     !(clientName || "").trim() ||
                     !assignedLeadId ||
                     !(description || "").trim() ||
-                    isGeneratingDesc
+                    isGeneratingDesc ||
+                    isCreating
                   }
-                  className="flex-1 py-2.5 bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-400 hover:to-blue-500 text-white font-semibold rounded-xl text-xs transition-all shadow-md shadow-teal-500/10 disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="flex-1 py-2.5 bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-400 hover:to-blue-500 text-white font-semibold rounded-xl text-xs transition-all shadow-md shadow-teal-500/10 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
-                  Create
+                  {isCreating ? "Creating..." : "Create"}
                 </button>
               </div>
             </form>
