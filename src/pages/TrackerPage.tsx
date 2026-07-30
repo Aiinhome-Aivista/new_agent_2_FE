@@ -551,7 +551,10 @@ export const TrackerPage: React.FC = () => {
   };
 
   const [resolveModalState, setResolveModalState] = useState<{ isOpen: boolean; itemId: number | null }>({ isOpen: false, itemId: null });
+  const [reactivateModalState, setReactivateModalState] = useState<{ isOpen: boolean; itemId: number | null }>({ isOpen: false, itemId: null });
   const [resolutionText, setResolutionText] = useState("");
+  const [isResolving, setIsResolving] = useState(false);
+  const [isReactivating, setIsReactivating] = useState(false);
 
   const openResolveModal = (itemId: number) => {
     setResolveModalState({ isOpen: true, itemId });
@@ -560,6 +563,7 @@ export const TrackerPage: React.FC = () => {
 
   const submitResolve = async () => {
     if (!resolutionText.trim() || resolveModalState.itemId === null) return;
+    setIsResolving(true);
     try {
       const res = await apiClient.post(
         `/projects/${id}/tracker/${resolveModalState.itemId}/resolve`,
@@ -578,27 +582,37 @@ export const TrackerPage: React.FC = () => {
       }
     } catch (error) {
       alert("Failed to resolve item");
+    } finally {
+      setIsResolving(false);
     }
   };
 
-  const handleReactivate = async (itemId: number) => {
-    if (!window.confirm("Are you sure you want to reactivate this risk?")) return;
+  const openReactivateModal = (itemId: number) => {
+    setReactivateModalState({ isOpen: true, itemId });
+  };
+
+  const confirmReactivate = async () => {
+    if (reactivateModalState.itemId === null) return;
+    setIsReactivating(true);
     try {
-      const res = await apiClient.post(`/projects/${id}/tracker/${itemId}/reactivate`);
+      const res = await apiClient.post(`/projects/${id}/tracker/${reactivateModalState.itemId}/reactivate`);
       if (res.data.success) {
         const updatedItem = res.data.data;
         const newItems = items.map((i) =>
-          i.id === itemId
+          i.id === reactivateModalState.itemId
             ? { ...i, ...updatedItem, status: "OPEN", resolution: null, resolved_by_name: null, resolved_at: null }
             : i,
         );
         setItems(newItems);
-        if (selectedItem?.id === itemId) {
+        if (selectedItem?.id === reactivateModalState.itemId) {
           setSelectedItem({ ...selectedItem, ...updatedItem, status: "OPEN", resolution: null, resolved_by_name: null, resolved_at: null });
         }
+        setReactivateModalState({ isOpen: false, itemId: null });
       }
     } catch (error) {
       alert("Failed to reactivate item");
+    } finally {
+      setIsReactivating(false);
     }
   };
 
@@ -1097,24 +1111,8 @@ export const TrackerPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Actions bottom */}
-          <div className="pt-2 pb-1">
-            {item.status === "RESOLVED" ? (
-              <button
-                onClick={() => handleReactivate(item.id)}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-900 border border-gray-700 hover:border-gray-600 text-gray-300 hover:text-white rounded-xl text-[10px] font-bold transition-all cursor-pointer active:scale-[0.98]"
-              >
-                <RotateCcw className="w-3.5 h-3.5" /> Reactivate Risk
-              </button>
-            ) : (
-              <button
-                onClick={() => openResolveModal(item.id)}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white rounded-xl text-[10px] font-bold transition-all cursor-pointer shadow-md shadow-emerald-500/10 active:scale-[0.98]"
-              >
-                <CheckCircle2 className="w-3.5 h-3.5" /> Mark as Resolved
-              </button>
-            )}
-          </div>
+          {/* Bottom padding */}
+          <div className="pt-2 pb-1" />
         </div>
       </div>
     );
@@ -1267,10 +1265,10 @@ export const TrackerPage: React.FC = () => {
           </div>
         ) : (
           /* ── SPLIT LAYOUT ── */
-          <div className="flex-1 flex overflow-hidden" style={{ height: "calc(100vh - 140px)" }}>
+          <div className="flex-1 flex flex-col lg:flex-row overflow-hidden" style={{ minHeight: "calc(100vh - 140px)" }}>
 
             {/* ════ LEFT PANEL: Risk List + Tabs ════ */}
-            <div className="flex flex-col border-r border-white/[0.05] overflow-hidden" style={{ width: "420px", minWidth: "340px", maxWidth: "480px" }}>
+            <div className="flex flex-col border-b lg:border-b-0 lg:border-r border-white/[0.05] overflow-hidden w-full lg:w-[420px] lg:min-w-[340px] lg:max-w-[480px] h-[50vh] lg:h-auto shrink-0">
 
               {/* AI Priority Banner */}
               {project?.highestActionPriority && (
@@ -1286,7 +1284,7 @@ export const TrackerPage: React.FC = () => {
                         onClick={() => {
                           const item = activeItems.find(i => i.id === project.highestActionPriority.id);
                           if (item) {
-                            setActiveTab("active");
+                            setActiveTab("ACTIVE");
                             setSelectedItem(item);
                           }
                         }}
@@ -1318,7 +1316,7 @@ export const TrackerPage: React.FC = () => {
               </div>
 
               {/* Tab Control */}
-              <div className="px-4 pt-3 pb-2 flex-shrink-0">
+              <div className="px-4 pt-3 pb-2 flex-shrink-0 space-y-3">
                 <div className="relative flex p-1 bg-gray-900/60 backdrop-blur-md border border-white/[0.05] rounded-xl shadow-lg">
                   <div
                     className="absolute top-1 bottom-1 rounded-lg bg-gradient-to-r from-cyan-600/25 to-blue-600/25 border border-cyan-500/25 shadow-lg shadow-cyan-500/5 transition-all duration-300 ease-out"
@@ -1345,6 +1343,29 @@ export const TrackerPage: React.FC = () => {
                     </span>
                   </button>
                 </div>
+
+                {/* Inline Bulk Actions (Top) */}
+                {selectedItemIds.length > 0 && (
+                  <div className="bg-cyan-950/20 border border-cyan-500/20 rounded-xl p-2.5 flex items-center justify-between gap-2 animate-fade-in-up">
+                    <div className="flex items-center gap-2">
+                      <div className="w-5 h-5 rounded bg-cyan-500/10 flex items-center justify-center shrink-0">
+                        <span className="text-[10px] text-cyan-400 font-bold font-mono">{selectedItemIds.length}</span>
+                      </div>
+                      <span className="text-[10px] text-gray-300 font-bold">selected</span>
+                    </div>
+                    <div className="flex gap-1.5 shrink-0">
+                      <button onClick={() => setSelectedItemIds([])} className="px-2 py-1 text-[9px] font-bold text-gray-400 hover:text-white border border-gray-800 hover:border-gray-700 rounded-lg cursor-pointer transition-colors">
+                        Clear
+                      </button>
+                      <button onClick={() => handleExportBatch(activeItems.filter((i) => selectedItemIds.includes(i.id)), "pdf", "Selected Risks")} className="px-2 py-1 text-[9px] font-bold text-white bg-cyan-600 hover:bg-cyan-500 rounded-lg cursor-pointer shadow-md shadow-cyan-500/10 transition-colors">
+                        PDF
+                      </button>
+                      <button onClick={() => handleExportBatch(activeItems.filter((i) => selectedItemIds.includes(i.id)), "docx", "Selected Risks")} className="px-2 py-1 text-[9px] font-bold text-cyan-400 border border-cyan-500/20 hover:bg-cyan-500/10 rounded-lg cursor-pointer transition-colors">
+                        Word
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Risk Cards List */}
@@ -1465,7 +1486,7 @@ export const TrackerPage: React.FC = () => {
               {selectedItem ? (
                 <div className="h-full flex flex-col">
                   {/* Right Panel Header */}
-                  <div className="px-5 py-3.5 border-b border-white/[0.05] bg-white/[0.01] flex-shrink-0 flex items-center justify-between gap-3">
+                  <div className="px-5 py-3.5 border-b border-white/[0.05] bg-white/[0.01] flex-shrink-0 flex items-center justify-between gap-3 flex-wrap">
                     <div className="flex items-center gap-2">
                       <div className="w-6 h-6 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
                         <History className="w-3.5 h-3.5 text-cyan-400" />
@@ -1475,7 +1496,29 @@ export const TrackerPage: React.FC = () => {
                         <p className="text-[9px] text-gray-600">Risk #{selectedItem.id} · Complete history with timestamps</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {/* Top Action Button */}
+                      {selectedItem.status === "RESOLVED" ? (
+                        <button
+                          onClick={() => openReactivateModal(selectedItem.id)}
+                          disabled={isReactivating}
+                          className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-900 border border-gray-700 hover:border-gray-600 text-gray-300 hover:text-white rounded-lg text-[10px] font-bold transition-all cursor-pointer active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {isReactivating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RotateCcw className="w-3.5 h-3.5" />}
+                          Reactivate
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => openResolveModal(selectedItem.id)}
+                          className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white rounded-lg text-[10px] font-bold transition-all cursor-pointer shadow-md shadow-emerald-500/10 active:scale-[0.98]"
+                        >
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          Mark Resolved
+                        </button>
+                      )}
+
+                      <div className="w-px h-6 bg-gray-700/50 mx-1 hidden sm:block"></div>
+
                       <button
                         onClick={() => handleExportSingle(selectedItem, "pdf")}
                         className="flex items-center gap-1.5 px-2.5 py-1.5 bg-gray-900 border border-gray-700 hover:border-gray-600 text-gray-400 hover:text-white rounded-lg text-[9px] font-bold transition-all cursor-pointer"
@@ -1514,36 +1557,7 @@ export const TrackerPage: React.FC = () => {
         )}
       </div>
 
-      {/* Floating Bulk Action Bar */}
-      {selectedItemIds.length > 0 && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 w-full max-w-xl px-4 animate-fade-in-up">
-          <div className="bg-gray-950/90 backdrop-blur-xl border border-cyan-500/30 rounded-2xl p-4 shadow-2xl flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-5 h-5 rounded-md bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
-                <span className="text-[10px] text-cyan-400 font-bold font-mono">{selectedItemIds.length}</span>
-              </div>
-              <span className="text-xs text-gray-300 font-bold">risks selected</span>
-            </div>
-            <div className="flex gap-2">
-              <button onClick={() => setSelectedItemIds([])} className="px-3 py-1.5 text-xs text-gray-400 hover:text-white bg-gray-900 border border-gray-800 hover:border-gray-700 rounded-xl transition-all cursor-pointer">
-                Clear
-              </button>
-              <button
-                onClick={() => handleExportBatch(activeItems.filter((i) => selectedItemIds.includes(i.id)), "pdf", "Selected Active Risks")}
-                className="px-3.5 py-1.5 text-xs font-bold text-white bg-cyan-600 hover:bg-cyan-500 rounded-xl transition-all shadow-md shadow-cyan-500/10 cursor-pointer active:scale-[0.98]"
-              >
-                Export PDF
-              </button>
-              <button
-                onClick={() => handleExportBatch(activeItems.filter((i) => selectedItemIds.includes(i.id)), "docx", "Selected Active Risks")}
-                className="px-3.5 py-1.5 text-xs font-bold text-cyan-400 bg-cyan-950/40 border border-cyan-500/20 rounded-xl transition-all cursor-pointer active:scale-[0.98]"
-              >
-                Export Word
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+
 
       {/* Resolve Modal */}
       {resolveModalState.isOpen && (
@@ -1574,10 +1588,43 @@ export const TrackerPage: React.FC = () => {
               </button>
               <button
                 onClick={submitResolve}
-                disabled={!resolutionText.trim()}
-                className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-colors cursor-pointer ${!resolutionText.trim() ? "bg-emerald-900/30 text-emerald-700 cursor-not-allowed" : "bg-gradient-to-r from-emerald-500 to-green-500 text-white hover:from-emerald-400 hover:to-green-400"}`}
+                disabled={!resolutionText.trim() || isResolving}
+                className={`flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-colors cursor-pointer ${(!resolutionText.trim() || isResolving) ? "bg-emerald-900/30 text-emerald-700 cursor-not-allowed" : "bg-gradient-to-r from-emerald-500 to-green-500 text-white hover:from-emerald-400 hover:to-green-400"}`}
               >
+                {isResolving ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
                 Confirm Resolution
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reactivate Modal */}
+      {reactivateModalState.isOpen && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 p-4">
+          <div className="bg-[#0e1420] border border-gray-700/60 rounded-2xl p-6 w-full max-w-sm shadow-2xl animate-fade-in-up">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
+                <RotateCcw className="w-4 h-4 text-amber-400" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-white">Reactivate Risk</h2>
+              </div>
+            </div>
+            <p className="text-gray-400 text-xs mb-6 leading-relaxed">
+              Are you sure you want to reactivate this risk? It will be moved back to the Active Risks tab.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button onClick={() => setReactivateModalState({ isOpen: false, itemId: null })} className="px-5 py-2.5 rounded-xl font-medium text-gray-300 hover:bg-gray-800 transition-colors text-sm cursor-pointer">
+                Cancel
+              </button>
+              <button
+                onClick={confirmReactivate}
+                disabled={isReactivating}
+                className={`flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-colors cursor-pointer ${isReactivating ? "bg-amber-900/30 text-amber-700 cursor-not-allowed" : "bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:from-amber-400 hover:to-orange-400 shadow-md shadow-amber-500/10"}`}
+              >
+                {isReactivating ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                Confirm
               </button>
             </div>
           </div>
