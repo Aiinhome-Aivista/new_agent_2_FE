@@ -102,7 +102,9 @@ export const ProjectsPage: React.FC = () => {
 
   const handleGenerateDescription = async () => {
     if (!(projectName || "").trim() || !(clientName || "").trim()) {
-      setFormError("Please enter Project Name and Client Name first to generate a description.");
+      setFormError(
+        "Please enter Project Name and Client Name first to generate a description.",
+      );
       return;
     }
     setFormError("");
@@ -182,7 +184,7 @@ export const ProjectsPage: React.FC = () => {
           {(user?.role === "ADMIN" || user?.role === "ENGAGEMENT_MANAGER") && (
             <button
               onClick={() => setIsModalOpen(true)}
-              className="px-5 py-2.5 bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-400 hover:to-blue-500 text-white font-semibold rounded-xl text-xs transition-all duration-300 shadow-md shadow-teal-500/10 active:scale-[0.98]"
+              className="px-5 py-2.5 bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-400 hover:to-blue-500 text-white font-semibold rounded-xl text-xs transition-all duration-300 shadow-md shadow-teal-500/10 active:scale-[0.98] cursor-pointer"
             >
               Create Project
             </button>
