@@ -45,16 +45,16 @@ function getRagColor(score: number, monitoringStatus?: string) {
   if (monitoringStatus === "DRAFT" || monitoringStatus === "BASELINE_PENDING_REVIEW") {
     return {
       ring: "#06b6d4",
-      text: "text-cyan-400",
+      text: "text-cyan-600 dark:text-cyan-400",
       bg: "bg-cyan-500/10",
       border: "border-cyan-500/30",
       label: "SETTING UP",
-      labelColor: "text-cyan-400"
+      labelColor: "text-cyan-600 dark:text-cyan-400"
     };
   }
   if (score >= 70) return { ring: "#10b981", text: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/30", label: "HEALTHY", labelColor: "text-emerald-400" };
-  if (score >= 40) return { ring: "#f59e0b", text: "text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/30", label: "AT RISK", labelColor: "text-amber-400" };
-  return { ring: "#ef4444", text: "text-rose-400", bg: "bg-rose-500/10", border: "border-rose-500/30", label: "CRITICAL", labelColor: "text-rose-400" };
+  if (score >= 40) return { ring: "#f59e0b", text: "text-amber-500 dark:text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/30", label: "AT RISK", labelColor: "text-amber-500 dark:text-amber-400" };
+  return { ring: "#ef4444", text: "text-rose-500 dark:text-rose-400", bg: "bg-rose-500/10", border: "border-rose-500/30", label: "CRITICAL", labelColor: "text-rose-500 dark:text-rose-400" };
 }
 
 function computeHealthScore(
@@ -142,7 +142,7 @@ export const ProjectOverviewPage: React.FC = () => {
   }, [id]);
 
   if (loading) return <Loader message="Loading project intelligence dashboard..." />;
-  if (!project) return <div className="p-10 text-gray-400">Project not found.</div>;
+  if (!project) return <div className="p-10 text-text-muted">Project not found.</div>;
 
   // ── Derived metrics ──────────────────────────────────────────────────────
   const hasEL = documents.some((d) => d.document_type === "EL");
@@ -178,7 +178,7 @@ export const ProjectOverviewPage: React.FC = () => {
   const riskLow = openRisks.filter((r) => r.risk_level === "LOW").length;
 
   return (
-    <div className="flex-1 bg-[#080b14] text-white p-6 md:p-8 min-h-screen overflow-auto">
+    <div className="flex-1 bg-bg-base text-text-primary p-6 md:p-8 min-h-screen overflow-auto">
       {/* Background glows */}
       <div className="fixed top-[-20%] right-[-5%] w-[600px] h-[600px] rounded-full bg-teal-500/4 blur-[150px] pointer-events-none" />
       <div className="fixed bottom-[-20%] left-[10%] w-[400px] h-[400px] rounded-full bg-blue-500/4 blur-[120px] pointer-events-none" />
@@ -189,28 +189,28 @@ export const ProjectOverviewPage: React.FC = () => {
         <div className="flex flex-col lg:flex-row justify-between items-start gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <Link to="/projects" className="text-[11px] text-gray-500 hover:text-teal-400 transition-colors">
+              <Link to="/projects" className="text-[11px] text-text-muted hover:text-teal-500 dark:text-teal-400 transition-colors">
                 Projects Directory
               </Link>
               <ChevronRight className="w-3 h-3 text-gray-600" />
-              <span className="text-[11px] text-teal-400 font-semibold">Project Overview</span>
+              <span className="text-[11px] text-teal-500 dark:text-teal-400 font-semibold">Project Overview</span>
             </div>
-            <h1 className="text-2xl font-black tracking-tight text-white leading-tight">{project.project_name}</h1>
-            <p className="text-gray-400 text-xs mt-0.5">{project.client_name} &nbsp;·&nbsp; {project.description?.slice(0, 90)}{project.description?.length > 90 ? "…" : ""}</p>
+            <h1 className="text-2xl font-black tracking-tight text-text-primary leading-tight">{project.project_name}</h1>
+            <p className="text-text-muted text-xs mt-0.5">{project.client_name} &nbsp;·&nbsp; {project.description?.slice(0, 90)}{project.description?.length > 90 ? "…" : ""}</p>
           </div>
 
           {/* Quick Actions */}
           <div className="flex flex-wrap gap-2 flex-shrink-0">
-            <Link to={`/projects/${id}/cockpit`} className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-gray-800/80 hover:bg-gray-700/80 border border-gray-700 text-gray-300 text-xs font-semibold rounded-xl transition-all">
+            <Link to={`/projects/${id}/cockpit`} className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-bg-hover/80 hover:bg-bg-hover/80 border border-border-strong text-text-secondary text-xs font-semibold rounded-xl transition-all">
               <UploadCloud className="w-3.5 h-3.5" /> Upload Documents
             </Link>
-            <Link to={`/projects/${id}/baseline`} className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/40 text-purple-300 text-xs font-semibold rounded-xl transition-all">
+            <Link to={`/projects/${id}/baseline`} className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/40 text-purple-600 dark:text-purple-300 text-xs font-semibold rounded-xl transition-all">
               <ScrollText className="w-3.5 h-3.5" /> Baseline Review
             </Link>
-            <Link to={`/projects/${id}/tracker`} className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-rose-600/20 hover:bg-rose-600/30 border border-rose-500/40 text-rose-300 text-xs font-semibold rounded-xl transition-all">
+            <Link to={`/projects/${id}/tracker`} className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-rose-600/20 hover:bg-rose-600/30 border border-rose-500/40 text-rose-600 dark:text-rose-300 text-xs font-semibold rounded-xl transition-all">
               <Activity className="w-3.5 h-3.5" /> Risk Tracker
             </Link>
-            <Link to={`/projects/${id}/members`} className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-teal-600/20 hover:bg-teal-600/30 border border-teal-500/40 text-teal-300 text-xs font-semibold rounded-xl transition-all">
+            <Link to={`/projects/${id}/members`} className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-teal-600/20 hover:bg-teal-600/30 border border-teal-500/40 text-teal-600 dark:text-teal-300 text-xs font-semibold rounded-xl transition-all">
               <Users className="w-3.5 h-3.5" /> Members
             </Link>
           </div>
@@ -227,7 +227,7 @@ export const ProjectOverviewPage: React.FC = () => {
             } animate-pulse`} />
             Project Status: {rag.label}
           </span>
-          <span className="text-xs text-gray-400 flex-1">
+          <span className="text-xs text-text-muted flex-1">
             {rag.label === "SETTING UP"
               ? "Project is in onboarding phase. Please upload contract documents and approve the scope baseline to begin monitoring."
               : rag.label === "HEALTHY"
@@ -243,32 +243,32 @@ export const ProjectOverviewPage: React.FC = () => {
         <div className="grid grid-cols-12 gap-5">
 
           {/* Health Score Gauge */}
-          <div className="col-span-12 md:col-span-3 bg-gray-900/50 border border-gray-800 rounded-2xl p-5 flex flex-col items-center justify-center text-center backdrop-blur-md relative z-10 hover:z-30 transition-all">
-            <div className="flex items-center gap-1.5 mb-3 text-gray-500 relative">
+          <div className="col-span-12 md:col-span-3 bg-bg-card/50 border border-border-subtle rounded-2xl p-5 flex flex-col items-center justify-center text-center backdrop-blur-md relative z-10 hover:z-30 transition-all">
+            <div className="flex items-center gap-1.5 mb-3 text-text-muted relative">
               <p className="text-[10px] font-bold uppercase tracking-widest">Project Health Score</p>
-              <div className="relative group flex items-center cursor-help hover:text-cyan-400 transition-colors">
+              <div className="relative group flex items-center cursor-help hover:text-cyan-600 dark:text-cyan-400 transition-colors">
                 <Info className="w-3.5 h-3.5" />
                 
                 {/* Tooltip Content */}
-                <div className="absolute left-1/2 -translate-x-1/2 md:left-0 md:translate-x-0 top-full mt-2 w-72 p-4 bg-[#0b0e17] border border-gray-800 rounded-xl shadow-2xl backdrop-blur-md opacity-0 translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 z-50 text-left">
-                  <h4 className="font-bold text-xs text-[#00e5ff] mb-2 border-b border-gray-850 pb-1 flex items-center gap-1.5">
+                <div className="absolute left-1/2 -translate-x-1/2 md:left-0 md:translate-x-0 top-full mt-2 w-72 p-4 bg-bg-panel border border-border-subtle rounded-xl shadow-2xl backdrop-blur-md opacity-0 translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 z-50 text-left">
+                  <h4 className="font-bold text-xs text-[#00e5ff] mb-2 border-b border-border-subtle pb-1 flex items-center gap-1.5">
                     Health Score Logic & Weights
                   </h4>
-                  <div className="space-y-3 text-[10px] text-gray-300">
+                  <div className="space-y-3 text-[10px] text-text-secondary">
                     <div>
-                      <span className="font-semibold text-white block mb-0.5">Setup Phase (Onboarding)</span>
-                      <ul className="list-disc pl-4 space-y-0.5 text-gray-400 font-medium">
-                        <li><strong className="text-white">60 pts</strong>: Initial Documents (EL & IFA) processed.</li>
-                        <li><strong className="text-white">40 pts</strong>: Baseline approved (20 pts if extracted but pending review).</li>
+                      <span className="font-semibold text-text-primary block mb-0.5">Setup Phase (Onboarding)</span>
+                      <ul className="list-disc pl-4 space-y-0.5 text-text-muted font-medium">
+                        <li><strong className="text-text-primary">60 pts</strong>: Initial Documents (EL & IFA) processed.</li>
+                        <li><strong className="text-text-primary">40 pts</strong>: Baseline approved (20 pts if extracted but pending review).</li>
                       </ul>
                     </div>
 
                     <div>
-                      <span className="font-semibold text-white block mb-0.5">Execution Phase (Active)</span>
-                      <ul className="list-disc pl-4 space-y-0.5 text-gray-400 font-medium">
+                      <span className="font-semibold text-text-primary block mb-0.5">Execution Phase (Active)</span>
+                      <ul className="list-disc pl-4 space-y-0.5 text-text-muted font-medium">
                         <li>Starts at 100 points.</li>
-                        <li>Deducts up to <strong className="text-white">60 pts</strong> based on the proportion of unresolved risks.</li>
-                        <li>Deducts up to <strong className="text-white">40 pts</strong> for timeline delays (40 pts if past end date, 20 pts if within 14 days of end date).</li>
+                        <li>Deducts up to <strong className="text-text-primary">60 pts</strong> based on the proportion of unresolved risks.</li>
+                        <li>Deducts up to <strong className="text-text-primary">40 pts</strong> for timeline delays (40 pts if past end date, 20 pts if within 14 days of end date).</li>
                       </ul>
                     </div>
                   </div>
@@ -279,7 +279,7 @@ export const ProjectOverviewPage: React.FC = () => {
               <HealthRing score={healthScore} color={rag.ring} />
               <div className="absolute inset-0 flex flex-col items-center justify-center">
                 <span className={`text-3xl font-black ${rag.text}`}>{healthScore}</span>
-                <span className="text-[10px] text-gray-500 font-semibold">/ 100</span>
+                <span className="text-[10px] text-text-muted font-semibold">/ 100</span>
               </div>
             </div>
             <span className={`mt-2 text-xs font-black tracking-widest uppercase ${rag.labelColor}`}>{rag.label}</span>
@@ -356,11 +356,11 @@ export const ProjectOverviewPage: React.FC = () => {
 
                 return rows.map((item) => (
                   <div key={item.label} className="flex items-center justify-between text-[10px]">
-                    <span className="text-gray-500">{item.label}</span>
+                    <span className="text-text-muted">{item.label}</span>
                     <span className={`flex items-center gap-1 font-semibold ${
-                      item.locked ? "text-gray-500" :
+                      item.locked ? "text-text-muted" :
                       item.ok ? "text-emerald-400" : 
-                      item.status.startsWith("Pending") || item.status === "Due Soon" ? "text-amber-400" : "text-rose-400"
+                      item.status.startsWith("Pending") || item.status === "Due Soon" ? "text-amber-500 dark:text-amber-400" : "text-rose-500 dark:text-rose-400"
                     }`}>
                       {item.locked ? (
                         <>
@@ -388,71 +388,71 @@ export const ProjectOverviewPage: React.FC = () => {
           {/* KPI Cards 2×2 */}
           <div className="col-span-12 md:col-span-9 grid grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Documents */}
-            <div className="bg-gray-900/50 border border-gray-800 rounded-2xl p-5 backdrop-blur-md flex flex-col justify-between">
+            <div className="bg-bg-card/50 border border-border-subtle rounded-2xl p-5 backdrop-blur-md flex flex-col justify-between">
               <div className="flex justify-between items-start mb-2">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Documents</span>
-                <div className="p-1.5 bg-blue-500/10 rounded-lg"><FileText className="w-4 h-4 text-blue-400" /></div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-text-muted">Documents</span>
+                <div className="p-1.5 bg-blue-500/10 rounded-lg"><FileText className="w-4 h-4 text-blue-500 dark:text-blue-400" /></div>
               </div>
               <div>
-                <p className="text-3xl font-black text-white mb-2">{documents.length}</p>
-                <div className="space-y-1.5 text-[11px] border-t border-gray-850 pt-2">
-                  <div className="flex justify-between"><span className="text-gray-500">Contract Initiation</span><span className="text-cyan-400 font-bold">{initiationDocsCount}</span></div>
-                  <div className="flex justify-between"><span className="text-gray-500">Project Monitoring</span><span className="text-purple-400 font-bold">{monitoringDocsCount}</span></div>
-                  <div className="flex justify-between border-t border-gray-850/40 pt-1 mt-1"><span className="text-gray-500">Processed</span><span className="text-emerald-400 font-semibold">{docsUploaded}</span></div>
+                <p className="text-3xl font-black text-text-primary mb-2">{documents.length}</p>
+                <div className="space-y-1.5 text-[11px] border-t border-border-subtle pt-2">
+                  <div className="flex justify-between"><span className="text-text-muted">Contract Initiation</span><span className="text-cyan-600 dark:text-cyan-400 font-bold">{initiationDocsCount}</span></div>
+                  <div className="flex justify-between"><span className="text-text-muted">Project Monitoring</span><span className="text-purple-500 dark:text-purple-400 font-bold">{monitoringDocsCount}</span></div>
+                  <div className="flex justify-between border-t border-border-subtle pt-1 mt-1"><span className="text-text-muted">Processed</span><span className="text-emerald-400 font-semibold">{docsUploaded}</span></div>
                 </div>
               </div>
             </div>
 
             {/* Open Risks */}
-            <div className="bg-gray-900/50 border border-gray-800 rounded-2xl p-5 backdrop-blur-md flex flex-col justify-between">
+            <div className="bg-bg-card/50 border border-border-subtle rounded-2xl p-5 backdrop-blur-md flex flex-col justify-between">
               <div className="flex justify-between items-start mb-3">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Open Risks</span>
-                <div className="p-1.5 bg-rose-500/10 rounded-lg"><AlertTriangle className="w-4 h-4 text-rose-400" /></div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-text-muted">Open Risks</span>
+                <div className="p-1.5 bg-rose-500/10 rounded-lg"><AlertTriangle className="w-4 h-4 text-rose-500 dark:text-rose-400" /></div>
               </div>
               <div>
-                <p className={`text-3xl font-black mb-1 ${openRisks.length > 0 ? "text-rose-400" : "text-emerald-400"}`}>{openRisks.length}</p>
+                <p className={`text-3xl font-black mb-1 ${openRisks.length > 0 ? "text-rose-500 dark:text-rose-400" : "text-emerald-400"}`}>{openRisks.length}</p>
                 <div className="space-y-0.5 text-[11px]">
-                  <div className="flex justify-between"><span className="text-gray-500">Critical</span><span className={`font-semibold ${criticalRisks.length > 0 ? "text-rose-400" : "text-gray-500"}`}>{criticalRisks.length}</span></div>
-                  <div className="flex justify-between"><span className="text-gray-500">Resolved</span><span className="text-emerald-400 font-semibold">{resolvedRisks.length}</span></div>
+                  <div className="flex justify-between"><span className="text-text-muted">Critical</span><span className={`font-semibold ${criticalRisks.length > 0 ? "text-rose-500 dark:text-rose-400" : "text-text-muted"}`}>{criticalRisks.length}</span></div>
+                  <div className="flex justify-between"><span className="text-text-muted">Resolved</span><span className="text-emerald-400 font-semibold">{resolvedRisks.length}</span></div>
                 </div>
               </div>
             </div>
 
             {/* Baseline */}
-            <div className="bg-gray-900/50 border border-gray-800 rounded-2xl p-5 backdrop-blur-md flex flex-col justify-between">
+            <div className="bg-bg-card/50 border border-border-subtle rounded-2xl p-5 backdrop-blur-md flex flex-col justify-between">
               <div className="flex justify-between items-start mb-3">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Baseline</span>
-                <div className="p-1.5 bg-purple-500/10 rounded-lg"><Shield className="w-4 h-4 text-purple-400" /></div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-text-muted">Baseline</span>
+                <div className="p-1.5 bg-purple-500/10 rounded-lg"><Shield className="w-4 h-4 text-purple-500 dark:text-purple-400" /></div>
               </div>
               <div>
-                <p className={`text-3xl font-black mb-1 ${baselineApproved ? "text-emerald-400" : "text-amber-400"}`}>{totalItems}</p>
+                <p className={`text-3xl font-black mb-1 ${baselineApproved ? "text-emerald-400" : "text-amber-500 dark:text-amber-400"}`}>{totalItems}</p>
                 <div className="space-y-0.5 text-[11px]">
-                  <div className="flex justify-between"><span className="text-gray-500">In Scope</span><span className="text-emerald-400 font-semibold">{inScopeItems.length}</span></div>
-                  <div className="flex justify-between"><span className="text-gray-500">Status</span>
-                    <span className={`font-semibold ${baselineApproved ? "text-emerald-400" : "text-amber-400"}`}>{baselineApproved ? "Approved" : baseline ? "Draft" : "None"}</span>
+                  <div className="flex justify-between"><span className="text-text-muted">In Scope</span><span className="text-emerald-400 font-semibold">{inScopeItems.length}</span></div>
+                  <div className="flex justify-between"><span className="text-text-muted">Status</span>
+                    <span className={`font-semibold ${baselineApproved ? "text-emerald-400" : "text-amber-500 dark:text-amber-400"}`}>{baselineApproved ? "Approved" : baseline ? "Draft" : "None"}</span>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Timeline */}
-            <div className="bg-gray-900/50 border border-gray-800 rounded-2xl p-5 backdrop-blur-md flex flex-col justify-between">
+            <div className="bg-bg-card/50 border border-border-subtle rounded-2xl p-5 backdrop-blur-md flex flex-col justify-between">
               <div className="flex justify-between items-start mb-3">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Timeline</span>
-                <div className="p-1.5 bg-teal-500/10 rounded-lg"><Calendar className="w-4 h-4 text-teal-400" /></div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-text-muted">Timeline</span>
+                <div className="p-1.5 bg-teal-500/10 rounded-lg"><Calendar className="w-4 h-4 text-teal-500 dark:text-teal-400" /></div>
               </div>
               <div>
                 {daysRemaining !== null ? (
                   <>
-                    <p className={`text-3xl font-black mb-1 ${daysRemaining < 0 ? "text-rose-400" : daysRemaining < 14 ? "text-amber-400" : "text-teal-400"}`}>
+                    <p className={`text-3xl font-black mb-1 ${daysRemaining < 0 ? "text-rose-500 dark:text-rose-400" : daysRemaining < 14 ? "text-amber-500 dark:text-amber-400" : "text-teal-500 dark:text-teal-400"}`}>
                       {Math.abs(daysRemaining)}
                     </p>
-                    <p className="text-[11px] text-gray-500">{daysRemaining < 0 ? "days overdue" : "days remaining"}</p>
+                    <p className="text-[11px] text-text-muted">{daysRemaining < 0 ? "days overdue" : "days remaining"}</p>
                   </>
                 ) : (
                   <>
                     <p className="text-3xl font-black mb-1 text-gray-600">—</p>
-                    <p className="text-[11px] text-gray-500">No end date set</p>
+                    <p className="text-[11px] text-text-muted">No end date set</p>
                   </>
                 )}
                 {project.start_date && (
@@ -464,28 +464,28 @@ export const ProjectOverviewPage: React.FC = () => {
             </div>
 
             {/* Members */}
-            <div className="col-span-2 lg:col-span-2 bg-gray-900/50 border border-gray-800 rounded-2xl p-5 backdrop-blur-md flex flex-col justify-between">
+            <div className="col-span-2 lg:col-span-2 bg-bg-card/50 border border-border-subtle rounded-2xl p-5 backdrop-blur-md flex flex-col justify-between">
               <div className="flex justify-between items-start mb-3">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Team Size</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-text-muted">Team Size</span>
                 <div className="p-1.5 bg-indigo-500/10 rounded-lg"><Users className="w-4 h-4 text-indigo-400" /></div>
               </div>
               <div className="flex items-end gap-4">
                 <div>
-                  <p className="text-3xl font-black text-white mb-1">{members.length}</p>
-                  <p className="text-[11px] text-gray-500">Assigned members</p>
+                  <p className="text-3xl font-black text-text-primary mb-1">{members.length}</p>
+                  <p className="text-[11px] text-text-muted">Assigned members</p>
                 </div>
                 <div className="flex-1 space-y-0.5 text-[11px]">
-                  <div className="flex justify-between"><span className="text-gray-500">Stakeholders</span><span className="text-indigo-400 font-semibold">{members.filter(m => m.role === "STAKEHOLDER").length}</span></div>
-                  <div className="flex justify-between"><span className="text-gray-500">Team Leads</span><span className="text-teal-400 font-semibold">{members.filter(m => m.role === "TEAM_LEAD").length}</span></div>
-                  <div className="flex justify-between"><span className="text-gray-500">Custom</span><span className="text-gray-400 font-semibold">{members.filter(m => m.role !== "STAKEHOLDER" && m.role !== "TEAM_LEAD").length}</span></div>
+                  <div className="flex justify-between"><span className="text-text-muted">Stakeholders</span><span className="text-indigo-400 font-semibold">{members.filter(m => m.role === "STAKEHOLDER").length}</span></div>
+                  <div className="flex justify-between"><span className="text-text-muted">Team Leads</span><span className="text-teal-500 dark:text-teal-400 font-semibold">{members.filter(m => m.role === "TEAM_LEAD").length}</span></div>
+                  <div className="flex justify-between"><span className="text-text-muted">Custom</span><span className="text-text-muted font-semibold">{members.filter(m => m.role !== "STAKEHOLDER" && m.role !== "TEAM_LEAD").length}</span></div>
                 </div>
               </div>
             </div>
 
             {/* Project Status */}
-            <div className="col-span-2 lg:col-span-2 bg-gray-900/50 border border-gray-800 rounded-2xl p-5 backdrop-blur-md flex flex-col justify-between">
+            <div className="col-span-2 lg:col-span-2 bg-bg-card/50 border border-border-subtle rounded-2xl p-5 backdrop-blur-md flex flex-col justify-between">
               <div className="flex justify-between items-start mb-3">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Project Status</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-text-muted">Project Status</span>
                 <div className="p-1.5 bg-emerald-500/10 rounded-lg"><Zap className="w-4 h-4 text-emerald-400" /></div>
               </div>
               <div className="flex items-end gap-4">
@@ -494,15 +494,15 @@ export const ProjectOverviewPage: React.FC = () => {
                     project.monitoring_status === "ACTIVE"
                       ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
                       : project.monitoring_status === "DRAFT"
-                      ? "bg-gray-500/15 text-gray-400 border border-gray-500/30"
-                      : "bg-amber-500/15 text-amber-400 border border-amber-500/30"
+                      ? "bg-gray-500/15 text-text-muted border border-gray-500/30"
+                      : "bg-amber-500/15 text-amber-500 dark:text-amber-400 border border-amber-500/30"
                   }`}>
                     <span className={`w-1.5 h-1.5 rounded-full inline-block ${
                       project.monitoring_status === "ACTIVE" ? "bg-emerald-400 animate-pulse" : "bg-amber-400"
                     }`} />
                     {project.monitoring_status}
                   </span>
-                  <p className="text-[11px] text-gray-500 mt-2">
+                  <p className="text-[11px] text-text-muted mt-2">
                     {project.monitoring_status === "ACTIVE"
                       ? "Project is live and being monitored"
                       : project.monitoring_status === "DRAFT"
@@ -519,14 +519,14 @@ export const ProjectOverviewPage: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
           {/* DOCUMENT CHECKLIST */}
-          <div className="bg-gray-900/50 border border-gray-800 rounded-2xl p-5 backdrop-blur-md flex flex-col justify-between h-full">
+          <div className="bg-bg-card/50 border border-border-subtle rounded-2xl p-5 backdrop-blur-md flex flex-col justify-between h-full">
             <div>
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                  <FileCheck2 className="w-4 h-4 text-blue-400" />
+                <h3 className="text-sm font-bold text-text-primary flex items-center gap-2">
+                  <FileCheck2 className="w-4 h-4 text-blue-500 dark:text-blue-400" />
                   Document Checklist
                 </h3>
-                <Link to={`/projects/${id}/cockpit`} className="text-[11px] text-teal-400 hover:text-teal-300 flex items-center gap-1 font-semibold">
+                <Link to={`/projects/${id}/cockpit`} className="text-[11px] text-teal-500 dark:text-teal-400 hover:text-teal-600 dark:text-teal-300 flex items-center gap-1 font-semibold">
                   Upload <ArrowRight className="w-3 h-3" />
                 </Link>
               </div>
@@ -539,14 +539,14 @@ export const ProjectOverviewPage: React.FC = () => {
                   { label: "Status Report", type: "STATUS_REPORT", present: hasStatusReport, section: "Execution" },
                 ].map((item) => (
                   <div key={item.type} className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${
-                    item.present ? "bg-emerald-950/20 border-emerald-500/20" : "bg-gray-800/50 border-gray-700/50"
+                    item.present ? "bg-emerald-950/20 border-emerald-500/20" : "bg-bg-hover/50 border-border-strong/50"
                   }`}>
                     {item.present
                       ? <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
                       : <Circle className="w-4 h-4 text-gray-600 flex-shrink-0" />
                     }
                     <div className="flex-1 min-w-0">
-                      <p className={`text-xs font-semibold truncate ${item.present ? "text-gray-200" : "text-gray-500"}`}>{item.label}</p>
+                      <p className={`text-xs font-semibold truncate ${item.present ? "text-text-primary" : "text-text-muted"}`}>{item.label}</p>
                       <p className="text-[10px] text-gray-600">{item.section}</p>
                     </div>
                     {item.present && (
@@ -558,16 +558,16 @@ export const ProjectOverviewPage: React.FC = () => {
             </div>
 
             {documents.length > 0 && (
-              <div className="mt-4 pt-3 border-t border-gray-850">
-                <p className="text-[10px] text-gray-500 font-medium mb-2">All Uploaded Files ({documents.length})</p>
+              <div className="mt-4 pt-3 border-t border-border-subtle">
+                <p className="text-[10px] text-text-muted font-medium mb-2">All Uploaded Files ({documents.length})</p>
                 <div className="space-y-1 max-h-[100px] overflow-y-auto pr-1 custom-scrollbar">
                   {documents.slice(0, 6).map((doc) => (
                     <div key={doc.id} className="flex items-center justify-between text-[10px]">
-                      <span className="text-gray-400 truncate max-w-[150px]">{doc.document_name}</span>
+                      <span className="text-text-muted truncate max-w-[150px]">{doc.document_name}</span>
                       <span className={`font-semibold px-1 rounded ${
                         doc.processing_status === "COMPLETED" ? "text-emerald-400" :
-                        doc.processing_status === "PROCESSING" ? "text-amber-400 animate-pulse" :
-                        "text-gray-500"
+                        doc.processing_status === "PROCESSING" ? "text-amber-500 dark:text-amber-400 animate-pulse" :
+                        "text-text-muted"
                       }`}>{doc.processing_status}</span>
                     </div>
                   ))}
@@ -577,14 +577,14 @@ export const ProjectOverviewPage: React.FC = () => {
           </div>
 
           {/* SCOPE BASELINE */}
-          <div className="bg-gray-900/50 border border-gray-800 rounded-2xl p-5 backdrop-blur-md flex flex-col justify-between h-full">
+          <div className="bg-bg-card/50 border border-border-subtle rounded-2xl p-5 backdrop-blur-md flex flex-col justify-between h-full">
             <div>
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                  <Target className="w-4 h-4 text-purple-400" />
+                <h3 className="text-sm font-bold text-text-primary flex items-center gap-2">
+                  <Target className="w-4 h-4 text-purple-500 dark:text-purple-400" />
                   Scope Baseline
                 </h3>
-                <Link to={`/projects/${id}/baseline`} className="text-[11px] text-purple-400 hover:text-purple-300 flex items-center gap-1 font-semibold">
+                <Link to={`/projects/${id}/baseline`} className="text-[11px] text-purple-500 dark:text-purple-400 hover:text-purple-600 dark:text-purple-300 flex items-center gap-1 font-semibold">
                   Review <ArrowRight className="w-3 h-3" />
                 </Link>
               </div>
@@ -592,9 +592,9 @@ export const ProjectOverviewPage: React.FC = () => {
               {!baseline ? (
                 <div className="py-8 text-center">
                   <ScrollText className="w-8 h-8 text-gray-700 mx-auto mb-2" />
-                  <p className="text-xs text-gray-500">No baseline extracted yet.</p>
+                  <p className="text-xs text-text-muted">No baseline extracted yet.</p>
                   {isEM && (
-                    <Link to={`/projects/${id}/baseline`} className="text-[11px] text-purple-400 hover:text-purple-300 font-semibold mt-2 inline-flex items-center gap-1">
+                    <Link to={`/projects/${id}/baseline`} className="text-[11px] text-purple-500 dark:text-purple-400 hover:text-purple-600 dark:text-purple-300 font-semibold mt-2 inline-flex items-center gap-1">
                       Extract Baseline <ArrowRight className="w-3 h-3" />
                     </Link>
                   )}
@@ -605,11 +605,11 @@ export const ProjectOverviewPage: React.FC = () => {
                     <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider ${
                       baselineApproved
                         ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
-                        : "bg-amber-500/15 text-amber-400 border border-amber-500/30"
+                        : "bg-amber-500/15 text-amber-500 dark:text-amber-400 border border-amber-500/30"
                     }`}>
                       {baseline.status}
                     </span>
-                    <span className="text-[10px] text-gray-500">{totalItems} scope items</span>
+                    <span className="text-[10px] text-text-muted">{totalItems} scope items</span>
                   </div>
 
                   {/* Stacked bar */}
@@ -628,8 +628,8 @@ export const ProjectOverviewPage: React.FC = () => {
                       </div>
                       <div className="flex justify-between text-[10px]">
                         <span className="text-emerald-400 font-semibold">In Scope: {inScopeItems.length}</span>
-                        <span className="text-rose-400 font-semibold">Out: {outOfScopeItems.length}</span>
-                        <span className="text-amber-400 font-semibold">Uncertain: {uncertainItems.length}</span>
+                        <span className="text-rose-500 dark:text-rose-400 font-semibold">Out: {outOfScopeItems.length}</span>
+                        <span className="text-amber-500 dark:text-amber-400 font-semibold">Uncertain: {uncertainItems.length}</span>
                       </div>
                     </div>
                   )}
@@ -637,18 +637,18 @@ export const ProjectOverviewPage: React.FC = () => {
                   {/* Top scope items preview */}
                   <div className="space-y-2 max-h-[250px] overflow-y-auto pr-1 custom-scrollbar">
                     {(showAllScopeItems ? inScopeItems : inScopeItems.slice(0, 3)).map((item: any) => (
-                      <div key={item.id} className="flex items-start gap-2 p-2 bg-gray-800/50 rounded-lg border border-gray-700/30">
+                      <div key={item.id} className="flex items-start gap-2 p-2 bg-bg-hover/50 rounded-lg border border-border-strong/30">
                         <CheckCheck className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0 mt-0.5" />
                         <div>
-                          <p className="text-[11px] font-semibold text-gray-200 leading-tight">{item.name}</p>
-                          {item.description && <p className="text-[10px] text-gray-500 truncate">{item.description?.slice(0, 55)}…</p>}
+                          <p className="text-[11px] font-semibold text-text-primary leading-tight">{item.name}</p>
+                          {item.description && <p className="text-[10px] text-text-muted truncate">{item.description?.slice(0, 55)}…</p>}
                         </div>
                       </div>
                     ))}
                     {inScopeItems.length > 3 && (
                       <button
                         onClick={() => setShowAllScopeItems(!showAllScopeItems)}
-                        className="w-full text-[10px] text-purple-400 text-center font-semibold mt-1 hover:text-purple-300 transition-colors cursor-pointer focus:outline-none block"
+                        className="w-full text-[10px] text-purple-500 dark:text-purple-400 text-center font-semibold mt-1 hover:text-purple-600 dark:text-purple-300 transition-colors cursor-pointer focus:outline-none block"
                       >
                         {showAllScopeItems ? "Show less" : `+${inScopeItems.length - 3} more in scope items`}
                       </button>
@@ -660,14 +660,14 @@ export const ProjectOverviewPage: React.FC = () => {
           </div>
 
           {/* RISK SUMMARY */}
-          <div className="bg-gray-900/50 border border-gray-800 rounded-2xl p-5 backdrop-blur-md flex flex-col justify-between h-full">
+          <div className="bg-bg-card/50 border border-border-subtle rounded-2xl p-5 backdrop-blur-md flex flex-col justify-between h-full">
             <div>
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4 text-rose-400" />
+                <h3 className="text-sm font-bold text-text-primary flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 text-rose-500 dark:text-rose-400" />
                   Risk Summary
                 </h3>
-                <Link to={`/projects/${id}/tracker`} className="text-[11px] text-rose-400 hover:text-rose-300 flex items-center gap-1 font-semibold">
+                <Link to={`/projects/${id}/tracker`} className="text-[11px] text-rose-500 dark:text-rose-400 hover:text-rose-600 dark:text-rose-300 flex items-center gap-1 font-semibold">
                   Tracker <ArrowRight className="w-3 h-3" />
                 </Link>
               </div>
@@ -675,24 +675,24 @@ export const ProjectOverviewPage: React.FC = () => {
               {risks.length === 0 ? (
                 <div className="py-8 text-center">
                   <Shield className="w-8 h-8 text-gray-700 mx-auto mb-2" />
-                  <p className="text-xs text-gray-500">No risk findings recorded yet.</p>
+                  <p className="text-xs text-text-muted">No risk findings recorded yet.</p>
                 </div>
               ) : (
                 <>
                   {/* Severity breakdown bars */}
                   <div className="space-y-2.5 mb-4">
                     {[
-                      { label: "Critical / High", count: riskHigh, total: openRisks.length, color: "bg-rose-500", textColor: "text-rose-400" },
-                      { label: "Medium", count: riskMed, total: openRisks.length, color: "bg-amber-500", textColor: "text-amber-400" },
-                      { label: "Low", count: riskLow, total: openRisks.length, color: "bg-blue-500", textColor: "text-blue-400" },
+                      { label: "Critical / High", count: riskHigh, total: openRisks.length, color: "bg-rose-500", textColor: "text-rose-500 dark:text-rose-400" },
+                      { label: "Medium", count: riskMed, total: openRisks.length, color: "bg-amber-500", textColor: "text-amber-500 dark:text-amber-400" },
+                      { label: "Low", count: riskLow, total: openRisks.length, color: "bg-blue-500", textColor: "text-blue-500 dark:text-blue-400" },
                       { label: "Resolved", count: resolvedRisks.length, total: risks.length, color: "bg-emerald-500", textColor: "text-emerald-400" },
                     ].map((bar) => (
                       <div key={bar.label}>
                         <div className="flex justify-between text-[10px] mb-1">
-                          <span className="text-gray-500">{bar.label}</span>
+                          <span className="text-text-muted">{bar.label}</span>
                           <span className={`font-bold ${bar.textColor}`}>{bar.count}/{bar.total}</span>
                         </div>
-                        <div className="w-full h-1.5 bg-gray-800 rounded-full overflow-hidden">
+                        <div className="w-full h-1.5 bg-bg-hover rounded-full overflow-hidden">
                           <div
                             className={`h-full ${bar.color} rounded-full transition-all duration-700`}
                             style={{ width: bar.total > 0 ? `${(bar.count / bar.total) * 100}%` : "0%" }}
@@ -705,14 +705,14 @@ export const ProjectOverviewPage: React.FC = () => {
                   {/* Recent risks */}
                   <div className="space-y-2 max-h-[250px] overflow-y-auto pr-1 custom-scrollbar">
                     {openRisks.slice(0, 4).map((risk) => (
-                      <div key={risk.id} className="flex items-start gap-2 p-2 bg-gray-800/50 rounded-lg border border-gray-700/30">
+                      <div key={risk.id} className="flex items-start gap-2 p-2 bg-bg-hover/50 rounded-lg border border-border-strong/30">
                         <span className={`inline-block mt-0.5 w-2 h-2 rounded-full flex-shrink-0 ${
                           risk.risk_level === "HIGH" || risk.risk_level === "CRITICAL" ? "bg-rose-400" :
                           risk.risk_level === "MEDIUM" ? "bg-amber-400" : "bg-blue-400"
                         }`} />
                         <div className="min-w-0">
-                          <p className="text-[11px] font-semibold text-gray-200 leading-tight truncate">{risk.title || risk.finding}</p>
-                          <p className="text-[10px] text-gray-500">{risk.risk_level}</p>
+                          <p className="text-[11px] font-semibold text-text-primary leading-tight truncate">{risk.title || risk.finding}</p>
+                          <p className="text-[10px] text-text-muted">{risk.risk_level}</p>
                         </div>
                       </div>
                     ))}
@@ -727,13 +727,13 @@ export const ProjectOverviewPage: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
 
           {/* TEAM MEMBERS */}
-          <div className="bg-gray-900/50 border border-gray-800 rounded-2xl p-5 backdrop-blur-md">
+          <div className="bg-bg-card/50 border border-border-subtle rounded-2xl p-5 backdrop-blur-md">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-bold text-white flex items-center gap-2">
+              <h3 className="text-sm font-bold text-text-primary flex items-center gap-2">
                 <Users className="w-4 h-4 text-indigo-400" />
                 Project Team
               </h3>
-              <Link to={`/projects/${id}/members`} className="text-[11px] text-teal-400 hover:text-teal-300 flex items-center gap-1 font-semibold">
+              <Link to={`/projects/${id}/members`} className="text-[11px] text-teal-500 dark:text-teal-400 hover:text-teal-600 dark:text-teal-300 flex items-center gap-1 font-semibold">
                 Manage <ArrowRight className="w-3 h-3" />
               </Link>
             </div>
@@ -741,9 +741,9 @@ export const ProjectOverviewPage: React.FC = () => {
             {members.length === 0 ? (
               <div className="py-6 text-center">
                 <Users className="w-8 h-8 text-gray-700 mx-auto mb-2" />
-                <p className="text-xs text-gray-500">No team members assigned.</p>
+                <p className="text-xs text-text-muted">No team members assigned.</p>
                 {isEM && (
-                  <Link to={`/projects/${id}/members`} className="text-[11px] text-teal-400 hover:text-teal-300 font-semibold mt-2 inline-flex items-center gap-1">
+                  <Link to={`/projects/${id}/members`} className="text-[11px] text-teal-500 dark:text-teal-400 hover:text-teal-600 dark:text-teal-300 font-semibold mt-2 inline-flex items-center gap-1">
                     Add Members <ArrowRight className="w-3 h-3" />
                   </Link>
                 )}
@@ -751,17 +751,17 @@ export const ProjectOverviewPage: React.FC = () => {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[280px] overflow-y-auto pr-1">
                 {members.map((member) => (
-                  <div key={member.id} className="flex items-center gap-3 p-3 bg-gray-800/50 rounded-xl border border-gray-700/30 hover:border-teal-500/30 transition-all">
+                  <div key={member.id} className="flex items-center gap-3 p-3 bg-bg-hover/50 rounded-xl border border-border-strong/30 hover:border-teal-500/30 transition-all">
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black flex-shrink-0 ${
                       member.role === "STAKEHOLDER" ? "bg-indigo-500/20 text-indigo-300" :
-                      member.role === "TEAM_LEAD" ? "bg-teal-500/20 text-teal-300" :
-                      "bg-gray-700 text-gray-300"
+                      member.role === "TEAM_LEAD" ? "bg-teal-500/20 text-teal-600 dark:text-teal-300" :
+                      "bg-bg-hover text-text-secondary"
                     }`}>
                       {member.name?.charAt(0)?.toUpperCase() ?? "?"}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-xs font-semibold text-gray-200 truncate">{member.name}</p>
-                      <p className="text-[10px] text-gray-500">{member.role?.replace("_", " ")}</p>
+                      <p className="text-xs font-semibold text-text-primary truncate">{member.name}</p>
+                      <p className="text-[10px] text-text-muted">{member.role?.replace("_", " ")}</p>
                       {member.responsibility && (
                         <p className="text-[10px] text-gray-600 truncate">{member.responsibility}</p>
                       )}
@@ -773,10 +773,10 @@ export const ProjectOverviewPage: React.FC = () => {
           </div>
 
           {/* WHAT NEEDS ATTENTION */}
-          <div className="bg-gray-900/50 border border-gray-800 rounded-2xl p-5 backdrop-blur-md">
+          <div className="bg-bg-card/50 border border-border-subtle rounded-2xl p-5 backdrop-blur-md">
             <div className="flex items-center gap-2 mb-4">
-              <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                <Zap className="w-4 h-4 text-amber-400" />
+              <h3 className="text-sm font-bold text-text-primary flex items-center gap-2">
+                <Zap className="w-4 h-4 text-amber-500 dark:text-amber-400" />
                 What Needs Attention
               </h3>
             </div>
@@ -848,16 +848,16 @@ export const ProjectOverviewPage: React.FC = () => {
                       : "bg-amber-950/20 border-amber-500/20"
                   }`}>
                     {item.level === "critical"
-                      ? <XCircle className="w-4 h-4 text-rose-400 flex-shrink-0 mt-0.5" />
-                      : <AlertCircle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+                      ? <XCircle className="w-4 h-4 text-rose-500 dark:text-rose-400 flex-shrink-0 mt-0.5" />
+                      : <AlertCircle className="w-4 h-4 text-amber-500 dark:text-amber-400 flex-shrink-0 mt-0.5" />
                     }
                     <div className="flex-1 min-w-0">
-                      <p className={`text-xs font-bold ${item.level === "critical" ? "text-rose-300" : "text-amber-300"}`}>{item.title}</p>
-                      <p className="text-[11px] text-gray-500">{item.desc}</p>
+                      <p className={`text-xs font-bold ${item.level === "critical" ? "text-rose-600 dark:text-rose-300" : "text-amber-300"}`}>{item.title}</p>
+                      <p className="text-[11px] text-text-muted">{item.desc}</p>
                     </div>
                     <Link to={item.action.to} className={`text-[10px] font-bold px-2.5 py-1 rounded-lg flex-shrink-0 transition-all ${
                       item.level === "critical"
-                        ? "bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 border border-rose-500/30"
+                        ? "bg-rose-500/20 text-rose-600 dark:text-rose-300 hover:bg-rose-500/30 border border-rose-500/30"
                         : "bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 border border-amber-500/30"
                     }`}>
                       {item.action.label}
@@ -877,7 +877,7 @@ export const ProjectOverviewPage: React.FC = () => {
                 <div className="py-8 text-center">
                   <CheckCircle2 className="w-10 h-10 text-emerald-400 mx-auto mb-3" />
                   <p className="text-sm font-bold text-emerald-400">All Clear!</p>
-                  <p className="text-xs text-gray-500 mt-1">No immediate actions required. Project is healthy.</p>
+                  <p className="text-xs text-text-muted mt-1">No immediate actions required. Project is healthy.</p>
                 </div>
               )}
             </div>
@@ -888,14 +888,14 @@ export const ProjectOverviewPage: React.FC = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
             { label: "Document Cockpit", desc: "Upload & manage project documents", to: `/projects/${id}/cockpit`, icon: <UploadCloud className="w-5 h-5" />, color: "from-blue-600/20 to-blue-500/5 border-blue-500/20 text-blue-300" },
-            { label: "Baseline Review", desc: "Scope items & approval workflow", to: `/projects/${id}/baseline`, icon: <ScrollText className="w-5 h-5" />, color: "from-purple-600/20 to-purple-500/5 border-purple-500/20 text-purple-300" },
-            { label: "Risk Tracker", desc: "Monitor & resolve scope risks", to: `/projects/${id}/tracker`, icon: <Activity className="w-5 h-5" />, color: "from-rose-600/20 to-rose-500/5 border-rose-500/20 text-rose-300" },
-            { label: "Team Members", desc: "Stakeholders & team leads", to: `/projects/${id}/members`, icon: <Users className="w-5 h-5" />, color: "from-teal-600/20 to-teal-500/5 border-teal-500/20 text-teal-300" },
+            { label: "Baseline Review", desc: "Scope items & approval workflow", to: `/projects/${id}/baseline`, icon: <ScrollText className="w-5 h-5" />, color: "from-purple-600/20 to-purple-500/5 border-purple-500/20 text-purple-600 dark:text-purple-300" },
+            { label: "Risk Tracker", desc: "Monitor & resolve scope risks", to: `/projects/${id}/tracker`, icon: <Activity className="w-5 h-5" />, color: "from-rose-600/20 to-rose-500/5 border-rose-500/20 text-rose-600 dark:text-rose-300" },
+            { label: "Team Members", desc: "Stakeholders & team leads", to: `/projects/${id}/members`, icon: <Users className="w-5 h-5" />, color: "from-teal-600/20 to-teal-500/5 border-teal-500/20 text-teal-600 dark:text-teal-300" },
           ].map((item) => (
             <Link key={item.to} to={item.to} className={`bg-gradient-to-br ${item.color} border rounded-2xl p-4 hover:scale-[1.02] transition-all duration-200 group`}>
               <div className="mb-2 opacity-80 group-hover:opacity-100">{item.icon}</div>
-              <p className="text-xs font-bold text-white mb-0.5">{item.label}</p>
-              <p className="text-[10px] text-gray-500">{item.desc}</p>
+              <p className="text-xs font-bold text-text-primary mb-0.5">{item.label}</p>
+              <p className="text-[10px] text-text-muted">{item.desc}</p>
             </Link>
           ))}
         </div>

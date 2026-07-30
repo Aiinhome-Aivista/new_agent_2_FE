@@ -308,22 +308,22 @@ export const AIAssistantPage: React.FC = () => {
   }
 
   return (
-    <div className="flex-1 flex flex-col md:flex-row bg-[#080b14] h-[calc(100vh-4rem)] md:h-screen max-h-[calc(100vh-4rem)] md:max-h-screen overflow-hidden">
+    <div className="flex-1 flex flex-col md:flex-row bg-bg-base h-[calc(100vh-4rem)] md:h-screen max-h-[calc(100vh-4rem)] md:max-h-screen overflow-hidden">
       
       {/* LEFT PANEL: Session Directory */}
-      <div className="w-full md:w-80 bg-gray-900/30 border-r border-white/5 flex flex-col h-1/3 md:h-full flex-shrink-0">
+      <div className="w-full md:w-80 bg-bg-card/30 border-r border-border-subtle flex flex-col h-1/3 md:h-full flex-shrink-0">
         
         {/* Sidebar Header */}
-        <div className="p-4 border-b border-white/5 flex items-center justify-between">
+        <div className="p-4 border-b border-border-subtle flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <MessageSquare className="w-5 h-5 text-cyan-400" />
-            <h2 className="font-display font-bold text-white text-base">Chat History</h2>
+            <MessageSquare className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
+            <h2 className="font-display font-bold text-text-primary text-base">Chat History</h2>
           </div>
           <button
             onClick={handleCreateSession}
             disabled={creatingSession}
             title="Start New Chat"
-            className="p-2 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 rounded-xl transition-all cursor-pointer disabled:opacity-50"
+            className="p-2 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-600 dark:text-cyan-400 rounded-xl transition-all cursor-pointer disabled:opacity-50"
           >
             {creatingSession ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
           </button>
@@ -333,10 +333,10 @@ export const AIAssistantPage: React.FC = () => {
         <div className="flex-1 overflow-y-auto p-3 space-y-2">
           {sessions.length === 0 ? (
             <div className="text-center py-10">
-              <p className="text-xs text-gray-500">No chat sessions available.</p>
+              <p className="text-xs text-text-muted">No chat sessions available.</p>
               <button 
                 onClick={handleCreateSession} 
-                className="mt-3 text-xs text-cyan-400 hover:underline font-semibold"
+                className="mt-3 text-xs text-cyan-600 dark:text-cyan-400 hover:underline font-semibold"
               >
                 Create one now
               </button>
@@ -349,16 +349,16 @@ export const AIAssistantPage: React.FC = () => {
                 className={`group p-3 rounded-xl border transition-all duration-200 cursor-pointer flex items-center justify-between ${
                   currentSessionId === session.id
                     ? "bg-cyan-950/30 border-cyan-500/30 shadow-lg shadow-cyan-500/5"
-                    : "bg-gray-800/20 border-white/5 hover:bg-gray-800/40 hover:border-white/10"
+                    : "bg-bg-hover/20 border-border-subtle hover:bg-bg-hover/40 hover:border-border-strong"
                 }`}
               >
                 <div className="min-w-0 pr-2">
                   <p className={`text-xs font-semibold truncate ${
-                    currentSessionId === session.id ? "text-cyan-200" : "text-gray-300"
+                    currentSessionId === session.id ? "text-cyan-200" : "text-text-secondary"
                   }`}>
                     {session.session_name}
                   </p>
-                  <div className="flex items-center gap-1.5 mt-1 text-[10px] text-gray-500">
+                  <div className="flex items-center gap-1.5 mt-1 text-[10px] text-text-muted">
                     <Calendar className="w-3 h-3" />
                     <span>{new Date(session.created_at).toLocaleDateString(undefined, { dateStyle: 'short' })}</span>
                     <span>•</span>
@@ -368,7 +368,7 @@ export const AIAssistantPage: React.FC = () => {
                 
                 <button
                   onClick={(e) => handleDeleteSession(session.id, e)}
-                  className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-500/20 hover:text-red-400 rounded-lg text-gray-500 transition-all cursor-pointer"
+                  className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-500/20 hover:text-red-400 rounded-lg text-text-muted transition-all cursor-pointer"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>
@@ -385,18 +385,18 @@ export const AIAssistantPage: React.FC = () => {
           /* Empty Chat State */
           <div className="flex-1 flex flex-col items-center justify-center p-8 text-center max-w-xl mx-auto space-y-6">
             <div className="w-16 h-16 rounded-3xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center animate-bounce-slow">
-              <Bot className="w-8 h-8 text-cyan-400" />
+              <Bot className="w-8 h-8 text-cyan-600 dark:text-cyan-400" />
             </div>
             <div>
-              <h1 className="font-display text-2xl font-extrabold text-white">Project AI Assistant</h1>
-              <p className="text-gray-400 text-sm mt-2 leading-relaxed">
+              <h1 className="font-display text-2xl font-extrabold text-text-primary">Project AI Assistant</h1>
+              <p className="text-text-muted text-sm mt-2 leading-relaxed">
                 Ask any question about the project's contracts, baseline scope items, deliverable timelines, MOMs, or status updates. The AI retrieves context from both ChromaDB and MySQL for highly precise, source-cited responses.
               </p>
             </div>
 
             {/* Suggested prompts list */}
             <div className="w-full space-y-2 pt-4">
-              <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">Try asking:</p>
+              <p className="text-xs font-semibold uppercase tracking-wider text-text-muted mb-2">Try asking:</p>
               <div className="grid grid-cols-1 gap-2">
                 {suggestions.map((p, idx) => (
                   <button
@@ -407,7 +407,7 @@ export const AIAssistantPage: React.FC = () => {
                         handleSendMessage(p, newId);
                       }
                     }}
-                    className="text-left px-4 py-2.5 bg-gray-800/30 hover:bg-gray-800/60 border border-white/5 hover:border-cyan-500/20 text-gray-300 hover:text-cyan-200 text-xs rounded-xl transition-all cursor-pointer active:scale-[0.99]"
+                    className="text-left px-4 py-2.5 bg-bg-hover/30 hover:bg-bg-hover/60 border border-border-subtle hover:border-cyan-500/20 text-text-secondary hover:text-cyan-200 text-xs rounded-xl transition-all cursor-pointer active:scale-[0.99]"
                   >
                     {p} &rarr;
                   </button>
@@ -419,12 +419,12 @@ export const AIAssistantPage: React.FC = () => {
           /* Active Chat Workspace */
           <>
             {/* Chat header */}
-            <div className="p-4 border-b border-white/5 bg-gray-900/10 flex items-center justify-between flex-shrink-0">
+            <div className="p-4 border-b border-border-subtle bg-bg-card/10 flex items-center justify-between flex-shrink-0">
               <div>
-                <h3 className="text-sm font-bold text-white">
+                <h3 className="text-sm font-bold text-text-primary">
                   {sessions.find(s => s.id === currentSessionId)?.session_name}
                 </h3>
-                <p className="text-[10px] text-cyan-400 font-semibold uppercase tracking-widest mt-0.5">
+                <p className="text-[10px] text-cyan-600 dark:text-cyan-400 font-semibold uppercase tracking-widest mt-0.5">
                   {project?.project_name || 'Project RAG Intelligence'}
                 </p>
               </div>
@@ -434,19 +434,19 @@ export const AIAssistantPage: React.FC = () => {
             <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
               {loadingMessages ? (
                 <div className="flex justify-center items-center h-40">
-                  <Loader2 className="w-6 h-6 animate-spin text-cyan-400" />
+                  <Loader2 className="w-6 h-6 animate-spin text-cyan-600 dark:text-cyan-400" />
                 </div>
               ) : messages.length === 0 ? (
                 <div className="text-center py-20 flex flex-col items-center justify-center space-y-4">
                   <Bot className="w-10 h-10 text-gray-600" />
-                  <p className="text-xs text-gray-500">Ask your first question about the project deliverables or scope contracts.</p>
+                  <p className="text-xs text-text-muted">Ask your first question about the project deliverables or scope contracts.</p>
                   
                   <div className="flex flex-wrap justify-center gap-2 max-w-lg mt-4">
                     {suggestions.map((p, idx) => (
                       <button
                         key={idx}
                         onClick={() => handleSendMessage(p)}
-                        className="px-3 py-1.5 bg-gray-900/50 hover:bg-gray-800 border border-white/5 hover:border-cyan-500/20 text-gray-300 hover:text-cyan-300 rounded-lg text-xs transition-all cursor-pointer"
+                        className="px-3 py-1.5 bg-bg-card/50 hover:bg-bg-hover border border-border-subtle hover:border-cyan-500/20 text-text-secondary hover:text-cyan-600 dark:text-cyan-300 rounded-lg text-xs transition-all cursor-pointer"
                       >
                         {p}
                       </button>
@@ -465,7 +465,7 @@ export const AIAssistantPage: React.FC = () => {
                     >
                       {/* Avatar */}
                       <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                        isUser ? 'bg-cyan-500/15 text-cyan-400' : 'bg-indigo-500/15 text-indigo-400'
+                        isUser ? 'bg-cyan-500/15 text-cyan-600 dark:text-cyan-400' : 'bg-indigo-500/15 text-indigo-400'
                       }`}>
                         {isUser ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
                       </div>
@@ -474,15 +474,15 @@ export const AIAssistantPage: React.FC = () => {
                       <div className="space-y-2">
                         <div className={`p-4 rounded-2xl text-sm leading-relaxed ${
                           isUser
-                            ? 'bg-gradient-to-r from-cyan-600/90 to-blue-600/90 text-white rounded-tr-none shadow-lg shadow-cyan-500/10'
-                            : 'bg-gray-800/60 border border-white/5 text-gray-200 rounded-tl-none'
+                            ? 'bg-gradient-to-r from-cyan-600/90 to-blue-600/90 text-text-primary rounded-tr-none shadow-lg shadow-cyan-500/10'
+                            : 'bg-bg-hover/60 border border-border-subtle text-text-primary rounded-tl-none'
                         }`}>
                           <div className="whitespace-pre-wrap">{formatMessageContent(msg.content)}</div>
                         </div>
 
                         {/* Citations Footer */}
                         {!isUser && msg.citations && msg.citations.length > 0 && (
-                          <div className="pl-2 pt-3 border-t border-white/5 mt-3 space-y-2">
+                          <div className="pl-2 pt-3 border-t border-border-subtle mt-3 space-y-2">
                             <span className="text-[10px] uppercase font-bold tracking-wider text-cyan-400/80 block">
                               References & Citations:
                             </span>
@@ -490,18 +490,18 @@ export const AIAssistantPage: React.FC = () => {
                               {Array.from(new Map(msg.citations.map(c => [c.document_name, c])).values()).map((cit, cidx) => (
                                 <div 
                                   key={cidx}
-                                  className="inline-flex items-center gap-3 bg-white/[0.03] border border-white/10 hover:border-cyan-500/30 rounded-xl px-3.5 py-2 transition-all duration-200 shadow-sm"
+                                  className="inline-flex items-center gap-3 bg-bg-hover border border-border-strong hover:border-cyan-500/30 rounded-xl px-3.5 py-2 transition-all duration-200 shadow-sm"
                                 >
                                   <div className="flex items-center gap-2">
-                                    <FileText className="w-4 h-4 text-cyan-400" />
-                                    <span className="text-xs font-bold text-gray-200">
+                                    <FileText className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
+                                    <span className="text-xs font-bold text-text-primary">
                                       {cit.document_name}
                                     </span>
                                   </div>
                                   {cit.document_id && (
                                     <button
                                       onClick={() => handleDownloadDoc(cit.document_id, cit.document_name)}
-                                      className="inline-flex items-center gap-1 px-2 py-1 bg-gray-800/80 hover:bg-cyan-500 hover:text-black border border-white/5 rounded-lg text-[10px] text-gray-400 font-semibold transition-all cursor-pointer ml-1"
+                                      className="inline-flex items-center gap-1 px-2 py-1 bg-bg-hover/80 hover:bg-cyan-500 hover:text-black border border-border-subtle rounded-lg text-[10px] text-text-muted font-semibold transition-all cursor-pointer ml-1"
                                     >
                                       <Download className="w-3 h-3" />
                                       <span>Download</span>
@@ -524,7 +524,7 @@ export const AIAssistantPage: React.FC = () => {
                   <div className="w-8 h-8 rounded-xl bg-indigo-500/15 text-indigo-400 flex items-center justify-center flex-shrink-0 animate-pulse">
                     <Bot className="w-4 h-4" />
                   </div>
-                  <div className="bg-gray-800/40 border border-white/5 px-5 py-3.5 rounded-2xl rounded-tl-none flex items-center gap-1.5 min-w-[70px] justify-center">
+                  <div className="bg-bg-hover/40 border border-border-subtle px-5 py-3.5 rounded-2xl rounded-tl-none flex items-center gap-1.5 min-w-[70px] justify-center">
                     <div className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-bounce [animation-delay:-0.3s]" />
                     <div className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-bounce [animation-delay:-0.15s]" />
                     <div className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-bounce" />
@@ -536,10 +536,10 @@ export const AIAssistantPage: React.FC = () => {
             </div>
 
             {/* Input Bar */}
-            <div className="p-4 border-t border-white/5 bg-gray-900/10 flex-shrink-0">
+            <div className="p-4 border-t border-border-subtle bg-bg-card/10 flex-shrink-0">
               <form
                 onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }}
-                className="w-full flex gap-2 relative bg-gray-800/30 border border-white/10 rounded-2xl focus-within:border-cyan-500/50 focus-within:ring-2 focus-within:ring-cyan-500/10 transition-all p-1"
+                className="w-full flex gap-2 relative bg-bg-hover/30 border border-border-strong rounded-2xl focus-within:border-cyan-500/50 focus-within:ring-2 focus-within:ring-cyan-500/10 transition-all p-1"
               >
                 <input
                   type="text"
@@ -547,7 +547,7 @@ export const AIAssistantPage: React.FC = () => {
                   disabled={sendingSessionId !== null}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Ask a question about project scope or status documents..."
-                  className="flex-1 bg-transparent border-0 outline-none text-sm text-white placeholder-gray-500 px-4 py-3 disabled:opacity-50"
+                  className="flex-1 bg-transparent border-0 outline-none text-sm text-text-primary placeholder-gray-500 px-4 py-3 disabled:opacity-50"
                 />
                 <button
                   type="submit"

@@ -168,7 +168,7 @@ const riskLevelConfig: Record<string, { bg: string; text: string; border: string
   },
   CRITICAL: {
     bg: "bg-rose-500/10",
-    text: "text-rose-400",
+    text: "text-rose-500 dark:text-rose-400",
     border: "border-rose-500/20",
     glow: "shadow-rose-500/10",
     dot: "bg-red-400 shadow-[0_0_6px_rgba(239,68,68,0.6)] animate-pulse",
@@ -730,40 +730,40 @@ export const TrackerPage: React.FC = () => {
     const errorText = evaluationProgress.error;
 
     return (
-      <div className="w-full bg-[#0b0e17]/80 border border-gray-800 rounded-3xl p-8 backdrop-blur-md shadow-2xl relative overflow-hidden max-w-4xl mx-auto my-8 animate-fade-in-up">
+      <div className="w-full bg-[#0b0e17]/80 border border-border-subtle rounded-3xl p-8 backdrop-blur-md shadow-2xl relative overflow-hidden max-w-4xl mx-auto my-8 animate-fade-in-up">
         <div className="absolute -top-24 -right-24 w-48 h-48 rounded-full bg-cyan-500/10 blur-[60px]" />
         <div className="absolute -bottom-24 -left-24 w-48 h-48 rounded-full bg-blue-500/10 blur-[60px]" />
 
         {isFailed && (
-          <button onClick={resetProgress} className="absolute top-4 right-4 p-2 bg-gray-900/50 hover:bg-gray-800 border border-gray-800/50 hover:border-gray-700 rounded-lg text-gray-400 hover:text-white transition-colors cursor-pointer z-50 flex items-center justify-center" title="Dismiss">
+          <button onClick={resetProgress} className="absolute top-4 right-4 p-2 bg-bg-card/50 hover:bg-bg-hover border border-border-subtle/50 hover:border-border-strong rounded-lg text-text-muted hover:text-text-primary transition-colors cursor-pointer z-50 flex items-center justify-center" title="Dismiss">
             <X className="w-4 h-4" />
           </button>
         )}
 
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-gray-800/60 pb-6 mb-8">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-border-subtle/60 pb-6 mb-8">
           <div>
-            <h2 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
-              <Loader2 className={`w-5 h-5 text-cyan-400 ${isFailed ? "" : "animate-spin"}`} />
+            <h2 className="text-xl font-bold tracking-tight text-text-primary flex items-center gap-2">
+              <Loader2 className={`w-5 h-5 text-cyan-600 dark:text-cyan-400 ${isFailed ? "" : "animate-spin"}`} />
               {isFailed ? "Evaluation Failed" : isBaselineExtraction ? "Baseline Scope Extraction in Progress..." : "Analyzing Project Risks & Timeline..."}
             </h2>
-            <p className="text-xs text-gray-400 mt-1">
+            <p className="text-xs text-text-muted mt-1">
               {isFailed ? "An error occurred during evaluation." : isBaselineExtraction ? "AI agents are analyzing and classifying contract scope sections and deliverables." : "AI agents are running automated checks against your project baseline."}
             </p>
           </div>
           <div className="flex items-center gap-6">
             <div className="text-right">
-              <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Elapsed Time</p>
-              <p className="text-lg font-black text-white">{elapsedTime}s</p>
+              <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest">Elapsed Time</p>
+              <p className="text-lg font-black text-text-primary">{elapsedTime}s</p>
             </div>
             <div className="text-right">
-              <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Overall Progress</p>
-              <p className="text-lg font-black text-cyan-400">{overallProgress}%</p>
+              <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest">Overall Progress</p>
+              <p className="text-lg font-black text-cyan-600 dark:text-cyan-400">{overallProgress}%</p>
             </div>
           </div>
         </div>
 
         <div className="mb-10">
-          <div className="w-full h-3 bg-gray-900 rounded-full border border-gray-800/80 overflow-hidden p-0.5">
+          <div className="w-full h-3 bg-bg-card rounded-full border border-border-subtle/80 overflow-hidden p-0.5">
             <div
               className={`h-full rounded-full bg-gradient-to-r ${isFailed ? "from-rose-600 to-red-500 shadow-rose-500/20" : "from-blue-600 to-cyan-500 shadow-cyan-500/20"} shadow-lg transition-all duration-500 ease-out`}
               style={{ width: `${overallProgress}%` }}
@@ -773,36 +773,36 @@ export const TrackerPage: React.FC = () => {
 
         {isFailed && errorText && (
           <div className="mb-8 p-4 bg-rose-950/20 border border-rose-500/20 rounded-2xl flex gap-3 text-rose-200">
-            <AlertCircle className="w-5 h-5 text-rose-400 flex-shrink-0 mt-0.5" />
+            <AlertCircle className="w-5 h-5 text-rose-500 dark:text-rose-400 flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-xs font-bold text-rose-300">Failure Reason</p>
-              <p className="text-[11px] text-gray-400 mt-1 font-mono leading-relaxed">{errorText}</p>
+              <p className="text-xs font-bold text-rose-600 dark:text-rose-300">Failure Reason</p>
+              <p className="text-[11px] text-text-muted mt-1 font-mono leading-relaxed">{errorText}</p>
             </div>
           </div>
         )}
 
-        <div className="relative border-l border-gray-800/80 ml-4 pl-8 space-y-8">
+        <div className="relative border-l border-border-subtle/80 ml-4 pl-8 space-y-8">
           {currentSteps.map((step, idx) => {
             const state = getStepState(idx);
             let iconElement;
             let iconBgClass = "";
-            let textClass = "text-gray-500";
+            let textClass = "text-text-muted";
 
             if (state === "completed") {
-              iconElement = <CheckCheck className="w-4 h-4 text-white" />;
+              iconElement = <CheckCheck className="w-4 h-4 text-text-primary" />;
               iconBgClass = "bg-gradient-to-r from-emerald-500 to-teal-500 border-transparent scale-100";
-              textClass = "text-gray-200";
+              textClass = "text-text-primary";
             } else if (state === "running") {
-              iconElement = <Loader2 className="w-4 h-4 text-cyan-400 animate-spin" />;
-              iconBgClass = "bg-gray-950 border-[#00e5ff] scale-110 shadow-lg shadow-cyan-500/10";
-              textClass = "text-white font-bold";
+              iconElement = <Loader2 className="w-4 h-4 text-cyan-600 dark:text-cyan-400 animate-spin" />;
+              iconBgClass = "bg-bg-base border-[#00e5ff] scale-110 shadow-lg shadow-cyan-500/10";
+              textClass = "text-text-primary font-bold";
             } else if (state === "failed") {
-              iconElement = <X className="w-4 h-4 text-white" />;
+              iconElement = <X className="w-4 h-4 text-text-primary" />;
               iconBgClass = "bg-red-600 shadow-lg shadow-rose-500/20 border-transparent scale-100";
-              textClass = "text-rose-400 font-bold";
+              textClass = "text-rose-500 dark:text-rose-400 font-bold";
             } else {
               iconElement = <Circle className="w-3 h-3 text-gray-750" />;
-              iconBgClass = "bg-gray-950 border-gray-800 scale-90";
+              iconBgClass = "bg-bg-base border-border-subtle scale-90";
               textClass = "text-gray-600";
             }
 
@@ -818,14 +818,14 @@ export const TrackerPage: React.FC = () => {
               } else if (step.metricKey === "oos_activities" && details.oos_activities !== undefined) {
                 const count = details.oos_activities;
                 detailSummary = (
-                  <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 ${count > 0 ? "bg-rose-500/15 text-rose-400 border border-rose-500/25" : "bg-gray-800 text-gray-400 border-gray-750"} rounded-md mt-1.5 animate-fadeIn`}>
+                  <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 ${count > 0 ? "bg-rose-500/15 text-rose-500 dark:text-rose-400 border border-rose-500/25" : "bg-bg-hover text-text-muted border-gray-750"} rounded-md mt-1.5 animate-fadeIn`}>
                     {count > 0 ? `⚠ ${count} Suspected Out-of-Scope` : "No out-of-scope activities"}
                   </span>
                 );
               } else if (step.metricKey === "delayed_deliverables" && details.delayed_deliverables !== undefined) {
                 const count = details.delayed_deliverables;
                 detailSummary = (
-                  <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 ${count > 0 ? "bg-amber-500/15 text-amber-400 border border-amber-500/25" : "bg-emerald-500/15 text-emerald-400 border border-emerald-500/25"} rounded-md mt-1.5 animate-fadeIn`}>
+                  <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 ${count > 0 ? "bg-amber-500/15 text-amber-500 dark:text-amber-400 border border-amber-500/25" : "bg-emerald-500/15 text-emerald-400 border border-emerald-500/25"} rounded-md mt-1.5 animate-fadeIn`}>
                     {count > 0 ? `🕒 ${count} Delayed Deliverables` : "✓ Deliverables on track"}
                   </span>
                 );
@@ -841,10 +841,10 @@ export const TrackerPage: React.FC = () => {
                   <h4 className={`text-sm font-semibold tracking-wide flex items-center gap-2 ${textClass}`}>
                     {step.name}
                     {state === "running" && (
-                      <span className="text-[10px] font-bold px-1.5 py-0.5 bg-cyan-500/10 text-cyan-400 border border-cyan-500/25 rounded uppercase tracking-wider animate-pulse">Running</span>
+                      <span className="text-[10px] font-bold px-1.5 py-0.5 bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/25 rounded uppercase tracking-wider animate-pulse">Running</span>
                     )}
                   </h4>
-                  <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{step.desc}</p>
+                  <p className="text-xs text-text-muted mt-0.5 leading-relaxed">{step.desc}</p>
                   {detailSummary}
                 </div>
               </div>
@@ -879,10 +879,10 @@ export const TrackerPage: React.FC = () => {
     }
 
     const auditIconMap: Record<string, React.ReactNode> = {
-      created: <Activity className="w-3.5 h-3.5 text-cyan-400" />,
+      created: <Activity className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" />,
       resolved: <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />,
-      reactivated: <RotateCcw className="w-3.5 h-3.5 text-amber-400" />,
-      updated: <TrendingUp className="w-3.5 h-3.5 text-purple-400" />,
+      reactivated: <RotateCcw className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />,
+      updated: <TrendingUp className="w-3.5 h-3.5 text-purple-500 dark:text-purple-400" />,
     };
 
     const auditColorMap: Record<string, string> = {
@@ -909,7 +909,7 @@ export const TrackerPage: React.FC = () => {
               <span className={`text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded border ${levelStyle.bg} ${levelStyle.text} ${levelStyle.border}`}>
                 {level}
               </span>
-              <span className="text-[9px] font-bold text-gray-500 bg-gray-800/60 border border-gray-700/40 px-1.5 py-0.5 rounded uppercase tracking-wide">
+              <span className="text-[9px] font-bold text-text-muted bg-bg-hover/60 border border-border-strong/40 px-1.5 py-0.5 rounded uppercase tracking-wide">
                 {typeLabel}
               </span>
               {item.status === "RESOLVED" && (
@@ -918,12 +918,12 @@ export const TrackerPage: React.FC = () => {
                 </span>
               )}
             </div>
-            <span className={`text-sm font-black font-mono px-2 py-1 rounded-lg border ${item.risk_score >= 71 ? "bg-rose-500/10 text-rose-400 border-rose-500/20" : item.risk_score >= 41 ? "bg-orange-500/10 text-orange-400 border-orange-500/20" : item.risk_score >= 21 ? "bg-yellow-500/10 text-yellow-400 border-yellow-500/20" : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"} shrink-0`}>
+            <span className={`text-sm font-black font-mono px-2 py-1 rounded-lg border ${item.risk_score >= 71 ? "bg-rose-500/10 text-rose-500 dark:text-rose-400 border-rose-500/20" : item.risk_score >= 41 ? "bg-orange-500/10 text-orange-400 border-orange-500/20" : item.risk_score >= 21 ? "bg-yellow-500/10 text-yellow-400 border-yellow-500/20" : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"} shrink-0`}>
               {item.risk_score}/100
             </span>
           </div>
 
-          <h2 className="text-sm font-bold text-white leading-snug mb-3">
+          <h2 className="text-sm font-bold text-text-primary leading-snug mb-3">
             {item.name || `${typeLabel} #${item.id}`}
           </h2>
 
@@ -931,16 +931,16 @@ export const TrackerPage: React.FC = () => {
           <div className="grid grid-cols-2 gap-x-4 gap-y-2">
             <div>
               <p className="text-[9px] font-bold text-gray-600 uppercase tracking-widest mb-0.5">Category</p>
-              <p className="text-[10px] font-semibold text-gray-300">{categoryLabel}</p>
+              <p className="text-[10px] font-semibold text-text-secondary">{categoryLabel}</p>
             </div>
             <div>
               <p className="text-[9px] font-bold text-gray-600 uppercase tracking-widest mb-0.5">Risk ID</p>
-              <p className="text-[10px] font-mono font-semibold text-gray-300">#{item.id}</p>
+              <p className="text-[10px] font-mono font-semibold text-text-secondary">#{item.id}</p>
             </div>
             {item.created_at && (
               <div>
                 <p className="text-[9px] font-bold text-gray-600 uppercase tracking-widest mb-0.5">Detected At</p>
-                <p className="text-[10px] text-gray-400">{formatTimestamp(item.created_at)}</p>
+                <p className="text-[10px] text-text-muted">{formatTimestamp(item.created_at)}</p>
               </div>
             )}
             {item.is_out_of_scope && (
@@ -956,23 +956,23 @@ export const TrackerPage: React.FC = () => {
         <div className="flex-1 overflow-y-auto custom-scrollbar px-5 py-4 space-y-4">
           {/* Source Document */}
           {item.document_name && (
-            <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.06]">
+            <div className="p-3 rounded-xl bg-bg-card border border-white/[0.06]">
               <p className="text-[9px] font-bold text-gray-600 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                 <FileText className="w-3 h-3" /> Source Document
               </p>
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 min-w-0">
                   <div className="w-7 h-7 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center shrink-0">
-                    <FileText className="w-3.5 h-3.5 text-cyan-400" />
+                    <FileText className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" />
                   </div>
-                  <span className="text-[11px] text-gray-300 font-medium truncate" title={item.document_name}>
+                  <span className="text-[11px] text-text-secondary font-medium truncate" title={item.document_name}>
                     {item.document_name}
                   </span>
                 </div>
                 {item.source_document_id && (
                   <button
                     onClick={() => handleDownloadDocument(item.source_document_id, item.document_name)}
-                    className="flex items-center gap-1 px-2.5 py-1 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/20 hover:border-cyan-500/40 text-cyan-400 rounded-lg text-[9px] font-bold transition-all cursor-pointer shrink-0"
+                    className="flex items-center gap-1 px-2.5 py-1 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/20 hover:border-cyan-500/40 text-cyan-600 dark:text-cyan-400 rounded-lg text-[9px] font-bold transition-all cursor-pointer shrink-0"
                   >
                     <Download className="w-3 h-3" /> Download
                   </button>
@@ -983,11 +983,11 @@ export const TrackerPage: React.FC = () => {
 
           {/* Description */}
           {(description || item.reasoning) && (
-            <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.06]">
+            <div className="p-3 rounded-xl bg-bg-card border border-white/[0.06]">
               <p className="text-[9px] font-bold text-gray-600 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                 <Info className="w-3 h-3" /> Risk Description
               </p>
-              <p className="text-[11px] text-gray-300 leading-relaxed whitespace-pre-line">
+              <p className="text-[11px] text-text-secondary leading-relaxed whitespace-pre-line">
                 {description || item.reasoning}
               </p>
             </div>
@@ -996,10 +996,10 @@ export const TrackerPage: React.FC = () => {
           {/* AI Reasoning */}
           {detailedReasoning && (
             <div className="p-3 rounded-xl bg-purple-500/[0.04] border border-purple-500/15">
-              <p className="text-[9px] font-bold text-purple-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+              <p className="text-[9px] font-bold text-purple-500 dark:text-purple-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                 <Sparkles className="w-3 h-3" /> AI Reasoning
               </p>
-              <p className="text-[11px] text-gray-400 leading-relaxed whitespace-pre-line">
+              <p className="text-[11px] text-text-muted leading-relaxed whitespace-pre-line">
                 {detailedReasoning}
               </p>
             </div>
@@ -1011,18 +1011,18 @@ export const TrackerPage: React.FC = () => {
               <p className="text-[9px] font-bold text-emerald-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                 <CheckCircle2 className="w-3 h-3" /> Resolution
               </p>
-              <p className="text-[11px] text-gray-300 leading-relaxed">{item.resolution}</p>
+              <p className="text-[11px] text-text-secondary leading-relaxed">{item.resolution}</p>
               {(item.resolved_by_name || item.resolved_at) && (
                 <div className="mt-2 pt-2 border-t border-emerald-500/15 flex flex-wrap gap-x-4 gap-y-1">
                   {item.resolved_by_name && (
-                    <div className="flex items-center gap-1 text-[9px] text-gray-500">
+                    <div className="flex items-center gap-1 text-[9px] text-text-muted">
                       <User className="w-2.5 h-2.5" />
-                      <span className="font-semibold text-gray-400">{item.resolved_by_name}</span>
+                      <span className="font-semibold text-text-muted">{item.resolved_by_name}</span>
                       {item.resolved_by_email && <span>({item.resolved_by_email})</span>}
                     </div>
                   )}
                   {item.resolved_at && (
-                    <div className="flex items-center gap-1 text-[9px] text-gray-500">
+                    <div className="flex items-center gap-1 text-[9px] text-text-muted">
                       <Clock className="w-2.5 h-2.5" />
                       <span>{formatTimestamp(item.resolved_at, { full: true })}</span>
                     </div>
@@ -1035,9 +1035,9 @@ export const TrackerPage: React.FC = () => {
           {/* ── FULL AUDIT TRAIL ── */}
           <div>
             <div className="flex items-center gap-2 mb-3">
-              <ScrollText className="w-3.5 h-3.5 text-gray-500" />
-              <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Full Audit Trail</p>
-              <span className="text-[8px] font-black px-1.5 py-0.5 bg-gray-800 border border-gray-700/50 text-gray-500 rounded-full">
+              <ScrollText className="w-3.5 h-3.5 text-text-muted" />
+              <p className="text-[9px] font-bold text-text-muted uppercase tracking-widest">Full Audit Trail</p>
+              <span className="text-[8px] font-black px-1.5 py-0.5 bg-bg-hover border border-border-strong/50 text-text-muted rounded-full">
                 {auditEntries.length} events
               </span>
             </div>
@@ -1050,21 +1050,21 @@ export const TrackerPage: React.FC = () => {
                 {auditEntries.map((entry, idx) => (
                   <div key={entry.id} className="relative flex gap-3 pl-2">
                     {/* dot on timeline */}
-                    <div className={`relative z-10 w-4 h-4 rounded-full border-2 border-[#080b14] flex items-center justify-center shrink-0 mt-0.5 ${auditDotMap[entry.type] || "bg-gray-600"}`}>
+                    <div className={`relative z-10 w-4 h-4 rounded-full border-2 border-[#080b14] flex items-center justify-center shrink-0 mt-0.5 ${auditDotMap[entry.type] || "bg-bg-hover"}`}>
                       <div className="w-1.5 h-1.5 rounded-full bg-white/80" />
                     </div>
 
                     {/* content */}
-                    <div className={`flex-1 p-3 rounded-xl border ${auditColorMap[entry.type] || "border-gray-700/30 bg-white/[0.01]"} min-w-0`}>
+                    <div className={`flex-1 p-3 rounded-xl border ${auditColorMap[entry.type] || "border-border-strong/30 bg-bg-base"} min-w-0`}>
                       <div className="flex items-start justify-between gap-2 mb-1">
                         <div className="flex items-center gap-1.5 flex-wrap">
                           {auditIconMap[entry.type]}
-                          <span className="text-[10px] font-bold text-gray-200">{entry.action}</span>
+                          <span className="text-[10px] font-bold text-text-primary">{entry.action}</span>
                           {idx === 0 && (
-                            <span className="text-[8px] font-black px-1 py-px bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 rounded uppercase tracking-wide">Initial</span>
+                            <span className="text-[8px] font-black px-1 py-px bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20 rounded uppercase tracking-wide">Initial</span>
                           )}
                           {idx === auditEntries.length - 1 && auditEntries.length > 1 && (
-                            <span className="text-[8px] font-black px-1 py-px bg-gray-700/50 text-gray-400 border border-gray-600/30 rounded uppercase tracking-wide">Latest</span>
+                            <span className="text-[8px] font-black px-1 py-px bg-bg-hover text-text-muted border border-gray-600/30 rounded uppercase tracking-wide">Latest</span>
                           )}
                         </div>
                       </div>
@@ -1072,7 +1072,7 @@ export const TrackerPage: React.FC = () => {
                       {/* Actor */}
                       <div className="flex items-center gap-1.5 mb-1.5">
                         <User className="w-2.5 h-2.5 text-gray-600 shrink-0" />
-                        <span className="text-[10px] text-gray-400 font-medium">{entry.actor}</span>
+                        <span className="text-[10px] text-text-muted font-medium">{entry.actor}</span>
                         {entry.email && <span className="text-[9px] text-gray-600">({entry.email})</span>}
                       </div>
 
@@ -1080,13 +1080,13 @@ export const TrackerPage: React.FC = () => {
                       {entry.timestamp && (
                         <div className="flex items-center gap-1.5 mb-2">
                           <Clock className="w-2.5 h-2.5 text-gray-600 shrink-0" />
-                          <span className="text-[9px] text-gray-500 font-mono">{formatTimestamp(entry.timestamp, { full: true })}</span>
+                          <span className="text-[9px] text-text-muted font-mono">{formatTimestamp(entry.timestamp, { full: true })}</span>
                         </div>
                       )}
 
                       {/* Note */}
                       {entry.note && (
-                        <p className="text-[10px] text-gray-400 leading-relaxed border-t border-white/[0.05] pt-2 mt-1">
+                        <p className="text-[10px] text-text-muted leading-relaxed border-t border-border-subtle pt-2 mt-1">
                           {entry.note}
                         </p>
                       )}
@@ -1095,10 +1095,10 @@ export const TrackerPage: React.FC = () => {
                       {entry.document && entry.documentId && (
                         <div className="mt-2 flex items-center gap-1.5">
                           <FileText className="w-2.5 h-2.5 text-gray-600 shrink-0" />
-                          <span className="text-[9px] text-gray-500 truncate" title={entry.document}>{entry.document}</span>
+                          <span className="text-[9px] text-text-muted truncate" title={entry.document}>{entry.document}</span>
                           <button
                             onClick={() => handleDownloadDocument(entry.documentId!, entry.document!)}
-                            className="flex items-center gap-0.5 text-[9px] text-cyan-500 hover:text-cyan-400 font-bold transition-colors cursor-pointer shrink-0"
+                            className="flex items-center gap-0.5 text-[9px] text-cyan-500 hover:text-cyan-600 dark:text-cyan-400 font-bold transition-colors cursor-pointer shrink-0"
                           >
                             <Download className="w-2.5 h-2.5" /> DL
                           </button>
@@ -1119,29 +1119,29 @@ export const TrackerPage: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 bg-[#080b14] text-white relative overflow-hidden min-h-screen">
+    <div className="flex-1 bg-bg-base text-text-primary relative overflow-hidden min-h-screen">
       {/* Background Glows */}
       <div className="fixed top-[-20%] right-[-5%] w-[600px] h-[600px] rounded-full bg-cyan-500/5 blur-[150px] pointer-events-none" />
       <div className="fixed bottom-[-20%] left-[10%] w-[400px] h-[400px] rounded-full bg-blue-500/5 blur-[120px] pointer-events-none" />
 
       <div className="relative z-10 flex flex-col h-full min-h-screen">
         {/* ── Top Header Bar ── */}
-        <div className="px-6 md:px-8 pt-6 md:pt-8 pb-5 border-b border-white/[0.05] bg-[#080b14]/80 backdrop-blur-sm flex-shrink-0">
+        <div className="px-6 md:px-8 pt-6 md:pt-8 pb-5 border-b border-border-subtle bg-[#080b14]/80 backdrop-blur-sm flex-shrink-0">
           <div className="max-w-[1600px] mx-auto flex flex-col lg:flex-row justify-between items-start lg:items-center gap-5">
             {/* Breadcrumb + Title */}
             <div>
               <div className="flex items-center gap-2 mb-2">
-                <Link to="/dashboard" className="text-[10px] font-bold text-gray-500 hover:text-cyan-400 transition-colors uppercase tracking-wider">Cockpit</Link>
+                <Link to="/dashboard" className="text-[10px] font-bold text-text-muted hover:text-cyan-600 dark:text-cyan-400 transition-colors uppercase tracking-wider">Cockpit</Link>
                 <ChevronRight className="w-3 h-3 text-gray-650" />
-                <Link to="/projects" className="text-[10px] font-bold text-gray-500 hover:text-cyan-400 transition-colors uppercase tracking-wider">Projects</Link>
+                <Link to="/projects" className="text-[10px] font-bold text-text-muted hover:text-cyan-600 dark:text-cyan-400 transition-colors uppercase tracking-wider">Projects</Link>
                 <ChevronRight className="w-3 h-3 text-gray-650" />
-                <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider">Risk Tracker</span>
+                <span className="text-[10px] font-bold text-cyan-600 dark:text-cyan-400 uppercase tracking-wider">Risk Tracker</span>
               </div>
-              <h1 className="font-display text-2xl md:text-3xl font-black tracking-tight text-white flex items-center gap-3">
+              <h1 className="font-display text-2xl md:text-3xl font-black tracking-tight text-text-primary flex items-center gap-3">
                 <ShieldAlert className="w-7 h-7 text-rose-500 shrink-0" />
                 Risk Tracker & Audit
               </h1>
-              <p className="text-gray-400 text-xs mt-1.5 leading-relaxed max-w-xl">
+              <p className="text-text-muted text-xs mt-1.5 leading-relaxed max-w-xl">
                 Track compliance alerts, scope creep warnings, and delay risks with full audit trails.
               </p>
             </div>
@@ -1150,27 +1150,27 @@ export const TrackerPage: React.FC = () => {
             <div className="flex flex-wrap gap-2.5 items-center">
               {/* Scoring Rules Tooltip */}
               <div className="relative group">
-                <button className="flex items-center gap-1.5 px-3 py-2 bg-gray-900 border border-gray-800 hover:border-gray-700 text-gray-400 hover:text-cyan-400 rounded-xl text-xs font-bold transition-all cursor-help shadow-lg">
+                <button className="flex items-center gap-1.5 px-3 py-2 bg-bg-card border border-border-subtle hover:border-border-strong text-text-muted hover:text-cyan-600 dark:text-cyan-400 rounded-xl text-xs font-bold transition-all cursor-help shadow-lg">
                   <Info className="w-3.5 h-3.5 shrink-0" /> Scoring Rules
                 </button>
-                <div className="absolute right-0 lg:right-1/2 lg:translate-x-1/2 top-full mt-3 w-80 p-5 bg-gray-950/98 border border-gray-800 rounded-2xl shadow-2xl backdrop-blur-md opacity-0 translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 z-50 text-left">
-                  <h4 className="font-bold text-sm text-[#00e5ff] mb-3 border-b border-gray-850 pb-2">Item Risk Scoring Rules</h4>
-                  <div className="space-y-4 text-xs text-gray-300">
-                    <p className="text-gray-400 leading-relaxed font-medium">Individual item scores (out of 100) are determined by these rules:</p>
+                <div className="absolute right-0 lg:right-1/2 lg:translate-x-1/2 top-full mt-3 w-80 p-5 bg-bg-base border border-border-subtle rounded-2xl shadow-2xl backdrop-blur-md opacity-0 translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 z-50 text-left">
+                  <h4 className="font-bold text-sm text-[#00e5ff] mb-3 border-b border-border-subtle pb-2">Item Risk Scoring Rules</h4>
+                  <div className="space-y-4 text-xs text-text-secondary">
+                    <p className="text-text-muted leading-relaxed font-medium">Individual item scores (out of 100) are determined by these rules:</p>
                     <div>
-                      <span className="font-bold text-white block mb-1">Scope Creep (OutOfScope Agent)</span>
-                      <ul className="list-disc pl-4 space-y-1 text-gray-400 font-medium">
-                        <li><strong className="text-white">80/100</strong> for direct baseline violations.</li>
-                        <li><strong className="text-white">50/100</strong> for warnings or borderline items.</li>
+                      <span className="font-bold text-text-primary block mb-1">Scope Creep (OutOfScope Agent)</span>
+                      <ul className="list-disc pl-4 space-y-1 text-text-muted font-medium">
+                        <li><strong className="text-text-primary">80/100</strong> for direct baseline violations.</li>
+                        <li><strong className="text-text-primary">50/100</strong> for warnings or borderline items.</li>
                       </ul>
                     </div>
                     <div>
-                      <span className="font-bold text-white block mb-1">Timeline Delays & Risks</span>
-                      <ul className="list-disc pl-4 space-y-1 text-gray-400 font-medium">
-                        <li><strong className="text-white">85/100</strong> for critical delays or active blockers.</li>
-                        <li><strong className="text-white">65/100</strong> for high timeline risk deliverables.</li>
-                        <li><strong className="text-white">45/100</strong> for medium timeline risk.</li>
-                        <li><strong className="text-white">15/100</strong> for low timeline risk.</li>
+                      <span className="font-bold text-text-primary block mb-1">Timeline Delays & Risks</span>
+                      <ul className="list-disc pl-4 space-y-1 text-text-muted font-medium">
+                        <li><strong className="text-text-primary">85/100</strong> for critical delays or active blockers.</li>
+                        <li><strong className="text-text-primary">65/100</strong> for high timeline risk deliverables.</li>
+                        <li><strong className="text-text-primary">45/100</strong> for medium timeline risk.</li>
+                        <li><strong className="text-text-primary">15/100</strong> for low timeline risk.</li>
                       </ul>
                     </div>
                   </div>
@@ -1182,8 +1182,8 @@ export const TrackerPage: React.FC = () => {
                 disabled={processing || isEvaluating || project?.monitoring_status !== "ACTIVE"}
                 className={`px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 active:scale-[0.98] shadow-lg flex items-center gap-2 border ${
                   processing || isEvaluating || project?.monitoring_status !== "ACTIVE"
-                    ? "bg-gray-800/40 border-gray-800 text-gray-500 cursor-not-allowed"
-                    : "bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white border-blue-500/20 shadow-cyan-500/10 cursor-pointer"
+                    ? "bg-bg-hover/40 border-border-subtle text-text-muted cursor-not-allowed"
+                    : "bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-text-primary border-blue-500/20 shadow-cyan-500/10 cursor-pointer"
                 }`}
               >
                 <Sparkles className="w-3.5 h-3.5" />
@@ -1197,31 +1197,31 @@ export const TrackerPage: React.FC = () => {
                   disabled={items.length === 0}
                   className={`px-4 py-2 text-xs font-bold rounded-xl flex items-center gap-2 border transition-all duration-200 active:scale-[0.98] shadow-lg ${
                     items.length === 0
-                      ? "bg-gray-800/40 border-gray-800 text-gray-500 cursor-not-allowed"
-                      : "bg-gray-900 border-gray-700 hover:border-gray-600 text-gray-300 hover:text-white cursor-pointer"
+                      ? "bg-bg-hover/40 border-border-subtle text-text-muted cursor-not-allowed"
+                      : "bg-bg-card border-border-strong hover:border-border-strong text-text-secondary hover:text-text-primary cursor-pointer"
                   }`}
                 >
-                  <Download className="w-3.5 h-3.5 text-gray-400" />
+                  <Download className="w-3.5 h-3.5 text-text-muted" />
                   <span>Export</span>
-                  <span className="text-[9px] text-gray-500">▼</span>
+                  <span className="text-[9px] text-text-muted">▼</span>
                 </button>
                 {showExportDropdown && (
                   <>
                     <div className="fixed inset-0 z-40" onClick={() => setShowExportDropdown(false)} />
-                    <div className="absolute right-0 top-full mt-2 w-56 bg-gray-950 border border-gray-800 rounded-xl shadow-2xl backdrop-blur-md z-50 text-left p-2 space-y-1 animate-fade-in-up">
-                      <div className="px-2.5 py-1 text-[10px] font-bold text-gray-500 uppercase tracking-wider border-b border-gray-850 mb-1">Active Risks</div>
-                      <button onClick={() => { handleExportBatch(activeItems, "pdf", "All Active Risks"); setShowExportDropdown(false); }} className="w-full text-left px-2.5 py-2 text-xs hover:bg-gray-900 text-gray-300 hover:text-white rounded-lg flex items-center gap-2 cursor-pointer transition-colors">All Active Risks (PDF)</button>
-                      <button onClick={() => { handleExportBatch(activeItems, "docx", "All Active Risks"); setShowExportDropdown(false); }} className="w-full text-left px-2.5 py-2 text-xs hover:bg-gray-900 text-gray-300 hover:text-white rounded-lg flex items-center gap-2 cursor-pointer transition-colors mb-2">All Active Risks (Word)</button>
+                    <div className="absolute right-0 top-full mt-2 w-56 bg-bg-base border border-border-subtle rounded-xl shadow-2xl backdrop-blur-md z-50 text-left p-2 space-y-1 animate-fade-in-up">
+                      <div className="px-2.5 py-1 text-[10px] font-bold text-text-muted uppercase tracking-wider border-b border-border-subtle mb-1">Active Risks</div>
+                      <button onClick={() => { handleExportBatch(activeItems, "pdf", "All Active Risks"); setShowExportDropdown(false); }} className="w-full text-left px-2.5 py-2 text-xs hover:bg-bg-card text-text-secondary hover:text-text-primary rounded-lg flex items-center gap-2 cursor-pointer transition-colors">All Active Risks (PDF)</button>
+                      <button onClick={() => { handleExportBatch(activeItems, "docx", "All Active Risks"); setShowExportDropdown(false); }} className="w-full text-left px-2.5 py-2 text-xs hover:bg-bg-card text-text-secondary hover:text-text-primary rounded-lg flex items-center gap-2 cursor-pointer transition-colors mb-2">All Active Risks (Word)</button>
                       {selectedItemIds.length > 0 && (
                         <>
-                          <div className="px-2.5 py-1 text-[10px] font-bold text-cyan-500 uppercase tracking-wider border-b border-gray-850 mb-1">Selected ({selectedItemIds.length})</div>
-                          <button onClick={() => { handleExportBatch(activeItems.filter((i) => selectedItemIds.includes(i.id)), "pdf", "Selected Active Risks"); setShowExportDropdown(false); }} className="w-full text-left px-2.5 py-2 text-xs bg-cyan-950/20 hover:bg-cyan-950/40 text-cyan-300 rounded-lg flex items-center gap-2 cursor-pointer transition-colors">Selected (PDF)</button>
-                          <button onClick={() => { handleExportBatch(activeItems.filter((i) => selectedItemIds.includes(i.id)), "docx", "Selected Active Risks"); setShowExportDropdown(false); }} className="w-full text-left px-2.5 py-2 text-xs bg-cyan-950/20 hover:bg-cyan-950/40 text-cyan-300 rounded-lg flex items-center gap-2 cursor-pointer transition-colors mb-2">Selected (Word)</button>
+                          <div className="px-2.5 py-1 text-[10px] font-bold text-cyan-500 uppercase tracking-wider border-b border-border-subtle mb-1">Selected ({selectedItemIds.length})</div>
+                          <button onClick={() => { handleExportBatch(activeItems.filter((i) => selectedItemIds.includes(i.id)), "pdf", "Selected Active Risks"); setShowExportDropdown(false); }} className="w-full text-left px-2.5 py-2 text-xs bg-cyan-950/20 hover:bg-cyan-950/40 text-cyan-600 dark:text-cyan-300 rounded-lg flex items-center gap-2 cursor-pointer transition-colors">Selected (PDF)</button>
+                          <button onClick={() => { handleExportBatch(activeItems.filter((i) => selectedItemIds.includes(i.id)), "docx", "Selected Active Risks"); setShowExportDropdown(false); }} className="w-full text-left px-2.5 py-2 text-xs bg-cyan-950/20 hover:bg-cyan-950/40 text-cyan-600 dark:text-cyan-300 rounded-lg flex items-center gap-2 cursor-pointer transition-colors mb-2">Selected (Word)</button>
                         </>
                       )}
-                      <div className="px-2.5 py-1 text-[10px] font-bold text-gray-500 uppercase tracking-wider border-b border-gray-850 mb-1">Resolved</div>
-                      <button onClick={() => { handleExportBatch(resolvedItems, "pdf", "All Resolved Risks"); setShowExportDropdown(false); }} className="w-full text-left px-2.5 py-2 text-xs hover:bg-gray-900 text-gray-300 hover:text-white rounded-lg flex items-center gap-2 cursor-pointer transition-colors">All Resolved (PDF)</button>
-                      <button onClick={() => { handleExportBatch(resolvedItems, "docx", "All Resolved Risks"); setShowExportDropdown(false); }} className="w-full text-left px-2.5 py-2 text-xs hover:bg-gray-900 text-gray-300 hover:text-white rounded-lg flex items-center gap-2 cursor-pointer transition-colors">All Resolved (Word)</button>
+                      <div className="px-2.5 py-1 text-[10px] font-bold text-text-muted uppercase tracking-wider border-b border-border-subtle mb-1">Resolved</div>
+                      <button onClick={() => { handleExportBatch(resolvedItems, "pdf", "All Resolved Risks"); setShowExportDropdown(false); }} className="w-full text-left px-2.5 py-2 text-xs hover:bg-bg-card text-text-secondary hover:text-text-primary rounded-lg flex items-center gap-2 cursor-pointer transition-colors">All Resolved (PDF)</button>
+                      <button onClick={() => { handleExportBatch(resolvedItems, "docx", "All Resolved Risks"); setShowExportDropdown(false); }} className="w-full text-left px-2.5 py-2 text-xs hover:bg-bg-card text-text-secondary hover:text-text-primary rounded-lg flex items-center gap-2 cursor-pointer transition-colors">All Resolved (Word)</button>
                     </div>
                   </>
                 )}
@@ -1233,16 +1233,16 @@ export const TrackerPage: React.FC = () => {
         {/* ── Main Content ── */}
         {project?.monitoring_status !== "ACTIVE" ? (
           <div className="flex-1 flex items-center justify-center p-8">
-            <div className="text-center py-20 bg-gradient-to-br from-gray-900/60 to-gray-950/80 border border-white/5 rounded-3xl p-10 max-w-2xl w-full shadow-2xl backdrop-blur-md relative overflow-hidden animate-fade-in-up">
+            <div className="text-center py-20 bg-gradient-to-br from-bg-card to-bg-base border border-border-subtle rounded-3xl p-10 max-w-2xl w-full shadow-2xl backdrop-blur-md relative overflow-hidden animate-fade-in-up">
               <div className="absolute top-0 right-0 w-[150px] h-[150px] bg-amber-500/5 blur-[50px] pointer-events-none" />
               <AlertTriangle className="w-14 h-14 text-amber-500 mx-auto mb-5 animate-bounce" />
-              <h3 className="font-display text-xl font-extrabold text-white mb-3">
+              <h3 className="font-display text-xl font-extrabold text-text-primary mb-3">
                 {project?.monitoring_status === "DRAFT" ? "Extract Project Baseline First" : "Baseline Awaiting Approval"}
               </h3>
-              <p className="text-gray-400 text-sm leading-relaxed mb-8 max-w-md mx-auto">
+              <p className="text-text-muted text-sm leading-relaxed mb-8 max-w-md mx-auto">
                 Before AI agents can analyze status updates for risks, a contract baseline must be extracted and approved.
               </p>
-              <Link to={`/projects/${id}/baseline`} className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-white text-xs font-black rounded-xl transition-all shadow-lg shadow-amber-500/10 active:scale-[0.98]">
+              <Link to={`/projects/${id}/baseline`} className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-text-primary text-xs font-black rounded-xl transition-all shadow-lg shadow-amber-500/10 active:scale-[0.98]">
                 Go to Baseline Review <ChevronRight className="w-3.5 h-3.5" />
               </Link>
             </div>
@@ -1253,12 +1253,12 @@ export const TrackerPage: React.FC = () => {
           </div>
         ) : items.length === 0 ? (
           <div className="flex-1 flex items-center justify-center p-8">
-            <div className="text-center py-24 bg-gradient-to-br from-gray-900/60 to-gray-950/80 border border-white/5 rounded-3xl shadow-2xl backdrop-blur-md max-w-xl w-full animate-fade-in-up">
-              <div className="w-16 h-16 bg-gray-800/40 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-gray-700/30 shadow-inner">
-                <ShieldAlert className="w-8 h-8 text-gray-500" />
+            <div className="text-center py-24 bg-gradient-to-br from-bg-card to-bg-base border border-border-subtle rounded-3xl shadow-2xl backdrop-blur-md max-w-xl w-full animate-fade-in-up">
+              <div className="w-16 h-16 bg-bg-hover/40 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-border-strong/30 shadow-inner">
+                <ShieldAlert className="w-8 h-8 text-text-muted" />
               </div>
-              <h3 className="font-display text-lg font-bold text-white mb-2">No Risk Items Found</h3>
-              <p className="text-gray-400 text-xs max-w-sm mx-auto leading-relaxed">
+              <h3 className="font-display text-lg font-bold text-text-primary mb-2">No Risk Items Found</h3>
+              <p className="text-text-muted text-xs max-w-sm mx-auto leading-relaxed">
                 No risk or audit findings have been recorded. Choose "Analyze Status Document" above to start evaluation.
               </p>
             </div>
@@ -1268,16 +1268,16 @@ export const TrackerPage: React.FC = () => {
           <div className="flex-1 flex flex-col lg:flex-row overflow-hidden" style={{ minHeight: "calc(100vh - 140px)" }}>
 
             {/* ════ LEFT PANEL: Risk List + Tabs ════ */}
-            <div className="flex flex-col border-b lg:border-b-0 lg:border-r border-white/[0.05] overflow-hidden w-full lg:w-[420px] lg:min-w-[340px] lg:max-w-[480px] h-[50vh] lg:h-auto shrink-0">
+            <div className="flex flex-col border-b lg:border-b-0 lg:border-r border-border-subtle overflow-hidden w-full lg:w-[420px] lg:min-w-[340px] lg:max-w-[480px] h-[50vh] lg:h-auto shrink-0">
 
               {/* AI Priority Banner */}
               {project?.highestActionPriority && (
-                <div className="mx-4 mt-4 p-3 bg-gradient-to-r from-cyan-950/50 to-blue-900/30 border border-cyan-500/25 rounded-xl flex-shrink-0 relative overflow-hidden group">
+                <div className="mx-4 mt-4 p-3 bg-gradient-to-r from-cyan-500/10 dark:from-cyan-950/50 to-blue-500/10 dark:to-blue-900/30 border border-cyan-500/25 rounded-xl flex-shrink-0 relative overflow-hidden group">
                   <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/0 via-cyan-500/5 to-cyan-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
                   <div className="flex items-center justify-between mb-1.5 relative z-10">
                     <div className="flex items-center gap-1.5">
-                      <Sparkles className="w-3 h-3 text-cyan-400" />
-                      <span className="text-[9px] font-black text-cyan-400 uppercase tracking-widest">AI Top Priority</span>
+                      <Sparkles className="w-3 h-3 text-cyan-600 dark:text-cyan-400" />
+                      <span className="text-[9px] font-black text-cyan-600 dark:text-cyan-400 uppercase tracking-widest">AI Top Priority</span>
                     </div>
                     {project.highestActionPriority.id && (
                       <button 
@@ -1288,57 +1288,57 @@ export const TrackerPage: React.FC = () => {
                             setSelectedItem(item);
                           }
                         }}
-                        className="px-2 py-0.5 bg-cyan-500/10 hover:bg-cyan-500/25 border border-cyan-500/20 hover:border-cyan-500/40 text-cyan-300 rounded text-[9px] font-bold transition-all cursor-pointer shadow-[0_0_10px_rgba(6,182,212,0.1)] hover:shadow-[0_0_15px_rgba(6,182,212,0.2)]"
+                        className="px-2 py-0.5 bg-cyan-500/10 hover:bg-cyan-500/25 border border-cyan-500/20 hover:border-cyan-500/40 text-cyan-600 dark:text-cyan-300 rounded text-[9px] font-bold transition-all cursor-pointer shadow-[0_0_10px_rgba(6,182,212,0.1)] hover:shadow-[0_0_15px_rgba(6,182,212,0.2)]"
                       >
                         View Details
                       </button>
                     )}
                   </div>
-                  <p className="text-[11px] font-semibold text-white truncate relative z-10">{project.highestActionPriority.activity}</p>
-                  <p className="text-[10px] text-gray-400 mt-0.5 line-clamp-2 leading-relaxed relative z-10">{project.highestActionPriority.reason}</p>
+                  <p className="text-[11px] font-semibold text-text-primary truncate relative z-10">{project.highestActionPriority.activity}</p>
+                  <p className="text-[10px] text-text-muted mt-0.5 line-clamp-2 leading-relaxed relative z-10">{project.highestActionPriority.reason}</p>
                 </div>
               )}
 
               {/* Stats Bar */}
               <div className="flex gap-px mx-4 mt-3 flex-shrink-0">
-                <div className="flex-1 p-2.5 bg-gray-900/60 border border-white/[0.05] rounded-l-xl text-center">
-                  <p className="text-lg font-black text-rose-400">{activeItems.length}</p>
+                <div className="flex-1 p-2.5 bg-bg-card/60 border border-border-subtle rounded-l-xl text-center">
+                  <p className="text-lg font-black text-rose-500 dark:text-rose-400">{activeItems.length}</p>
                   <p className="text-[8px] font-bold text-gray-600 uppercase tracking-wider">Active</p>
                 </div>
-                <div className="flex-1 p-2.5 bg-gray-900/60 border border-white/[0.05] text-center">
+                <div className="flex-1 p-2.5 bg-bg-card/60 border border-border-subtle text-center">
                   <p className="text-lg font-black text-emerald-400">{resolvedItems.length}</p>
                   <p className="text-[8px] font-bold text-gray-600 uppercase tracking-wider">Resolved</p>
                 </div>
-                <div className="flex-1 p-2.5 bg-gray-900/60 border border-white/[0.05] rounded-r-xl text-center">
-                  <p className="text-lg font-black text-gray-300">{items.length}</p>
+                <div className="flex-1 p-2.5 bg-bg-card/60 border border-border-subtle rounded-r-xl text-center">
+                  <p className="text-lg font-black text-text-secondary">{items.length}</p>
                   <p className="text-[8px] font-bold text-gray-600 uppercase tracking-wider">Total</p>
                 </div>
               </div>
 
               {/* Tab Control */}
               <div className="px-4 pt-3 pb-2 flex-shrink-0 space-y-3">
-                <div className="relative flex p-1 bg-gray-900/60 backdrop-blur-md border border-white/[0.05] rounded-xl shadow-lg">
+                <div className="relative flex p-1 bg-bg-card/60 backdrop-blur-md border border-border-subtle rounded-xl shadow-lg">
                   <div
                     className="absolute top-1 bottom-1 rounded-lg bg-gradient-to-r from-cyan-600/25 to-blue-600/25 border border-cyan-500/25 shadow-lg shadow-cyan-500/5 transition-all duration-300 ease-out"
                     style={{ width: "calc(50% - 4px)", left: activeTab === "ACTIVE" ? "4px" : "calc(50%)" }}
                   />
                   <button
                     onClick={() => setActiveTab("ACTIVE")}
-                    className={`relative z-10 flex-1 flex items-center justify-center gap-2 py-2 text-[10px] font-bold uppercase tracking-wider transition-all duration-300 cursor-pointer ${activeTab === "ACTIVE" ? "text-white" : "text-gray-500 hover:text-gray-300"}`}
+                    className={`relative z-10 flex-1 flex items-center justify-center gap-2 py-2 text-[10px] font-bold uppercase tracking-wider transition-all duration-300 cursor-pointer ${activeTab === "ACTIVE" ? "text-text-primary" : "text-text-muted hover:text-text-secondary"}`}
                   >
                     <ShieldAlert className="w-3 h-3" />
                     Active Risks
-                    <span className={`px-1.5 py-0.5 text-[9px] rounded border font-black font-mono transition-all duration-300 ${activeTab === "ACTIVE" ? "bg-red-500/10 text-red-400 border-red-500/20" : "bg-gray-800/40 text-gray-500 border-gray-700/30"}`}>
+                    <span className={`px-1.5 py-0.5 text-[9px] rounded border font-black font-mono transition-all duration-300 ${activeTab === "ACTIVE" ? "bg-red-500/10 text-red-400 border-red-500/20" : "bg-bg-hover/40 text-text-muted border-border-strong/30"}`}>
                       {activeItems.length}
                     </span>
                   </button>
                   <button
                     onClick={() => setActiveTab("RESOLVED")}
-                    className={`relative z-10 flex-1 flex items-center justify-center gap-2 py-2 text-[10px] font-bold uppercase tracking-wider transition-all duration-300 cursor-pointer ${activeTab === "RESOLVED" ? "text-white" : "text-gray-500 hover:text-gray-300"}`}
+                    className={`relative z-10 flex-1 flex items-center justify-center gap-2 py-2 text-[10px] font-bold uppercase tracking-wider transition-all duration-300 cursor-pointer ${activeTab === "RESOLVED" ? "text-text-primary" : "text-text-muted hover:text-text-secondary"}`}
                   >
                     <CheckCheck className="w-3 h-3" />
                     Resolved
-                    <span className={`px-1.5 py-0.5 text-[9px] rounded border font-black font-mono transition-all duration-300 ${activeTab === "RESOLVED" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : "bg-gray-800/40 text-gray-500 border-gray-700/30"}`}>
+                    <span className={`px-1.5 py-0.5 text-[9px] rounded border font-black font-mono transition-all duration-300 ${activeTab === "RESOLVED" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : "bg-bg-hover/40 text-text-muted border-border-strong/30"}`}>
                       {resolvedItems.length}
                     </span>
                   </button>
@@ -1349,18 +1349,18 @@ export const TrackerPage: React.FC = () => {
                   <div className="bg-cyan-950/20 border border-cyan-500/20 rounded-xl p-2.5 flex items-center justify-between gap-2 animate-fade-in-up">
                     <div className="flex items-center gap-2">
                       <div className="w-5 h-5 rounded bg-cyan-500/10 flex items-center justify-center shrink-0">
-                        <span className="text-[10px] text-cyan-400 font-bold font-mono">{selectedItemIds.length}</span>
+                        <span className="text-[10px] text-cyan-600 dark:text-cyan-400 font-bold font-mono">{selectedItemIds.length}</span>
                       </div>
-                      <span className="text-[10px] text-gray-300 font-bold">selected</span>
+                      <span className="text-[10px] text-text-secondary font-bold">selected</span>
                     </div>
                     <div className="flex gap-1.5 shrink-0">
-                      <button onClick={() => setSelectedItemIds([])} className="px-2 py-1 text-[9px] font-bold text-gray-400 hover:text-white border border-gray-800 hover:border-gray-700 rounded-lg cursor-pointer transition-colors">
+                      <button onClick={() => setSelectedItemIds([])} className="px-2 py-1 text-[9px] font-bold text-text-muted hover:text-text-primary border border-border-subtle hover:border-border-strong rounded-lg cursor-pointer transition-colors">
                         Clear
                       </button>
-                      <button onClick={() => handleExportBatch(activeItems.filter((i) => selectedItemIds.includes(i.id)), "pdf", "Selected Risks")} className="px-2 py-1 text-[9px] font-bold text-white bg-cyan-600 hover:bg-cyan-500 rounded-lg cursor-pointer shadow-md shadow-cyan-500/10 transition-colors">
+                      <button onClick={() => handleExportBatch(activeItems.filter((i) => selectedItemIds.includes(i.id)), "pdf", "Selected Risks")} className="px-2 py-1 text-[9px] font-bold text-text-primary bg-cyan-600 hover:bg-cyan-500 rounded-lg cursor-pointer shadow-md shadow-cyan-500/10 transition-colors">
                         PDF
                       </button>
-                      <button onClick={() => handleExportBatch(activeItems.filter((i) => selectedItemIds.includes(i.id)), "docx", "Selected Risks")} className="px-2 py-1 text-[9px] font-bold text-cyan-400 border border-cyan-500/20 hover:bg-cyan-500/10 rounded-lg cursor-pointer transition-colors">
+                      <button onClick={() => handleExportBatch(activeItems.filter((i) => selectedItemIds.includes(i.id)), "docx", "Selected Risks")} className="px-2 py-1 text-[9px] font-bold text-cyan-600 dark:text-cyan-400 border border-cyan-500/20 hover:bg-cyan-500/10 rounded-lg cursor-pointer transition-colors">
                         Word
                       </button>
                     </div>
@@ -1372,11 +1372,11 @@ export const TrackerPage: React.FC = () => {
               <div className="flex-1 overflow-y-auto custom-scrollbar px-4 pb-4 space-y-2">
                 {currentTabItems.length === 0 ? (
                   <div className="text-center py-16 flex flex-col items-center">
-                    <div className="w-12 h-12 bg-gray-800/30 rounded-full flex items-center justify-center mb-4 border border-gray-700/30">
+                    <div className="w-12 h-12 bg-bg-hover/30 rounded-full flex items-center justify-center mb-4 border border-border-strong/30">
                       <CheckCheck className="w-5 h-5 text-emerald-500" />
                     </div>
-                    <h3 className="font-display text-sm font-bold text-white mb-1">No {activeTab === "ACTIVE" ? "Active" : "Resolved"} Risks</h3>
-                    <p className="text-gray-400 text-[10px] max-w-[200px] mx-auto leading-relaxed">
+                    <h3 className="font-display text-sm font-bold text-text-primary mb-1">No {activeTab === "ACTIVE" ? "Active" : "Resolved"} Risks</h3>
+                    <p className="text-text-muted text-[10px] max-w-[200px] mx-auto leading-relaxed">
                       {activeTab === "ACTIVE" ? "All identified risks have been resolved." : "No resolved items yet."}
                     </p>
                   </div>
@@ -1398,13 +1398,13 @@ export const TrackerPage: React.FC = () => {
                             ? "border-orange-500/20"
                             : level === "MEDIUM"
                               ? "border-yellow-500/15"
-                              : "border-white/[0.05]";
+                              : "border-border-subtle";
 
                     return (
                       <div
                         key={item.id}
                         onClick={() => setSelectedItem(item)}
-                        className={`group rounded-xl border cursor-pointer transition-all duration-200 overflow-hidden ${borderColor} ${isSelected ? "bg-gradient-to-br from-cyan-950/30 to-gray-900/80 shadow-lg" : "bg-gradient-to-br from-gray-900/60 to-gray-950/80 hover:border-gray-600/50 hover:bg-gray-900/80"}`}
+                        className={`group rounded-xl border cursor-pointer transition-all duration-200 overflow-hidden ${borderColor} ${isSelected ? "bg-gradient-to-br from-cyan-500/10 dark:from-cyan-950/30 to-gray-500/10 dark:to-gray-900/80 shadow-lg" : "bg-gradient-to-br from-bg-card to-bg-base hover:border-border-strong/50 hover:bg-bg-card/80"}`}
                         style={{ animationDelay: `${index * 40}ms` }}
                       >
                         {/* Card Top Bar — colored by risk level */}
@@ -1417,13 +1417,13 @@ export const TrackerPage: React.FC = () => {
                                   checked={selectedItemIds.includes(item.id)}
                                   onChange={(e) => { e.stopPropagation(); toggleSelectItem(item.id); }}
                                   onClick={(e) => e.stopPropagation()}
-                                  className="w-3 h-3 rounded border-gray-700 bg-gray-950 text-cyan-500 focus:ring-cyan-500/30 cursor-pointer accent-cyan-500 shrink-0"
+                                  className="w-3 h-3 rounded border-border-strong bg-bg-base text-cyan-500 focus:ring-cyan-500/30 cursor-pointer accent-cyan-500 shrink-0"
                                 />
                               )}
                               <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${levelStyle.dot}`} />
                               <div className="min-w-0 flex-1">
                                 <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
-                                  <span className="text-[7px] font-extrabold text-gray-500 bg-gray-800/70 border border-gray-700/40 px-1 py-px rounded uppercase tracking-wider shrink-0">
+                                  <span className="text-[7px] font-extrabold text-text-muted bg-bg-hover/70 border border-border-strong/40 px-1 py-px rounded uppercase tracking-wider shrink-0">
                                     {typeLabel}
                                   </span>
                                   {item.is_out_of_scope && (
@@ -1433,7 +1433,7 @@ export const TrackerPage: React.FC = () => {
                                     <span className="text-[7px] font-black px-1 py-px bg-orange-500/10 text-orange-400 border border-orange-500/20 rounded uppercase">Esc</span>
                                   )}
                                 </div>
-                                <h3 className={`text-[11px] font-semibold leading-snug transition-colors ${isSelected ? "text-white" : "text-gray-200 group-hover:text-white"}`}>
+                                <h3 className={`text-[11px] font-semibold leading-snug transition-colors ${isSelected ? "text-text-primary" : "text-text-primary group-hover:text-text-primary"}`}>
                                   {item.name || `${typeLabel} #${item.id}`}
                                 </h3>
                               </div>
@@ -1442,7 +1442,7 @@ export const TrackerPage: React.FC = () => {
                               <span className={`text-[8px] font-black px-1.5 py-0.5 rounded border ${levelStyle.bg} ${levelStyle.text} ${levelStyle.border}`}>
                                 {level}
                               </span>
-                              <span className={`text-[8px] font-mono font-black px-1.5 py-0.5 rounded border ${item.risk_score >= 71 ? "bg-rose-500/10 text-rose-400 border-rose-500/20" : item.risk_score >= 41 ? "bg-orange-500/10 text-orange-400 border-orange-500/20" : item.risk_score >= 21 ? "bg-yellow-500/10 text-yellow-400 border-yellow-500/20" : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"}`}>
+                              <span className={`text-[8px] font-mono font-black px-1.5 py-0.5 rounded border ${item.risk_score >= 71 ? "bg-rose-500/10 text-rose-500 dark:text-rose-400 border-rose-500/20" : item.risk_score >= 41 ? "bg-orange-500/10 text-orange-400 border-orange-500/20" : item.risk_score >= 21 ? "bg-yellow-500/10 text-yellow-400 border-yellow-500/20" : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"}`}>
                                 {item.risk_score}/100
                               </span>
                             </div>
@@ -1453,12 +1453,12 @@ export const TrackerPage: React.FC = () => {
                         <div className="px-3 py-2 flex items-center justify-between gap-2">
                           <div className="flex items-center gap-1.5 min-w-0">
                             <Briefcase className="w-2.5 h-2.5 text-gray-600 shrink-0" />
-                            <span className="text-[9px] text-gray-500 truncate" title={item.document_name}>
+                            <span className="text-[9px] text-text-muted truncate" title={item.document_name}>
                               {item.document_name || "—"}
                             </span>
                           </div>
                           <div className="flex items-center gap-1.5 shrink-0">
-                            <span className="text-[8px] font-bold text-gray-600 bg-gray-800/40 px-1 py-px rounded border border-gray-700/30">
+                            <span className="text-[8px] font-bold text-gray-600 bg-bg-hover/40 px-1 py-px rounded border border-border-strong/30">
                               {categoryLabel}
                             </span>
                             {item.status === "RESOLVED" && (
@@ -1486,13 +1486,13 @@ export const TrackerPage: React.FC = () => {
               {selectedItem ? (
                 <div className="h-full flex flex-col">
                   {/* Right Panel Header */}
-                  <div className="px-5 py-3.5 border-b border-white/[0.05] bg-white/[0.01] flex-shrink-0 flex items-center justify-between gap-3 flex-wrap">
+                  <div className="px-5 py-3.5 border-b border-border-subtle bg-bg-base flex-shrink-0 flex items-center justify-between gap-3 flex-wrap">
                     <div className="flex items-center gap-2">
                       <div className="w-6 h-6 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
-                        <History className="w-3.5 h-3.5 text-cyan-400" />
+                        <History className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" />
                       </div>
                       <div>
-                        <p className="text-[10px] font-bold text-cyan-400 uppercase tracking-widest">Full Audit Trail & Details</p>
+                        <p className="text-[10px] font-bold text-cyan-600 dark:text-cyan-400 uppercase tracking-widest">Full Audit Trail & Details</p>
                         <p className="text-[9px] text-gray-600">Risk #{selectedItem.id} · Complete history with timestamps</p>
                       </div>
                     </div>
@@ -1502,7 +1502,7 @@ export const TrackerPage: React.FC = () => {
                         <button
                           onClick={() => openReactivateModal(selectedItem.id)}
                           disabled={isReactivating}
-                          className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-900 border border-gray-700 hover:border-gray-600 text-gray-300 hover:text-white rounded-lg text-[10px] font-bold transition-all cursor-pointer active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="flex items-center gap-1.5 px-3 py-1.5 bg-bg-card border border-border-strong hover:border-border-strong text-text-secondary hover:text-text-primary rounded-lg text-[10px] font-bold transition-all cursor-pointer active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           {isReactivating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RotateCcw className="w-3.5 h-3.5" />}
                           Reactivate
@@ -1510,24 +1510,24 @@ export const TrackerPage: React.FC = () => {
                       ) : (
                         <button
                           onClick={() => openResolveModal(selectedItem.id)}
-                          className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white rounded-lg text-[10px] font-bold transition-all cursor-pointer shadow-md shadow-emerald-500/10 active:scale-[0.98]"
+                          className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-text-primary rounded-lg text-[10px] font-bold transition-all cursor-pointer shadow-md shadow-emerald-500/10 active:scale-[0.98]"
                         >
                           <CheckCircle2 className="w-3.5 h-3.5" />
                           Mark Resolved
                         </button>
                       )}
 
-                      <div className="w-px h-6 bg-gray-700/50 mx-1 hidden sm:block"></div>
+                      <div className="w-px h-6 bg-bg-hover mx-1 hidden sm:block"></div>
 
                       <button
                         onClick={() => handleExportSingle(selectedItem, "pdf")}
-                        className="flex items-center gap-1.5 px-2.5 py-1.5 bg-gray-900 border border-gray-700 hover:border-gray-600 text-gray-400 hover:text-white rounded-lg text-[9px] font-bold transition-all cursor-pointer"
+                        className="flex items-center gap-1.5 px-2.5 py-1.5 bg-bg-card border border-border-strong hover:border-border-strong text-text-muted hover:text-text-primary rounded-lg text-[9px] font-bold transition-all cursor-pointer"
                       >
                         <Download className="w-3 h-3" /> PDF
                       </button>
                       <button
                         onClick={() => handleExportSingle(selectedItem, "docx")}
-                        className="flex items-center gap-1.5 px-2.5 py-1.5 bg-gray-900 border border-gray-700 hover:border-gray-600 text-gray-400 hover:text-white rounded-lg text-[9px] font-bold transition-all cursor-pointer"
+                        className="flex items-center gap-1.5 px-2.5 py-1.5 bg-bg-card border border-border-strong hover:border-border-strong text-text-muted hover:text-text-primary rounded-lg text-[9px] font-bold transition-all cursor-pointer"
                       >
                         <Download className="w-3 h-3" /> Word
                       </button>
@@ -1542,10 +1542,10 @@ export const TrackerPage: React.FC = () => {
               ) : (
                 <div className="flex-1 flex items-center justify-center">
                   <div className="text-center">
-                    <div className="w-16 h-16 bg-gray-900/60 border border-white/[0.06] rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <div className="w-16 h-16 bg-bg-card/60 border border-white/[0.06] rounded-2xl flex items-center justify-center mx-auto mb-4">
                       <ScrollText className="w-7 h-7 text-gray-600" />
                     </div>
-                    <p className="text-sm font-bold text-gray-400 mb-1">Select a Risk</p>
+                    <p className="text-sm font-bold text-text-muted mb-1">Select a Risk</p>
                     <p className="text-[11px] text-gray-600 max-w-[200px] mx-auto leading-relaxed">
                       Click any risk item on the left to view full audit trail and details here.
                     </p>
@@ -1562,34 +1562,34 @@ export const TrackerPage: React.FC = () => {
       {/* Resolve Modal */}
       {resolveModalState.isOpen && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 p-4">
-          <div className="bg-[#0e1420] border border-gray-700/60 rounded-2xl p-6 w-full max-w-lg shadow-2xl animate-fade-in-up">
+          <div className="bg-bg-panel border border-border-strong/60 rounded-2xl p-6 w-full max-w-lg shadow-2xl animate-fade-in-up">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400" />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-white">Resolve Risk Item</h2>
-                <p className="text-gray-500 text-[10px]">This will be recorded in the full audit trail with timestamp.</p>
+                <h2 className="text-lg font-bold text-text-primary">Resolve Risk Item</h2>
+                <p className="text-text-muted text-[10px]">This will be recorded in the full audit trail with timestamp.</p>
               </div>
             </div>
-            <p className="text-gray-400 text-xs mb-4 leading-relaxed">
+            <p className="text-text-muted text-xs mb-4 leading-relaxed">
               Provide official notes detailing how this risk is being handled. This note will be permanently recorded.
             </p>
             <textarea
-              className="w-full bg-gray-900 border border-gray-700 rounded-xl p-4 text-white focus:outline-none focus:ring-2 focus:ring-[#00e5ff]/50 transition-all resize-none mb-5 text-sm"
+              className="w-full bg-bg-card border border-border-strong rounded-xl p-4 text-text-primary focus:outline-none focus:ring-2 focus:ring-[#00e5ff]/50 transition-all resize-none mb-5 text-sm"
               rows={4}
               placeholder="e.g. Discussed with client. Added as Change Request #102..."
               value={resolutionText}
               onChange={(e) => setResolutionText(e.target.value)}
             />
             <div className="flex justify-end gap-3">
-              <button onClick={() => setResolveModalState({ isOpen: false, itemId: null })} className="px-5 py-2.5 rounded-xl font-medium text-gray-300 hover:bg-gray-800 transition-colors text-sm cursor-pointer">
+              <button onClick={() => setResolveModalState({ isOpen: false, itemId: null })} className="px-5 py-2.5 rounded-xl font-medium text-text-secondary hover:bg-bg-hover transition-colors text-sm cursor-pointer">
                 Cancel
               </button>
               <button
                 onClick={submitResolve}
                 disabled={!resolutionText.trim() || isResolving}
-                className={`flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-colors cursor-pointer ${(!resolutionText.trim() || isResolving) ? "bg-emerald-900/30 text-emerald-700 cursor-not-allowed" : "bg-gradient-to-r from-emerald-500 to-green-500 text-white hover:from-emerald-400 hover:to-green-400"}`}
+                className={`flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-colors cursor-pointer ${(!resolutionText.trim() || isResolving) ? "bg-emerald-900/30 text-emerald-700 cursor-not-allowed" : "bg-gradient-to-r from-emerald-500 to-green-500 text-text-primary hover:from-emerald-400 hover:to-green-400"}`}
               >
                 {isResolving ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
                 Confirm Resolution
@@ -1602,26 +1602,26 @@ export const TrackerPage: React.FC = () => {
       {/* Reactivate Modal */}
       {reactivateModalState.isOpen && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 p-4">
-          <div className="bg-[#0e1420] border border-gray-700/60 rounded-2xl p-6 w-full max-w-sm shadow-2xl animate-fade-in-up">
+          <div className="bg-bg-panel border border-border-strong/60 rounded-2xl p-6 w-full max-w-sm shadow-2xl animate-fade-in-up">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
-                <RotateCcw className="w-4 h-4 text-amber-400" />
+                <RotateCcw className="w-4 h-4 text-amber-500 dark:text-amber-400" />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-white">Reactivate Risk</h2>
+                <h2 className="text-lg font-bold text-text-primary">Reactivate Risk</h2>
               </div>
             </div>
-            <p className="text-gray-400 text-xs mb-6 leading-relaxed">
+            <p className="text-text-muted text-xs mb-6 leading-relaxed">
               Are you sure you want to reactivate this risk? It will be moved back to the Active Risks tab.
             </p>
             <div className="flex justify-end gap-3">
-              <button onClick={() => setReactivateModalState({ isOpen: false, itemId: null })} className="px-5 py-2.5 rounded-xl font-medium text-gray-300 hover:bg-gray-800 transition-colors text-sm cursor-pointer">
+              <button onClick={() => setReactivateModalState({ isOpen: false, itemId: null })} className="px-5 py-2.5 rounded-xl font-medium text-text-secondary hover:bg-bg-hover transition-colors text-sm cursor-pointer">
                 Cancel
               </button>
               <button
                 onClick={confirmReactivate}
                 disabled={isReactivating}
-                className={`flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-colors cursor-pointer ${isReactivating ? "bg-amber-900/30 text-amber-700 cursor-not-allowed" : "bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:from-amber-400 hover:to-orange-400 shadow-md shadow-amber-500/10"}`}
+                className={`flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-colors cursor-pointer ${isReactivating ? "bg-amber-900/30 text-amber-700 cursor-not-allowed" : "bg-gradient-to-r from-amber-500 to-orange-500 text-text-primary hover:from-amber-400 hover:to-orange-400 shadow-md shadow-amber-500/10"}`}
               >
                 {isReactivating ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
                 Confirm
@@ -1634,38 +1634,38 @@ export const TrackerPage: React.FC = () => {
       {/* Process Status Document Modal */}
       {showProcessModal && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 p-4">
-          <div className="bg-[#0e1420] border border-gray-700/60 rounded-2xl p-6 w-full max-w-md shadow-2xl animate-fade-in-up">
+          <div className="bg-bg-panel border border-border-strong/60 rounded-2xl p-6 w-full max-w-md shadow-2xl animate-fade-in-up">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-8 h-8 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
-                <Sparkles className="w-4 h-4 text-blue-400" />
+                <Sparkles className="w-4 h-4 text-blue-500 dark:text-blue-400" />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-white">Process Status Document</h2>
-                <p className="text-gray-500 text-[10px]">Select a document for AI risk evaluation.</p>
+                <h2 className="text-lg font-bold text-text-primary">Process Status Document</h2>
+                <p className="text-text-muted text-[10px]">Select a document for AI risk evaluation.</p>
               </div>
             </div>
-            <p className="text-gray-400 text-xs mb-6 leading-relaxed">
+            <p className="text-text-muted text-xs mb-6 leading-relaxed">
               Select a processed document (excluding EL & IFA) to analyze for risk and audit items.
             </p>
 
             {loadingDocs ? (
               <div className="flex items-center justify-center py-8">
                 <Loader2 className="h-7 w-7 animate-spin text-[#00e5ff]" />
-                <span className="ml-3 text-gray-400 text-sm">Loading documents...</span>
+                <span className="ml-3 text-text-muted text-sm">Loading documents...</span>
               </div>
             ) : eligibleDocs.length === 0 ? (
               <div className="py-6 text-center">
-                <p className="text-gray-400 mb-2 text-sm">No eligible documents found.</p>
-                <p className="text-gray-500 text-xs">Please upload and process a Status Report, MOM, or other document first.</p>
+                <p className="text-text-muted mb-2 text-sm">No eligible documents found.</p>
+                <p className="text-text-muted text-xs">Please upload and process a Status Report, MOM, or other document first.</p>
               </div>
             ) : (
               <div className="space-y-4">
-                <label className="block text-gray-400 mb-2 text-xs font-semibold">Select Document</label>
+                <label className="block text-text-muted mb-2 text-xs font-semibold">Select Document</label>
                 <select
                   value={selectedDocId}
                   onChange={(e) => setSelectedDocId(e.target.value)}
                   disabled={processing}
-                  className="w-full bg-gray-900 border border-gray-700 rounded-xl p-3 text-white focus:outline-none focus:ring-2 focus:ring-[#00e5ff]/50 disabled:opacity-50 text-sm"
+                  className="w-full bg-bg-card border border-border-strong rounded-xl p-3 text-text-primary focus:outline-none focus:ring-2 focus:ring-[#00e5ff]/50 disabled:opacity-50 text-sm"
                 >
                   {eligibleDocs.map((doc) => (
                     <option key={doc.id} value={String(doc.id)}>
@@ -1680,14 +1680,14 @@ export const TrackerPage: React.FC = () => {
               <button
                 onClick={() => { setShowProcessModal(false); setSelectedDocId(""); }}
                 disabled={processing}
-                className={`px-4 py-2 rounded-xl font-medium text-gray-300 hover:bg-gray-800 transition-colors text-sm cursor-pointer ${processing ? "opacity-50 cursor-not-allowed" : ""}`}
+                className={`px-4 py-2 rounded-xl font-medium text-text-secondary hover:bg-bg-hover transition-colors text-sm cursor-pointer ${processing ? "opacity-50 cursor-not-allowed" : ""}`}
               >
                 Cancel
               </button>
               <button
                 onClick={handleConfirmProcess}
                 disabled={processing || !selectedDocId || eligibleDocs.length === 0}
-                className={`px-4 py-2 rounded-xl font-bold text-sm flex items-center gap-2 cursor-pointer transition-colors ${processing || !selectedDocId || eligibleDocs.length === 0 ? "bg-blue-900/30 text-blue-700 cursor-not-allowed" : "bg-gradient-to-r from-blue-500 to-cyan-500 text-white hover:from-blue-400 hover:to-cyan-400"}`}
+                className={`px-4 py-2 rounded-xl font-bold text-sm flex items-center gap-2 cursor-pointer transition-colors ${processing || !selectedDocId || eligibleDocs.length === 0 ? "bg-blue-900/30 text-blue-700 cursor-not-allowed" : "bg-gradient-to-r from-blue-500 to-cyan-500 text-text-primary hover:from-blue-400 hover:to-cyan-400"}`}
               >
                 {processing ? (
                   <><Loader2 className="h-4 w-4 animate-spin" /> Processing...</>
@@ -1710,7 +1710,7 @@ export const TrackerPage: React.FC = () => {
           }`}>
             <div className="flex items-start gap-3">
               <p className="text-sm font-medium flex-1">{notification.message}</p>
-              <button onClick={() => setNotification(null)} className="text-white/60 hover:text-white cursor-pointer">✕</button>
+              <button onClick={() => setNotification(null)} className="text-text-primary/60 hover:text-text-primary cursor-pointer">✕</button>
             </div>
           </div>
         </div>

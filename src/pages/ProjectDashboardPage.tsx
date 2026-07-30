@@ -346,18 +346,18 @@ export const ProjectDashboardPage: React.FC = () => {
       <div className="max-w-6xl mx-auto space-y-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-black tracking-tight text-white">
+            <h1 className="text-3xl font-black tracking-tight text-text-primary">
               {project.project_name}
             </h1>
-            <p className="text-gray-400 text-sm mt-1">{project.description}</p>
+            <p className="text-text-muted text-sm mt-1">{project.description}</p>
             {(project.start_date || project.end_date) && (
-              <div className="flex flex-wrap gap-x-6 gap-y-1 items-center text-xs text-gray-500 mt-2.5">
+              <div className="flex flex-wrap gap-x-6 gap-y-1 items-center text-xs text-text-muted mt-2.5">
                 {project.start_date && (
                   <div>
-                    <span className="font-semibold text-gray-400">
+                    <span className="font-semibold text-text-muted">
                       Start Date:
                     </span>{" "}
-                    <span className="text-teal-400 font-semibold">
+                    <span className="text-teal-500 dark:text-teal-400 font-semibold">
                       {new Date(project.start_date).toLocaleDateString(
                         undefined,
                         { dateStyle: "medium" },
@@ -367,10 +367,10 @@ export const ProjectDashboardPage: React.FC = () => {
                 )}
                 {project.end_date && (
                   <div>
-                    <span className="font-semibold text-gray-400">
+                    <span className="font-semibold text-text-muted">
                       End Date:
                     </span>{" "}
-                    <span className="text-teal-400 font-semibold">
+                    <span className="text-teal-500 dark:text-teal-400 font-semibold">
                       {new Date(project.end_date).toLocaleDateString(
                         undefined,
                         { dateStyle: "medium" },
@@ -383,21 +383,21 @@ export const ProjectDashboardPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-gray-900/40 border border-gray-800 rounded-2xl p-6 md:p-8 backdrop-blur-md shadow-xl">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-6 border-b border-gray-800 mb-6">
+        <div className="bg-bg-card/40 border border-border-subtle rounded-2xl p-6 md:p-8 backdrop-blur-md shadow-xl">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-6 border-b border-border-subtle mb-6">
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 uppercase tracking-wider">
                   Section 1 • One-Time Onboarding
                 </span>
-                <span className="text-xs text-gray-500 font-medium">
+                <span className="text-xs text-text-muted font-medium">
                   Project Initiation
                 </span>
               </div>
-              <h2 className="text-xl font-bold text-white flex items-center gap-2">
+              <h2 className="text-xl font-bold text-text-primary flex items-center gap-2">
                 Project Initiation & Baseline Setup
               </h2>
-              <p className="text-xs text-gray-400 mt-1">
+              <p className="text-xs text-text-muted mt-1">
                 Upload initial contract documents to build the project scope
                 baseline. These documents are uploaded once during onboarding.
               </p>
@@ -405,9 +405,9 @@ export const ProjectDashboardPage: React.FC = () => {
 
             <Link
               to={`/projects/${id}/baseline`}
-              className="inline-flex items-center gap-1.5 px-4 py-2 bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/40 text-purple-300 text-xs font-semibold rounded-xl transition-all"
+              className="inline-flex items-center gap-1.5 px-4 py-2 bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/40 text-purple-600 dark:text-purple-300 text-xs font-semibold rounded-xl transition-all"
             >
-              <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+              <Sparkles className="w-3.5 h-3.5 text-purple-500 dark:text-purple-400" />
               Review Baseline &rarr;
             </Link>
           </div>
@@ -422,21 +422,21 @@ export const ProjectDashboardPage: React.FC = () => {
                   }}
                   className={`p-4 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
                     baselineDocType === "EL"
-                      ? "bg-gradient-to-r from-emerald-950/50 to-teal-950/40 border-emerald-500/60 shadow-lg shadow-emerald-500/10 ring-1 ring-emerald-500/30"
-                      : "bg-gray-800/40 border-gray-700/60 hover:bg-gray-800/80"
+                      ? "bg-gradient-to-r from-emerald-500/10 dark:from-emerald-950/50 to-teal-500/10 dark:to-teal-950/40 border-emerald-500/60 shadow-lg shadow-emerald-500/10 ring-1 ring-emerald-500/30"
+                      : "bg-bg-hover/40 border-border-strong/60 hover:bg-bg-hover/80"
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <div
-                      className={`p-2.5 rounded-xl ${baselineDocType === "EL" ? "bg-emerald-500/20 text-emerald-400" : "bg-gray-700/50 text-gray-400"}`}
+                      className={`p-2.5 rounded-xl ${baselineDocType === "EL" ? "bg-emerald-500/20 text-emerald-400" : "bg-bg-hover text-text-muted"}`}
                     >
                       <FileText className="w-5 h-5" />
                     </div>
                     <div>
-                      <h3 className="text-sm font-bold text-white">
+                      <h3 className="text-sm font-bold text-text-primary">
                         Engagement Letter (EL)
                       </h3>
-                      <p className="text-xs text-gray-400">
+                      <p className="text-xs text-text-muted">
                         Official signed client engagement contract
                       </p>
                     </div>
@@ -450,21 +450,21 @@ export const ProjectDashboardPage: React.FC = () => {
                   }}
                   className={`p-4 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
                     baselineDocType === "IFA"
-                      ? "bg-gradient-to-r from-emerald-950/50 to-teal-950/40 border-emerald-500/60 shadow-lg shadow-emerald-500/10 ring-1 ring-emerald-500/30"
-                      : "bg-gray-800/40 border-gray-700/60 hover:bg-gray-800/80"
+                      ? "bg-gradient-to-r from-emerald-500/10 dark:from-emerald-950/50 to-teal-500/10 dark:to-teal-950/40 border-emerald-500/60 shadow-lg shadow-emerald-500/10 ring-1 ring-emerald-500/30"
+                      : "bg-bg-hover/40 border-border-strong/60 hover:bg-bg-hover/80"
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <div
-                      className={`p-2.5 rounded-xl ${baselineDocType === "IFA" ? "bg-emerald-500/20 text-emerald-400" : "bg-gray-700/50 text-gray-400"}`}
+                      className={`p-2.5 rounded-xl ${baselineDocType === "IFA" ? "bg-emerald-500/20 text-emerald-400" : "bg-bg-hover text-text-muted"}`}
                     >
                       <FileSpreadsheet className="w-5 h-5" />
                     </div>
                     <div>
-                      <h3 className="text-sm font-bold text-white">
+                      <h3 className="text-sm font-bold text-text-primary">
                         Independence & Financial (IFA)
                       </h3>
-                      <p className="text-xs text-gray-400">
+                      <p className="text-xs text-text-muted">
                         Inter-firm approval & financial budget document
                       </p>
                     </div>
@@ -473,10 +473,10 @@ export const ProjectDashboardPage: React.FC = () => {
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="bg-gray-800/50 p-5 rounded-xl border border-gray-700/70 flex flex-col justify-between relative overflow-hidden min-h-[300px]">
+                <div className="bg-bg-hover/50 p-5 rounded-xl border border-border-strong/70 flex flex-col justify-between relative overflow-hidden min-h-[300px]">
                   <div>
                     <div className="flex items-center justify-between mb-3">
-                      <h4 className="text-xs font-semibold text-gray-300 uppercase tracking-wider flex items-center gap-2">
+                      <h4 className="text-xs font-semibold text-text-secondary uppercase tracking-wider flex items-center gap-2">
                         <UploadCloud className="w-4 h-4 text-emerald-400" />
                         Target Category:{" "}
                         <span className="text-emerald-300 font-bold">
@@ -500,12 +500,12 @@ export const ProjectDashboardPage: React.FC = () => {
                         }
                         className={`border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center transition-all duration-200 ${
                           uploading
-                            ? "border-gray-700 bg-gray-900/10 cursor-not-allowed opacity-50"
+                            ? "border-border-strong bg-bg-card/10 cursor-not-allowed opacity-50"
                             : isDragging
                               ? "border-emerald-400 bg-emerald-950/20 cursor-pointer"
                               : baselineFile
                                 ? "border-green-500 bg-green-950/10 cursor-pointer"
-                                : "border-gray-600 hover:border-gray-400 bg-gray-900/40 hover:bg-gray-900/60 cursor-pointer"
+                                : "border-gray-600 hover:border-gray-400 bg-bg-card/40 hover:bg-bg-card/60 cursor-pointer"
                         }`}
                       >
                         <input
@@ -523,10 +523,10 @@ export const ProjectDashboardPage: React.FC = () => {
 
                         {baselineFile ? (
                           <div className="flex flex-col items-center w-full">
-                            <div className="flex items-center justify-between bg-gray-800/80 border border-gray-700 rounded-lg p-3 w-full max-w-xs">
+                            <div className="flex items-center justify-between bg-bg-hover/80 border border-border-strong rounded-lg p-3 w-full max-w-xs">
                               <div className="flex items-center gap-2 overflow-hidden mr-2">
                                 <FileText className="h-5 w-5 text-green-400 flex-shrink-0" />
-                                <span className="text-sm truncate text-gray-200">
+                                <span className="text-sm truncate text-text-primary">
                                   {baselineFile.name}
                                 </span>
                               </div>
@@ -537,13 +537,13 @@ export const ProjectDashboardPage: React.FC = () => {
                                   e.stopPropagation();
                                   setBaselineFile(null);
                                 }}
-                                className="p-1 hover:bg-gray-700 rounded text-gray-400 hover:text-red-400 transition-colors disabled:opacity-30"
+                                className="p-1 hover:bg-bg-hover rounded text-text-muted hover:text-red-400 transition-colors disabled:opacity-30"
                               >
                                 <X className="h-4 w-4" />
                               </button>
                             </div>
                             {!uploading && (
-                              <span className="text-xs text-gray-500 mt-2">
+                              <span className="text-xs text-text-muted mt-2">
                                 Click or drag new file to replace
                               </span>
                             )}
@@ -554,13 +554,13 @@ export const ProjectDashboardPage: React.FC = () => {
                               <UploadCloud className="w-8 h-8 text-emerald-400" />
                             </div>
                             <div className="text-center">
-                              <p className="text-sm text-gray-300 font-medium">
+                              <p className="text-sm text-text-secondary font-medium">
                                 Upload{" "}
                                 <strong className="text-emerald-300">
                                   {getDocTypeLabel(baselineDocType)}
                                 </strong>
                               </p>
-                              <p className="text-xs text-gray-500 mt-1">
+                              <p className="text-xs text-text-muted mt-1">
                                 Drag & drop (.pdf, .docx, .txt) or click to browse
                               </p>
                             </div>
@@ -571,7 +571,7 @@ export const ProjectDashboardPage: React.FC = () => {
                       <button
                         type="submit"
                         disabled={!baselineFile || uploading}
-                        className="w-full py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-semibold rounded-xl text-xs transition-all shadow-md shadow-emerald-500/20 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                        className="w-full py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-text-primary font-semibold rounded-xl text-xs transition-all shadow-md shadow-emerald-500/20 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                       >
                         {uploading
                           ? "Uploading Document..."
@@ -581,19 +581,19 @@ export const ProjectDashboardPage: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="bg-gray-800/50 p-5 rounded-xl border border-gray-700/70 flex flex-col justify-between">
+                <div className="bg-bg-hover/50 p-5 rounded-xl border border-border-strong/70 flex flex-col justify-between">
                   <div>
-                    <h4 className="text-xs font-semibold text-gray-300 uppercase tracking-wider mb-3">
+                    <h4 className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-3">
                       Initiation Baseline Artifacts ({initiationDocs.length})
                     </h4>
 
                     {initiationDocs.length === 0 ? (
-                      <div className="py-10 text-center border border-dashed border-gray-750 rounded-xl bg-gray-900/20">
+                      <div className="py-10 text-center border border-dashed border-gray-750 rounded-xl bg-bg-card/20">
                         <FileCheck className="w-8 h-8 text-gray-600 mx-auto mb-2" />
-                        <p className="text-xs text-gray-400 font-medium">
+                        <p className="text-xs text-text-muted font-medium">
                           No initiation documents uploaded yet.
                         </p>
-                        <p className="text-[11px] text-gray-500 mt-0.5">
+                        <p className="text-[11px] text-text-muted mt-0.5">
                           Select EL or IFA above to upload.
                         </p>
                       </div>
@@ -602,10 +602,10 @@ export const ProjectDashboardPage: React.FC = () => {
                         {initiationDocs.map((doc) => (
                           <li
                             key={doc.id}
-                            className="flex justify-between items-center p-3 bg-gray-900/60 rounded-xl border border-gray-700/50 hover:border-emerald-500/30 transition-all"
+                            className="flex justify-between items-center p-3 bg-bg-card/60 rounded-xl border border-border-strong/50 hover:border-emerald-500/30 transition-all"
                           >
                             <div className="flex flex-col min-w-0 pr-2 w-full">
-                              <span className="truncate font-semibold text-xs text-gray-200">
+                              <span className="truncate font-semibold text-xs text-text-primary">
                                 {doc.document_name}
                               </span>
                               <div className="flex items-center gap-2 mt-1">
@@ -614,7 +614,7 @@ export const ProjectDashboardPage: React.FC = () => {
                                 </span>
                               </div>
                               {doc.processing_status === "FAILED" && doc.processing_error && (
-                                <p className="text-[10px] text-rose-400 font-medium font-mono mt-1 whitespace-pre-wrap max-w-full break-words border border-rose-500/20 bg-rose-950/20 rounded-md px-2 py-1 select-text">
+                                <p className="text-[10px] text-rose-500 dark:text-rose-400 font-medium font-mono mt-1 whitespace-pre-wrap max-w-full break-words border border-rose-500/20 bg-rose-950/20 rounded-md px-2 py-1 select-text">
                                   Error: {doc.processing_error}
                                 </p>
                               )}
@@ -630,7 +630,7 @@ export const ProjectDashboardPage: React.FC = () => {
                                       ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 animate-pulse"
                                       : doc.processing_status === "FAILED"
                                         ? "bg-red-500/20 text-red-400 border border-red-500/30"
-                                        : "bg-blue-500/20 text-blue-400 border border-blue-500/30"
+                                        : "bg-blue-500/20 text-blue-500 dark:text-blue-400 border border-blue-500/30"
                                 }`}
                               >
                                 {doc.processing_status}
@@ -641,7 +641,7 @@ export const ProjectDashboardPage: React.FC = () => {
                                   <button
                                     onClick={() => setProcessingDocId(doc.id)}
                                     title="Extract and process document"
-                                    className="p-1.5 bg-green-600/20 hover:bg-green-600 border border-green-500/30 text-green-400 hover:text-white rounded-lg transition-all"
+                                    className="p-1.5 bg-green-600/20 hover:bg-green-600 border border-green-500/30 text-green-400 hover:text-text-primary rounded-lg transition-all"
                                   >
                                     <Play className="h-3 w-3" />
                                   </button>
@@ -653,7 +653,7 @@ export const ProjectDashboardPage: React.FC = () => {
                                   <button
                                     onClick={() => handleDeleteDocument(doc.id)}
                                     title="Delete document"
-                                    className="p-1.5 bg-red-600/20 hover:bg-red-600 border border-red-500/30 text-red-400 hover:text-white rounded-lg transition-all"
+                                    className="p-1.5 bg-red-600/20 hover:bg-red-600 border border-red-500/30 text-red-400 hover:text-text-primary rounded-lg transition-all"
                                   >
                                     <Trash2 className="h-3 w-3" />
                                   </button>
@@ -668,16 +668,16 @@ export const ProjectDashboardPage: React.FC = () => {
               </div>
             </>
           ) : (
-            <div className="bg-gray-800/50 p-5 rounded-xl border border-gray-700/70 flex flex-col justify-between w-full">
+            <div className="bg-bg-hover/50 p-5 rounded-xl border border-border-strong/70 flex flex-col justify-between w-full">
               <div>
-                <h4 className="text-xs font-semibold text-gray-300 uppercase tracking-wider mb-3">
+                <h4 className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-3">
                   Initiation Baseline Artifacts ({initiationDocs.length})
                 </h4>
 
                 {initiationDocs.length === 0 ? (
-                  <div className="py-10 text-center border border-dashed border-gray-750 rounded-xl bg-gray-900/20">
+                  <div className="py-10 text-center border border-dashed border-gray-750 rounded-xl bg-bg-card/20">
                     <FileCheck className="w-8 h-8 text-gray-600 mx-auto mb-2" />
-                    <p className="text-xs text-gray-400 font-medium">
+                    <p className="text-xs text-text-muted font-medium">
                       No initiation documents uploaded yet.
                     </p>
                   </div>
@@ -686,10 +686,10 @@ export const ProjectDashboardPage: React.FC = () => {
                     {initiationDocs.map((doc) => (
                       <li
                         key={doc.id}
-                        className="flex justify-between items-center p-3 bg-gray-900/60 rounded-xl border border-gray-700/50 transition-all"
+                        className="flex justify-between items-center p-3 bg-bg-card/60 rounded-xl border border-border-strong/50 transition-all"
                       >
                         <div className="flex flex-col min-w-0 pr-2">
-                          <span className="truncate font-semibold text-xs text-gray-200">
+                          <span className="truncate font-semibold text-xs text-text-primary">
                             {doc.document_name}
                           </span>
                           <div className="flex items-center gap-2 mt-1">
@@ -709,7 +709,7 @@ export const ProjectDashboardPage: React.FC = () => {
                                   ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 animate-pulse"
                                   : doc.processing_status === "FAILED"
                                     ? "bg-red-500/20 text-red-400 border border-red-500/30"
-                                    : "bg-blue-500/20 text-blue-400 border border-blue-500/30"
+                                    : "bg-blue-500/20 text-blue-500 dark:text-blue-400 border border-blue-500/30"
                             }`}
                           >
                             {doc.processing_status}
@@ -724,21 +724,21 @@ export const ProjectDashboardPage: React.FC = () => {
           )}
         </div>
 
-        <div className="bg-gray-900/40 border border-gray-800 rounded-2xl p-6 md:p-8 backdrop-blur-md shadow-xl">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-6 border-b border-gray-800 mb-6">
+        <div className="bg-bg-card/40 border border-border-subtle rounded-2xl p-6 md:p-8 backdrop-blur-md shadow-xl">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-6 border-b border-border-subtle mb-6">
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-indigo-500/15 text-indigo-400 border border-indigo-500/30 uppercase tracking-wider">
                   Section 2 • Recurring Execution
                 </span>
-                <span className="text-xs text-gray-500 font-medium">
+                <span className="text-xs text-text-muted font-medium">
                   Progress Tracker
                 </span>
               </div>
-              <h2 className="text-xl font-bold text-white flex items-center gap-2">
+              <h2 className="text-xl font-bold text-text-primary flex items-center gap-2">
                 Progress Tracker & Continuous Ingestion
               </h2>
-              <p className="text-xs text-gray-400 mt-1">
+              <p className="text-xs text-text-muted mt-1">
                 Upload recurring project documents (MOMs, status reports) to
                 evaluate execution deliverables against the approved scope
                 baseline.
@@ -747,9 +747,9 @@ export const ProjectDashboardPage: React.FC = () => {
 
             <Link
               to={`/projects/${id}/tracker`}
-              className="inline-flex items-center gap-1.5 px-4 py-2 bg-rose-600/20 hover:bg-rose-600/30 border border-rose-500/40 text-rose-300 text-xs font-semibold rounded-xl transition-all"
+              className="inline-flex items-center gap-1.5 px-4 py-2 bg-rose-600/20 hover:bg-rose-600/30 border border-rose-500/40 text-rose-600 dark:text-rose-300 text-xs font-semibold rounded-xl transition-all"
             >
-              <Clock className="w-3.5 h-3.5 text-rose-400" />
+              <Clock className="w-3.5 h-3.5 text-rose-500 dark:text-rose-400" />
               View Risk Tracker &rarr;
             </Link>
           </div>
@@ -757,12 +757,12 @@ export const ProjectDashboardPage: React.FC = () => {
           {project.monitoring_status !== "ACTIVE" ? (
             <div className="bg-amber-950/20 border border-amber-500/30 rounded-xl p-8 flex flex-col items-center justify-center text-center">
               <div className="w-12 h-12 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center mb-3">
-                <Lock className="w-6 h-6 text-amber-400" />
+                <Lock className="w-6 h-6 text-amber-500 dark:text-amber-400" />
               </div>
-              <h3 className="text-base font-bold text-white mb-2">
+              <h3 className="text-base font-bold text-text-primary mb-2">
                 Progress Ingestion Locked
               </h3>
-              <p className="text-xs text-gray-400 max-w-md leading-relaxed">
+              <p className="text-xs text-text-muted max-w-md leading-relaxed">
                 The Engagement Manager must extract and approve the initial{" "}
                 <strong>Scope Baseline</strong> for this project before you can
                 upload recurring execution documents (MOMs and Status Reports).
@@ -778,21 +778,21 @@ export const ProjectDashboardPage: React.FC = () => {
                   }}
                   className={`p-4 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
                     monitoringDocType === "MOM"
-                      ? "bg-gradient-to-r from-indigo-950/50 to-blue-950/40 border-indigo-500/60 shadow-lg shadow-indigo-500/10 ring-1 ring-indigo-500/30"
-                      : "bg-gray-800/40 border-gray-700/60 hover:bg-gray-800/80"
+                      ? "bg-gradient-to-r from-indigo-500/10 dark:from-indigo-950/50 to-blue-500/10 dark:to-blue-950/40 border-indigo-500/60 shadow-lg shadow-indigo-500/10 ring-1 ring-indigo-500/30"
+                      : "bg-bg-hover/40 border-border-strong/60 hover:bg-bg-hover/80"
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <div
-                      className={`p-2.5 rounded-xl ${monitoringDocType === "MOM" ? "bg-indigo-500/20 text-indigo-400" : "bg-gray-700/50 text-gray-400"}`}
+                      className={`p-2.5 rounded-xl ${monitoringDocType === "MOM" ? "bg-indigo-500/20 text-indigo-400" : "bg-bg-hover text-text-muted"}`}
                     >
                       <Clock className="w-5 h-5" />
                     </div>
                     <div>
-                      <h3 className="text-sm font-bold text-white">
+                      <h3 className="text-sm font-bold text-text-primary">
                         Minutes of Meeting (MOM)
                       </h3>
-                      <p className="text-xs text-gray-400">
+                      <p className="text-xs text-text-muted">
                         Steering MoM & decision log
                       </p>
                     </div>
@@ -806,21 +806,21 @@ export const ProjectDashboardPage: React.FC = () => {
                   }}
                   className={`p-4 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
                     monitoringDocType === "STATUS_REPORT"
-                      ? "bg-gradient-to-r from-indigo-950/50 to-blue-950/40 border-indigo-500/60 shadow-lg shadow-indigo-500/10 ring-1 ring-indigo-500/30"
-                      : "bg-gray-800/40 border-gray-700/60 hover:bg-gray-800/80"
+                      ? "bg-gradient-to-r from-indigo-500/10 dark:from-indigo-950/50 to-blue-500/10 dark:to-blue-950/40 border-indigo-500/60 shadow-lg shadow-indigo-500/10 ring-1 ring-indigo-500/30"
+                      : "bg-bg-hover/40 border-border-strong/60 hover:bg-bg-hover/80"
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <div
-                      className={`p-2.5 rounded-xl ${monitoringDocType === "STATUS_REPORT" ? "bg-indigo-500/20 text-indigo-400" : "bg-gray-700/50 text-gray-400"}`}
+                      className={`p-2.5 rounded-xl ${monitoringDocType === "STATUS_REPORT" ? "bg-indigo-500/20 text-indigo-400" : "bg-bg-hover text-text-muted"}`}
                     >
                       <Layers className="w-5 h-5" />
                     </div>
                     <div>
-                      <h3 className="text-sm font-bold text-white">
+                      <h3 className="text-sm font-bold text-text-primary">
                         Status Report
                       </h3>
-                      <p className="text-xs text-gray-400">
+                      <p className="text-xs text-text-muted">
                         Periodic sprint & status updates
                       </p>
                     </div>
@@ -829,17 +829,17 @@ export const ProjectDashboardPage: React.FC = () => {
 
                 <div
                   onClick={() => setShowCustomModal(true)}
-                  className="p-4 rounded-xl border border-dashed border-gray-700 hover:border-indigo-500/50 bg-gray-800/20 hover:bg-gray-800/60 transition-all cursor-pointer flex items-center justify-between"
+                  className="p-4 rounded-xl border border-dashed border-border-strong hover:border-indigo-500/50 bg-bg-hover/20 hover:bg-bg-hover/60 transition-all cursor-pointer flex items-center justify-between"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="p-2.5 rounded-xl bg-gray-800 text-indigo-400">
+                    <div className="p-2.5 rounded-xl bg-bg-hover text-indigo-400">
                       <Plus className="w-5 h-5" />
                     </div>
                     <div>
-                      <h3 className="text-sm font-bold text-white">
+                      <h3 className="text-sm font-bold text-text-primary">
                         + Add Custom Type
                       </h3>
-                      <p className="text-xs text-gray-400">
+                      <p className="text-xs text-text-muted">
                         Create custom category
                       </p>
                     </div>
@@ -848,23 +848,23 @@ export const ProjectDashboardPage: React.FC = () => {
               </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="bg-gray-800/50 p-5 rounded-xl border border-gray-700/70 flex flex-col justify-between relative overflow-hidden min-h-[300px]">
+              <div className="bg-bg-hover/50 p-5 rounded-xl border border-border-strong/70 flex flex-col justify-between relative overflow-hidden min-h-[300px]">
                 {!(user?.role === "PROJECT_LEAD" || user?.role === "ENGAGEMENT_MANAGER" || user?.role === "ADMIN") ? (
                   <div className="flex-1 flex flex-col items-center justify-center py-12 px-4 text-center">
                     <div className="bg-amber-500/10 p-3 rounded-full mb-3 border border-amber-500/20 shadow-sm animate-pulse">
-                      <Lock className="w-6 h-6 text-amber-400" />
+                      <Lock className="w-6 h-6 text-amber-500 dark:text-amber-400" />
                     </div>
-                    <h4 className="text-sm font-bold text-gray-200 mb-1">
+                    <h4 className="text-sm font-bold text-text-primary mb-1">
                       Upload Restricted
                     </h4>
-                    <p className="text-xs text-gray-400 max-w-[280px] leading-relaxed">
+                    <p className="text-xs text-text-muted max-w-[280px] leading-relaxed">
                       Only users with the <strong className="text-indigo-400">Project Lead</strong> or <strong className="text-indigo-400">Engagement Manager</strong> role are authorized to upload or modify Progress Ingestion documents (MOMs & Status Reports).
                     </p>
                   </div>
                 ) : (
                   <div>
                     <div className="flex items-center justify-between mb-3">
-                      <h4 className="text-xs font-semibold text-gray-300 uppercase tracking-wider flex items-center gap-2">
+                      <h4 className="text-xs font-semibold text-text-secondary uppercase tracking-wider flex items-center gap-2">
                         <UploadCloud className="w-4 h-4 text-indigo-400" />
                         Target Category:{" "}
                         <span className="text-indigo-300 font-bold">
@@ -888,12 +888,12 @@ export const ProjectDashboardPage: React.FC = () => {
                         }
                         className={`border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center transition-all duration-200 ${
                           uploading
-                            ? "border-gray-700 bg-gray-900/10 cursor-not-allowed opacity-50"
+                            ? "border-border-strong bg-bg-card/10 cursor-not-allowed opacity-50"
                             : isDragging
                               ? "border-indigo-400 bg-indigo-950/20 cursor-pointer"
                               : monitoringFile
                                 ? "border-green-500 bg-green-950/10 cursor-pointer"
-                                : "border-gray-600 hover:border-gray-400 bg-gray-900/40 hover:bg-gray-900/60 cursor-pointer"
+                                : "border-gray-600 hover:border-gray-400 bg-bg-card/40 hover:bg-bg-card/60 cursor-pointer"
                         }`}
                       >
                         <input
@@ -914,10 +914,10 @@ export const ProjectDashboardPage: React.FC = () => {
 
                         {monitoringFile ? (
                           <div className="flex flex-col items-center w-full">
-                            <div className="flex items-center justify-between bg-gray-800/80 border border-gray-700 rounded-lg p-3 w-full max-w-xs">
+                            <div className="flex items-center justify-between bg-bg-hover/80 border border-border-strong rounded-lg p-3 w-full max-w-xs">
                               <div className="flex items-center gap-2 overflow-hidden mr-2">
                                 <FileText className="h-5 w-5 text-green-400 flex-shrink-0" />
-                                <span className="text-sm truncate text-gray-200">
+                                <span className="text-sm truncate text-text-primary">
                                   {monitoringFile.name}
                                 </span>
                               </div>
@@ -928,13 +928,13 @@ export const ProjectDashboardPage: React.FC = () => {
                                   e.stopPropagation();
                                   setMonitoringFile(null);
                                 }}
-                                className="p-1 hover:bg-gray-700 rounded text-gray-400 hover:text-red-400 transition-colors disabled:opacity-30"
+                                className="p-1 hover:bg-bg-hover rounded text-text-muted hover:text-red-400 transition-colors disabled:opacity-30"
                               >
                                 <X className="h-4 w-4" />
                               </button>
                             </div>
                             {!uploading && (
-                              <span className="text-xs text-gray-500 mt-2">
+                              <span className="text-xs text-text-muted mt-2">
                                 Click or drag new file to replace
                               </span>
                             )}
@@ -945,13 +945,13 @@ export const ProjectDashboardPage: React.FC = () => {
                               <UploadCloud className="w-8 h-8 text-indigo-400" />
                             </div>
                             <div className="text-center">
-                              <p className="text-sm text-gray-300 font-medium">
+                              <p className="text-sm text-text-secondary font-medium">
                                 Upload{" "}
                                 <strong className="text-indigo-300">
                                   {getDocTypeLabel(monitoringDocType)}
                                 </strong>
                               </p>
-                              <p className="text-xs text-gray-500 mt-1">
+                              <p className="text-xs text-text-muted mt-1">
                                 Drag & drop (.pdf, .docx, .txt) or click to
                                 browse
                               </p>
@@ -963,7 +963,7 @@ export const ProjectDashboardPage: React.FC = () => {
                       <button
                         type="submit"
                         disabled={!monitoringFile || uploading}
-                        className="w-full py-2.5 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white font-semibold rounded-xl text-xs transition-all shadow-md shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                        className="w-full py-2.5 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-text-primary font-semibold rounded-xl text-xs transition-all shadow-md shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                       >
                         {uploading
                           ? "Uploading Document..."
@@ -974,19 +974,19 @@ export const ProjectDashboardPage: React.FC = () => {
                 )}
               </div>
 
-                <div className="bg-gray-800/50 p-5 rounded-xl border border-gray-700/70 flex flex-col justify-between">
+                <div className="bg-bg-hover/50 p-5 rounded-xl border border-border-strong/70 flex flex-col justify-between">
                   <div>
-                    <h4 className="text-xs font-semibold text-gray-300 uppercase tracking-wider mb-3">
+                    <h4 className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-3">
                       Execution & Progress History ({trackerDocs.length})
                     </h4>
 
                     {trackerDocs.length === 0 ? (
-                      <div className="py-10 text-center border border-dashed border-gray-750 rounded-xl bg-gray-900/20">
+                      <div className="py-10 text-center border border-dashed border-gray-750 rounded-xl bg-bg-card/20">
                         <Clock className="w-8 h-8 text-gray-600 mx-auto mb-2" />
-                        <p className="text-xs text-gray-400 font-medium">
+                        <p className="text-xs text-text-muted font-medium">
                           No progress tracking documents ingested yet.
                         </p>
-                        <p className="text-[11px] text-gray-500 mt-0.5">
+                        <p className="text-[11px] text-text-muted mt-0.5">
                           Select MOM or Status Report above to upload.
                         </p>
                       </div>
@@ -995,10 +995,10 @@ export const ProjectDashboardPage: React.FC = () => {
                         {trackerDocs.map((doc) => (
                           <li
                             key={doc.id}
-                            className="flex justify-between items-center p-3 bg-gray-900/60 rounded-xl border border-gray-700/50 hover:border-indigo-500/30 transition-all"
+                            className="flex justify-between items-center p-3 bg-bg-card/60 rounded-xl border border-border-strong/50 hover:border-indigo-500/30 transition-all"
                           >
                             <div className="flex flex-col min-w-0 pr-2 w-full">
-                              <span className="truncate font-semibold text-xs text-gray-200">
+                              <span className="truncate font-semibold text-xs text-text-primary">
                                 {doc.document_name}
                               </span>
                               <div className="flex items-center gap-2 mt-1">
@@ -1007,7 +1007,7 @@ export const ProjectDashboardPage: React.FC = () => {
                                 </span>
                               </div>
                               {doc.processing_status === "FAILED" && doc.processing_error && (
-                                <p className="text-[10px] text-rose-400 font-medium font-mono mt-1 whitespace-pre-wrap max-w-full break-words border border-rose-500/20 bg-rose-950/20 rounded-md px-2 py-1 select-text">
+                                <p className="text-[10px] text-rose-500 dark:text-rose-400 font-medium font-mono mt-1 whitespace-pre-wrap max-w-full break-words border border-rose-500/20 bg-rose-950/20 rounded-md px-2 py-1 select-text">
                                   Error: {doc.processing_error}
                                 </p>
                               )}
@@ -1023,7 +1023,7 @@ export const ProjectDashboardPage: React.FC = () => {
                                       ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 animate-pulse"
                                       : doc.processing_status === "FAILED"
                                         ? "bg-red-500/20 text-red-400 border border-red-500/30"
-                                        : "bg-blue-500/20 text-blue-400 border border-blue-500/30"
+                                        : "bg-blue-500/20 text-blue-500 dark:text-blue-400 border border-blue-500/30"
                                 }`}
                               >
                                 {doc.processing_status}
@@ -1035,7 +1035,7 @@ export const ProjectDashboardPage: React.FC = () => {
                                   <button
                                     onClick={() => setProcessingDocId(doc.id)}
                                     title="Extract and process document"
-                                    className="p-1.5 bg-green-600/20 hover:bg-green-600 border border-green-500/30 text-green-400 hover:text-white rounded-lg transition-all"
+                                    className="p-1.5 bg-green-600/20 hover:bg-green-600 border border-green-500/30 text-green-400 hover:text-text-primary rounded-lg transition-all"
                                   >
                                     <Play className="h-3 w-3" />
                                   </button>
@@ -1047,7 +1047,7 @@ export const ProjectDashboardPage: React.FC = () => {
                                   <button
                                     onClick={() => handleDeleteDocument(doc.id)}
                                     title="Delete document"
-                                    className="p-1.5 bg-red-600/20 hover:bg-red-600 border border-red-500/30 text-red-400 hover:text-white rounded-lg transition-all"
+                                    className="p-1.5 bg-red-600/20 hover:bg-red-600 border border-red-500/30 text-red-400 hover:text-text-primary rounded-lg transition-all"
                                   >
                                     <Trash2 className="h-3 w-3" />
                                   </button>
@@ -1067,14 +1067,14 @@ export const ProjectDashboardPage: React.FC = () => {
 
       {showCustomModal && (
         <div className="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-[#111827] border border-gray-700 rounded-2xl p-6 w-full max-w-md shadow-2xl">
-            <h2 className="text-xl font-bold mb-4 text-white">
+          <div className="bg-[#111827] border border-border-strong rounded-2xl p-6 w-full max-w-md shadow-2xl">
+            <h2 className="text-xl font-bold mb-4 text-text-primary">
               Add Custom Document Type
             </h2>
 
             <div className="space-y-4 mb-6">
               <div>
-                <label className="block text-gray-400 text-sm mb-1">
+                <label className="block text-text-muted text-sm mb-1">
                   Document Type Name
                 </label>
                 <input
@@ -1082,11 +1082,11 @@ export const ProjectDashboardPage: React.FC = () => {
                   value={customName}
                   onChange={(e) => setCustomName(e.target.value)}
                   placeholder="e.g. Technical Spec"
-                  className="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-[#00e5ff]"
+                  className="w-full bg-bg-card border border-border-strong rounded-lg p-3 text-text-primary focus:outline-none focus:ring-2 focus:ring-[#00e5ff]"
                 />
               </div>
               <div>
-                <label className="block text-gray-400 text-sm mb-1">
+                <label className="block text-text-muted text-sm mb-1">
                   Description
                 </label>
                 <textarea
@@ -1094,7 +1094,7 @@ export const ProjectDashboardPage: React.FC = () => {
                   onChange={(e) => setCustomDesc(e.target.value)}
                   placeholder="What is this document used for?"
                   rows={3}
-                  className="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-[#00e5ff] resize-none"
+                  className="w-full bg-bg-card border border-border-strong rounded-lg p-3 text-text-primary focus:outline-none focus:ring-2 focus:ring-[#00e5ff] resize-none"
                 />
               </div>
             </div>
@@ -1105,7 +1105,7 @@ export const ProjectDashboardPage: React.FC = () => {
                   setShowCustomModal(false);
                 }}
                 disabled={addingCustomType}
-                className={`px-4 py-2 rounded-lg font-medium text-gray-300 hover:bg-gray-800 transition-colors text-sm ${addingCustomType ? "opacity-50 cursor-not-allowed" : ""}`}
+                className={`px-4 py-2 rounded-lg font-medium text-text-secondary hover:bg-bg-hover transition-colors text-sm ${addingCustomType ? "opacity-50 cursor-not-allowed" : ""}`}
               >
                 Cancel
               </button>
@@ -1130,11 +1130,11 @@ export const ProjectDashboardPage: React.FC = () => {
 
       {deletingDocId !== null && (
         <div className="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-[#111827] border border-gray-700 rounded-2xl p-6 w-full max-w-md shadow-2xl">
-            <h2 className="text-xl font-bold mb-2 text-white">
+          <div className="bg-[#111827] border border-border-strong rounded-2xl p-6 w-full max-w-md shadow-2xl">
+            <h2 className="text-xl font-bold mb-2 text-text-primary">
               Delete Document
             </h2>
-            <p className="text-sm text-gray-400 mb-4">
+            <p className="text-sm text-text-muted mb-4">
               Are you sure you want to delete this document? This action is
               permanent and will remove all extracted scope details and related
               data.
@@ -1142,7 +1142,7 @@ export const ProjectDashboardPage: React.FC = () => {
 
             <div className="space-y-4 mb-6">
               <div>
-                <label className="block text-gray-300 text-xs font-semibold mb-1.5 uppercase tracking-wide">
+                <label className="block text-text-secondary text-xs font-semibold mb-1.5 uppercase tracking-wide">
                   Why are you deleting this uploaded document?
                 </label>
                 <textarea
@@ -1151,7 +1151,7 @@ export const ProjectDashboardPage: React.FC = () => {
                   onChange={(e) => setDeleteReason(e.target.value)}
                   placeholder="Provide a reason for deletion (required)..."
                   rows={3}
-                  className="w-full bg-gray-900 border border-gray-700 rounded-xl p-3.5 text-white focus:outline-none focus:ring-2 focus:ring-[#00e5ff] resize-none text-sm placeholder-gray-500"
+                  className="w-full bg-bg-card border border-border-strong rounded-xl p-3.5 text-text-primary focus:outline-none focus:ring-2 focus:ring-[#00e5ff] resize-none text-sm placeholder-gray-500"
                 />
               </div>
             </div>
@@ -1162,7 +1162,7 @@ export const ProjectDashboardPage: React.FC = () => {
                   setDeletingDocId(null);
                   setDeleteReason("");
                 }}
-                className="px-4 py-2 rounded-lg font-medium text-gray-300 hover:bg-gray-800 transition-colors text-sm"
+                className="px-4 py-2 rounded-lg font-medium text-text-secondary hover:bg-bg-hover transition-colors text-sm"
               >
                 Cancel
               </button>
@@ -1172,7 +1172,7 @@ export const ProjectDashboardPage: React.FC = () => {
                 className={`px-4 py-2 rounded-lg font-semibold transition-colors text-sm ${
                   !deleteReason.trim()
                     ? "bg-red-900/40 text-red-700 cursor-not-allowed border border-red-950/20"
-                    : "bg-red-600 text-white hover:bg-red-700 hover:shadow-lg active:scale-[0.98]"
+                    : "bg-red-600 text-text-primary hover:bg-red-700 hover:shadow-lg active:scale-[0.98]"
                 }`}
               >
                 Delete
@@ -1184,17 +1184,17 @@ export const ProjectDashboardPage: React.FC = () => {
 
       {processingDocId !== null && (
         <div className="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-[#111827] border border-gray-700 rounded-2xl p-6 w-full max-w-md shadow-2xl">
-            <div className="w-12 h-12 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center mx-auto mb-4 text-amber-400">
+          <div className="bg-[#111827] border border-border-strong rounded-2xl p-6 w-full max-w-md shadow-2xl">
+            <div className="w-12 h-12 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center mx-auto mb-4 text-amber-500 dark:text-amber-400">
               <AlertTriangle className="w-6 h-6" />
             </div>
 
-            <h2 className="text-xl font-bold mb-2 text-white text-center">
+            <h2 className="text-xl font-bold mb-2 text-text-primary text-center">
               Confirm Document Processing
             </h2>
-            <p className="text-sm text-gray-400 mb-6 text-center leading-relaxed font-medium">
+            <p className="text-sm text-text-muted mb-6 text-center leading-relaxed font-medium">
               This document{" "}
-              <span className="text-white font-bold">cannot be deleted</span>{" "}
+              <span className="text-text-primary font-bold">cannot be deleted</span>{" "}
               once processed. Are you sure you want to add this and start the
               analysis?
             </p>
@@ -1202,13 +1202,13 @@ export const ProjectDashboardPage: React.FC = () => {
             <div className="flex gap-3">
               <button
                 onClick={() => setProcessingDocId(null)}
-                className="flex-1 py-2.5 bg-gray-800 hover:bg-gray-750 text-gray-300 rounded-xl text-xs font-semibold transition-all border border-gray-700 cursor-pointer"
+                className="flex-1 py-2.5 bg-bg-hover hover:bg-bg-hover text-text-secondary rounded-xl text-xs font-semibold transition-all border border-border-strong cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 onClick={confirmProcessDocument}
-                className="flex-1 py-2.5 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-semibold transition-all shadow-md shadow-amber-600/20 cursor-pointer"
+                className="flex-1 py-2.5 bg-amber-600 hover:bg-amber-500 text-text-primary rounded-xl text-xs font-semibold transition-all shadow-md shadow-amber-600/20 cursor-pointer"
               >
                 Yes, Start Process
               </button>
@@ -1219,22 +1219,22 @@ export const ProjectDashboardPage: React.FC = () => {
 
       {/* showRelevancePopup && relevanceCheckResult && (
         <div className="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-[#111827] border border-gray-700 rounded-2xl p-6 w-full max-w-md shadow-2xl">
-            <h2 className="text-xl font-bold mb-2 text-white">
+          <div className="bg-[#111827] border border-border-strong rounded-2xl p-6 w-full max-w-md shadow-2xl">
+            <h2 className="text-xl font-bold mb-2 text-text-primary">
               AI Relevance Check
             </h2>
-            <p className="text-sm text-gray-400 mb-4">
+            <p className="text-sm text-text-muted mb-4">
               Analyzing file{" "}
-              <span className="text-white font-medium">
+              <span className="text-text-primary font-medium">
                 {relevanceCheckResult.original_name}
               </span>{" "}
               against document type{" "}
-              <span className="text-white font-medium">{uploadTarget === "BASELINE" ? baselineDocType : monitoringDocType}</span>.
+              <span className="text-text-primary font-medium">{uploadTarget === "BASELINE" ? baselineDocType : monitoringDocType}</span>.
             </p>
 
             <div className="space-y-4 mb-6">
-              <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 flex flex-col items-center">
-                <span className="text-xs text-gray-400 font-semibold uppercase tracking-wide">
+              <div className="bg-bg-card border border-border-subtle rounded-xl p-4 flex flex-col items-center">
+                <span className="text-xs text-text-muted font-semibold uppercase tracking-wide">
                   Relevance Score
                 </span>
                 <span
@@ -1247,7 +1247,7 @@ export const ProjectDashboardPage: React.FC = () => {
                   {relevanceCheckResult.score}%
                 </span>
                 {relevanceCheckResult.reasoning && (
-                  <p className="text-xs text-gray-400 text-center italic mt-1">
+                  <p className="text-xs text-text-muted text-center italic mt-1">
                     "{relevanceCheckResult.reasoning}"
                   </p>
                 )}
@@ -1276,7 +1276,7 @@ export const ProjectDashboardPage: React.FC = () => {
                   setRelevanceCheckResult(null);
                 }}
                 disabled={confirmingUpload}
-                className="px-4 py-2 rounded-lg font-medium text-gray-300 hover:bg-gray-800 transition-colors text-sm disabled:opacity-50"
+                className="px-4 py-2 rounded-lg font-medium text-text-secondary hover:bg-bg-hover transition-colors text-sm disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -1286,12 +1286,12 @@ export const ProjectDashboardPage: React.FC = () => {
                 className={`px-4 py-2 rounded-lg font-semibold transition-colors text-sm flex items-center gap-1.5 \${
                   relevanceCheckResult.score < 60 || confirmingUpload
                     ? "bg-blue-900/40 text-blue-700 cursor-not-allowed border border-blue-950/20"
-                    : "bg-blue-600 text-white hover:bg-blue-700 hover:shadow-lg"
+                    : "bg-blue-600 text-text-primary hover:bg-blue-700 hover:shadow-lg"
                 }`}
               >
                 {confirmingUpload ? (
                   <>
-                    <Loader2 className="h-4 w-4 animate-spin text-white" />
+                    <Loader2 className="h-4 w-4 animate-spin text-text-primary" />
                     Finalizing...
                   </>
                 ) : (
@@ -1305,15 +1305,15 @@ export const ProjectDashboardPage: React.FC = () => {
 
       {/* TOAST NOTIFICATION */}
       {notification && (
-        <div className="fixed top-6 right-6 z-50 max-w-sm w-full bg-[#111827] border border-white/10 rounded-2xl p-4 shadow-2xl flex gap-3 animate-slideIn select-none">
+        <div className="fixed top-6 right-6 z-50 max-w-sm w-full bg-[#111827] border border-border-strong rounded-2xl p-4 shadow-2xl flex gap-3 animate-slideIn select-none">
           <div className="flex-1">
             <p
               className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${
                 notification.type === "success"
                   ? "text-emerald-400"
                   : notification.type === "error"
-                    ? "text-rose-400"
-                    : "text-cyan-400"
+                    ? "text-rose-500 dark:text-rose-400"
+                    : "text-cyan-600 dark:text-cyan-400"
               }`}
             >
               {notification.type === "success"
@@ -1322,11 +1322,11 @@ export const ProjectDashboardPage: React.FC = () => {
                   ? "Error"
                   : "Notice"}
             </p>
-            <p className="text-sm text-gray-200">{notification.message}</p>
+            <p className="text-sm text-text-primary">{notification.message}</p>
           </div>
           <button
             onClick={() => setNotification(null)}
-            className="text-gray-400 hover:text-white transition-colors text-lg font-bold self-start leading-none"
+            className="text-text-muted hover:text-text-primary transition-colors text-lg font-bold self-start leading-none"
           >
             &times;
           </button>

@@ -854,25 +854,25 @@ export const BaselineReviewPage: React.FC = () => {
     };
 
     return (
-      <div className="w-full bg-[#0b0e17]/90 border border-gray-800 rounded-3xl p-8 backdrop-blur-md shadow-2xl relative overflow-hidden max-w-4xl mx-auto my-8 animate-fade-in-up">
+      <div className="w-full bg-[#0b0e17]/90 border border-border-subtle rounded-3xl p-8 backdrop-blur-md shadow-2xl relative overflow-hidden max-w-4xl mx-auto my-8 animate-fade-in-up">
         <div className="absolute -top-24 -right-24 w-48 h-48 rounded-full bg-cyan-500/10 blur-[60px]" />
         <div className="absolute -bottom-24 -left-24 w-48 h-48 rounded-full bg-purple-500/10 blur-[60px]" />
 
         {isFailed && (
           <button
             onClick={resetProgress}
-            className="absolute top-4 right-4 p-2 bg-gray-900/50 hover:bg-gray-800 border border-gray-800/50 hover:border-gray-700 rounded-lg text-gray-400 hover:text-white transition-colors cursor-pointer z-50 flex items-center justify-center"
+            className="absolute top-4 right-4 p-2 bg-bg-card/50 hover:bg-bg-hover border border-border-subtle/50 hover:border-border-strong rounded-lg text-text-muted hover:text-text-primary transition-colors cursor-pointer z-50 flex items-center justify-center"
             title="Dismiss"
           >
             <X className="w-4 h-4" />
           </button>
         )}
 
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-gray-800/60 pb-6 mb-8">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-border-subtle/60 pb-6 mb-8">
           <div>
-            <h2 className="text-xl font-bold tracking-tight text-white flex items-center gap-2.5">
+            <h2 className="text-xl font-bold tracking-tight text-text-primary flex items-center gap-2.5">
               {!isFailed && evaluationProgress.status !== "completed" && (
-                <Loader2 className="w-5 h-5 text-cyan-400 animate-spin" />
+                <Loader2 className="w-5 h-5 text-cyan-600 dark:text-cyan-400 animate-spin" />
               )}
               {evaluationProgress.status === "completed" && (
                 <CheckCircle2 className="w-5 h-5 text-green-400" />
@@ -880,26 +880,26 @@ export const BaselineReviewPage: React.FC = () => {
               {isFailed && <AlertTriangle className="w-5 h-5 text-rose-500" />}
               <span>Baseline Scope Extraction in Progress...</span>
             </h2>
-            <p className="text-gray-400 text-xs mt-1">
+            <p className="text-text-muted text-xs mt-1">
               AI agents are analyzing and classifying contract scope sections
               and deliverables.
             </p>
           </div>
           <div className="flex items-center gap-6">
             <div className="text-right">
-              <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+              <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest">
                 Elapsed Time
               </p>
-              <p className="text-lg font-black text-white font-mono">
+              <p className="text-lg font-black text-text-primary font-mono">
                 {elapsedTime}s
               </p>
             </div>
-            <div className="h-8 w-px bg-gray-800" />
+            <div className="h-8 w-px bg-bg-hover" />
             <div className="text-right">
-              <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+              <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest">
                 Overall Progress
               </p>
-              <p className="text-lg font-black text-cyan-400 font-mono">
+              <p className="text-lg font-black text-cyan-600 dark:text-cyan-400 font-mono">
                 {overallProgress}%
               </p>
             </div>
@@ -907,7 +907,7 @@ export const BaselineReviewPage: React.FC = () => {
         </div>
 
         {/* Progress Bar */}
-        <div className="w-full h-3 bg-gray-950 border border-gray-900 rounded-full overflow-hidden p-0.5 mb-8 shadow-inner">
+        <div className="w-full h-3 bg-bg-base border border-border-subtle rounded-full overflow-hidden p-0.5 mb-8 shadow-inner">
           <div
             className="h-full rounded-full bg-gradient-to-r from-blue-500 via-cyan-400 to-indigo-500 transition-all duration-500 ease-out shadow-[0_0_12px_rgba(6,182,212,0.4)]"
             style={{ width: `${overallProgress}%` }}
@@ -916,9 +916,9 @@ export const BaselineReviewPage: React.FC = () => {
 
         {isFailed && errorText && (
           <div className="mb-8 p-4 bg-rose-950/20 border border-rose-500/30 rounded-2xl flex items-start gap-3">
-            <AlertTriangle className="w-5 h-5 text-rose-400 flex-shrink-0 mt-0.5" />
+            <AlertTriangle className="w-5 h-5 text-rose-500 dark:text-rose-400 flex-shrink-0 mt-0.5" />
             <div>
-              <h4 className="text-sm font-bold text-rose-300">
+              <h4 className="text-sm font-bold text-rose-600 dark:text-rose-300">
                 Extraction Pipeline Error
               </h4>
               <p className="text-xs text-rose-200/80 mt-1 font-mono break-all">
@@ -929,34 +929,34 @@ export const BaselineReviewPage: React.FC = () => {
         )}
 
         {/* Step-by-Step Vertical Timeline */}
-        <div className="relative border-l border-gray-800/80 ml-4 pl-8 space-y-6">
+        <div className="relative border-l border-border-subtle/80 ml-4 pl-8 space-y-6">
           {baselineSteps.map((step, idx) => {
             const state = getStepState(idx);
 
             let iconElement;
             let iconBgClass = "";
-            let textClass = "text-gray-500";
+            let textClass = "text-text-muted";
 
             if (state === "completed") {
-              iconElement = <CheckCheck className="w-4 h-4 text-white" />;
+              iconElement = <CheckCheck className="w-4 h-4 text-text-primary" />;
               iconBgClass =
                 "bg-gradient-to-r from-emerald-500 to-teal-500 border-transparent scale-100";
-              textClass = "text-gray-200";
+              textClass = "text-text-primary";
             } else if (state === "running") {
               iconElement = (
-                <Loader2 className="w-4 h-4 text-cyan-400 animate-spin" />
+                <Loader2 className="w-4 h-4 text-cyan-600 dark:text-cyan-400 animate-spin" />
               );
               iconBgClass =
-                "bg-gray-950 border-[#00e5ff] scale-110 shadow-lg shadow-cyan-500/10";
-              textClass = "text-white font-bold";
+                "bg-bg-base border-[#00e5ff] scale-110 shadow-lg shadow-cyan-500/10";
+              textClass = "text-text-primary font-bold";
             } else if (state === "failed") {
-              iconElement = <X className="w-4 h-4 text-white" />;
+              iconElement = <X className="w-4 h-4 text-text-primary" />;
               iconBgClass =
                 "bg-red-600 shadow-lg shadow-rose-500/20 border-transparent scale-100";
-              textClass = "text-rose-400 font-bold";
+              textClass = "text-rose-500 dark:text-rose-400 font-bold";
             } else {
               iconElement = <Circle className="w-3 h-3 text-gray-750" />;
-              iconBgClass = "bg-gray-950 border-gray-800 scale-90";
+              iconBgClass = "bg-bg-base border-border-subtle scale-90";
               textClass = "text-gray-600";
             }
 
@@ -970,10 +970,10 @@ export const BaselineReviewPage: React.FC = () => {
                 <div
                   className={`p-4 rounded-2xl border transition-all duration-300 ${
                     state === "running"
-                      ? "bg-gray-900/60 border-cyan-500/30 shadow-lg shadow-cyan-500/5"
+                      ? "bg-bg-card/60 border-cyan-500/30 shadow-lg shadow-cyan-500/5"
                       : state === "completed"
-                        ? "bg-gray-950/40 border-gray-850/80"
-                        : "bg-gray-950/20 border-gray-900/50 opacity-60"
+                        ? "bg-bg-base border-border-subtle"
+                        : "bg-bg-base border-border-subtle opacity-60"
                   }`}
                 >
                   <div className="flex items-center justify-between">
@@ -983,7 +983,7 @@ export const BaselineReviewPage: React.FC = () => {
                       {step.name}
                     </h4>
                     {state === "running" && (
-                      <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-widest bg-cyan-500/10 px-2.5 py-0.5 rounded-full border border-cyan-500/20 animate-pulse">
+                      <span className="text-[10px] font-bold text-cyan-600 dark:text-cyan-400 uppercase tracking-widest bg-cyan-500/10 px-2.5 py-0.5 rounded-full border border-cyan-500/20 animate-pulse">
                         Running...
                       </span>
                     )}
@@ -993,7 +993,7 @@ export const BaselineReviewPage: React.FC = () => {
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-gray-400 mt-1">{step.desc}</p>
+                  <p className="text-xs text-text-muted mt-1">{step.desc}</p>
                 </div>
               </div>
             );
@@ -1027,7 +1027,7 @@ export const BaselineReviewPage: React.FC = () => {
             {user?.role !== "PROJECT_LEAD" && (
               <button
                 onClick={handleExtractClick}
-                className="group relative inline-flex items-center justify-center gap-2 px-6 py-2.5 font-semibold text-white transition-all duration-300 rounded-lg bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-400 hover:via-purple-400 hover:to-pink-400 shadow-[0_0_15px_rgba(168,85,247,0.4)] hover:shadow-[0_0_25px_rgba(236,72,153,0.6)] hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
+                className="group relative inline-flex items-center justify-center gap-2 px-6 py-2.5 font-semibold text-text-primary transition-all duration-300 rounded-lg bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-400 hover:via-purple-400 hover:to-pink-400 shadow-[0_0_15px_rgba(168,85,247,0.4)] hover:shadow-[0_0_25px_rgba(236,72,153,0.6)] hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
               >
                 <Sparkles className="w-4 h-4 text-pink-100 group-hover:animate-pulse" />
                 <span className="tracking-wide text-sm">Extract Baseline</span>
@@ -1041,7 +1041,7 @@ export const BaselineReviewPage: React.FC = () => {
                 <button
                   onClick={handleApprove}
                   disabled={isApproving}
-                  className="group relative inline-flex items-center justify-center gap-2 px-6 py-2.5 font-semibold text-white transition-all duration-300 rounded-lg bg-gradient-to-r from-emerald-500 via-teal-500 to-green-600 hover:from-emerald-400 hover:via-teal-400 hover:to-green-500 shadow-[0_0_15px_rgba(16,185,129,0.4)] hover:shadow-[0_0_25px_rgba(20,184,166,0.6)] hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none cursor-pointer"
+                  className="group relative inline-flex items-center justify-center gap-2 px-6 py-2.5 font-semibold text-text-primary transition-all duration-300 rounded-lg bg-gradient-to-r from-emerald-500 via-teal-500 to-green-600 hover:from-emerald-400 hover:via-teal-400 hover:to-green-500 shadow-[0_0_15px_rgba(16,185,129,0.4)] hover:shadow-[0_0_25px_rgba(20,184,166,0.6)] hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none cursor-pointer"
                 >
                   {isApproving ? (
                     <>
@@ -1067,14 +1067,14 @@ export const BaselineReviewPage: React.FC = () => {
         ) : !isBaselineExtracted ? (
           <div className="text-center py-16 bg-amber-950/10 border border-amber-500/20 rounded-2xl animate-fade-in-up p-8 max-w-2xl mx-auto my-8">
             <AlertTriangle className="w-12 h-12 text-amber-500 mx-auto mb-4 animate-bounce" />
-            <h3 className="text-lg font-bold text-white mb-2">
+            <h3 className="text-lg font-bold text-text-primary mb-2">
               No document is extracted please extract document for baseline
               review
             </h3>
           </div>
         ) : (
           <div>
-            <div className="mb-8 border-b border-gray-800"></div>
+            <div className="mb-8 border-b border-border-subtle"></div>
 
             {/* Deliverables timeline */}
             <div className="mb-8">
@@ -1084,7 +1084,7 @@ export const BaselineReviewPage: React.FC = () => {
                 <h2 className="text-xl font-bold tracking-tight">
                   Deliverables Timeline
                 </h2>
-                <span className="ml-auto text-xs font-medium text-gray-500 flex items-center gap-1.5">
+                <span className="ml-auto text-xs font-medium text-text-muted flex items-center gap-1.5">
                   <Calendar className="w-3.5 h-3.5" />
                   {new Date().toLocaleDateString(undefined, {
                     month: "long",
@@ -1095,7 +1095,7 @@ export const BaselineReviewPage: React.FC = () => {
               </div>
 
               {timelineItems.length === 0 ? (
-                <p className="text-gray-400 mb-8">
+                <p className="text-text-muted mb-8">
                   No scheduled scope items found.
                 </p>
               ) : (
@@ -1269,12 +1269,12 @@ export const BaselineReviewPage: React.FC = () => {
                         <button
                           onClick={handlePrev}
                           disabled={activeIndex <= 0}
-                          className="flex-shrink-0 w-9 h-9 rounded-full bg-gray-900/80 border border-gray-700/60 text-gray-400 hover:text-white hover:bg-gray-800 hover:border-gray-600 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-all cursor-pointer z-10 shadow-md backdrop-blur-sm"
+                          className="flex-shrink-0 w-9 h-9 rounded-full bg-bg-card/80 border border-border-strong/60 text-text-muted hover:text-text-primary hover:bg-bg-hover hover:border-border-strong disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-all cursor-pointer z-10 shadow-md backdrop-blur-sm"
                         >
                           <ChevronLeft className="w-4 h-4" />
                         </button>
                         <div className="flex-1 flex items-center justify-center">
-                          <span className="text-[11px] text-gray-500 tracking-wide">
+                          <span className="text-[11px] text-text-muted tracking-wide">
                             {activeIndex + 1} of {timelineItems.length}{" "}
                             deliverables
                           </span>
@@ -1282,14 +1282,14 @@ export const BaselineReviewPage: React.FC = () => {
                         <button
                           onClick={handleNext}
                           disabled={activeIndex >= timelineItems.length - 1}
-                          className="flex-shrink-0 w-9 h-9 rounded-full bg-gray-900/80 border border-gray-700/60 text-gray-400 hover:text-white hover:bg-gray-800 hover:border-gray-600 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-all cursor-pointer z-10 shadow-md backdrop-blur-sm"
+                          className="flex-shrink-0 w-9 h-9 rounded-full bg-bg-card/80 border border-border-strong/60 text-text-muted hover:text-text-primary hover:bg-bg-hover hover:border-border-strong disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-all cursor-pointer z-10 shadow-md backdrop-blur-sm"
                         >
                           <ChevronRight className="w-4 h-4" />
                         </button>
                       </div>
 
                       {/* ── Timeline Canvas ── */}
-                      <div className="relative rounded-2xl border border-gray-800/60 bg-gradient-to-br from-gray-900/60 via-gray-950/80 to-gray-900/60 backdrop-blur-sm overflow-visible">
+                      <div className="relative rounded-2xl border border-border-subtle/60 bg-gradient-to-br from-bg-card via-bg-base to-bg-card backdrop-blur-sm overflow-visible">
                         {/* Subtle grid background pattern */}
                         <div
                           className="absolute inset-0 rounded-2xl overflow-hidden opacity-[0.03]"
@@ -1323,7 +1323,7 @@ export const BaselineReviewPage: React.FC = () => {
                               >
                                 {tick.label}
                               </span>
-                              <div className="w-px flex-1 bg-gray-800/40 mt-1"></div>
+                              <div className="w-px flex-1 bg-bg-hover/40 mt-1"></div>
                             </div>
                           ))}
 
@@ -1457,7 +1457,7 @@ export const BaselineReviewPage: React.FC = () => {
                                       className={`text-[9px] mt-0.5 max-w-[100px] truncate text-center leading-tight transition-colors ${
                                         isSelected
                                           ? "font-semibold"
-                                          : "text-gray-600 group-hover:text-gray-400"
+                                          : "text-gray-600 group-hover:text-text-muted"
                                       }`}
                                       style={
                                         isSelected ? { color: color.text } : {}
@@ -1551,7 +1551,7 @@ export const BaselineReviewPage: React.FC = () => {
                                     >
                                       {isCompleted ? (
                                         <CheckCircle2
-                                          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[18px] h-[18px] text-emerald-400 bg-gray-900 rounded-full z-10"
+                                          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[18px] h-[18px] text-emerald-400 bg-bg-card rounded-full z-10"
                                           style={{
                                             filter:
                                               "drop-shadow(0 0 2px rgba(16,185,129,0.5))",
@@ -1636,7 +1636,7 @@ export const BaselineReviewPage: React.FC = () => {
                                     >
                                       {isCompleted ? (
                                         <CheckCircle2
-                                          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[18px] h-[18px] text-emerald-400 bg-gray-900 rounded-full z-10"
+                                          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[18px] h-[18px] text-emerald-400 bg-bg-card rounded-full z-10"
                                           style={{
                                             filter:
                                               "drop-shadow(0 0 2px rgba(16,185,129,0.5))",
@@ -1724,7 +1724,7 @@ export const BaselineReviewPage: React.FC = () => {
                                       className={`text-[9px] mt-0.5 max-w-[100px] truncate text-center leading-tight transition-colors ${
                                         isSelected
                                           ? "font-semibold"
-                                          : "text-gray-600 group-hover:text-gray-400"
+                                          : "text-gray-600 group-hover:text-text-muted"
                                       }`}
                                       style={
                                         isSelected ? { color: color.text } : {}
@@ -1784,7 +1784,7 @@ export const BaselineReviewPage: React.FC = () => {
                         </div>
 
                         {/* ── Legend ── */}
-                        <div className="flex items-center gap-4 px-5 py-3 border-t border-gray-800/40 flex-wrap">
+                        <div className="flex items-center gap-4 px-5 py-3 border-t border-border-subtle/40 flex-wrap">
                           {hasDates && (
                             <div className="flex items-center gap-1.5">
                               <div
@@ -1794,26 +1794,26 @@ export const BaselineReviewPage: React.FC = () => {
                                     "todayPulse 2s ease-in-out infinite",
                                 }}
                               ></div>
-                              <span className="text-[10px] text-gray-500 font-medium">
+                              <span className="text-[10px] text-text-muted font-medium">
                                 Today
                               </span>
                             </div>
                           )}
                           <div className="flex items-center gap-1.5">
                             <div className="w-2.5 h-2.5 rounded-full bg-amber-500"></div>
-                            <span className="text-[10px] text-gray-500 font-medium">
+                            <span className="text-[10px] text-text-muted font-medium">
                               Pending
                             </span>
                           </div>
                           <div className="flex items-center gap-1.5">
                             <div className="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
-                            <span className="text-[10px] text-gray-500 font-medium">
+                            <span className="text-[10px] text-text-muted font-medium">
                               Completed
                             </span>
                           </div>
                           <div className="flex items-center gap-1.5">
                             <div className="w-2.5 h-2.5 rounded-full bg-red-500"></div>
-                            <span className="text-[10px] text-gray-500 font-medium">
+                            <span className="text-[10px] text-text-muted font-medium">
                               Cancelled
                             </span>
                           </div>
@@ -1882,18 +1882,18 @@ export const BaselineReviewPage: React.FC = () => {
                                         Selected Deliverable
                                       </span>
                                     </div>
-                                    <h3 className="font-bold text-lg text-white mt-0.5 leading-snug">
+                                    <h3 className="font-bold text-lg text-text-primary mt-0.5 leading-snug">
                                       {selectedItem.scope_item_normalized ||
                                         selectedItem.name}
                                     </h3>
 
                                     {executionSummary && (
                                       <div className="mt-4 p-3 bg-blue-950/20 border border-blue-900/30 rounded-lg">
-                                        <h5 className="text-[10px] font-bold text-blue-400 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                                        <h5 className="text-[10px] font-bold text-blue-500 dark:text-blue-400 uppercase tracking-wider mb-1 flex items-center gap-1.5">
                                           <FileText className="w-3 h-3" />{" "}
                                           Latest Update
                                         </h5>
-                                        <p className="text-sm text-gray-200 leading-relaxed">
+                                        <p className="text-sm text-text-primary leading-relaxed">
                                           {executionSummary}
                                         </p>
                                       </div>
@@ -1903,14 +1903,14 @@ export const BaselineReviewPage: React.FC = () => {
                                       progressPct !== undefined && (
                                         <div className="mt-4">
                                           <div className="flex justify-between items-center mb-1.5">
-                                            <span className="text-xs font-semibold text-gray-400">
+                                            <span className="text-xs font-semibold text-text-muted">
                                               Progress
                                             </span>
-                                            <span className="text-xs font-bold text-white">
+                                            <span className="text-xs font-bold text-text-primary">
                                               {progressPct}%
                                             </span>
                                           </div>
-                                          <div className="w-full bg-gray-800 rounded-full h-1.5">
+                                          <div className="w-full bg-bg-hover rounded-full h-1.5">
                                             <div
                                               className="bg-emerald-500 h-1.5 rounded-full"
                                               style={{
@@ -1955,8 +1955,8 @@ export const BaselineReviewPage: React.FC = () => {
                                         return null;
 
                                       return (
-                                        <div className="mt-4 p-3 bg-gray-900/40 border border-gray-700/50 rounded-lg">
-                                          <h5 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                                        <div className="mt-4 p-3 bg-bg-card/40 border border-border-strong/50 rounded-lg">
+                                          <h5 className="text-[10px] font-bold text-text-muted uppercase tracking-wider mb-2 flex items-center gap-1.5">
                                             <AlertTriangle className="w-3 h-3 text-orange-400" />{" "}
                                             Milestone Dependencies
                                           </h5>
@@ -1970,7 +1970,7 @@ export const BaselineReviewPage: React.FC = () => {
                                                   (n, i) => (
                                                     <li
                                                       key={i}
-                                                      className="text-xs text-gray-300 flex items-start gap-2 bg-red-950/10 px-2 py-1 rounded border border-red-900/20"
+                                                      className="text-xs text-text-secondary flex items-start gap-2 bg-red-950/10 px-2 py-1 rounded border border-red-900/20"
                                                     >
                                                       <Circle className="w-1.5 h-1.5 mt-1 text-red-500 fill-red-500 flex-shrink-0" />
                                                       <span className="leading-tight">
@@ -1993,7 +1993,7 @@ export const BaselineReviewPage: React.FC = () => {
                                                   (n, i) => (
                                                     <li
                                                       key={i}
-                                                      className="text-xs text-gray-300 flex items-start gap-2 bg-orange-950/10 px-2 py-1 rounded border border-orange-900/20"
+                                                      className="text-xs text-text-secondary flex items-start gap-2 bg-orange-950/10 px-2 py-1 rounded border border-orange-900/20"
                                                     >
                                                       <Circle className="w-1.5 h-1.5 mt-1 text-orange-500 fill-orange-500 flex-shrink-0" />
                                                       <span className="leading-tight">
@@ -2020,7 +2020,7 @@ export const BaselineReviewPage: React.FC = () => {
                                             {dependencies.map((dep, idx) => (
                                               <li
                                                 key={idx}
-                                                className="text-xs text-gray-300 flex items-start gap-2 bg-orange-950/10 px-2 py-1.5 rounded-md border border-orange-900/20"
+                                                className="text-xs text-text-secondary flex items-start gap-2 bg-orange-950/10 px-2 py-1.5 rounded-md border border-orange-900/20"
                                               >
                                                 <Circle className="w-1.5 h-1.5 mt-1 text-orange-500 fill-orange-500 flex-shrink-0" />
                                                 <span className="leading-tight">
@@ -2033,19 +2033,19 @@ export const BaselineReviewPage: React.FC = () => {
                                       )}
 
                                     <details className="mt-5 group cursor-pointer">
-                                      <summary className="text-xs font-bold text-gray-400 uppercase tracking-wider hover:text-gray-200 transition-colors list-none flex items-center">
+                                      <summary className="text-xs font-bold text-text-muted uppercase tracking-wider hover:text-text-primary transition-colors list-none flex items-center">
                                         <span className="mr-1.5 transition-transform group-open:rotate-90 text-[10px]">
                                           ▶
                                         </span>
                                         AI Extraction Details
                                       </summary>
-                                      <div className="mt-3 space-y-3 p-3 bg-gray-900/60 rounded-lg border border-gray-700/40">
+                                      <div className="mt-3 space-y-3 p-3 bg-bg-card/60 rounded-lg border border-border-strong/40">
                                         {(updateSource || updateDate) && (
                                           <div>
-                                            <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">
+                                            <h5 className="text-[10px] font-bold text-text-muted mb-1 uppercase tracking-wider">
                                               Updated From
                                             </h5>
-                                            <p className="text-xs text-gray-300 italic">
+                                            <p className="text-xs text-text-secondary italic">
                                               {updateSource
                                                 ? updateSource
                                                 : "Unknown Document"}
@@ -2056,30 +2056,30 @@ export const BaselineReviewPage: React.FC = () => {
                                         )}
                                         {latestProgress?.evidence_text && (
                                           <div>
-                                            <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">
+                                            <h5 className="text-[10px] font-bold text-text-muted mb-1 uppercase tracking-wider">
                                               Progress Evidence
                                             </h5>
-                                            <p className="text-xs text-gray-300 italic leading-relaxed">
+                                            <p className="text-xs text-text-secondary italic leading-relaxed">
                                               {latestProgress.evidence_text}
                                             </p>
                                           </div>
                                         )}
                                         {selectedItem.description && (
                                           <div>
-                                            <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">
+                                            <h5 className="text-[10px] font-bold text-text-muted mb-1 uppercase tracking-wider">
                                               AI Reasoning (Baseline)
                                             </h5>
-                                            <p className="text-xs text-gray-300 italic leading-relaxed">
+                                            <p className="text-xs text-text-secondary italic leading-relaxed">
                                               {selectedItem.description}
                                             </p>
                                           </div>
                                         )}
                                         {selectedItem.evidence_text && (
                                           <div>
-                                            <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">
+                                            <h5 className="text-[10px] font-bold text-text-muted mb-1 uppercase tracking-wider">
                                               Evidence (Baseline)
                                             </h5>
-                                            <p className="text-xs text-gray-300 italic leading-relaxed">
+                                            <p className="text-xs text-text-secondary italic leading-relaxed">
                                               {selectedItem.evidence_text}
                                             </p>
                                           </div>
@@ -2087,10 +2087,10 @@ export const BaselineReviewPage: React.FC = () => {
                                         {selectedItem.name &&
                                           selectedItem.scope_item_normalized && (
                                             <div>
-                                              <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">
+                                              <h5 className="text-[10px] font-bold text-text-muted mb-1 uppercase tracking-wider">
                                                 Original Text
                                               </h5>
-                                              <p className="text-xs text-gray-300 font-serif italic">
+                                              <p className="text-xs text-text-secondary font-serif italic">
                                                 {selectedItem.name}
                                               </p>
                                             </div>
@@ -2110,7 +2110,7 @@ export const BaselineReviewPage: React.FC = () => {
                                             ? "bg-red-950/60 text-red-300 border-red-700/50"
                                             : completionStatus === "IN_PROGRESS"
                                               ? "bg-blue-950/60 text-blue-300 border-blue-700/50"
-                                              : "bg-gray-800/80 text-gray-300 border-gray-700/60"
+                                              : "bg-bg-hover/80 text-text-secondary border-border-strong/60"
                                       }`}
                                     >
                                       {completionStatus === "COMPLETED" && (
@@ -2152,7 +2152,7 @@ export const BaselineReviewPage: React.FC = () => {
                                       {formatItemDate(selectedItem)}
                                     </span>
                                   )}
-                                  <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-gray-800/50 border border-gray-700/40 text-gray-400 text-xs font-medium">
+                                  <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-bg-hover/50 border border-border-strong/40 text-text-muted text-xs font-medium">
                                     {selectedItem.scope_type?.replace(
                                       "_",
                                       " ",
@@ -2185,30 +2185,30 @@ export const BaselineReviewPage: React.FC = () => {
                                 {(user?.role === "ADMIN" ||
                                   user?.role === "ENGAGEMENT_MANAGER" ||
                                   user?.role === "PROJECT_LEAD") && (
-                                  <div className="mt-5 pt-4 border-t border-gray-800/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                  <div className="mt-5 pt-4 border-t border-border-subtle/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                                     <div className="flex items-center gap-2.5">
-                                      <span className="text-xs font-bold uppercase tracking-wider text-gray-500">
+                                      <span className="text-xs font-bold uppercase tracking-wider text-text-muted">
                                         Update Status:
                                       </span>
-                                      <div className="flex rounded-lg overflow-hidden border border-gray-700 bg-gray-900/60 p-0.5">
+                                      <div className="flex rounded-lg overflow-hidden border border-border-strong bg-bg-card/60 p-0.5">
                                         {[
                                           {
                                             value: "ACTIVE",
                                             label: "Pending",
                                             color:
-                                              "hover:bg-blue-600/80 hover:text-white",
+                                              "hover:bg-blue-600/80 hover:text-text-primary",
                                           },
                                           {
                                             value: "COMPLETED",
                                             label: "Completed",
                                             color:
-                                              "hover:bg-emerald-600/80 hover:text-white",
+                                              "hover:bg-emerald-600/80 hover:text-text-primary",
                                           },
                                           {
                                             value: "CANCELLED",
                                             label: "Cancelled",
                                             color:
-                                              "hover:bg-red-600/80 hover:text-white",
+                                              "hover:bg-red-600/80 hover:text-text-primary",
                                           },
                                         ].map((opt) => (
                                           <button
@@ -2222,11 +2222,11 @@ export const BaselineReviewPage: React.FC = () => {
                                             className={`px-3 py-1 text-[11px] font-bold rounded-md transition-all cursor-pointer ${
                                               completionStatus === opt.value
                                                 ? opt.value === "COMPLETED"
-                                                  ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/25"
+                                                  ? "bg-emerald-600 text-text-primary shadow-md shadow-emerald-600/25"
                                                   : opt.value === "CANCELLED"
-                                                    ? "bg-red-600 text-white shadow-md shadow-red-600/25"
-                                                    : "bg-blue-600 text-white shadow-md shadow-blue-600/25"
-                                                : `text-gray-400 ${opt.color}`
+                                                    ? "bg-red-600 text-text-primary shadow-md shadow-red-600/25"
+                                                    : "bg-blue-600 text-text-primary shadow-md shadow-blue-600/25"
+                                                : `text-text-muted ${opt.color}`
                                             }`}
                                           >
                                             {opt.label}
@@ -2236,13 +2236,13 @@ export const BaselineReviewPage: React.FC = () => {
                                     </div>
 
                                     <div className="flex items-center gap-2.5">
-                                      <span className="text-xs font-bold uppercase tracking-wider text-gray-500">
+                                      <span className="text-xs font-bold uppercase tracking-wider text-text-muted">
                                         Reschedule:
                                       </span>
                                       <input
                                         id="reschedule-date-input"
                                         type="date"
-                                        className="px-2.5 py-1 text-xs font-semibold rounded-md border border-gray-700 bg-gray-900/60 text-white focus:outline-none focus:border-violet-500 cursor-pointer shadow-inner"
+                                        className="px-2.5 py-1 text-xs font-semibold rounded-md border border-border-strong bg-bg-card/60 text-text-primary focus:outline-none focus:border-violet-500 cursor-pointer shadow-inner"
                                         value={
                                           selectedItem.deadline
                                             ? new Date(selectedItem.deadline)
@@ -2269,7 +2269,7 @@ export const BaselineReviewPage: React.FC = () => {
                 })()
               )}
             </div>
-            <div className="mb-12 border-b border-gray-800"></div>
+            <div className="mb-12 border-b border-border-subtle"></div>
 
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold">Scope Items Baseline</h2>
@@ -2278,7 +2278,7 @@ export const BaselineReviewPage: React.FC = () => {
                   user?.role === "ENGAGEMENT_MANAGER") && (
                   <button
                     onClick={() => setShowAddItemModal(true)}
-                    className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-md flex items-center gap-2 cursor-pointer transition-all shadow-md text-xs font-semibold"
+                    className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-text-primary rounded-md flex items-center gap-2 cursor-pointer transition-all shadow-md text-xs font-semibold"
                   >
                     <Plus className="w-4 h-4" />
                     <span>Add Scope Item</span>
@@ -2288,7 +2288,7 @@ export const BaselineReviewPage: React.FC = () => {
                   <div className="relative">
                     <button
                       onClick={() => setShowExportDropdown(!showExportDropdown)}
-                      className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-200 border border-gray-700 hover:border-gray-600 rounded-md flex items-center gap-2 cursor-pointer transition-colors"
+                      className="px-4 py-2 bg-bg-hover hover:bg-bg-hover text-text-primary border border-border-strong hover:border-border-strong rounded-md flex items-center gap-2 cursor-pointer transition-colors"
                     >
                       <Download className="w-4 h-4" />
                       <span>Export</span>
@@ -2299,15 +2299,15 @@ export const BaselineReviewPage: React.FC = () => {
                           className="fixed inset-0 z-10"
                           onClick={() => setShowExportDropdown(false)}
                         ></div>
-                        <div className="absolute right-0 mt-2 w-48 bg-gray-900 border border-gray-700 rounded-lg shadow-xl py-1 z-25 animate-fadeIn">
+                        <div className="absolute right-0 mt-2 w-48 bg-bg-card border border-border-strong rounded-lg shadow-xl py-1 z-25 animate-fadeIn">
                           <button
                             onClick={() => {
                               handleExportWord();
                               setShowExportDropdown(false);
                             }}
-                            className="w-full text-left px-4 py-2.5 text-sm text-gray-200 hover:bg-gray-800 hover:text-white transition-colors flex items-center gap-2.5 cursor-pointer"
+                            className="w-full text-left px-4 py-2.5 text-sm text-text-primary hover:bg-bg-hover hover:text-text-primary transition-colors flex items-center gap-2.5 cursor-pointer"
                           >
-                            <FileText className="w-4 h-4 text-blue-400" />
+                            <FileText className="w-4 h-4 text-blue-500 dark:text-blue-400" />
                             <span>Word Document (.doc)</span>
                           </button>
                           <button
@@ -2315,9 +2315,9 @@ export const BaselineReviewPage: React.FC = () => {
                               handleExportPDF();
                               setShowExportDropdown(false);
                             }}
-                            className="w-full text-left px-4 py-2.5 text-sm text-gray-200 hover:bg-gray-800 hover:text-white transition-colors flex items-center gap-2.5 cursor-pointer"
+                            className="w-full text-left px-4 py-2.5 text-sm text-text-primary hover:bg-bg-hover hover:text-text-primary transition-colors flex items-center gap-2.5 cursor-pointer"
                           >
-                            <FileText className="w-4 h-4 text-rose-400" />
+                            <FileText className="w-4 h-4 text-rose-500 dark:text-rose-400" />
                             <span>PDF Report</span>
                           </button>
                         </div>
@@ -2329,14 +2329,14 @@ export const BaselineReviewPage: React.FC = () => {
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
               {/* Left Column - In Scope */}
-              <div className="flex flex-col bg-gray-900/30 backdrop-blur-md rounded-2xl p-6 border border-gray-800/80 shadow-2xl">
-                <div className="flex items-center justify-between pb-4 mb-5 border-b border-gray-800">
+              <div className="flex flex-col bg-bg-card/30 backdrop-blur-md rounded-2xl p-6 border border-border-subtle/80 shadow-2xl">
+                <div className="flex items-center justify-between pb-4 mb-5 border-b border-border-subtle">
                   <div className="flex items-center gap-3">
                     <span className="relative flex h-3.5 w-3.5">
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                       <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500"></span>
                     </span>
-                    <h3 className="text-lg font-bold text-gray-100 tracking-tight">
+                    <h3 className="text-lg font-bold text-text-primary tracking-tight">
                       In Scope
                     </h3>
                   </div>
@@ -2347,8 +2347,8 @@ export const BaselineReviewPage: React.FC = () => {
                 </div>
 
                 {inScopeItems.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-12 px-4 text-center border border-dashed border-gray-850 rounded-xl bg-gray-850/10">
-                    <p className="text-gray-500 text-sm">
+                  <div className="flex flex-col items-center justify-center py-12 px-4 text-center border border-dashed border-border-subtle rounded-xl bg-bg-hover">
+                    <p className="text-text-muted text-sm">
                       No in-scope items identified.
                     </p>
                   </div>
@@ -2357,11 +2357,11 @@ export const BaselineReviewPage: React.FC = () => {
                     {inScopeItems.map((item: any) => (
                       <div
                         key={item.id}
-                        className="group p-5 bg-gray-800/60 hover:bg-gray-800/90 rounded-xl border border-gray-700/60 hover:border-emerald-500/30 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col justify-between min-h-[160px]"
+                        className="group p-5 bg-bg-hover/60 hover:bg-bg-hover/90 rounded-xl border border-border-strong/60 hover:border-emerald-500/30 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col justify-between min-h-[160px]"
                       >
                         <div>
                           <div className="flex justify-between items-start gap-2 mb-2">
-                            <h4 className="font-bold text-lg text-white group-hover:text-emerald-300 transition-colors flex items-center gap-2">
+                            <h4 className="font-bold text-lg text-text-primary group-hover:text-emerald-300 transition-colors flex items-center gap-2">
                               {item.scope_item_normalized || item.name}
                               {item.completion_status === "COMPLETED" && (
                                 <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950/40 text-emerald-400 border border-emerald-800/30">
@@ -2376,7 +2376,7 @@ export const BaselineReviewPage: React.FC = () => {
                                 );
                                 if (!versionLabel) return null;
                                 return (
-                                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-950/40 text-purple-300 border border-purple-800/30">
+                                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-950/40 text-purple-600 dark:text-purple-300 border border-purple-800/30">
                                     {versionLabel}
                                   </span>
                                 );
@@ -2398,7 +2398,7 @@ export const BaselineReviewPage: React.FC = () => {
                                       setDeletingItemId(item.id);
                                     }}
                                     title="Delete scope item"
-                                    className="p-1.5 text-rose-400 hover:text-white bg-rose-950/30 hover:bg-rose-900/50 border border-rose-500/20 rounded-lg transition-colors cursor-pointer flex-shrink-0"
+                                    className="p-1.5 text-rose-500 dark:text-rose-400 hover:text-text-primary bg-rose-950/30 hover:bg-rose-900/50 border border-rose-500/20 rounded-lg transition-colors cursor-pointer flex-shrink-0"
                                   >
                                     <Trash2 className="w-3.5 h-3.5" />
                                   </button>
@@ -2407,39 +2407,39 @@ export const BaselineReviewPage: React.FC = () => {
                             </div>
                           </div>
                           <details className="mt-3 mb-4 group cursor-pointer">
-                            <summary className="text-xs font-bold text-gray-400 uppercase tracking-wider hover:text-gray-200 transition-colors list-none flex items-center">
+                            <summary className="text-xs font-bold text-text-muted uppercase tracking-wider hover:text-text-primary transition-colors list-none flex items-center">
                               <span className="mr-1.5 transition-transform group-open:rotate-90 text-[10px]">
                                 ▶
                               </span>
                               AI Extraction Details
                             </summary>
-                            <div className="mt-3 space-y-3 p-3 bg-gray-900/60 rounded-lg border border-gray-700/40">
+                            <div className="mt-3 space-y-3 p-3 bg-bg-card/60 rounded-lg border border-border-strong/40">
                               {item.description && (
                                 <div>
-                                  <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">
+                                  <h5 className="text-[10px] font-bold text-text-muted mb-1 uppercase tracking-wider">
                                     AI Reasoning
                                   </h5>
-                                  <p className="text-xs text-gray-300 italic leading-relaxed">
+                                  <p className="text-xs text-text-secondary italic leading-relaxed">
                                     {item.description}
                                   </p>
                                 </div>
                               )}
                               {item.evidence_text && (
                                 <div>
-                                  <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">
+                                  <h5 className="text-[10px] font-bold text-text-muted mb-1 uppercase tracking-wider">
                                     Evidence
                                   </h5>
-                                  <p className="text-xs text-gray-300 italic leading-relaxed">
+                                  <p className="text-xs text-text-secondary italic leading-relaxed">
                                     {item.evidence_text}
                                   </p>
                                 </div>
                               )}
                               {item.name && item.scope_item_normalized && (
                                 <div>
-                                  <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">
+                                  <h5 className="text-[10px] font-bold text-text-muted mb-1 uppercase tracking-wider">
                                     Original Text
                                   </h5>
-                                  <p className="text-xs text-gray-300 font-serif italic">
+                                  <p className="text-xs text-text-secondary font-serif italic">
                                     {item.name}
                                   </p>
                                 </div>
@@ -2449,7 +2449,7 @@ export const BaselineReviewPage: React.FC = () => {
 
                           {item.status_change_tag && (
                             <div className="mb-4 p-2 bg-amber-500/10 border border-amber-500/30 rounded-lg">
-                              <p className="text-amber-400 text-xs font-semibold flex items-center gap-1.5">
+                              <p className="text-amber-500 dark:text-amber-400 text-xs font-semibold flex items-center gap-1.5">
                                 <AlertTriangle className="w-3.5 h-3.5" />
                                 {item.status_change_tag}
                               </p>
@@ -2457,30 +2457,30 @@ export const BaselineReviewPage: React.FC = () => {
                           )}
                         </div>
 
-                        <div className="flex flex-col gap-2 mt-auto pt-3 border-t border-gray-700/20">
+                        <div className="flex flex-col gap-2 mt-auto pt-3 border-t border-border-strong/20">
                           {/* Milestone & Deadline Row */}
                           <div className="flex flex-wrap items-center gap-2 text-xs">
                             {item.milestone && (
                               <span className="text-blue-300 font-semibold bg-blue-950/45 px-2 py-0.5 rounded border border-blue-800/30 flex items-center gap-1">
-                                <CheckCircle2 className="w-3.5 h-3.5 text-blue-400" />
+                                <CheckCircle2 className="w-3.5 h-3.5 text-blue-500 dark:text-blue-400" />
                                 {item.milestone}
                               </span>
                             )}
                             {item.deadline_text && (
                               <span
-                                className="text-purple-300 font-semibold bg-purple-950/45 px-2 py-0.5 rounded border border-purple-800/30 flex items-center gap-1"
+                                className="text-purple-600 dark:text-purple-300 font-semibold bg-purple-950/45 px-2 py-0.5 rounded border border-purple-800/30 flex items-center gap-1"
                                 title={
                                   item.deadline
                                     ? formatDate(item.deadline)
                                     : "Unnormalized"
                                 }
                               >
-                                <Clock className="w-3.5 h-3.5 text-purple-400" />
+                                <Clock className="w-3.5 h-3.5 text-purple-500 dark:text-purple-400" />
                                 {item.deadline_text}
                               </span>
                             )}
                             {item.extraction_method && (
-                              <span className="text-gray-400 font-medium text-[10px] bg-gray-800 px-1.5 py-0.5 rounded ml-auto">
+                              <span className="text-text-muted font-medium text-[10px] bg-bg-hover px-1.5 py-0.5 rounded ml-auto">
                                 By: {item.extraction_method}
                               </span>
                             )}
@@ -2489,7 +2489,7 @@ export const BaselineReviewPage: React.FC = () => {
                             <span className="font-semibold text-emerald-400 px-2.5 py-0.5 bg-emerald-950/40 rounded border border-emerald-800/30">
                               {item.scope_type}
                             </span>
-                            <span className="text-gray-500 font-medium">
+                            <span className="text-text-muted font-medium">
                               Confidence: {(item.confidence * 100).toFixed(0)}%
                             </span>
                           </div>
@@ -2501,26 +2501,26 @@ export const BaselineReviewPage: React.FC = () => {
               </div>
 
               {/* Right Column - Out of Scope */}
-              <div className="flex flex-col bg-gray-900/30 backdrop-blur-md rounded-2xl p-6 border border-gray-800/80 shadow-2xl">
-                <div className="flex items-center justify-between pb-4 mb-5 border-b border-gray-800">
+              <div className="flex flex-col bg-bg-card/30 backdrop-blur-md rounded-2xl p-6 border border-border-subtle/80 shadow-2xl">
+                <div className="flex items-center justify-between pb-4 mb-5 border-b border-border-subtle">
                   <div className="flex items-center gap-3">
                     <span className="relative flex h-3.5 w-3.5">
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
                       <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-rose-500"></span>
                     </span>
-                    <h3 className="text-lg font-bold text-gray-100 tracking-tight">
+                    <h3 className="text-lg font-bold text-text-primary tracking-tight">
                       Out of Scope
                     </h3>
                   </div>
-                  <span className="px-3 py-1 text-xs font-semibold bg-rose-500/10 text-rose-400 rounded-full border border-rose-500/20 shadow-sm">
+                  <span className="px-3 py-1 text-xs font-semibold bg-rose-500/10 text-rose-500 dark:text-rose-400 rounded-full border border-rose-500/20 shadow-sm">
                     {outOfScopeItems.length}{" "}
                     {outOfScopeItems.length === 1 ? "item" : "items"}
                   </span>
                 </div>
 
                 {outOfScopeItems.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-12 px-4 text-center border border-dashed border-gray-850 rounded-xl bg-gray-850/10">
-                    <p className="text-gray-500 text-sm">
+                  <div className="flex flex-col items-center justify-center py-12 px-4 text-center border border-dashed border-border-subtle rounded-xl bg-bg-hover">
+                    <p className="text-text-muted text-sm">
                       No out-of-scope items identified.
                     </p>
                   </div>
@@ -2529,11 +2529,11 @@ export const BaselineReviewPage: React.FC = () => {
                     {outOfScopeItems.map((item: any) => (
                       <div
                         key={item.id}
-                        className="group p-5 bg-gray-800/60 hover:bg-gray-800/90 rounded-xl border border-gray-700/60 hover:border-rose-500/30 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col justify-between min-h-[160px]"
+                        className="group p-5 bg-bg-hover/60 hover:bg-bg-hover/90 rounded-xl border border-border-strong/60 hover:border-rose-500/30 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col justify-between min-h-[160px]"
                       >
                         <div>
                           <div className="flex justify-between items-start gap-2 mb-2">
-                            <h4 className="font-bold text-lg text-white group-hover:text-rose-300 transition-colors flex items-center gap-2">
+                            <h4 className="font-bold text-lg text-text-primary group-hover:text-rose-600 dark:text-rose-300 transition-colors flex items-center gap-2">
                               {item.scope_item_normalized || item.name}
                               {item.completion_status === "COMPLETED" && (
                                 <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950/40 text-emerald-400 border border-emerald-800/30">
@@ -2548,7 +2548,7 @@ export const BaselineReviewPage: React.FC = () => {
                                 );
                                 if (!versionLabel) return null;
                                 return (
-                                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-950/40 text-purple-300 border border-purple-800/30">
+                                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-950/40 text-purple-600 dark:text-purple-300 border border-purple-800/30">
                                     {versionLabel}
                                   </span>
                                 );
@@ -2570,7 +2570,7 @@ export const BaselineReviewPage: React.FC = () => {
                                       setDeletingItemId(item.id);
                                     }}
                                     title="Delete scope item"
-                                    className="p-1.5 text-rose-400 hover:text-white bg-rose-950/30 hover:bg-rose-900/50 border border-rose-500/20 rounded-lg transition-colors cursor-pointer flex-shrink-0"
+                                    className="p-1.5 text-rose-500 dark:text-rose-400 hover:text-text-primary bg-rose-950/30 hover:bg-rose-900/50 border border-rose-500/20 rounded-lg transition-colors cursor-pointer flex-shrink-0"
                                   >
                                     <Trash2 className="w-3.5 h-3.5" />
                                   </button>
@@ -2579,39 +2579,39 @@ export const BaselineReviewPage: React.FC = () => {
                             </div>
                           </div>
                           <details className="mt-3 mb-4 group cursor-pointer">
-                            <summary className="text-xs font-bold text-gray-400 uppercase tracking-wider hover:text-gray-200 transition-colors list-none flex items-center">
+                            <summary className="text-xs font-bold text-text-muted uppercase tracking-wider hover:text-text-primary transition-colors list-none flex items-center">
                               <span className="mr-1.5 transition-transform group-open:rotate-90 text-[10px]">
                                 ▶
                               </span>
                               AI Extraction Details
                             </summary>
-                            <div className="mt-3 space-y-3 p-3 bg-gray-900/60 rounded-lg border border-gray-700/40">
+                            <div className="mt-3 space-y-3 p-3 bg-bg-card/60 rounded-lg border border-border-strong/40">
                               {item.description && (
                                 <div>
-                                  <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">
+                                  <h5 className="text-[10px] font-bold text-text-muted mb-1 uppercase tracking-wider">
                                     AI Reasoning
                                   </h5>
-                                  <p className="text-xs text-gray-300 italic leading-relaxed">
+                                  <p className="text-xs text-text-secondary italic leading-relaxed">
                                     {item.description}
                                   </p>
                                 </div>
                               )}
                               {item.evidence_text && (
                                 <div>
-                                  <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">
+                                  <h5 className="text-[10px] font-bold text-text-muted mb-1 uppercase tracking-wider">
                                     Evidence
                                   </h5>
-                                  <p className="text-xs text-gray-300 italic leading-relaxed">
+                                  <p className="text-xs text-text-secondary italic leading-relaxed">
                                     {item.evidence_text}
                                   </p>
                                 </div>
                               )}
                               {item.name && item.scope_item_normalized && (
                                 <div>
-                                  <h5 className="text-[10px] font-bold text-gray-500 mb-1 uppercase tracking-wider">
+                                  <h5 className="text-[10px] font-bold text-text-muted mb-1 uppercase tracking-wider">
                                     Original Text
                                   </h5>
-                                  <p className="text-xs text-gray-300 font-serif italic">
+                                  <p className="text-xs text-text-secondary font-serif italic">
                                     {item.name}
                                   </p>
                                 </div>
@@ -2621,7 +2621,7 @@ export const BaselineReviewPage: React.FC = () => {
 
                           {item.status_change_tag && (
                             <div className="mb-4 p-2 bg-amber-500/10 border border-amber-500/30 rounded-lg">
-                              <p className="text-amber-400 text-xs font-semibold flex items-center gap-1.5">
+                              <p className="text-amber-500 dark:text-amber-400 text-xs font-semibold flex items-center gap-1.5">
                                 <AlertTriangle className="w-3.5 h-3.5" />
                                 {item.status_change_tag}
                               </p>
@@ -2629,30 +2629,30 @@ export const BaselineReviewPage: React.FC = () => {
                           )}
                         </div>
 
-                        <div className="flex flex-col gap-2 mt-auto pt-3 border-t border-gray-700/20">
+                        <div className="flex flex-col gap-2 mt-auto pt-3 border-t border-border-strong/20">
                           {/* Milestone & Deadline Row */}
                           <div className="flex flex-wrap items-center gap-2 text-xs">
                             {item.milestone && (
                               <span className="text-blue-300 font-semibold bg-blue-950/45 px-2 py-0.5 rounded border border-blue-800/30 flex items-center gap-1">
-                                <CheckCircle2 className="w-3.5 h-3.5 text-blue-400" />
+                                <CheckCircle2 className="w-3.5 h-3.5 text-blue-500 dark:text-blue-400" />
                                 {item.milestone}
                               </span>
                             )}
                             {item.deadline_text && (
                               <span
-                                className="text-purple-300 font-semibold bg-purple-950/45 px-2 py-0.5 rounded border border-purple-800/30 flex items-center gap-1"
+                                className="text-purple-600 dark:text-purple-300 font-semibold bg-purple-950/45 px-2 py-0.5 rounded border border-purple-800/30 flex items-center gap-1"
                                 title={
                                   item.deadline
                                     ? formatDate(item.deadline)
                                     : "Unnormalized"
                                 }
                               >
-                                <Clock className="w-3.5 h-3.5 text-purple-400" />
+                                <Clock className="w-3.5 h-3.5 text-purple-500 dark:text-purple-400" />
                                 {item.deadline_text}
                               </span>
                             )}
                             {item.extraction_method && (
-                              <span className="text-gray-400 font-medium text-[10px] bg-gray-800 px-1.5 py-0.5 rounded ml-auto">
+                              <span className="text-text-muted font-medium text-[10px] bg-bg-hover px-1.5 py-0.5 rounded ml-auto">
                                 By: {item.extraction_method}
                               </span>
                             )}
@@ -2661,13 +2661,13 @@ export const BaselineReviewPage: React.FC = () => {
                             <span
                               className={`font-semibold px-2.5 py-0.5 rounded border ${
                                 item.scope_type === "OUT_OF_SCOPE"
-                                  ? "text-rose-400 bg-rose-950/40 border-rose-800/30"
-                                  : "text-blue-400 bg-blue-950/40 border-blue-800/30"
+                                  ? "text-rose-500 dark:text-rose-400 bg-rose-950/40 border-rose-800/30"
+                                  : "text-blue-500 dark:text-blue-400 bg-blue-950/40 border-blue-800/30"
                               }`}
                             >
                               {item.scope_type}
                             </span>
-                            <span className="text-gray-500 font-medium">
+                            <span className="text-text-muted font-medium">
                               Confidence: {(item.confidence * 100).toFixed(0)}%
                             </span>
                           </div>
@@ -2682,7 +2682,7 @@ export const BaselineReviewPage: React.FC = () => {
             {/* Baseline Version History */}
             {versions && versions.length > 0 && (
               <div className="mt-16">
-                <div className="mb-12 border-b border-gray-800"></div>
+                <div className="mb-12 border-b border-border-subtle"></div>
                 <h2 className="text-2xl font-bold mb-6">
                   Baseline Version History
                 </h2>
@@ -2720,7 +2720,7 @@ export const BaselineReviewPage: React.FC = () => {
                     return (
                       <div
                         key={ver.id}
-                        className="border border-gray-800 rounded-xl bg-gray-900/30 backdrop-blur-md overflow-hidden transition-all duration-300"
+                        className="border border-border-subtle rounded-xl bg-bg-card/30 backdrop-blur-md overflow-hidden transition-all duration-300"
                       >
                         {/* Header */}
                         <button
@@ -2730,10 +2730,10 @@ export const BaselineReviewPage: React.FC = () => {
                               [ver.id]: !isExpanded,
                             }))
                           }
-                          className="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-gray-850/50 transition-colors cursor-pointer select-none"
+                          className="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-bg-hover transition-colors cursor-pointer select-none"
                         >
                           <div className="flex flex-wrap items-center gap-4">
-                            <span className="text-lg font-bold text-white">
+                            <span className="text-lg font-bold text-text-primary">
                               {displayVersion}
                             </span>
                             <span
@@ -2741,46 +2741,46 @@ export const BaselineReviewPage: React.FC = () => {
                                 ver.status === "APPROVED"
                                   ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
                                   : ver.status === "SUPERSEDED"
-                                    ? "bg-gray-500/10 text-gray-400 border border-gray-500/20"
-                                    : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                                    ? "bg-gray-500/10 text-text-muted border border-gray-500/20"
+                                    : "bg-amber-500/10 text-amber-500 dark:text-amber-400 border border-amber-500/20"
                               }`}
                             >
                               {ver.status}
                             </span>
                             {ver.document_name && (
-                              <span className="text-xs text-cyan-400 font-medium">
+                              <span className="text-xs text-cyan-600 dark:text-cyan-400 font-medium">
                                 Doc: {ver.document_name}
                               </span>
                             )}
-                            <span className="text-xs text-gray-400">
+                            <span className="text-xs text-text-muted">
                               {ver.status === "APPROVED"
                                 ? `Approved on: ${approvedDate}`
                                 : `Created on: ${createdDate}`}
                             </span>
                           </div>
                           <div className="flex items-center gap-3">
-                            <span className="text-xs text-gray-500 font-semibold bg-gray-850 px-2.5 py-1 rounded-full">
+                            <span className="text-xs text-text-muted font-semibold bg-bg-hover px-2.5 py-1 rounded-full">
                               {filteredItems.length}{" "}
                               {filteredItems.length === 1 ? "item" : "items"}
                             </span>
                             <ChevronDown
-                              className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}
+                              className={`w-5 h-5 text-text-muted transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}
                             />
                           </div>
                         </button>
 
                         {/* Collapsible Content */}
                         {isExpanded && (
-                          <div className="px-6 pb-6 pt-2 border-t border-gray-850 animate-fadeIn bg-gray-950/20">
+                          <div className="px-6 pb-6 pt-2 border-t border-border-subtle animate-fadeIn bg-bg-base">
                             {filteredItems.length === 0 ? (
-                              <p className="text-gray-500 text-sm py-4 italic text-center">
+                              <p className="text-text-muted text-sm py-4 italic text-center">
                                 No scope items found for this baseline version.
                               </p>
                             ) : (
                               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-4">
                                 {/* In Scope */}
-                                <div className="bg-gray-900/40 p-5 rounded-lg border border-gray-800/80">
-                                  <h4 className="text-sm font-bold text-emerald-400 uppercase tracking-wider mb-4 border-b border-gray-800 pb-2">
+                                <div className="bg-bg-card/40 p-5 rounded-lg border border-border-subtle/80">
+                                  <h4 className="text-sm font-bold text-emerald-400 uppercase tracking-wider mb-4 border-b border-border-subtle pb-2">
                                     In Scope ({inScope.length})
                                   </h4>
                                   {inScope.length === 0 ? (
@@ -2792,15 +2792,15 @@ export const BaselineReviewPage: React.FC = () => {
                                       {inScope.map((item: any) => (
                                         <div
                                           key={item.id}
-                                          className="p-3 bg-gray-850/40 rounded-lg border border-gray-800/50 flex flex-col justify-between gap-2"
+                                          className="p-3 bg-bg-hover rounded-lg border border-border-subtle/50 flex flex-col justify-between gap-2"
                                         >
                                           <div>
-                                            <p className="text-xs font-semibold text-gray-200">
+                                            <p className="text-xs font-semibold text-text-primary">
                                               {item.scope_item_normalized ||
                                                 item.name}
                                             </p>
                                             <details className="mt-1 group cursor-pointer">
-                                              <summary className="text-[10px] font-bold text-gray-500 uppercase tracking-wider hover:text-gray-300 transition-colors list-none flex items-center">
+                                              <summary className="text-[10px] font-bold text-text-muted uppercase tracking-wider hover:text-text-secondary transition-colors list-none flex items-center">
                                                 <span className="mr-1 transition-transform group-open:rotate-90">
                                                   ▶
                                                 </span>
@@ -2809,20 +2809,20 @@ export const BaselineReviewPage: React.FC = () => {
                                               <div className="mt-2 space-y-2">
                                                 {item.description && (
                                                   <div>
-                                                    <h5 className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">
+                                                    <h5 className="text-[9px] font-bold text-text-muted uppercase tracking-wider">
                                                       Reasoning
                                                     </h5>
-                                                    <p className="text-[11px] text-gray-400 italic">
+                                                    <p className="text-[11px] text-text-muted italic">
                                                       {item.description}
                                                     </p>
                                                   </div>
                                                 )}
                                                 {item.evidence_text && (
                                                   <div>
-                                                    <h5 className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">
+                                                    <h5 className="text-[9px] font-bold text-text-muted uppercase tracking-wider">
                                                       Evidence
                                                     </h5>
-                                                    <p className="text-[11px] text-gray-400 italic">
+                                                    <p className="text-[11px] text-text-muted italic">
                                                       {item.evidence_text}
                                                     </p>
                                                   </div>
@@ -2830,10 +2830,10 @@ export const BaselineReviewPage: React.FC = () => {
                                                 {item.name &&
                                                   item.scope_item_normalized && (
                                                     <div>
-                                                      <h5 className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">
+                                                      <h5 className="text-[9px] font-bold text-text-muted uppercase tracking-wider">
                                                         Original
                                                       </h5>
-                                                      <p className="text-[11px] text-gray-400 font-serif italic">
+                                                      <p className="text-[11px] text-text-muted font-serif italic">
                                                         {item.name}
                                                       </p>
                                                     </div>
@@ -2842,8 +2842,8 @@ export const BaselineReviewPage: React.FC = () => {
                                             </details>
                                           </div>
                                           {item.deadline && (
-                                            <div className="text-[10px] text-purple-300 font-semibold bg-purple-950/40 px-2 py-0.5 rounded border border-purple-800/20 w-fit flex items-center gap-1 mt-1">
-                                              <Clock className="w-3 h-3 text-purple-400" />
+                                            <div className="text-[10px] text-purple-600 dark:text-purple-300 font-semibold bg-purple-950/40 px-2 py-0.5 rounded border border-purple-800/20 w-fit flex items-center gap-1 mt-1">
+                                              <Clock className="w-3 h-3 text-purple-500 dark:text-purple-400" />
                                               {formatDate(item.deadline)}
                                             </div>
                                           )}
@@ -2856,8 +2856,8 @@ export const BaselineReviewPage: React.FC = () => {
                                 {/* Out of Scope & Uncertain */}
                                 <div className="space-y-6">
                                   {/* Out of Scope */}
-                                  <div className="bg-gray-900/40 p-5 rounded-lg border border-gray-800/80">
-                                    <h4 className="text-sm font-bold text-rose-400 uppercase tracking-wider mb-4 border-b border-gray-800 pb-2">
+                                  <div className="bg-bg-card/40 p-5 rounded-lg border border-border-subtle/80">
+                                    <h4 className="text-sm font-bold text-rose-500 dark:text-rose-400 uppercase tracking-wider mb-4 border-b border-border-subtle pb-2">
                                       Out of Scope ({outOfScope.length})
                                     </h4>
                                     {outOfScope.length === 0 ? (
@@ -2869,14 +2869,14 @@ export const BaselineReviewPage: React.FC = () => {
                                         {outOfScope.map((item: any) => (
                                           <div
                                             key={item.id}
-                                            className="p-3 bg-gray-850/40 rounded-lg border border-gray-800/50"
+                                            className="p-3 bg-bg-hover rounded-lg border border-border-subtle/50"
                                           >
-                                            <p className="text-xs font-semibold text-gray-200">
+                                            <p className="text-xs font-semibold text-text-primary">
                                               {item.scope_item_normalized ||
                                                 item.name}
                                             </p>
                                             <details className="mt-1 group cursor-pointer">
-                                              <summary className="text-[10px] font-bold text-gray-500 uppercase tracking-wider hover:text-gray-300 transition-colors list-none flex items-center">
+                                              <summary className="text-[10px] font-bold text-text-muted uppercase tracking-wider hover:text-text-secondary transition-colors list-none flex items-center">
                                                 <span className="mr-1 transition-transform group-open:rotate-90">
                                                   ▶
                                                 </span>
@@ -2885,20 +2885,20 @@ export const BaselineReviewPage: React.FC = () => {
                                               <div className="mt-2 space-y-2">
                                                 {item.description && (
                                                   <div>
-                                                    <h5 className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">
+                                                    <h5 className="text-[9px] font-bold text-text-muted uppercase tracking-wider">
                                                       Reasoning
                                                     </h5>
-                                                    <p className="text-[11px] text-gray-400 italic">
+                                                    <p className="text-[11px] text-text-muted italic">
                                                       {item.description}
                                                     </p>
                                                   </div>
                                                 )}
                                                 {item.evidence_text && (
                                                   <div>
-                                                    <h5 className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">
+                                                    <h5 className="text-[9px] font-bold text-text-muted uppercase tracking-wider">
                                                       Evidence
                                                     </h5>
-                                                    <p className="text-[11px] text-gray-400 italic">
+                                                    <p className="text-[11px] text-text-muted italic">
                                                       {item.evidence_text}
                                                     </p>
                                                   </div>
@@ -2906,10 +2906,10 @@ export const BaselineReviewPage: React.FC = () => {
                                                 {item.name &&
                                                   item.scope_item_normalized && (
                                                     <div>
-                                                      <h5 className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">
+                                                      <h5 className="text-[9px] font-bold text-text-muted uppercase tracking-wider">
                                                         Original
                                                       </h5>
-                                                      <p className="text-[11px] text-gray-400 font-serif italic">
+                                                      <p className="text-[11px] text-text-muted font-serif italic">
                                                         {item.name}
                                                       </p>
                                                     </div>
@@ -2924,22 +2924,22 @@ export const BaselineReviewPage: React.FC = () => {
 
                                   {/* Uncertain */}
                                   {uncertain.length > 0 && (
-                                    <div className="bg-gray-900/40 p-5 rounded-lg border border-gray-800/80">
-                                      <h4 className="text-sm font-bold text-amber-400 uppercase tracking-wider mb-4 border-b border-gray-800 pb-2">
+                                    <div className="bg-bg-card/40 p-5 rounded-lg border border-border-subtle/80">
+                                      <h4 className="text-sm font-bold text-amber-500 dark:text-amber-400 uppercase tracking-wider mb-4 border-b border-border-subtle pb-2">
                                         Uncertain ({uncertain.length})
                                       </h4>
                                       <div className="space-y-3">
                                         {uncertain.map((item: any) => (
                                           <div
                                             key={item.id}
-                                            className="p-3 bg-gray-850/40 rounded-lg border border-gray-800/50"
+                                            className="p-3 bg-bg-hover rounded-lg border border-border-subtle/50"
                                           >
-                                            <p className="text-xs font-semibold text-gray-200">
+                                            <p className="text-xs font-semibold text-text-primary">
                                               {item.scope_item_normalized ||
                                                 item.name}
                                             </p>
                                             <details className="mt-1 group cursor-pointer">
-                                              <summary className="text-[10px] font-bold text-gray-500 uppercase tracking-wider hover:text-gray-300 transition-colors list-none flex items-center">
+                                              <summary className="text-[10px] font-bold text-text-muted uppercase tracking-wider hover:text-text-secondary transition-colors list-none flex items-center">
                                                 <span className="mr-1 transition-transform group-open:rotate-90">
                                                   ▶
                                                 </span>
@@ -2948,20 +2948,20 @@ export const BaselineReviewPage: React.FC = () => {
                                               <div className="mt-2 space-y-2">
                                                 {item.description && (
                                                   <div>
-                                                    <h5 className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">
+                                                    <h5 className="text-[9px] font-bold text-text-muted uppercase tracking-wider">
                                                       Reasoning
                                                     </h5>
-                                                    <p className="text-[11px] text-gray-400 italic">
+                                                    <p className="text-[11px] text-text-muted italic">
                                                       {item.description}
                                                     </p>
                                                   </div>
                                                 )}
                                                 {item.evidence_text && (
                                                   <div>
-                                                    <h5 className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">
+                                                    <h5 className="text-[9px] font-bold text-text-muted uppercase tracking-wider">
                                                       Evidence
                                                     </h5>
-                                                    <p className="text-[11px] text-gray-400 italic">
+                                                    <p className="text-[11px] text-text-muted italic">
                                                       {item.evidence_text}
                                                     </p>
                                                   </div>
@@ -2969,10 +2969,10 @@ export const BaselineReviewPage: React.FC = () => {
                                                 {item.name &&
                                                   item.scope_item_normalized && (
                                                     <div>
-                                                      <h5 className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">
+                                                      <h5 className="text-[9px] font-bold text-text-muted uppercase tracking-wider">
                                                         Original
                                                       </h5>
-                                                      <p className="text-[11px] text-gray-400 font-serif italic">
+                                                      <p className="text-[11px] text-text-muted font-serif italic">
                                                         {item.name}
                                                       </p>
                                                     </div>
@@ -3000,11 +3000,11 @@ export const BaselineReviewPage: React.FC = () => {
 
         {showExtractModal && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-[#111827] border border-gray-700 rounded-2xl p-6 w-full max-w-md shadow-2xl">
-              <h2 className="text-xl font-bold mb-2 text-white">
+            <div className="bg-[#111827] border border-border-strong rounded-2xl p-6 w-full max-w-md shadow-2xl">
+              <h2 className="text-xl font-bold mb-2 text-text-primary">
                 Select Contract for Baseline
               </h2>
-              <p className="text-gray-400 text-sm mb-6">
+              <p className="text-text-muted text-sm mb-6">
                 Choose a processed contract to extract scope items or budget
                 details into your baseline.
               </p>
@@ -3017,7 +3017,7 @@ export const BaselineReviewPage: React.FC = () => {
                   return (
                     <div
                       key={doc.id}
-                      className="flex justify-between items-center bg-gray-800 p-3 rounded-lg border border-gray-700 gap-4"
+                      className="flex justify-between items-center bg-bg-hover p-3 rounded-lg border border-border-strong gap-4"
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <input
@@ -3026,20 +3026,20 @@ export const BaselineReviewPage: React.FC = () => {
                           checked={isChecked}
                           onChange={() => toggleDocSelection(doc.id)}
                           disabled={extracting}
-                          className="w-4 h-4 rounded-full border-gray-600 text-[#00e5ff] focus:ring-[#00e5ff] bg-gray-700 cursor-pointer"
+                          className="w-4 h-4 rounded-full border-gray-600 text-[#00e5ff] focus:ring-[#00e5ff] bg-bg-hover cursor-pointer"
                         />
                         <div className="flex flex-col min-w-0">
-                          <span className="text-sm font-medium text-gray-200 break-words">
+                          <span className="text-sm font-medium text-text-primary break-words">
                             {doc.document_name}
                           </span>
-                          <span className="text-[10px] text-cyan-400 font-semibold uppercase">
+                          <span className="text-[10px] text-cyan-600 dark:text-cyan-400 font-semibold uppercase">
                             {doc.document_type}
                           </span>
                         </div>
                       </div>
                       <div className="flex items-center gap-2 flex-shrink-0">
                         {isExtractingThis ? (
-                          <div className="flex items-center gap-1 text-cyan-400 text-xs font-semibold">
+                          <div className="flex items-center gap-1 text-cyan-600 dark:text-cyan-400 text-xs font-semibold">
                             <Loader2 className="h-4 w-4 animate-spin" />
                             <span>Extracting...</span>
                           </div>
@@ -3049,7 +3049,7 @@ export const BaselineReviewPage: React.FC = () => {
                             <span>Completed</span>
                           </div>
                         ) : (
-                          <div className="flex items-center gap-1 text-gray-500 text-xs font-semibold">
+                          <div className="flex items-center gap-1 text-text-muted text-xs font-semibold">
                             <Clock className="h-4 w-4" />
                             <span>Pending</span>
                           </div>
@@ -3063,7 +3063,7 @@ export const BaselineReviewPage: React.FC = () => {
               <div className="flex justify-end gap-3">
                 <button
                   onClick={() => setShowExtractModal(false)}
-                  className="px-4 py-2 rounded-lg font-medium text-gray-300 hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  className="px-4 py-2 rounded-lg font-medium text-text-secondary hover:bg-bg-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                   disabled={extracting}
                 >
                   Cancel
@@ -3090,25 +3090,25 @@ export const BaselineReviewPage: React.FC = () => {
         {showAddItemModal &&
           createPortal(
             <div className="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center z-[9999] p-4 overflow-y-auto animate-fadeIn">
-              <div className="bg-[#0b0e17] border border-gray-700/80 rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 md:p-8 shadow-2xl relative my-auto">
+              <div className="bg-bg-panel border border-border-strong/80 rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 md:p-8 shadow-2xl relative my-auto">
                 <button
                   onClick={() => setShowAddItemModal(false)}
-                  className="absolute top-4 right-4 text-gray-400 hover:text-white p-1"
+                  className="absolute top-4 right-4 text-text-muted hover:text-text-primary p-1"
                 >
                   <X className="w-5 h-5" />
                 </button>
 
-                <h3 className="text-xl font-bold text-white mb-1">
+                <h3 className="text-xl font-bold text-text-primary mb-1">
                   Add Scope Item
                 </h3>
-                <p className="text-xs text-gray-400 mb-6">
+                <p className="text-xs text-text-muted mb-6">
                   Manually add an in-scope or out-of-scope clause item to this
                   baseline.
                 </p>
 
                 <form onSubmit={handleAddItem} className="space-y-4">
                   <div>
-                    <label className="block text-xs font-medium text-gray-400 mb-1.5">
+                    <label className="block text-xs font-medium text-text-muted mb-1.5">
                       Scope Classification *
                     </label>
                     <div className="grid grid-cols-2 gap-2">
@@ -3118,7 +3118,7 @@ export const BaselineReviewPage: React.FC = () => {
                         className={`py-2 px-3 rounded-xl border text-xs font-semibold flex items-center justify-center gap-2 ${
                           newItemScopeType === "IN_SCOPE"
                             ? "bg-emerald-500/20 border-emerald-500 text-emerald-300"
-                            : "bg-gray-900 border-gray-700 text-gray-400"
+                            : "bg-bg-card border-border-strong text-text-muted"
                         }`}
                       >
                         In Scope
@@ -3128,8 +3128,8 @@ export const BaselineReviewPage: React.FC = () => {
                         onClick={() => setNewItemScopeType("OUT_OF_SCOPE")}
                         className={`py-2 px-3 rounded-xl border text-xs font-semibold flex items-center justify-center gap-2 ${
                           newItemScopeType === "OUT_OF_SCOPE"
-                            ? "bg-rose-500/20 border-rose-500 text-rose-300"
-                            : "bg-gray-900 border-gray-700 text-gray-400"
+                            ? "bg-rose-500/20 border-rose-500 text-rose-600 dark:text-rose-300"
+                            : "bg-bg-card border-border-strong text-text-muted"
                         }`}
                       >
                         Out of Scope
@@ -3138,7 +3138,7 @@ export const BaselineReviewPage: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-gray-400 mb-1.5">
+                    <label className="block text-xs font-medium text-text-muted mb-1.5">
                       Item Title / Name *
                     </label>
                     <input
@@ -3147,12 +3147,12 @@ export const BaselineReviewPage: React.FC = () => {
                       placeholder="e.g. SOC 2 Type II Audit Compliance"
                       value={newItemName}
                       onChange={(e) => setNewItemName(e.target.value)}
-                      className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-2.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-teal-500"
+                      className="w-full bg-bg-card border border-border-strong rounded-xl px-4 py-2.5 text-xs text-text-primary placeholder-gray-500 focus:outline-none focus:border-teal-500"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-gray-400 mb-1.5">
+                    <label className="block text-xs font-medium text-text-muted mb-1.5">
                       Description & Scope Details
                     </label>
                     <textarea
@@ -3160,12 +3160,12 @@ export const BaselineReviewPage: React.FC = () => {
                       placeholder="Summarize the scope requirement or exclusion details..."
                       value={newItemDescription}
                       onChange={(e) => setNewItemDescription(e.target.value)}
-                      className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-2.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-teal-500 resize-none"
+                      className="w-full bg-bg-card border border-border-strong rounded-xl px-4 py-2.5 text-xs text-text-primary placeholder-gray-500 focus:outline-none focus:border-teal-500 resize-none"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-gray-400 mb-1.5">
+                    <label className="block text-xs font-medium text-text-muted mb-1.5">
                       Reasoning / Reference Notes
                     </label>
                     <input
@@ -3173,23 +3173,23 @@ export const BaselineReviewPage: React.FC = () => {
                       placeholder="e.g. Manually added during EM baseline review"
                       value={newItemEvidence}
                       onChange={(e) => setNewItemEvidence(e.target.value)}
-                      className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-2.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-teal-500"
+                      className="w-full bg-bg-card border border-border-strong rounded-xl px-4 py-2.5 text-xs text-text-primary placeholder-gray-500 focus:outline-none focus:border-teal-500"
                     />
                   </div>
 
-                  <div className="flex gap-3 pt-4 border-t border-gray-800">
+                  <div className="flex gap-3 pt-4 border-t border-border-subtle">
                     <button
                       type="button"
                       onClick={() => setShowAddItemModal(false)}
                       disabled={addingItem}
-                      className="flex-1 py-2.5 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-xl text-xs font-semibold transition-all"
+                      className="flex-1 py-2.5 bg-bg-hover hover:bg-bg-hover text-text-secondary rounded-xl text-xs font-semibold transition-all"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
                       disabled={addingItem || !newItemName.trim()}
-                      className="flex-1 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl text-xs font-semibold transition-all shadow-md shadow-emerald-500/20 disabled:opacity-50 flex items-center justify-center gap-2"
+                      className="flex-1 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-text-primary rounded-xl text-xs font-semibold transition-all shadow-md shadow-emerald-500/20 disabled:opacity-50 flex items-center justify-center gap-2"
                     >
                       {addingItem ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -3208,15 +3208,15 @@ export const BaselineReviewPage: React.FC = () => {
         {deletingItemId !== null &&
           createPortal(
             <div className="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center z-[9999] p-4 overflow-y-auto animate-fadeIn">
-              <div className="bg-[#0b0e17] border border-gray-700/80 rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl text-center my-auto">
-                <div className="w-12 h-12 rounded-full bg-rose-500/10 border border-rose-500/30 flex items-center justify-center mx-auto mb-4 text-rose-400">
+              <div className="bg-bg-panel border border-border-strong/80 rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl text-center my-auto">
+                <div className="w-12 h-12 rounded-full bg-rose-500/10 border border-rose-500/30 flex items-center justify-center mx-auto mb-4 text-rose-500 dark:text-rose-400">
                   <Trash2 className="w-6 h-6" />
                 </div>
 
-                <h3 className="text-lg font-bold text-white mb-2">
+                <h3 className="text-lg font-bold text-text-primary mb-2">
                   Remove Scope Item
                 </h3>
-                <p className="text-xs text-gray-400 mb-6">
+                <p className="text-xs text-text-muted mb-6">
                   Are you sure you want to delete this scope item from the
                   baseline?
                 </p>
@@ -3225,14 +3225,14 @@ export const BaselineReviewPage: React.FC = () => {
                   <button
                     onClick={() => setDeletingItemId(null)}
                     disabled={deletingItem}
-                    className="flex-1 py-2.5 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-xl text-xs font-semibold transition-all"
+                    className="flex-1 py-2.5 bg-bg-hover hover:bg-bg-hover text-text-secondary rounded-xl text-xs font-semibold transition-all"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={() => handleDeleteItem(deletingItemId)}
                     disabled={deletingItem}
-                    className="flex-1 py-2.5 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-semibold transition-all shadow-md shadow-rose-600/20 disabled:opacity-50 flex items-center justify-center gap-2"
+                    className="flex-1 py-2.5 bg-rose-600 hover:bg-rose-500 text-text-primary rounded-xl text-xs font-semibold transition-all shadow-md shadow-rose-600/20 disabled:opacity-50 flex items-center justify-center gap-2"
                   >
                     {deletingItem ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
@@ -3247,15 +3247,15 @@ export const BaselineReviewPage: React.FC = () => {
           )}
 
         {notification && (
-          <div className="fixed top-6 right-6 z-50 max-w-sm w-full bg-[#111827] border border-white/10 rounded-2xl p-4 shadow-2xl flex gap-3 animate-slideIn select-none">
+          <div className="fixed top-6 right-6 z-50 max-w-sm w-full bg-[#111827] border border-border-strong rounded-2xl p-4 shadow-2xl flex gap-3 animate-slideIn select-none">
             <div className="flex-1">
               <p
                 className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${
                   notification.type === "success"
                     ? "text-emerald-400"
                     : notification.type === "error"
-                      ? "text-rose-400"
-                      : "text-cyan-400"
+                      ? "text-rose-500 dark:text-rose-400"
+                      : "text-cyan-600 dark:text-cyan-400"
                 }`}
               >
                 {notification.type === "success"
@@ -3264,11 +3264,11 @@ export const BaselineReviewPage: React.FC = () => {
                     ? "Error"
                     : "Notice"}
               </p>
-              <p className="text-sm text-gray-200">{notification.message}</p>
+              <p className="text-sm text-text-primary">{notification.message}</p>
             </div>
             <button
               onClick={() => setNotification(null)}
-              className="text-gray-400 hover:text-white transition-colors text-lg font-bold self-start leading-none"
+              className="text-text-muted hover:text-text-primary transition-colors text-lg font-bold self-start leading-none"
             >
               &times;
             </button>
