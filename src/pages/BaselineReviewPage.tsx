@@ -3029,7 +3029,7 @@ export const BaselineReviewPage: React.FC = () => {
                           className="w-4 h-4 rounded-full border-gray-600 text-[#00e5ff] focus:ring-[#00e5ff] bg-gray-700 cursor-pointer"
                         />
                         <div className="flex flex-col min-w-0">
-                          <span className="text-sm font-medium text-gray-200 truncate">
+                          <span className="text-sm font-medium text-gray-200 break-words">
                             {doc.document_name}
                           </span>
                           <span className="text-[10px] text-cyan-400 font-semibold uppercase">
