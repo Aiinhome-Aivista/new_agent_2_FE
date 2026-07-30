@@ -147,7 +147,7 @@ const typeLabels: Record<string, string> = {
 const riskLevelConfig: Record<string, { bg: string; text: string; border: string; glow: string; dot: string }> = {
   LOW: {
     bg: "bg-emerald-500/10",
-    text: "text-emerald-400",
+    text: "text-emerald-700 dark:text-emerald-400",
     border: "border-emerald-500/20",
     glow: "shadow-emerald-500/10",
     dot: "bg-emerald-400 shadow-[0_0_6px_rgba(16,185,129,0.5)]",
@@ -168,7 +168,7 @@ const riskLevelConfig: Record<string, { bg: string; text: string; border: string
   },
   CRITICAL: {
     bg: "bg-rose-500/10",
-    text: "text-rose-500 dark:text-rose-400",
+    text: "text-rose-500 dark:text-rose-700 dark:text-rose-400",
     border: "border-rose-500/20",
     glow: "shadow-rose-500/10",
     dot: "bg-red-400 shadow-[0_0_6px_rgba(239,68,68,0.6)] animate-pulse",
@@ -730,7 +730,7 @@ export const TrackerPage: React.FC = () => {
     const errorText = evaluationProgress.error;
 
     return (
-      <div className="w-full bg-[#0b0e17]/80 border border-border-subtle rounded-3xl p-8 backdrop-blur-md shadow-2xl relative overflow-hidden max-w-4xl mx-auto my-8 animate-fade-in-up">
+      <div className="w-full bg-white/80 dark:bg-[#0b0e17]/80 border border-border-subtle rounded-3xl p-8 backdrop-blur-md shadow-2xl relative overflow-hidden max-w-4xl mx-auto my-8 animate-fade-in-up">
         <div className="absolute -top-24 -right-24 w-48 h-48 rounded-full bg-cyan-500/10 blur-[60px]" />
         <div className="absolute -bottom-24 -left-24 w-48 h-48 rounded-full bg-blue-500/10 blur-[60px]" />
 
@@ -743,7 +743,7 @@ export const TrackerPage: React.FC = () => {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-border-subtle/60 pb-6 mb-8">
           <div>
             <h2 className="text-xl font-bold tracking-tight text-text-primary flex items-center gap-2">
-              <Loader2 className={`w-5 h-5 text-cyan-600 dark:text-cyan-400 ${isFailed ? "" : "animate-spin"}`} />
+              <Loader2 className={`w-5 h-5 text-cyan-600 dark:text-cyan-700 dark:text-cyan-400 ${isFailed ? "" : "animate-spin"}`} />
               {isFailed ? "Evaluation Failed" : isBaselineExtraction ? "Baseline Scope Extraction in Progress..." : "Analyzing Project Risks & Timeline..."}
             </h2>
             <p className="text-xs text-text-muted mt-1">
@@ -757,7 +757,7 @@ export const TrackerPage: React.FC = () => {
             </div>
             <div className="text-right">
               <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest">Overall Progress</p>
-              <p className="text-lg font-black text-cyan-600 dark:text-cyan-400">{overallProgress}%</p>
+              <p className="text-lg font-black text-cyan-600 dark:text-cyan-700 dark:text-cyan-400">{overallProgress}%</p>
             </div>
           </div>
         </div>
@@ -773,7 +773,7 @@ export const TrackerPage: React.FC = () => {
 
         {isFailed && errorText && (
           <div className="mb-8 p-4 bg-rose-950/20 border border-rose-500/20 rounded-2xl flex gap-3 text-rose-200">
-            <AlertCircle className="w-5 h-5 text-rose-500 dark:text-rose-400 flex-shrink-0 mt-0.5" />
+            <AlertCircle className="w-5 h-5 text-rose-500 dark:text-rose-700 dark:text-rose-400 flex-shrink-0 mt-0.5" />
             <div>
               <p className="text-xs font-bold text-rose-600 dark:text-rose-300">Failure Reason</p>
               <p className="text-[11px] text-text-muted mt-1 font-mono leading-relaxed">{errorText}</p>
@@ -793,13 +793,13 @@ export const TrackerPage: React.FC = () => {
               iconBgClass = "bg-gradient-to-r from-emerald-500 to-teal-500 border-transparent scale-100";
               textClass = "text-text-primary";
             } else if (state === "running") {
-              iconElement = <Loader2 className="w-4 h-4 text-cyan-600 dark:text-cyan-400 animate-spin" />;
+              iconElement = <Loader2 className="w-4 h-4 text-cyan-600 dark:text-cyan-700 dark:text-cyan-400 animate-spin" />;
               iconBgClass = "bg-bg-base border-[#00e5ff] scale-110 shadow-lg shadow-cyan-500/10";
               textClass = "text-text-primary font-bold";
             } else if (state === "failed") {
               iconElement = <X className="w-4 h-4 text-text-primary" />;
               iconBgClass = "bg-red-600 shadow-lg shadow-rose-500/20 border-transparent scale-100";
-              textClass = "text-rose-500 dark:text-rose-400 font-bold";
+              textClass = "text-rose-500 dark:text-rose-700 dark:text-rose-400 font-bold";
             } else {
               iconElement = <Circle className="w-3 h-3 text-gray-750" />;
               iconBgClass = "bg-bg-base border-border-subtle scale-90";
@@ -811,21 +811,21 @@ export const TrackerPage: React.FC = () => {
             if (state === "completed" || state === "running") {
               if (step.metricKey === "matched_activities" && details.matched_activities !== undefined) {
                 detailSummary = (
-                  <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 bg-emerald-500/15 text-emerald-400 border border-emerald-500/25 rounded-md mt-1.5 animate-fadeIn">
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/25 rounded-md mt-1.5 animate-fadeIn">
                     ✓ {details.matched_activities} Matched Activities
                   </span>
                 );
               } else if (step.metricKey === "oos_activities" && details.oos_activities !== undefined) {
                 const count = details.oos_activities;
                 detailSummary = (
-                  <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 ${count > 0 ? "bg-rose-500/15 text-rose-500 dark:text-rose-400 border border-rose-500/25" : "bg-bg-hover text-text-muted border-gray-750"} rounded-md mt-1.5 animate-fadeIn`}>
+                  <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 ${count > 0 ? "bg-rose-500/15 text-rose-500 dark:text-rose-700 dark:text-rose-400 border border-rose-500/25" : "bg-bg-hover text-text-muted border-slate-300 dark:border-gray-750"} rounded-md mt-1.5 animate-fadeIn`}>
                     {count > 0 ? `⚠ ${count} Suspected Out-of-Scope` : "No out-of-scope activities"}
                   </span>
                 );
               } else if (step.metricKey === "delayed_deliverables" && details.delayed_deliverables !== undefined) {
                 const count = details.delayed_deliverables;
                 detailSummary = (
-                  <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 ${count > 0 ? "bg-amber-500/15 text-amber-500 dark:text-amber-400 border border-amber-500/25" : "bg-emerald-500/15 text-emerald-400 border border-emerald-500/25"} rounded-md mt-1.5 animate-fadeIn`}>
+                  <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 ${count > 0 ? "bg-amber-500/15 text-amber-500 dark:text-amber-400 border border-amber-500/25" : "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/25"} rounded-md mt-1.5 animate-fadeIn`}>
                     {count > 0 ? `🕒 ${count} Delayed Deliverables` : "✓ Deliverables on track"}
                   </span>
                 );
@@ -841,7 +841,7 @@ export const TrackerPage: React.FC = () => {
                   <h4 className={`text-sm font-semibold tracking-wide flex items-center gap-2 ${textClass}`}>
                     {step.name}
                     {state === "running" && (
-                      <span className="text-[10px] font-bold px-1.5 py-0.5 bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/25 rounded uppercase tracking-wider animate-pulse">Running</span>
+                      <span className="text-[10px] font-bold px-1.5 py-0.5 bg-cyan-500/10 text-cyan-600 dark:text-cyan-700 dark:text-cyan-400 border border-cyan-500/25 rounded uppercase tracking-wider animate-pulse">Running</span>
                     )}
                   </h4>
                   <p className="text-xs text-text-muted mt-0.5 leading-relaxed">{step.desc}</p>
@@ -879,8 +879,8 @@ export const TrackerPage: React.FC = () => {
     }
 
     const auditIconMap: Record<string, React.ReactNode> = {
-      created: <Activity className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" />,
-      resolved: <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />,
+      created: <Activity className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-700 dark:text-cyan-400" />,
+      resolved: <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />,
       reactivated: <RotateCcw className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />,
       updated: <TrendingUp className="w-3.5 h-3.5 text-purple-500 dark:text-purple-400" />,
     };
@@ -902,7 +902,7 @@ export const TrackerPage: React.FC = () => {
     return (
       <div className="h-full flex flex-col overflow-hidden">
         {/* ── Risk Detail Header ── */}
-        <div className="px-5 pt-5 pb-4 border-b border-white/[0.06] flex-shrink-0">
+        <div className="px-5 pt-5 pb-4 border-b border-slate-300 dark:border-white/[0.06] flex-shrink-0">
           <div className="flex items-start justify-between gap-3 mb-3">
             <div className="flex items-center gap-2 flex-wrap">
               <span className={`w-2 h-2 rounded-full shrink-0 ${levelStyle.dot}`} />
@@ -913,12 +913,12 @@ export const TrackerPage: React.FC = () => {
                 {typeLabel}
               </span>
               {item.status === "RESOLVED" && (
-                <span className="text-[9px] font-black px-1.5 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded uppercase tracking-wide">
+                <span className="text-[9px] font-black px-1.5 py-0.5 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 rounded uppercase tracking-wide">
                   ✓ Resolved
                 </span>
               )}
             </div>
-            <span className={`text-sm font-black font-mono px-2 py-1 rounded-lg border ${item.risk_score >= 71 ? "bg-rose-500/10 text-rose-500 dark:text-rose-400 border-rose-500/20" : item.risk_score >= 41 ? "bg-orange-500/10 text-orange-400 border-orange-500/20" : item.risk_score >= 21 ? "bg-yellow-500/10 text-yellow-400 border-yellow-500/20" : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"} shrink-0`}>
+            <span className={`text-sm font-black font-mono px-2 py-1 rounded-lg border ${item.risk_score >= 71 ? "bg-rose-500/10 text-rose-500 dark:text-rose-700 dark:text-rose-400 border-rose-500/20" : item.risk_score >= 41 ? "bg-orange-500/10 text-orange-400 border-orange-500/20" : item.risk_score >= 21 ? "bg-yellow-500/10 text-yellow-400 border-yellow-500/20" : "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20"} shrink-0`}>
               {item.risk_score}/100
             </span>
           </div>
@@ -956,14 +956,14 @@ export const TrackerPage: React.FC = () => {
         <div className="flex-1 overflow-y-auto custom-scrollbar px-5 py-4 space-y-4">
           {/* Source Document */}
           {item.document_name && (
-            <div className="p-3 rounded-xl bg-bg-card border border-white/[0.06]">
+            <div className="p-3 rounded-xl bg-bg-card border border-slate-300 dark:border-white/[0.06]">
               <p className="text-[9px] font-bold text-gray-600 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                 <FileText className="w-3 h-3" /> Source Document
               </p>
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 min-w-0">
                   <div className="w-7 h-7 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center shrink-0">
-                    <FileText className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" />
+                    <FileText className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-700 dark:text-cyan-400" />
                   </div>
                   <span className="text-[11px] text-text-secondary font-medium truncate" title={item.document_name}>
                     {item.document_name}
@@ -972,7 +972,7 @@ export const TrackerPage: React.FC = () => {
                 {item.source_document_id && (
                   <button
                     onClick={() => handleDownloadDocument(item.source_document_id, item.document_name)}
-                    className="flex items-center gap-1 px-2.5 py-1 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/20 hover:border-cyan-500/40 text-cyan-600 dark:text-cyan-400 rounded-lg text-[9px] font-bold transition-all cursor-pointer shrink-0"
+                    className="flex items-center gap-1 px-2.5 py-1 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/20 hover:border-cyan-500/40 text-cyan-600 dark:text-cyan-700 dark:text-cyan-400 rounded-lg text-[9px] font-bold transition-all cursor-pointer shrink-0"
                   >
                     <Download className="w-3 h-3" /> Download
                   </button>
@@ -983,7 +983,7 @@ export const TrackerPage: React.FC = () => {
 
           {/* Description */}
           {(description || item.reasoning) && (
-            <div className="p-3 rounded-xl bg-bg-card border border-white/[0.06]">
+            <div className="p-3 rounded-xl bg-bg-card border border-slate-300 dark:border-white/[0.06]">
               <p className="text-[9px] font-bold text-gray-600 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                 <Info className="w-3 h-3" /> Risk Description
               </p>
@@ -1008,7 +1008,7 @@ export const TrackerPage: React.FC = () => {
           {/* Resolution (if resolved) */}
           {item.status === "RESOLVED" && item.resolution && (
             <div className="p-3 rounded-xl bg-emerald-500/[0.04] border border-emerald-500/20">
-              <p className="text-[9px] font-bold text-emerald-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+              <p className="text-[9px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                 <CheckCircle2 className="w-3 h-3" /> Resolution
               </p>
               <p className="text-[11px] text-text-secondary leading-relaxed">{item.resolution}</p>
@@ -1061,10 +1061,10 @@ export const TrackerPage: React.FC = () => {
                           {auditIconMap[entry.type]}
                           <span className="text-[10px] font-bold text-text-primary">{entry.action}</span>
                           {idx === 0 && (
-                            <span className="text-[8px] font-black px-1 py-px bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20 rounded uppercase tracking-wide">Initial</span>
+                            <span className="text-[8px] font-black px-1 py-px bg-cyan-500/10 text-cyan-600 dark:text-cyan-700 dark:text-cyan-400 border border-cyan-500/20 rounded uppercase tracking-wide">Initial</span>
                           )}
                           {idx === auditEntries.length - 1 && auditEntries.length > 1 && (
-                            <span className="text-[8px] font-black px-1 py-px bg-bg-hover text-text-muted border border-gray-600/30 rounded uppercase tracking-wide">Latest</span>
+                            <span className="text-[8px] font-black px-1 py-px bg-bg-hover text-text-muted border border-slate-300/30 dark:border-gray-600/30 rounded uppercase tracking-wide">Latest</span>
                           )}
                         </div>
                       </div>
@@ -1098,7 +1098,7 @@ export const TrackerPage: React.FC = () => {
                           <span className="text-[9px] text-text-muted truncate" title={entry.document}>{entry.document}</span>
                           <button
                             onClick={() => handleDownloadDocument(entry.documentId!, entry.document!)}
-                            className="flex items-center gap-0.5 text-[9px] text-cyan-500 hover:text-cyan-600 dark:text-cyan-400 font-bold transition-colors cursor-pointer shrink-0"
+                            className="flex items-center gap-0.5 text-[9px] text-cyan-500 hover:text-cyan-600 dark:text-cyan-700 dark:text-cyan-400 font-bold transition-colors cursor-pointer shrink-0"
                           >
                             <Download className="w-2.5 h-2.5" /> DL
                           </button>
@@ -1126,16 +1126,16 @@ export const TrackerPage: React.FC = () => {
 
       <div className="relative z-10 flex flex-col h-full min-h-screen">
         {/* ── Top Header Bar ── */}
-        <div className="px-6 md:px-8 pt-6 md:pt-8 pb-5 border-b border-border-subtle bg-[#080b14]/80 backdrop-blur-sm flex-shrink-0">
+        <div className="px-6 md:px-8 pt-6 md:pt-8 pb-5 border-b border-border-subtle bg-slate-50/80 dark:bg-[#080b14]/80 backdrop-blur-sm flex-shrink-0">
           <div className="max-w-[1600px] mx-auto flex flex-col lg:flex-row justify-between items-start lg:items-center gap-5">
             {/* Breadcrumb + Title */}
             <div>
               <div className="flex items-center gap-2 mb-2">
-                <Link to="/dashboard" className="text-[10px] font-bold text-text-muted hover:text-cyan-600 dark:text-cyan-400 transition-colors uppercase tracking-wider">Cockpit</Link>
-                <ChevronRight className="w-3 h-3 text-gray-650" />
-                <Link to="/projects" className="text-[10px] font-bold text-text-muted hover:text-cyan-600 dark:text-cyan-400 transition-colors uppercase tracking-wider">Projects</Link>
-                <ChevronRight className="w-3 h-3 text-gray-650" />
-                <span className="text-[10px] font-bold text-cyan-600 dark:text-cyan-400 uppercase tracking-wider">Risk Tracker</span>
+                <Link to="/dashboard" className="text-[10px] font-bold text-text-muted hover:text-cyan-600 dark:text-cyan-700 dark:text-cyan-400 transition-colors uppercase tracking-wider">Cockpit</Link>
+                <ChevronRight className="w-3 h-3 text-slate-400 dark:text-gray-650" />
+                <Link to="/projects" className="text-[10px] font-bold text-text-muted hover:text-cyan-600 dark:text-cyan-700 dark:text-cyan-400 transition-colors uppercase tracking-wider">Projects</Link>
+                <ChevronRight className="w-3 h-3 text-slate-400 dark:text-gray-650" />
+                <span className="text-[10px] font-bold text-cyan-600 dark:text-cyan-700 dark:text-cyan-400 uppercase tracking-wider">Risk Tracker</span>
               </div>
               <h1 className="font-display text-2xl md:text-3xl font-black tracking-tight text-text-primary flex items-center gap-3">
                 <ShieldAlert className="w-7 h-7 text-rose-500 shrink-0" />
@@ -1150,7 +1150,7 @@ export const TrackerPage: React.FC = () => {
             <div className="flex flex-wrap gap-2.5 items-center">
               {/* Scoring Rules Tooltip */}
               <div className="relative group">
-                <button className="flex items-center gap-1.5 px-3 py-2 bg-bg-card border border-border-subtle hover:border-border-strong text-text-muted hover:text-cyan-600 dark:text-cyan-400 rounded-xl text-xs font-bold transition-all cursor-help shadow-lg">
+                <button className="flex items-center gap-1.5 px-3 py-2 bg-bg-card border border-border-subtle hover:border-border-strong text-text-muted hover:text-cyan-600 dark:text-cyan-700 dark:text-cyan-400 rounded-xl text-xs font-bold transition-all cursor-help shadow-lg">
                   <Info className="w-3.5 h-3.5 shrink-0" /> Scoring Rules
                 </button>
                 <div className="absolute right-0 lg:right-1/2 lg:translate-x-1/2 top-full mt-3 w-80 p-5 bg-bg-base border border-border-subtle rounded-2xl shadow-2xl backdrop-blur-md opacity-0 translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 z-50 text-left">
@@ -1272,12 +1272,12 @@ export const TrackerPage: React.FC = () => {
 
               {/* AI Priority Banner */}
               {project?.highestActionPriority && (
-                <div className="mx-4 mt-4 p-3 bg-gradient-to-r from-cyan-500/10 dark:from-cyan-950/50 to-blue-500/10 dark:to-blue-900/30 border border-cyan-500/25 rounded-xl flex-shrink-0 relative overflow-hidden group">
+                <div className="mx-4 mt-4 p-3 bg-gradient-to-r from-cyan-500/10 dark:from-cyan-50/50 dark:from-cyan-950/50 to-blue-500/10 dark:to-blue-50/30 dark:to-blue-900/30 border border-cyan-500/25 rounded-xl flex-shrink-0 relative overflow-hidden group">
                   <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/0 via-cyan-500/5 to-cyan-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
                   <div className="flex items-center justify-between mb-1.5 relative z-10">
                     <div className="flex items-center gap-1.5">
-                      <Sparkles className="w-3 h-3 text-cyan-600 dark:text-cyan-400" />
-                      <span className="text-[9px] font-black text-cyan-600 dark:text-cyan-400 uppercase tracking-widest">AI Top Priority</span>
+                      <Sparkles className="w-3 h-3 text-cyan-600 dark:text-cyan-700 dark:text-cyan-400" />
+                      <span className="text-[9px] font-black text-cyan-600 dark:text-cyan-700 dark:text-cyan-400 uppercase tracking-widest">AI Top Priority</span>
                     </div>
                     {project.highestActionPriority.id && (
                       <button 
@@ -1302,11 +1302,11 @@ export const TrackerPage: React.FC = () => {
               {/* Stats Bar */}
               <div className="flex gap-px mx-4 mt-3 flex-shrink-0">
                 <div className="flex-1 p-2.5 bg-bg-card/60 border border-border-subtle rounded-l-xl text-center">
-                  <p className="text-lg font-black text-rose-500 dark:text-rose-400">{activeItems.length}</p>
+                  <p className="text-lg font-black text-rose-500 dark:text-rose-700 dark:text-rose-400">{activeItems.length}</p>
                   <p className="text-[8px] font-bold text-gray-600 uppercase tracking-wider">Active</p>
                 </div>
                 <div className="flex-1 p-2.5 bg-bg-card/60 border border-border-subtle text-center">
-                  <p className="text-lg font-black text-emerald-400">{resolvedItems.length}</p>
+                  <p className="text-lg font-black text-emerald-700 dark:text-emerald-400">{resolvedItems.length}</p>
                   <p className="text-[8px] font-bold text-gray-600 uppercase tracking-wider">Resolved</p>
                 </div>
                 <div className="flex-1 p-2.5 bg-bg-card/60 border border-border-subtle rounded-r-xl text-center">
@@ -1338,7 +1338,7 @@ export const TrackerPage: React.FC = () => {
                   >
                     <CheckCheck className="w-3 h-3" />
                     Resolved
-                    <span className={`px-1.5 py-0.5 text-[9px] rounded border font-black font-mono transition-all duration-300 ${activeTab === "RESOLVED" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : "bg-bg-hover/40 text-text-muted border-border-strong/30"}`}>
+                    <span className={`px-1.5 py-0.5 text-[9px] rounded border font-black font-mono transition-all duration-300 ${activeTab === "RESOLVED" ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20" : "bg-bg-hover/40 text-text-muted border-border-strong/30"}`}>
                       {resolvedItems.length}
                     </span>
                   </button>
@@ -1349,7 +1349,7 @@ export const TrackerPage: React.FC = () => {
                   <div className="bg-cyan-950/20 border border-cyan-500/20 rounded-xl p-2.5 flex items-center justify-between gap-2 animate-fade-in-up">
                     <div className="flex items-center gap-2">
                       <div className="w-5 h-5 rounded bg-cyan-500/10 flex items-center justify-center shrink-0">
-                        <span className="text-[10px] text-cyan-600 dark:text-cyan-400 font-bold font-mono">{selectedItemIds.length}</span>
+                        <span className="text-[10px] text-cyan-600 dark:text-cyan-700 dark:text-cyan-400 font-bold font-mono">{selectedItemIds.length}</span>
                       </div>
                       <span className="text-[10px] text-text-secondary font-bold">selected</span>
                     </div>
@@ -1360,7 +1360,7 @@ export const TrackerPage: React.FC = () => {
                       <button onClick={() => handleExportBatch(activeItems.filter((i) => selectedItemIds.includes(i.id)), "pdf", "Selected Risks")} className="px-2 py-1 text-[9px] font-bold text-text-primary bg-cyan-600 hover:bg-cyan-500 rounded-lg cursor-pointer shadow-md shadow-cyan-500/10 transition-colors">
                         PDF
                       </button>
-                      <button onClick={() => handleExportBatch(activeItems.filter((i) => selectedItemIds.includes(i.id)), "docx", "Selected Risks")} className="px-2 py-1 text-[9px] font-bold text-cyan-600 dark:text-cyan-400 border border-cyan-500/20 hover:bg-cyan-500/10 rounded-lg cursor-pointer transition-colors">
+                      <button onClick={() => handleExportBatch(activeItems.filter((i) => selectedItemIds.includes(i.id)), "docx", "Selected Risks")} className="px-2 py-1 text-[9px] font-bold text-cyan-600 dark:text-cyan-700 dark:text-cyan-400 border border-cyan-500/20 hover:bg-cyan-500/10 rounded-lg cursor-pointer transition-colors">
                         Word
                       </button>
                     </div>
@@ -1404,11 +1404,11 @@ export const TrackerPage: React.FC = () => {
                       <div
                         key={item.id}
                         onClick={() => setSelectedItem(item)}
-                        className={`group rounded-xl border cursor-pointer transition-all duration-200 overflow-hidden ${borderColor} ${isSelected ? "bg-gradient-to-br from-cyan-500/10 dark:from-cyan-950/30 to-gray-500/10 dark:to-gray-900/80 shadow-lg" : "bg-gradient-to-br from-bg-card to-bg-base hover:border-border-strong/50 hover:bg-bg-card/80"}`}
+                        className={`group rounded-xl border cursor-pointer transition-all duration-200 overflow-hidden ${borderColor} ${isSelected ? "bg-gradient-to-br from-cyan-500/10 dark:from-cyan-50/30 dark:from-cyan-950/30 to-gray-500/10 dark:to-slate-100/80 dark:to-gray-900/80 shadow-lg" : "bg-gradient-to-br from-bg-card to-bg-base hover:border-border-strong/50 hover:bg-bg-card/80"}`}
                         style={{ animationDelay: `${index * 40}ms` }}
                       >
                         {/* Card Top Bar — colored by risk level */}
-                        <div className={`px-3 py-2.5 border-b ${isSelected ? "border-cyan-500/20" : "border-white/[0.04]"}`}>
+                        <div className={`px-3 py-2.5 border-b ${isSelected ? "border-cyan-500/20" : "border-slate-300 dark:border-white/[0.04]"}`}>
                           <div className="flex items-start justify-between gap-2">
                             <div className="flex items-center gap-2 flex-1 min-w-0">
                               {activeTab === "ACTIVE" && (
@@ -1442,7 +1442,7 @@ export const TrackerPage: React.FC = () => {
                               <span className={`text-[8px] font-black px-1.5 py-0.5 rounded border ${levelStyle.bg} ${levelStyle.text} ${levelStyle.border}`}>
                                 {level}
                               </span>
-                              <span className={`text-[8px] font-mono font-black px-1.5 py-0.5 rounded border ${item.risk_score >= 71 ? "bg-rose-500/10 text-rose-500 dark:text-rose-400 border-rose-500/20" : item.risk_score >= 41 ? "bg-orange-500/10 text-orange-400 border-orange-500/20" : item.risk_score >= 21 ? "bg-yellow-500/10 text-yellow-400 border-yellow-500/20" : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"}`}>
+                              <span className={`text-[8px] font-mono font-black px-1.5 py-0.5 rounded border ${item.risk_score >= 71 ? "bg-rose-500/10 text-rose-500 dark:text-rose-700 dark:text-rose-400 border-rose-500/20" : item.risk_score >= 41 ? "bg-orange-500/10 text-orange-400 border-orange-500/20" : item.risk_score >= 21 ? "bg-yellow-500/10 text-yellow-400 border-yellow-500/20" : "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20"}`}>
                                 {item.risk_score}/100
                               </span>
                             </div>
@@ -1462,7 +1462,7 @@ export const TrackerPage: React.FC = () => {
                               {categoryLabel}
                             </span>
                             {item.status === "RESOLVED" && (
-                              <span className="text-[7px] font-black px-1 py-px bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded">✓ Done</span>
+                              <span className="text-[7px] font-black px-1 py-px bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 rounded">✓ Done</span>
                             )}
                           </div>
                         </div>
@@ -1489,10 +1489,10 @@ export const TrackerPage: React.FC = () => {
                   <div className="px-5 py-3.5 border-b border-border-subtle bg-bg-base flex-shrink-0 flex items-center justify-between gap-3 flex-wrap">
                     <div className="flex items-center gap-2">
                       <div className="w-6 h-6 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
-                        <History className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" />
+                        <History className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-700 dark:text-cyan-400" />
                       </div>
                       <div>
-                        <p className="text-[10px] font-bold text-cyan-600 dark:text-cyan-400 uppercase tracking-widest">Full Audit Trail & Details</p>
+                        <p className="text-[10px] font-bold text-cyan-600 dark:text-cyan-700 dark:text-cyan-400 uppercase tracking-widest">Full Audit Trail & Details</p>
                         <p className="text-[9px] text-gray-600">Risk #{selectedItem.id} · Complete history with timestamps</p>
                       </div>
                     </div>
@@ -1542,7 +1542,7 @@ export const TrackerPage: React.FC = () => {
               ) : (
                 <div className="flex-1 flex items-center justify-center">
                   <div className="text-center">
-                    <div className="w-16 h-16 bg-bg-card/60 border border-white/[0.06] rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <div className="w-16 h-16 bg-bg-card/60 border border-slate-300 dark:border-white/[0.06] rounded-2xl flex items-center justify-center mx-auto mb-4">
                       <ScrollText className="w-7 h-7 text-gray-600" />
                     </div>
                     <p className="text-sm font-bold text-text-muted mb-1">Select a Risk</p>
@@ -1565,7 +1565,7 @@ export const TrackerPage: React.FC = () => {
           <div className="bg-bg-panel border border-border-strong/60 rounded-2xl p-6 w-full max-w-lg shadow-2xl animate-fade-in-up">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                <CheckCircle2 className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
               </div>
               <div>
                 <h2 className="text-lg font-bold text-text-primary">Resolve Risk Item</h2>
@@ -1637,7 +1637,7 @@ export const TrackerPage: React.FC = () => {
           <div className="bg-bg-panel border border-border-strong/60 rounded-2xl p-6 w-full max-w-md shadow-2xl animate-fade-in-up">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-8 h-8 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
-                <Sparkles className="w-4 h-4 text-blue-500 dark:text-blue-400" />
+                <Sparkles className="w-4 h-4 text-blue-500 dark:text-blue-700 dark:text-blue-400" />
               </div>
               <div>
                 <h2 className="text-lg font-bold text-text-primary">Process Status Document</h2>

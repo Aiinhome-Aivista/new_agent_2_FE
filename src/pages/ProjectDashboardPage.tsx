@@ -357,7 +357,7 @@ export const ProjectDashboardPage: React.FC = () => {
                     <span className="font-semibold text-text-muted">
                       Start Date:
                     </span>{" "}
-                    <span className="text-teal-500 dark:text-teal-400 font-semibold">
+                    <span className="text-teal-500 dark:text-teal-700 dark:text-teal-400 font-semibold">
                       {new Date(project.start_date).toLocaleDateString(
                         undefined,
                         { dateStyle: "medium" },
@@ -370,7 +370,7 @@ export const ProjectDashboardPage: React.FC = () => {
                     <span className="font-semibold text-text-muted">
                       End Date:
                     </span>{" "}
-                    <span className="text-teal-500 dark:text-teal-400 font-semibold">
+                    <span className="text-teal-500 dark:text-teal-700 dark:text-teal-400 font-semibold">
                       {new Date(project.end_date).toLocaleDateString(
                         undefined,
                         { dateStyle: "medium" },
@@ -387,7 +387,7 @@ export const ProjectDashboardPage: React.FC = () => {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-6 border-b border-border-subtle mb-6">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 uppercase tracking-wider">
+                <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 uppercase tracking-wider">
                   Section 1 • One-Time Onboarding
                 </span>
                 <span className="text-xs text-text-muted font-medium">
@@ -422,13 +422,13 @@ export const ProjectDashboardPage: React.FC = () => {
                   }}
                   className={`p-4 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
                     baselineDocType === "EL"
-                      ? "bg-gradient-to-r from-emerald-500/10 dark:from-emerald-950/50 to-teal-500/10 dark:to-teal-950/40 border-emerald-500/60 shadow-lg shadow-emerald-500/10 ring-1 ring-emerald-500/30"
+                      ? "bg-gradient-to-r from-emerald-500/10 dark:from-emerald-50/50 dark:from-emerald-950/50 to-teal-500/10 dark:to-teal-50/40 dark:to-teal-950/40 border-emerald-500/60 shadow-lg shadow-emerald-500/10 ring-1 ring-emerald-500/30"
                       : "bg-bg-hover/40 border-border-strong/60 hover:bg-bg-hover/80"
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <div
-                      className={`p-2.5 rounded-xl ${baselineDocType === "EL" ? "bg-emerald-500/20 text-emerald-400" : "bg-bg-hover text-text-muted"}`}
+                      className={`p-2.5 rounded-xl ${baselineDocType === "EL" ? "bg-emerald-500/20 text-emerald-700 dark:text-emerald-400" : "bg-bg-hover text-text-muted"}`}
                     >
                       <FileText className="w-5 h-5" />
                     </div>
@@ -450,13 +450,13 @@ export const ProjectDashboardPage: React.FC = () => {
                   }}
                   className={`p-4 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
                     baselineDocType === "IFA"
-                      ? "bg-gradient-to-r from-emerald-500/10 dark:from-emerald-950/50 to-teal-500/10 dark:to-teal-950/40 border-emerald-500/60 shadow-lg shadow-emerald-500/10 ring-1 ring-emerald-500/30"
+                      ? "bg-gradient-to-r from-emerald-500/10 dark:from-emerald-50/50 dark:from-emerald-950/50 to-teal-500/10 dark:to-teal-50/40 dark:to-teal-950/40 border-emerald-500/60 shadow-lg shadow-emerald-500/10 ring-1 ring-emerald-500/30"
                       : "bg-bg-hover/40 border-border-strong/60 hover:bg-bg-hover/80"
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <div
-                      className={`p-2.5 rounded-xl ${baselineDocType === "IFA" ? "bg-emerald-500/20 text-emerald-400" : "bg-bg-hover text-text-muted"}`}
+                      className={`p-2.5 rounded-xl ${baselineDocType === "IFA" ? "bg-emerald-500/20 text-emerald-700 dark:text-emerald-400" : "bg-bg-hover text-text-muted"}`}
                     >
                       <FileSpreadsheet className="w-5 h-5" />
                     </div>
@@ -477,7 +477,7 @@ export const ProjectDashboardPage: React.FC = () => {
                   <div>
                     <div className="flex items-center justify-between mb-3">
                       <h4 className="text-xs font-semibold text-text-secondary uppercase tracking-wider flex items-center gap-2">
-                        <UploadCloud className="w-4 h-4 text-emerald-400" />
+                        <UploadCloud className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
                         Target Category:{" "}
                         <span className="text-emerald-300 font-bold">
                           {getDocTypeLabel(baselineDocType)}
@@ -505,7 +505,7 @@ export const ProjectDashboardPage: React.FC = () => {
                               ? "border-emerald-400 bg-emerald-950/20 cursor-pointer"
                               : baselineFile
                                 ? "border-green-500 bg-green-950/10 cursor-pointer"
-                                : "border-gray-600 hover:border-gray-400 bg-bg-card/40 hover:bg-bg-card/60 cursor-pointer"
+                                : "border-slate-300 dark:border-gray-600 hover:border-gray-400 bg-bg-card/40 hover:bg-bg-card/60 cursor-pointer"
                         }`}
                       >
                         <input
@@ -551,7 +551,7 @@ export const ProjectDashboardPage: React.FC = () => {
                         ) : (
                           <>
                             <div className="bg-emerald-500/10 p-4 rounded-full mb-4 ring-8 ring-emerald-500/5">
-                              <UploadCloud className="w-8 h-8 text-emerald-400" />
+                              <UploadCloud className="w-8 h-8 text-emerald-700 dark:text-emerald-400" />
                             </div>
                             <div className="text-center">
                               <p className="text-sm text-text-secondary font-medium">
@@ -588,7 +588,7 @@ export const ProjectDashboardPage: React.FC = () => {
                     </h4>
 
                     {initiationDocs.length === 0 ? (
-                      <div className="py-10 text-center border border-dashed border-gray-750 rounded-xl bg-bg-card/20">
+                      <div className="py-10 text-center border border-dashed border-slate-300 dark:border-gray-750 rounded-xl bg-bg-card/20">
                         <FileCheck className="w-8 h-8 text-gray-600 mx-auto mb-2" />
                         <p className="text-xs text-text-muted font-medium">
                           No initiation documents uploaded yet.
@@ -614,7 +614,7 @@ export const ProjectDashboardPage: React.FC = () => {
                                 </span>
                               </div>
                               {doc.processing_status === "FAILED" && doc.processing_error && (
-                                <p className="text-[10px] text-rose-500 dark:text-rose-400 font-medium font-mono mt-1 whitespace-pre-wrap max-w-full break-words border border-rose-500/20 bg-rose-950/20 rounded-md px-2 py-1 select-text">
+                                <p className="text-[10px] text-rose-500 dark:text-rose-700 dark:text-rose-400 font-medium font-mono mt-1 whitespace-pre-wrap max-w-full break-words border border-rose-500/20 bg-rose-950/20 rounded-md px-2 py-1 select-text">
                                   Error: {doc.processing_error}
                                 </p>
                               )}
@@ -630,7 +630,7 @@ export const ProjectDashboardPage: React.FC = () => {
                                       ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 animate-pulse"
                                       : doc.processing_status === "FAILED"
                                         ? "bg-red-500/20 text-red-400 border border-red-500/30"
-                                        : "bg-blue-500/20 text-blue-500 dark:text-blue-400 border border-blue-500/30"
+                                        : "bg-blue-500/20 text-blue-500 dark:text-blue-700 dark:text-blue-400 border border-blue-500/30"
                                 }`}
                               >
                                 {doc.processing_status}
@@ -675,7 +675,7 @@ export const ProjectDashboardPage: React.FC = () => {
                 </h4>
 
                 {initiationDocs.length === 0 ? (
-                  <div className="py-10 text-center border border-dashed border-gray-750 rounded-xl bg-bg-card/20">
+                  <div className="py-10 text-center border border-dashed border-slate-300 dark:border-gray-750 rounded-xl bg-bg-card/20">
                     <FileCheck className="w-8 h-8 text-gray-600 mx-auto mb-2" />
                     <p className="text-xs text-text-muted font-medium">
                       No initiation documents uploaded yet.
@@ -709,7 +709,7 @@ export const ProjectDashboardPage: React.FC = () => {
                                   ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 animate-pulse"
                                   : doc.processing_status === "FAILED"
                                     ? "bg-red-500/20 text-red-400 border border-red-500/30"
-                                    : "bg-blue-500/20 text-blue-500 dark:text-blue-400 border border-blue-500/30"
+                                    : "bg-blue-500/20 text-blue-500 dark:text-blue-700 dark:text-blue-400 border border-blue-500/30"
                             }`}
                           >
                             {doc.processing_status}
@@ -728,7 +728,7 @@ export const ProjectDashboardPage: React.FC = () => {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-6 border-b border-border-subtle mb-6">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-indigo-500/15 text-indigo-400 border border-indigo-500/30 uppercase tracking-wider">
+                <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-indigo-500/15 text-indigo-700 dark:text-indigo-400 border border-indigo-500/30 uppercase tracking-wider">
                   Section 2 • Recurring Execution
                 </span>
                 <span className="text-xs text-text-muted font-medium">
@@ -749,7 +749,7 @@ export const ProjectDashboardPage: React.FC = () => {
               to={`/projects/${id}/tracker`}
               className="inline-flex items-center gap-1.5 px-4 py-2 bg-rose-600/20 hover:bg-rose-600/30 border border-rose-500/40 text-rose-600 dark:text-rose-300 text-xs font-semibold rounded-xl transition-all"
             >
-              <Clock className="w-3.5 h-3.5 text-rose-500 dark:text-rose-400" />
+              <Clock className="w-3.5 h-3.5 text-rose-500 dark:text-rose-700 dark:text-rose-400" />
               View Risk Tracker &rarr;
             </Link>
           </div>
@@ -778,13 +778,13 @@ export const ProjectDashboardPage: React.FC = () => {
                   }}
                   className={`p-4 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
                     monitoringDocType === "MOM"
-                      ? "bg-gradient-to-r from-indigo-500/10 dark:from-indigo-950/50 to-blue-500/10 dark:to-blue-950/40 border-indigo-500/60 shadow-lg shadow-indigo-500/10 ring-1 ring-indigo-500/30"
+                      ? "bg-gradient-to-r from-indigo-500/10 dark:from-indigo-50/50 dark:from-indigo-950/50 to-blue-500/10 dark:to-blue-50/40 dark:to-blue-950/40 border-indigo-500/60 shadow-lg shadow-indigo-500/10 ring-1 ring-indigo-500/30"
                       : "bg-bg-hover/40 border-border-strong/60 hover:bg-bg-hover/80"
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <div
-                      className={`p-2.5 rounded-xl ${monitoringDocType === "MOM" ? "bg-indigo-500/20 text-indigo-400" : "bg-bg-hover text-text-muted"}`}
+                      className={`p-2.5 rounded-xl ${monitoringDocType === "MOM" ? "bg-indigo-500/20 text-indigo-700 dark:text-indigo-400" : "bg-bg-hover text-text-muted"}`}
                     >
                       <Clock className="w-5 h-5" />
                     </div>
@@ -806,13 +806,13 @@ export const ProjectDashboardPage: React.FC = () => {
                   }}
                   className={`p-4 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
                     monitoringDocType === "STATUS_REPORT"
-                      ? "bg-gradient-to-r from-indigo-500/10 dark:from-indigo-950/50 to-blue-500/10 dark:to-blue-950/40 border-indigo-500/60 shadow-lg shadow-indigo-500/10 ring-1 ring-indigo-500/30"
+                      ? "bg-gradient-to-r from-indigo-500/10 dark:from-indigo-50/50 dark:from-indigo-950/50 to-blue-500/10 dark:to-blue-50/40 dark:to-blue-950/40 border-indigo-500/60 shadow-lg shadow-indigo-500/10 ring-1 ring-indigo-500/30"
                       : "bg-bg-hover/40 border-border-strong/60 hover:bg-bg-hover/80"
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <div
-                      className={`p-2.5 rounded-xl ${monitoringDocType === "STATUS_REPORT" ? "bg-indigo-500/20 text-indigo-400" : "bg-bg-hover text-text-muted"}`}
+                      className={`p-2.5 rounded-xl ${monitoringDocType === "STATUS_REPORT" ? "bg-indigo-500/20 text-indigo-700 dark:text-indigo-400" : "bg-bg-hover text-text-muted"}`}
                     >
                       <Layers className="w-5 h-5" />
                     </div>
@@ -832,7 +832,7 @@ export const ProjectDashboardPage: React.FC = () => {
                   className="p-4 rounded-xl border border-dashed border-border-strong hover:border-indigo-500/50 bg-bg-hover/20 hover:bg-bg-hover/60 transition-all cursor-pointer flex items-center justify-between"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="p-2.5 rounded-xl bg-bg-hover text-indigo-400">
+                    <div className="p-2.5 rounded-xl bg-bg-hover text-indigo-700 dark:text-indigo-400">
                       <Plus className="w-5 h-5" />
                     </div>
                     <div>
@@ -858,14 +858,14 @@ export const ProjectDashboardPage: React.FC = () => {
                       Upload Restricted
                     </h4>
                     <p className="text-xs text-text-muted max-w-[280px] leading-relaxed">
-                      Only users with the <strong className="text-indigo-400">Project Lead</strong> or <strong className="text-indigo-400">Engagement Manager</strong> role are authorized to upload or modify Progress Ingestion documents (MOMs & Status Reports).
+                      Only users with the <strong className="text-indigo-700 dark:text-indigo-400">Project Lead</strong> or <strong className="text-indigo-700 dark:text-indigo-400">Engagement Manager</strong> role are authorized to upload or modify Progress Ingestion documents (MOMs & Status Reports).
                     </p>
                   </div>
                 ) : (
                   <div>
                     <div className="flex items-center justify-between mb-3">
                       <h4 className="text-xs font-semibold text-text-secondary uppercase tracking-wider flex items-center gap-2">
-                        <UploadCloud className="w-4 h-4 text-indigo-400" />
+                        <UploadCloud className="w-4 h-4 text-indigo-700 dark:text-indigo-400" />
                         Target Category:{" "}
                         <span className="text-indigo-300 font-bold">
                           {getDocTypeLabel(monitoringDocType)}
@@ -893,7 +893,7 @@ export const ProjectDashboardPage: React.FC = () => {
                               ? "border-indigo-400 bg-indigo-950/20 cursor-pointer"
                               : monitoringFile
                                 ? "border-green-500 bg-green-950/10 cursor-pointer"
-                                : "border-gray-600 hover:border-gray-400 bg-bg-card/40 hover:bg-bg-card/60 cursor-pointer"
+                                : "border-slate-300 dark:border-gray-600 hover:border-gray-400 bg-bg-card/40 hover:bg-bg-card/60 cursor-pointer"
                         }`}
                       >
                         <input
@@ -942,7 +942,7 @@ export const ProjectDashboardPage: React.FC = () => {
                         ) : (
                           <>
                             <div className="bg-indigo-500/10 p-4 rounded-full mb-4 ring-8 ring-indigo-500/5">
-                              <UploadCloud className="w-8 h-8 text-indigo-400" />
+                              <UploadCloud className="w-8 h-8 text-indigo-700 dark:text-indigo-400" />
                             </div>
                             <div className="text-center">
                               <p className="text-sm text-text-secondary font-medium">
@@ -981,7 +981,7 @@ export const ProjectDashboardPage: React.FC = () => {
                     </h4>
 
                     {trackerDocs.length === 0 ? (
-                      <div className="py-10 text-center border border-dashed border-gray-750 rounded-xl bg-bg-card/20">
+                      <div className="py-10 text-center border border-dashed border-slate-300 dark:border-gray-750 rounded-xl bg-bg-card/20">
                         <Clock className="w-8 h-8 text-gray-600 mx-auto mb-2" />
                         <p className="text-xs text-text-muted font-medium">
                           No progress tracking documents ingested yet.
@@ -1007,7 +1007,7 @@ export const ProjectDashboardPage: React.FC = () => {
                                 </span>
                               </div>
                               {doc.processing_status === "FAILED" && doc.processing_error && (
-                                <p className="text-[10px] text-rose-500 dark:text-rose-400 font-medium font-mono mt-1 whitespace-pre-wrap max-w-full break-words border border-rose-500/20 bg-rose-950/20 rounded-md px-2 py-1 select-text">
+                                <p className="text-[10px] text-rose-500 dark:text-rose-700 dark:text-rose-400 font-medium font-mono mt-1 whitespace-pre-wrap max-w-full break-words border border-rose-500/20 bg-rose-950/20 rounded-md px-2 py-1 select-text">
                                   Error: {doc.processing_error}
                                 </p>
                               )}
@@ -1023,7 +1023,7 @@ export const ProjectDashboardPage: React.FC = () => {
                                       ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 animate-pulse"
                                       : doc.processing_status === "FAILED"
                                         ? "bg-red-500/20 text-red-400 border border-red-500/30"
-                                        : "bg-blue-500/20 text-blue-500 dark:text-blue-400 border border-blue-500/30"
+                                        : "bg-blue-500/20 text-blue-500 dark:text-blue-700 dark:text-blue-400 border border-blue-500/30"
                                 }`}
                               >
                                 {doc.processing_status}
@@ -1310,10 +1310,10 @@ export const ProjectDashboardPage: React.FC = () => {
             <p
               className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${
                 notification.type === "success"
-                  ? "text-emerald-400"
+                  ? "text-emerald-700 dark:text-emerald-400"
                   : notification.type === "error"
-                    ? "text-rose-500 dark:text-rose-400"
-                    : "text-cyan-600 dark:text-cyan-400"
+                    ? "text-rose-500 dark:text-rose-700 dark:text-rose-400"
+                    : "text-cyan-600 dark:text-cyan-700 dark:text-cyan-400"
               }`}
             >
               {notification.type === "success"
