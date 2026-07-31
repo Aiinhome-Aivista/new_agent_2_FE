@@ -132,6 +132,10 @@ const categoryLabels: Record<string, string> = {
   MISSING_DELIVERABLE: "Missing Deliverable",
   DEPENDENCY: "Customer Dependency",
   STAKEHOLDER: "Stakeholder Risk",
+  ROOT_CAUSE: "Root Cause Blocker",
+  EXECUTION_BLOCKER: "Execution Blocker",
+  CUSTOMER_DEPENDENCY: "Customer Dependency",
+  TECHNICAL_DEPENDENCY: "Technical Dependency",
   GENERAL: "General",
 };
 
