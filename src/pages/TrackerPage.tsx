@@ -882,6 +882,25 @@ export const TrackerPage: React.FC = () => {
       description = reasoningText.replace(/Description:\r?\n/, "").trim();
     }
 
+    let pmInsights = null;
+    if (description.startsWith("Execution Priority Score:")) {
+      const lines = description.split(/\r?\n/);
+      if (lines.length >= 2 && lines[0].includes("Execution Priority Score:")) {
+        const execMatch = lines[0].match(/Execution Priority Score:\s*(\d+)/);
+        const sevMatch = lines[0].match(/Severity:\s*([A-Za-z]+)/);
+        const catMatch = lines[1].match(/Category:\s*(.+)/);
+        
+        if (execMatch || sevMatch || catMatch) {
+          pmInsights = {
+            priority: execMatch ? execMatch[1] : null,
+            severity: sevMatch ? sevMatch[1] : null,
+            category: catMatch ? catMatch[1] : null,
+          };
+          description = lines.slice(2).join("\n").trim();
+        }
+      }
+    }
+
     const auditIconMap: Record<string, React.ReactNode> = {
       created: <Activity className="w-3.5 h-3.5 text-cyan-400" />,
       resolved: <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />,
@@ -981,6 +1000,35 @@ export const TrackerPage: React.FC = () => {
                     <Download className="w-3 h-3" /> Download
                   </button>
                 )}
+              </div>
+            </div>
+          )}
+
+          {/* PM Insights Dashboard */}
+          {pmInsights && (
+            <div className="p-3 rounded-xl bg-gradient-to-r from-blue-900/20 to-cyan-900/10 border border-blue-500/20 mb-4">
+              <p className="text-[9px] font-bold text-blue-400 uppercase tracking-widest mb-3 flex items-center gap-1.5">
+                <Activity className="w-3 h-3" /> PM Insights Dashboard
+              </p>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="bg-gray-900/60 rounded-lg p-2 border border-gray-700/50">
+                  <p className="text-[8px] font-bold text-gray-500 uppercase tracking-widest mb-1">Execution Priority</p>
+                  <p className="text-sm font-black text-white">{pmInsights.priority || "—"}</p>
+                </div>
+                <div className="bg-gray-900/60 rounded-lg p-2 border border-gray-700/50">
+                  <p className="text-[8px] font-bold text-gray-500 uppercase tracking-widest mb-1">Severity</p>
+                  <p className={`text-sm font-black ${
+                    pmInsights.severity === "CRITICAL" ? "text-rose-400" :
+                    pmInsights.severity === "HIGH" ? "text-orange-400" :
+                    pmInsights.severity === "MEDIUM" ? "text-yellow-400" : "text-emerald-400"
+                  }`}>{pmInsights.severity || "—"}</p>
+                </div>
+                <div className="bg-gray-900/60 rounded-lg p-2 border border-gray-700/50">
+                  <p className="text-[8px] font-bold text-gray-500 uppercase tracking-widest mb-1">Critical Path</p>
+                  <p className={`text-[10px] font-bold mt-0.5 ${pmInsights.category?.includes("Blocker") || pmInsights.category?.includes("Root Cause") ? "text-rose-400" : "text-gray-300"}`}>
+                    {pmInsights.category || "—"}
+                  </p>
+                </div>
               </div>
             </div>
           )}
