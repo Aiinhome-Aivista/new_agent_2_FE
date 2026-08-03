@@ -1553,7 +1553,7 @@ export const TrackerPage: React.FC = () => {
                       {selectedItem.status === "RESOLVED" ? (
                         <button
                           onClick={() => openReactivateModal(selectedItem.id)}
-                          disabled={isReactivating}
+                          disabled={isReactivating || project?.monitoring_status === "CLOSED"}
                           className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-900 border border-gray-700 hover:border-gray-600 text-gray-300 hover:text-white rounded-lg text-[10px] font-bold transition-all cursor-pointer active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           {isReactivating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RotateCcw className="w-3.5 h-3.5" />}
@@ -1562,7 +1562,8 @@ export const TrackerPage: React.FC = () => {
                       ) : (
                         <button
                           onClick={() => openResolveModal(selectedItem.id)}
-                          className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white rounded-lg text-[10px] font-bold transition-all cursor-pointer shadow-md shadow-emerald-500/10 active:scale-[0.98]"
+                          disabled={project?.monitoring_status === "CLOSED"}
+                          className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white rounded-lg text-[10px] font-bold transition-all cursor-pointer shadow-md shadow-emerald-500/10 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:from-emerald-900 disabled:to-green-900 disabled:text-gray-400"
                         >
                           <CheckCircle2 className="w-3.5 h-3.5" />
                           Mark Resolved

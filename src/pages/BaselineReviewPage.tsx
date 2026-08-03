@@ -1024,7 +1024,7 @@ export const BaselineReviewPage: React.FC = () => {
               </span>
             )}
 
-            {user?.role !== "PROJECT_LEAD" && (
+            {user?.role !== "PROJECT_LEAD" && project?.monitoring_status !== "CLOSED" && (
               <button
                 onClick={handleExtractClick}
                 className="group relative inline-flex items-center justify-center gap-2 px-6 py-2.5 font-semibold text-white transition-all duration-300 rounded-lg bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-400 hover:via-purple-400 hover:to-pink-400 shadow-[0_0_15px_rgba(168,85,247,0.4)] hover:shadow-[0_0_25px_rgba(236,72,153,0.6)] hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
@@ -1037,7 +1037,8 @@ export const BaselineReviewPage: React.FC = () => {
             {baseline &&
               baseline.status === "DRAFT" &&
               (user?.role === "ENGAGEMENT_MANAGER" ||
-                user?.role === "ADMIN") && (
+                user?.role === "ADMIN") && 
+              project?.monitoring_status !== "CLOSED" && (
                 <button
                   onClick={handleApprove}
                   disabled={isApproving}
@@ -2171,12 +2172,13 @@ export const BaselineReviewPage: React.FC = () => {
                                           </h5>
                                           <ul className="space-y-2">
                                             {dependencies.map((dep, idx) => {
+                                              const depObj = dep as any;
                                               const isObject = typeof dep === "object" && dep !== null;
-                                              const depName = isObject ? dep.name : dep;
+                                              const depName = isObject ? depObj.name : dep;
                                               
                                               // Only use heuristic for legacy strings
                                               const isDone = isObject 
-                                                ? dep.status === "COMPLETED" 
+                                                ? depObj.status === "COMPLETED" 
                                                 : (selectedItem.completion_status === "COMPLETED" || selectedItem.completion_status === "CANCELLED");
                                                 
                                               return (
@@ -2193,14 +2195,14 @@ export const BaselineReviewPage: React.FC = () => {
                                                   <span className={`text-[10px] font-medium ml-4 ${isDone ? "text-emerald-500/70" : "text-gray-500"}`}>
                                                     {isDone ? "Completed" : "Pending"}
                                                   </span>
-                                                  {isObject && dep.evidence && (
+                                                  {isObject && depObj.evidence && (
                                                     <div className="ml-4 mt-0.5 text-[9px] text-gray-500 italic border-l border-gray-700/50 pl-2">
-                                                      {dep.evidence}
+                                                      {depObj.evidence}
                                                     </div>
                                                   )}
-                                                  {isObject && dep.resolved_by_document && isDone && (
+                                                  {isObject && depObj.resolved_by_document && isDone && (
                                                     <div className="ml-4 text-[9px] text-emerald-500/50">
-                                                      Resolved in document {dep.resolved_by_document}
+                                                      Resolved in document {depObj.resolved_by_document}
                                                     </div>
                                                   )}
                                                 </li>
@@ -2406,6 +2408,7 @@ export const BaselineReviewPage: React.FC = () => {
                                                     : "bg-blue-600 text-white shadow-md shadow-blue-600/25"
                                                 : `text-gray-400 ${opt.color}`
                                             }`}
+                                            disabled={project?.monitoring_status === "CLOSED"}
                                           >
                                             {opt.label}
                                           </button>
@@ -2434,6 +2437,7 @@ export const BaselineReviewPage: React.FC = () => {
                                             e.target.value,
                                           )
                                         }
+                                        disabled={project?.monitoring_status === "CLOSED"}
                                       />
                                     </div>
                                   </div>
@@ -2453,7 +2457,7 @@ export const BaselineReviewPage: React.FC = () => {
               <h2 className="text-2xl font-bold">Scope Items Baseline</h2>
               <div className="flex items-center gap-3">
                 {(user?.role === "ADMIN" ||
-                  user?.role === "ENGAGEMENT_MANAGER") && (
+                  user?.role === "ENGAGEMENT_MANAGER") && project?.monitoring_status !== "CLOSED" && (
                   <button
                     onClick={() => setShowAddItemModal(true)}
                     className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-md flex items-center gap-2 cursor-pointer transition-all shadow-md text-xs font-semibold"
@@ -2560,7 +2564,7 @@ export const BaselineReviewPage: React.FC = () => {
                                 );
                               })()}
                               {(user?.role === "ADMIN" ||
-                                user?.role === "ENGAGEMENT_MANAGER") && (
+                                user?.role === "ENGAGEMENT_MANAGER") && project?.monitoring_status !== "CLOSED" && (
                                 <>
                                   {item.completion_status === "COMPLETED" && (
                                     <div
@@ -2732,7 +2736,7 @@ export const BaselineReviewPage: React.FC = () => {
                                 );
                               })()}
                               {(user?.role === "ADMIN" ||
-                                user?.role === "ENGAGEMENT_MANAGER") && (
+                                user?.role === "ENGAGEMENT_MANAGER") && project?.monitoring_status !== "CLOSED" && (
                                 <>
                                   {item.completion_status === "COMPLETED" && (
                                     <div
