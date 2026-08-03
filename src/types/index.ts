@@ -15,7 +15,7 @@ export interface ApiResponse<T> {
   error?: string;
 }
 
-export type MonitoringStatus = 'DRAFT' | 'BASELINE_PENDING_REVIEW' | 'ACTIVE' | 'PAUSED';
+export type MonitoringStatus = 'DRAFT' | 'BASELINE_PENDING_REVIEW' | 'ACTIVE' | 'PAUSED' | 'CLOSED';
 
 export interface Project {
   id: number;
