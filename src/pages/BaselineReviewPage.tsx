@@ -2170,7 +2170,7 @@ export const BaselineReviewPage: React.FC = () => {
                                             Execution Prerequisites
                                           </h5>
                                           <ul className="space-y-2">
-                                            {dependencies.map((dep, idx) => {
+                                            {dependencies.map((dep: any, idx) => {
                                               const isObject = typeof dep === "object" && dep !== null;
                                               const depName = isObject ? dep.name : dep;
                                               
