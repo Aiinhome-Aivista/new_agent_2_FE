@@ -190,7 +190,7 @@ export const ProjectOverviewPage: React.FC = () => {
           <div>
             <div className="flex items-center gap-2 mb-1">
               <Link to="/projects" className="text-[11px] text-gray-500 hover:text-teal-400 transition-colors">
-                Projects Directory
+                Projects Directory 
               </Link>
               <ChevronRight className="w-3 h-3 text-gray-600" />
               <span className="text-[11px] text-teal-400 font-semibold">Project Overview</span>
