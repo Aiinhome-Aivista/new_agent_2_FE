@@ -232,23 +232,47 @@ export const ProjectsPage: React.FC = () => {
         </div>
 
         {/* Search and Filters */}
-        <div className="flex flex-col md:flex-row gap-4">
+        <div className="flex flex-col md:flex-row gap-4 items-center">
           <input
             type="text"
             placeholder="Search projects by name..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="flex-1 bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 text-white placeholder-gray-500 text-sm transition-all"
+            className="flex-1 w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 text-white placeholder-gray-500 text-sm transition-all"
           />
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="w-full md:w-48 bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 text-white text-sm transition-all"
-          >
-            <option value="ALL" className="bg-[#0b0e17] text-white">All Projects</option>
-            <option value="ACTIVE" className="bg-[#0b0e17] text-white">Active</option>
-            <option value="CLOSED" className="bg-[#0b0e17] text-white">Closed</option>
-          </select>
+          <div className="flex bg-white/[0.03] border border-white/10 rounded-xl p-1 w-full md:w-[380px] shrink-0 h-[46px]">
+            <div className="relative flex w-full">
+              <div
+                className="absolute top-0 bottom-0 w-1/3 bg-gradient-to-r from-teal-500/20 to-blue-500/20 border border-teal-500/30 rounded-lg transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] shadow-[0_0_10px_rgba(20,184,166,0.1)]"
+                style={{
+                  transform: `translateX(${
+                    statusFilter === "ALL"
+                      ? "0%"
+                      : statusFilter === "ACTIVE"
+                        ? "100%"
+                        : "200%"
+                  })`,
+                }}
+              />
+              {[
+                { id: "ALL", label: "All Projects" },
+                { id: "ACTIVE", label: "Active" },
+                { id: "CLOSED", label: "Closed" },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setStatusFilter(tab.id)}
+                  className={`relative z-10 flex-1 px-4 py-1.5 text-sm font-semibold transition-colors duration-300 rounded-lg cursor-pointer flex items-center justify-center ${
+                    statusFilter === tab.id
+                      ? "text-teal-300"
+                      : "text-gray-400 hover:text-gray-200"
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
         {!filteredProjects || filteredProjects.length === 0 ? (
