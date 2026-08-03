@@ -3237,7 +3237,7 @@ export const BaselineReviewPage: React.FC = () => {
                     // Filtering scope items for version history:
                     // If version === 1, show all items.
                     // If version > 1, show only items where source_document_id === ver.source_document_id.
-                    const rawItems = ver.scope_items || [];
+                    const rawItems = (ver.scope_items || []).filter((i: any) => i.category !== "MILESTONE");
                     const filteredItems =
                       ver.version === 1
                         ? rawItems
@@ -3248,13 +3248,13 @@ export const BaselineReviewPage: React.FC = () => {
                           );
 
                     const inScope = filteredItems.filter(
-                      (i: any) => i.scope_type === "IN_SCOPE",
+                      (i: any) => i.scope_type === "IN_SCOPE" && i.category !== "MILESTONE",
                     );
                     const outOfScope = filteredItems.filter(
-                      (i: any) => i.scope_type === "OUT_OF_SCOPE",
+                      (i: any) => i.scope_type === "OUT_OF_SCOPE" && i.category !== "MILESTONE",
                     );
                     const uncertain = filteredItems.filter(
-                      (i: any) => i.scope_type === "UNCERTAIN",
+                      (i: any) => i.scope_type === "UNCERTAIN" && i.category !== "MILESTONE",
                     );
 
                     const approvedDate = formatDate(ver.approved_at);
