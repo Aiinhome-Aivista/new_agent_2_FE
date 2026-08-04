@@ -1024,20 +1024,22 @@ export const BaselineReviewPage: React.FC = () => {
               </span>
             )}
 
-            {user?.role !== "PROJECT_LEAD" && project?.monitoring_status !== "CLOSED" && (
-              <button
-                onClick={handleExtractClick}
-                className="group relative inline-flex items-center justify-center gap-2 px-6 py-2.5 font-semibold text-white transition-all duration-300 rounded-lg bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-400 hover:via-purple-400 hover:to-pink-400 shadow-[0_0_15px_rgba(168,85,247,0.4)] hover:shadow-[0_0_25px_rgba(236,72,153,0.6)] hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
-              >
-                <Sparkles className="w-4 h-4 text-pink-100 group-hover:animate-pulse" />
-                <span className="tracking-wide text-sm">Extract Baseline</span>
-                <div className="absolute inset-0 rounded-lg ring-1 ring-inset ring-white/20 pointer-events-none"></div>
-              </button>
-            )}
+            {user?.role !== "PROJECT_LEAD" &&
+              project?.monitoring_status !== "CLOSED" && (
+                <button
+                  onClick={handleExtractClick}
+                  className="group relative inline-flex items-center justify-center gap-2 px-6 py-2.5 font-semibold text-white transition-all duration-300 rounded-lg bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-400 hover:via-purple-400 hover:to-pink-400 shadow-[0_0_15px_rgba(168,85,247,0.4)] hover:shadow-[0_0_25px_rgba(236,72,153,0.6)] hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
+                >
+                  <Sparkles className="w-4 h-4 text-pink-100 group-hover:animate-pulse" />
+                  <span className="tracking-wide text-sm">
+                    Extract Baseline
+                  </span>
+                  <div className="absolute inset-0 rounded-lg ring-1 ring-inset ring-white/20 pointer-events-none"></div>
+                </button>
+              )}
             {baseline &&
               baseline.status === "DRAFT" &&
-              (user?.role === "ENGAGEMENT_MANAGER" ||
-                user?.role === "ADMIN") && 
+              (user?.role === "ENGAGEMENT_MANAGER" || user?.role === "ADMIN") &&
               project?.monitoring_status !== "CLOSED" && (
                 <button
                   onClick={handleApprove}
@@ -1047,12 +1049,16 @@ export const BaselineReviewPage: React.FC = () => {
                   {isApproving ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin text-emerald-100" />
-                      <span className="tracking-wide text-sm">Approving...</span>
+                      <span className="tracking-wide text-sm">
+                        Approving...
+                      </span>
                     </>
                   ) : (
                     <>
                       <CheckCircle2 className="w-4 h-4 text-emerald-100 group-hover:scale-110 transition-transform" />
-                      <span className="tracking-wide text-sm">Approve Baseline</span>
+                      <span className="tracking-wide text-sm">
+                        Approve Baseline
+                      </span>
                     </>
                   )}
                   <div className="absolute inset-0 rounded-lg ring-1 ring-inset ring-white/20 pointer-events-none"></div>
@@ -1476,27 +1482,61 @@ export const BaselineReviewPage: React.FC = () => {
                                         item.milestone_normalized,
                                       );
                                       if (!mData) return null;
-                                      const milestoneStatus = (mData.status || "PENDING").toUpperCase();
-                                      const isCompleted = milestoneStatus === "COMPLETED" || milestoneStatus === "CANCELLED";
+                                      const milestoneStatus = (
+                                        mData.status || "PENDING"
+                                      ).toUpperCase();
+                                      const isCompleted =
+                                        milestoneStatus === "COMPLETED" ||
+                                        milestoneStatus === "CANCELLED";
 
                                       if (isCompleted) return null;
 
-                                      const blockedByIds = mData.blocked_by_ids ? mData.blocked_by_ids.split(",") : [];
-                                      const blockingIds = mData.blocking_ids ? mData.blocking_ids.split(",") : [];
+                                      const blockedByIds = mData.blocked_by_ids
+                                        ? mData.blocked_by_ids.split(",")
+                                        : [];
+                                      const blockingIds = mData.blocking_ids
+                                        ? mData.blocking_ids.split(",")
+                                        : [];
 
-                                      const incompletePredecessors = blockedByIds
-                                        .map((id: string) => milestoneMap.get(id))
-                                        .filter((m: any): m is NonNullable<typeof m> =>
-                                          !!m && m.status?.toUpperCase() !== "COMPLETED" && m.status?.toUpperCase() !== "CANCELLED"
-                                        );
+                                      const incompletePredecessors =
+                                        blockedByIds
+                                          .map((id: string) =>
+                                            milestoneMap.get(id),
+                                          )
+                                          .filter(
+                                            (
+                                              m: any,
+                                            ): m is NonNullable<typeof m> =>
+                                              !!m &&
+                                              m.status?.toUpperCase() !==
+                                                "COMPLETED" &&
+                                              m.status?.toUpperCase() !==
+                                                "CANCELLED",
+                                          );
 
-                                      const activelyBlockingSuccessors = blockingIds
-                                        .map((id: string) => milestoneMap.get(id))
-                                        .filter((m: any): m is NonNullable<typeof m> =>
-                                          !!m && m.status?.toUpperCase() !== "COMPLETED" && m.status?.toUpperCase() !== "CANCELLED"
-                                        );
+                                      const activelyBlockingSuccessors =
+                                        blockingIds
+                                          .map((id: string) =>
+                                            milestoneMap.get(id),
+                                          )
+                                          .filter(
+                                            (
+                                              m: any,
+                                            ): m is NonNullable<typeof m> =>
+                                              !!m &&
+                                              m.status?.toUpperCase() !==
+                                                "COMPLETED" &&
+                                              m.status?.toUpperCase() !==
+                                                "CANCELLED",
+                                          );
 
-                                      if (incompletePredecessors.length === 0 && activelyBlockingSuccessors.length === 0 && milestoneStatus !== "BLOCKED" && milestoneStatus !== "PENDING") {
+                                      if (
+                                        incompletePredecessors.length === 0 &&
+                                        activelyBlockingSuccessors.length ===
+                                          0 &&
+                                        milestoneStatus !== "BLOCKED" &&
+                                        milestoneStatus !== "PENDING"
+                                      ) {
                                         return null;
                                       }
 
@@ -1510,22 +1550,30 @@ export const BaselineReviewPage: React.FC = () => {
                                               ⛔ Waiting for predecessor
                                             </span>
                                           )}
-                                          {milestoneStatus === "PENDING" && incompletePredecessors.length > 0 && (
-                                            <span
-                                              className="text-[8px] bg-blue-900/40 text-blue-300 border border-blue-800/50 px-1.5 py-0.5 rounded-sm truncate max-w-[120px] shadow-sm font-medium"
-                                              title="Waiting to start"
-                                            >
-                                              ⏳ Waiting to start
-                                            </span>
-                                          )}
-                                          {(milestoneStatus === "IN_PROGRESS" || milestoneStatus === "ACTIVE") && activelyBlockingSuccessors.length > 0 && (
-                                            <span
-                                              className="text-[8px] bg-orange-900/40 text-orange-300 border border-orange-800/50 px-1.5 py-0.5 rounded-sm truncate max-w-[120px] shadow-sm font-medium"
-                                              title={`Blocking ${activelyBlockingSuccessors.length} Milestones`}
-                                            >
-                                              🚧 Blocking: {activelyBlockingSuccessors.length}
-                                            </span>
-                                          )}
+                                          {milestoneStatus === "PENDING" &&
+                                            incompletePredecessors.length >
+                                              0 && (
+                                              <span
+                                                className="text-[8px] bg-blue-900/40 text-blue-300 border border-blue-800/50 px-1.5 py-0.5 rounded-sm truncate max-w-[120px] shadow-sm font-medium"
+                                                title="Waiting to start"
+                                              >
+                                                ⏳ Waiting to start
+                                              </span>
+                                            )}
+                                          {(milestoneStatus === "IN_PROGRESS" ||
+                                            milestoneStatus === "ACTIVE") &&
+                                            activelyBlockingSuccessors.length >
+                                              0 && (
+                                              <span
+                                                className="text-[8px] bg-orange-900/40 text-orange-300 border border-orange-800/50 px-1.5 py-0.5 rounded-sm truncate max-w-[120px] shadow-sm font-medium"
+                                                title={`Blocking ${activelyBlockingSuccessors.length} Milestones`}
+                                              >
+                                                🚧 Blocking:{" "}
+                                                {
+                                                  activelyBlockingSuccessors.length
+                                                }
+                                              </span>
+                                            )}
                                         </div>
                                       );
                                     })()}
@@ -1762,27 +1810,61 @@ export const BaselineReviewPage: React.FC = () => {
                                         item.milestone_normalized,
                                       );
                                       if (!mData) return null;
-                                      const milestoneStatus = (mData.status || "PENDING").toUpperCase();
-                                      const isCompleted = milestoneStatus === "COMPLETED" || milestoneStatus === "CANCELLED";
+                                      const milestoneStatus = (
+                                        mData.status || "PENDING"
+                                      ).toUpperCase();
+                                      const isCompleted =
+                                        milestoneStatus === "COMPLETED" ||
+                                        milestoneStatus === "CANCELLED";
 
                                       if (isCompleted) return null;
 
-                                      const blockedByIds = mData.blocked_by_ids ? mData.blocked_by_ids.split(",") : [];
-                                      const blockingIds = mData.blocking_ids ? mData.blocking_ids.split(",") : [];
+                                      const blockedByIds = mData.blocked_by_ids
+                                        ? mData.blocked_by_ids.split(",")
+                                        : [];
+                                      const blockingIds = mData.blocking_ids
+                                        ? mData.blocking_ids.split(",")
+                                        : [];
 
-                                      const incompletePredecessors = blockedByIds
-                                        .map((id: string) => milestoneMap.get(id))
-                                        .filter((m: any): m is NonNullable<typeof m> =>
-                                          !!m && m.status?.toUpperCase() !== "COMPLETED" && m.status?.toUpperCase() !== "CANCELLED"
-                                        );
+                                      const incompletePredecessors =
+                                        blockedByIds
+                                          .map((id: string) =>
+                                            milestoneMap.get(id),
+                                          )
+                                          .filter(
+                                            (
+                                              m: any,
+                                            ): m is NonNullable<typeof m> =>
+                                              !!m &&
+                                              m.status?.toUpperCase() !==
+                                                "COMPLETED" &&
+                                              m.status?.toUpperCase() !==
+                                                "CANCELLED",
+                                          );
 
-                                      const activelyBlockingSuccessors = blockingIds
-                                        .map((id: string) => milestoneMap.get(id))
-                                        .filter((m: any): m is NonNullable<typeof m> =>
-                                          !!m && m.status?.toUpperCase() !== "COMPLETED" && m.status?.toUpperCase() !== "CANCELLED"
-                                        );
+                                      const activelyBlockingSuccessors =
+                                        blockingIds
+                                          .map((id: string) =>
+                                            milestoneMap.get(id),
+                                          )
+                                          .filter(
+                                            (
+                                              m: any,
+                                            ): m is NonNullable<typeof m> =>
+                                              !!m &&
+                                              m.status?.toUpperCase() !==
+                                                "COMPLETED" &&
+                                              m.status?.toUpperCase() !==
+                                                "CANCELLED",
+                                          );
 
-                                      if (incompletePredecessors.length === 0 && activelyBlockingSuccessors.length === 0 && milestoneStatus !== "BLOCKED" && milestoneStatus !== "PENDING") {
+                                      if (
+                                        incompletePredecessors.length === 0 &&
+                                        activelyBlockingSuccessors.length ===
+                                          0 &&
+                                        milestoneStatus !== "BLOCKED" &&
+                                        milestoneStatus !== "PENDING"
+                                      ) {
                                         return null;
                                       }
 
@@ -1796,22 +1878,30 @@ export const BaselineReviewPage: React.FC = () => {
                                               ⛔ Waiting for predecessor
                                             </span>
                                           )}
-                                          {milestoneStatus === "PENDING" && incompletePredecessors.length > 0 && (
-                                            <span
-                                              className="text-[8px] bg-blue-900/40 text-blue-300 border border-blue-800/50 px-1.5 py-0.5 rounded-sm truncate max-w-[120px] shadow-sm font-medium"
-                                              title="Waiting to start"
-                                            >
-                                              ⏳ Waiting to start
-                                            </span>
-                                          )}
-                                          {(milestoneStatus === "IN_PROGRESS" || milestoneStatus === "ACTIVE") && activelyBlockingSuccessors.length > 0 && (
-                                            <span
-                                              className="text-[8px] bg-orange-900/40 text-orange-300 border border-orange-800/50 px-1.5 py-0.5 rounded-sm truncate max-w-[120px] shadow-sm font-medium"
-                                              title={`Blocking ${activelyBlockingSuccessors.length} Milestones`}
-                                            >
-                                              🚧 Blocking: {activelyBlockingSuccessors.length}
-                                            </span>
-                                          )}
+                                          {milestoneStatus === "PENDING" &&
+                                            incompletePredecessors.length >
+                                              0 && (
+                                              <span
+                                                className="text-[8px] bg-blue-900/40 text-blue-300 border border-blue-800/50 px-1.5 py-0.5 rounded-sm truncate max-w-[120px] shadow-sm font-medium"
+                                                title="Waiting to start"
+                                              >
+                                                ⏳ Waiting to start
+                                              </span>
+                                            )}
+                                          {(milestoneStatus === "IN_PROGRESS" ||
+                                            milestoneStatus === "ACTIVE") &&
+                                            activelyBlockingSuccessors.length >
+                                              0 && (
+                                              <span
+                                                className="text-[8px] bg-orange-900/40 text-orange-300 border border-orange-800/50 px-1.5 py-0.5 rounded-sm truncate max-w-[120px] shadow-sm font-medium"
+                                                title={`Blocking ${activelyBlockingSuccessors.length} Milestones`}
+                                              >
+                                                🚧 Blocking:{" "}
+                                                {
+                                                  activelyBlockingSuccessors.length
+                                                }
+                                              </span>
+                                            )}
                                         </div>
                                       );
                                     })()}
@@ -1967,103 +2057,168 @@ export const BaselineReviewPage: React.FC = () => {
                                       );
 
                                       // Parse predecessor/successor details (name||FS format)
-                                      const parseMilestoneDetails = (raw?: string) =>
+                                      const parseMilestoneDetails = (
+                                        raw?: string,
+                                      ) =>
                                         raw
-                                          ? raw.split(";;").filter(Boolean).map((entry) => {
-                                              const parts = entry.split("||");
-                                              const name = parts[0]?.trim();
-                                              const type = parts[1]?.trim();
-                                              const typeLabel: Record<string, string> = {
-                                                FINISH_TO_START: "Finish-to-Start",
-                                                START_TO_START: "Start-to-Start",
-                                                FINISH_TO_FINISH: "Finish-to-Finish",
-                                                START_TO_FINISH: "Start-to-Finish",
-                                              };
-                                              return { name, typeLabel: typeLabel[type] || "Finish-to-Start" };
-                                            })
+                                          ? raw
+                                              .split(";;")
+                                              .filter(Boolean)
+                                              .map((entry) => {
+                                                const parts = entry.split("||");
+                                                const name = parts[0]?.trim();
+                                                const type = parts[1]?.trim();
+                                                const typeLabel: Record<
+                                                  string,
+                                                  string
+                                                > = {
+                                                  FINISH_TO_START:
+                                                    "Finish-to-Start",
+                                                  START_TO_START:
+                                                    "Start-to-Start",
+                                                  FINISH_TO_FINISH:
+                                                    "Finish-to-Finish",
+                                                  START_TO_FINISH:
+                                                    "Start-to-Finish",
+                                                };
+                                                return {
+                                                  name,
+                                                  typeLabel:
+                                                    typeLabel[type] ||
+                                                    "Finish-to-Start",
+                                                };
+                                              })
                                           : [];
 
-                                      const predecessors = parseMilestoneDetails(mData?.predecessor_details);
-                                      const successors = parseMilestoneDetails(mData?.successor_details);
-                                      const hasPredecessors = predecessors.length > 0;
-                                      const hasSuccessors = successors.length > 0;
+                                      const predecessors =
+                                        parseMilestoneDetails(
+                                          mData?.predecessor_details,
+                                        );
+                                      const successors = parseMilestoneDetails(
+                                        mData?.successor_details,
+                                      );
+                                      const hasPredecessors =
+                                        predecessors.length > 0;
+                                      const hasSuccessors =
+                                        successors.length > 0;
 
                                       if (!mData) return null;
 
-                                      const milestoneStatus = (mData.status || "PENDING").toUpperCase();
-                                      const isCompleted = milestoneStatus === "COMPLETED" || milestoneStatus === "CANCELLED";
+                                      const milestoneStatus = (
+                                        mData.status || "PENDING"
+                                      ).toUpperCase();
+                                      const isCompleted =
+                                        milestoneStatus === "COMPLETED" ||
+                                        milestoneStatus === "CANCELLED";
 
                                       // Execution state: which predecessors are still incomplete
-                                      const blockedByIds = mData?.blocked_by_ids ? mData.blocked_by_ids.split(",") : [];
-                                      const blockingIds = mData?.blocking_ids ? mData.blocking_ids.split(",") : [];
+                                      const blockedByIds = mData?.blocked_by_ids
+                                        ? mData.blocked_by_ids.split(",")
+                                        : [];
+                                      const blockingIds = mData?.blocking_ids
+                                        ? mData.blocking_ids.split(",")
+                                        : [];
 
-                                      const incompletePredecessors = blockedByIds
-                                        .map((id: string) => milestoneMap.get(id))
-                                        .filter((m: any): m is NonNullable<typeof m> =>
-                                          !!m && m.status?.toUpperCase() !== "COMPLETED" && m.status?.toUpperCase() !== "CANCELLED"
-                                        );
+                                      const incompletePredecessors =
+                                        blockedByIds
+                                          .map((id: string) =>
+                                            milestoneMap.get(id),
+                                          )
+                                          .filter(
+                                            (
+                                              m: any,
+                                            ): m is NonNullable<typeof m> =>
+                                              !!m &&
+                                              m.status?.toUpperCase() !==
+                                                "COMPLETED" &&
+                                              m.status?.toUpperCase() !==
+                                                "CANCELLED",
+                                          );
 
                                       // Which successors are still waiting (not complete)
-                                      const activelyBlockingSuccessors = blockingIds
-                                        .map((id: string) => milestoneMap.get(id))
-                                        .filter((m: any): m is NonNullable<typeof m> =>
-                                          !!m && m.status?.toUpperCase() !== "COMPLETED" && m.status?.toUpperCase() !== "CANCELLED"
-                                        );
+                                      const activelyBlockingSuccessors =
+                                        blockingIds
+                                          .map((id: string) =>
+                                            milestoneMap.get(id),
+                                          )
+                                          .filter(
+                                            (
+                                              m: any,
+                                            ): m is NonNullable<typeof m> =>
+                                              !!m &&
+                                              m.status?.toUpperCase() !==
+                                                "COMPLETED" &&
+                                              m.status?.toUpperCase() !==
+                                                "CANCELLED",
+                                          );
 
                                       return (
                                         <div className="mt-4 space-y-3">
-
                                           {/* ── Section 1: Permanent Dependency Graph (never changes) ── */}
                                           <div className="p-3 bg-gray-900/40 border border-indigo-900/30 rounded-lg">
                                             <h5 className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-                                              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                                              <svg
+                                                className="w-3 h-3"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                stroke="currentColor"
+                                              >
+                                                <path
+                                                  strokeLinecap="round"
+                                                  strokeLinejoin="round"
+                                                  strokeWidth={2}
+                                                  d="M13 10V3L4 14h7v7l9-11h-7z"
+                                                />
+                                              </svg>
                                               Dependency Graph
                                             </h5>
 
                                             {hasPredecessors ? (
                                               <div className="mb-2">
-                                                <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5 block">Predecessors</span>
+                                                <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5 block">
+                                                  Predecessors
+                                                </span>
                                                 <ul className="space-y-1">
                                                   {predecessors.map((p, i) => {
-                                                    const predM = [...milestoneMap.values()].find(m => m.name === p.name);
-                                                    const predDone = predM?.status?.toUpperCase() === "COMPLETED" || predM?.status?.toUpperCase() === "CANCELLED";
-                                                    return (
-                                                      <li key={i} className="text-xs text-gray-300 flex items-center gap-2 px-2 py-1.5 rounded bg-indigo-950/20 border border-indigo-900/20">
-                                                        {predDone ? <span className="text-emerald-500 text-[12px] font-bold flex-shrink-0">✓</span> : <span className="text-indigo-400 text-[12px] font-bold flex-shrink-0">→</span>}
-                                                        <span className={predDone ? "text-gray-400" : ""}>{p.name}</span>
-                                                        <span className="text-gray-500 text-[10px]">({p.typeLabel})</span>
-                                                        {predDone && <span className="ml-auto text-gray-500 text-[10px] italic">(Completed)</span>}
-                                                      </li>
+                                                    const predM = [
+                                                      ...milestoneMap.values(),
+                                                    ].find(
+                                                      (m) => m.name === p.name,
                                                     );
-                                                  })}
-                                                </ul>
-                                              </div>
-                                            ) : (
-                                              <p className="text-xs text-gray-500 italic mb-2">No predecessor milestones</p>
-                                            )}
-
-                                            {hasSuccessors ? (
-                                              <div>
-                                                <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5 block">Successors</span>
-                                                <ul className="space-y-1">
-                                                  {successors.map((s, i) => {
-                                                    const succM = [...milestoneMap.values()].find(m => m.name === s.name);
-                                                    const succDone = succM?.status?.toUpperCase() === "COMPLETED" || succM?.status?.toUpperCase() === "CANCELLED";
-                                                    const succActive = succM && succM.status?.toUpperCase() !== "PENDING" && succM.status?.toUpperCase() !== "BLOCKED";
+                                                    const predDone =
+                                                      predM?.status?.toUpperCase() ===
+                                                        "COMPLETED" ||
+                                                      predM?.status?.toUpperCase() ===
+                                                        "CANCELLED";
                                                     return (
-                                                      <li key={i} className="text-xs text-gray-300 flex items-center gap-2 px-2 py-1.5 rounded bg-gray-800/40 border border-gray-700/30">
-                                                        {succDone ? <span className="text-emerald-500 text-[12px] font-bold flex-shrink-0">✓</span> : <span className="text-gray-500 text-[12px] font-bold flex-shrink-0">→</span>}
-                                                        <span className={succDone ? "text-gray-400" : ""}>{s.name}</span>
-                                                        <span className="text-gray-500 text-[10px]">({s.typeLabel})</span>
-                                                        {succDone ? (
-                                                          <span className="ml-auto text-gray-500 text-[10px] italic">Completed</span>
+                                                      <li
+                                                        key={i}
+                                                        className="text-xs text-gray-300 flex items-center gap-2 px-2 py-1.5 rounded bg-indigo-950/20 border border-indigo-900/20"
+                                                      >
+                                                        {predDone ? (
+                                                          <span className="text-emerald-500 text-[12px] font-bold flex-shrink-0">
+                                                            ✓
+                                                          </span>
                                                         ) : (
-                                                          <span className={`ml-auto text-[10px] font-semibold flex items-center gap-1 ${
-                                                            succM?.status?.toUpperCase() === "BLOCKED" ? "text-red-400" :
-                                                            succM?.status?.toUpperCase() === "PENDING" ? "text-blue-400" :
-                                                            "text-amber-400"
-                                                          }`}>
-                                                            {succM?.status?.toUpperCase() === "BLOCKED" ? "🔴" : succM?.status?.toUpperCase() === "PENDING" ? "⏳" : "🚧"} {succM?.status || "Pending"}
+                                                          <span className="text-indigo-400 text-[12px] font-bold flex-shrink-0">
+                                                            →
+                                                          </span>
+                                                        )}
+                                                        <span
+                                                          className={
+                                                            predDone
+                                                              ? "text-gray-400"
+                                                              : ""
+                                                          }
+                                                        >
+                                                          {p.name}
+                                                        </span>
+                                                        <span className="text-gray-500 text-[10px]">
+                                                          ({p.typeLabel})
+                                                        </span>
+                                                        {predDone && (
+                                                          <span className="ml-auto text-gray-500 text-[10px] italic">
+                                                            (Completed)
                                                           </span>
                                                         )}
                                                       </li>
@@ -2072,21 +2227,120 @@ export const BaselineReviewPage: React.FC = () => {
                                                 </ul>
                                               </div>
                                             ) : (
-                                              <p className="text-xs text-gray-500 italic">No successor milestones</p>
+                                              <p className="text-xs text-gray-500 italic mb-2">
+                                                No predecessor milestones
+                                              </p>
+                                            )}
+
+                                            {hasSuccessors ? (
+                                              <div>
+                                                <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5 block">
+                                                  Successors
+                                                </span>
+                                                <ul className="space-y-1">
+                                                  {successors.map((s, i) => {
+                                                    const succM = [
+                                                      ...milestoneMap.values(),
+                                                    ].find(
+                                                      (m) => m.name === s.name,
+                                                    );
+                                                    const succDone =
+                                                      succM?.status?.toUpperCase() ===
+                                                        "COMPLETED" ||
+                                                      succM?.status?.toUpperCase() ===
+                                                        "CANCELLED";
+                                                    const succActive =
+                                                      succM &&
+                                                      succM.status?.toUpperCase() !==
+                                                        "PENDING" &&
+                                                      succM.status?.toUpperCase() !==
+                                                        "BLOCKED";
+                                                    return (
+                                                      <li
+                                                        key={i}
+                                                        className="text-xs text-gray-300 flex items-center gap-2 px-2 py-1.5 rounded bg-gray-800/40 border border-gray-700/30"
+                                                      >
+                                                        {succDone ? (
+                                                          <span className="text-emerald-500 text-[12px] font-bold flex-shrink-0">
+                                                            ✓
+                                                          </span>
+                                                        ) : (
+                                                          <span className="text-gray-500 text-[12px] font-bold flex-shrink-0">
+                                                            →
+                                                          </span>
+                                                        )}
+                                                        <span
+                                                          className={
+                                                            succDone
+                                                              ? "text-gray-400"
+                                                              : ""
+                                                          }
+                                                        >
+                                                          {s.name}
+                                                        </span>
+                                                        <span className="text-gray-500 text-[10px]">
+                                                          ({s.typeLabel})
+                                                        </span>
+                                                        {succDone ? (
+                                                          <span className="ml-auto text-gray-500 text-[10px] italic">
+                                                            Completed
+                                                          </span>
+                                                        ) : (
+                                                          <span
+                                                            className={`ml-auto text-[10px] font-semibold flex items-center gap-1 ${
+                                                              succM?.status?.toUpperCase() ===
+                                                              "BLOCKED"
+                                                                ? "text-red-400"
+                                                                : succM?.status?.toUpperCase() ===
+                                                                    "PENDING"
+                                                                  ? "text-blue-400"
+                                                                  : "text-amber-400"
+                                                            }`}
+                                                          >
+                                                            {succM?.status?.toUpperCase() ===
+                                                            "BLOCKED"
+                                                              ? "🔴"
+                                                              : succM?.status?.toUpperCase() ===
+                                                                  "PENDING"
+                                                                ? "⏳"
+                                                                : "🚧"}{" "}
+                                                            {succM?.status ||
+                                                              "Pending"}
+                                                          </span>
+                                                        )}
+                                                      </li>
+                                                    );
+                                                  })}
+                                                </ul>
+                                              </div>
+                                            ) : (
+                                              <p className="text-xs text-gray-500 italic">
+                                                No successor milestones
+                                              </p>
                                             )}
                                           </div>
 
                                           {/* ── Section 2: Execution State (changes with project progress) ── */}
-                                          <div className={`p-3 rounded-lg border ${
-                                            isCompleted
-                                              ? "bg-emerald-950/10 border-emerald-900/20"
-                                              : incompletePredecessors.length > 0
-                                              ? "bg-red-950/10 border-red-900/20"
-                                              : "bg-amber-950/10 border-amber-900/20"
-                                          }`}>
-                                            <h5 className={`text-[10px] font-bold uppercase tracking-wider mb-3 flex items-center gap-1.5 ${
-                                              isCompleted ? "text-emerald-400" : incompletePredecessors.length > 0 ? "text-red-400" : "text-amber-400"
-                                            }`}>
+                                          <div
+                                            className={`p-3 rounded-lg border ${
+                                              isCompleted
+                                                ? "bg-emerald-950/10 border-emerald-900/20"
+                                                : incompletePredecessors.length >
+                                                    0
+                                                  ? "bg-red-950/10 border-red-900/20"
+                                                  : "bg-amber-950/10 border-amber-900/20"
+                                            }`}
+                                          >
+                                            <h5
+                                              className={`text-[10px] font-bold uppercase tracking-wider mb-3 flex items-center gap-1.5 ${
+                                                isCompleted
+                                                  ? "text-emerald-400"
+                                                  : incompletePredecessors.length >
+                                                      0
+                                                    ? "text-red-400"
+                                                    : "text-amber-400"
+                                              }`}
+                                            >
                                               <AlertTriangle className="w-3 h-3" />
                                               Execution State
                                             </h5>
@@ -2095,70 +2349,133 @@ export const BaselineReviewPage: React.FC = () => {
                                               <div className="space-y-1">
                                                 <div className="flex items-center gap-2 text-xs text-emerald-400">
                                                   <span className="w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0" />
-                                                  ✓ All predecessor milestones completed
+                                                  ✓ All predecessor milestones
+                                                  completed
                                                 </div>
                                                 <div className="flex items-center gap-2 text-xs text-emerald-400">
                                                   <span className="w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0" />
                                                   No active blockers
                                                 </div>
-                                                {hasSuccessors && activelyBlockingSuccessors.length === 0 && (
-                                                  <div className="mt-1 flex items-center gap-2 text-xs text-gray-500">
-                                                    <span className="w-2 h-2 rounded-full bg-gray-600 flex-shrink-0" />
-                                                    All successors unblocked by this completion
-                                                  </div>
-                                                )}
+                                                {hasSuccessors &&
+                                                  activelyBlockingSuccessors.length ===
+                                                    0 && (
+                                                    <div className="mt-1 flex items-center gap-2 text-xs text-gray-500">
+                                                      <span className="w-2 h-2 rounded-full bg-gray-600 flex-shrink-0" />
+                                                      All successors unblocked
+                                                      by this completion
+                                                    </div>
+                                                  )}
                                               </div>
-                                            ) : milestoneStatus === "PENDING" && incompletePredecessors.length > 0 ? (
+                                            ) : milestoneStatus === "PENDING" &&
+                                              incompletePredecessors.length >
+                                                0 ? (
                                               <div>
-                                                <span className="text-[10px] font-semibold text-blue-400 uppercase tracking-wider mb-1.5 block">Waiting For</span>
+                                                <span className="text-[10px] font-semibold text-blue-400 uppercase tracking-wider mb-1.5 block">
+                                                  Waiting For
+                                                </span>
                                                 <ul className="space-y-1">
-                                                  {incompletePredecessors.map((m: {name: string; status: string}, i: number) => (
-                                                    <li key={i} className="text-xs flex items-center gap-2 px-2 py-1 rounded bg-blue-950/15 border border-blue-900/20">
-                                                      <span className="w-2 h-2 rounded-full bg-blue-400 flex-shrink-0" />
-                                                      <span className="text-gray-300">{m.name}</span>
-                                                      <span className="ml-auto text-[10px] text-blue-400 font-semibold">{m.status}</span>
-                                                    </li>
-                                                  ))}
+                                                  {incompletePredecessors.map(
+                                                    (
+                                                      m: {
+                                                        name: string;
+                                                        status: string;
+                                                      },
+                                                      i: number,
+                                                    ) => (
+                                                      <li
+                                                        key={i}
+                                                        className="text-xs flex items-center gap-2 px-2 py-1 rounded bg-blue-950/15 border border-blue-900/20"
+                                                      >
+                                                        <span className="w-2 h-2 rounded-full bg-blue-400 flex-shrink-0" />
+                                                        <span className="text-gray-300">
+                                                          {m.name}
+                                                        </span>
+                                                        <span className="ml-auto text-[10px] text-blue-400 font-semibold">
+                                                          {m.status}
+                                                        </span>
+                                                      </li>
+                                                    ),
+                                                  )}
                                                 </ul>
-                                                <p className="mt-2 text-[10px] text-gray-500">Cannot start until all predecessors are completed.</p>
+                                                <p className="mt-2 text-[10px] text-gray-500">
+                                                  Cannot start until all
+                                                  predecessors are completed.
+                                                </p>
                                               </div>
-                                            ) : incompletePredecessors.length > 0 ? (
+                                            ) : incompletePredecessors.length >
+                                              0 ? (
                                               <div>
-                                                <span className="text-[10px] font-semibold text-red-400 uppercase tracking-wider mb-1.5 block">Blocked By</span>
+                                                <span className="text-[10px] font-semibold text-red-400 uppercase tracking-wider mb-1.5 block">
+                                                  Blocked By
+                                                </span>
                                                 <ul className="space-y-1">
-                                                  {incompletePredecessors.map((m: {name: string; status: string}, i: number) => (
-                                                    <li key={i} className="text-xs flex items-center gap-2 px-2 py-1 rounded bg-red-950/15 border border-red-900/20">
-                                                      <span className="w-2 h-2 rounded-full bg-red-500 flex-shrink-0" />
-                                                      <span className="text-gray-300">{m.name}</span>
-                                                      <span className="ml-auto text-[10px] text-red-400 font-semibold">{m.status}</span>
-                                                    </li>
-                                                  ))}
+                                                  {incompletePredecessors.map(
+                                                    (
+                                                      m: {
+                                                        name: string;
+                                                        status: string;
+                                                      },
+                                                      i: number,
+                                                    ) => (
+                                                      <li
+                                                        key={i}
+                                                        className="text-xs flex items-center gap-2 px-2 py-1 rounded bg-red-950/15 border border-red-900/20"
+                                                      >
+                                                        <span className="w-2 h-2 rounded-full bg-red-500 flex-shrink-0" />
+                                                        <span className="text-gray-300">
+                                                          {m.name}
+                                                        </span>
+                                                        <span className="ml-auto text-[10px] text-red-400 font-semibold">
+                                                          {m.status}
+                                                        </span>
+                                                      </li>
+                                                    ),
+                                                  )}
                                                 </ul>
                                               </div>
                                             ) : hasPredecessors ? (
                                               <div className="flex items-center gap-2 text-xs text-emerald-400">
                                                 <span className="w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0" />
-                                                All predecessors complete — ready to execute
+                                                All predecessors complete —
+                                                ready to execute
                                               </div>
                                             ) : null}
 
                                             {/* Currently Blocking — only show if this milestone is not yet done */}
-                                            {!isCompleted && activelyBlockingSuccessors.length > 0 && (
-                                              <div className="mt-3">
-                                                <span className="text-[10px] font-semibold text-orange-400 uppercase tracking-wider mb-1.5 block">Waiting Successors</span>
-                                                <ul className="space-y-1">
-                                                  {activelyBlockingSuccessors.map((m: {name: string; status: string}, i: number) => (
-                                                    <li key={i} className="text-xs flex items-center gap-2 px-2 py-1 rounded bg-orange-950/10 border border-orange-900/20">
-                                                      <span className="w-2 h-2 rounded-full bg-orange-500 flex-shrink-0" />
-                                                      <span className="text-gray-300">{m.name}</span>
-                                                      <span className="ml-auto text-[10px] text-orange-400 font-semibold">{m.status}</span>
-                                                    </li>
-                                                  ))}
-                                                </ul>
-                                              </div>
-                                            )}
+                                            {!isCompleted &&
+                                              activelyBlockingSuccessors.length >
+                                                0 && (
+                                                <div className="mt-3">
+                                                  <span className="text-[10px] font-semibold text-orange-400 uppercase tracking-wider mb-1.5 block">
+                                                    Waiting Successors
+                                                  </span>
+                                                  <ul className="space-y-1">
+                                                    {activelyBlockingSuccessors.map(
+                                                      (
+                                                        m: {
+                                                          name: string;
+                                                          status: string;
+                                                        },
+                                                        i: number,
+                                                      ) => (
+                                                        <li
+                                                          key={i}
+                                                          className="text-xs flex items-center gap-2 px-2 py-1 rounded bg-orange-950/10 border border-orange-900/20"
+                                                        >
+                                                          <span className="w-2 h-2 rounded-full bg-orange-500 flex-shrink-0" />
+                                                          <span className="text-gray-300">
+                                                            {m.name}
+                                                          </span>
+                                                          <span className="ml-auto text-[10px] text-orange-400 font-semibold">
+                                                            {m.status}
+                                                          </span>
+                                                        </li>
+                                                      ),
+                                                    )}
+                                                  </ul>
+                                                </div>
+                                              )}
                                           </div>
-
                                         </div>
                                       );
                                     })()}
@@ -2173,38 +2490,73 @@ export const BaselineReviewPage: React.FC = () => {
                                           <ul className="space-y-2">
                                             {dependencies.map((dep, idx) => {
                                               const depObj = dep as any;
-                                              const isObject = typeof dep === "object" && dep !== null;
-                                              const depName = isObject ? depObj.name : dep;
-                                              
+                                              const isObject =
+                                                typeof dep === "object" &&
+                                                dep !== null;
+                                              const depName = isObject
+                                                ? depObj.name
+                                                : dep;
+
                                               // Only use heuristic for legacy strings
-                                              const isDone = isObject 
-                                                ? depObj.status === "COMPLETED" 
-                                                : (selectedItem.completion_status === "COMPLETED" || selectedItem.completion_status === "CANCELLED");
-                                                
+                                              const isDone = isObject
+                                                ? depObj.status === "COMPLETED"
+                                                : selectedItem.completion_status ===
+                                                    "COMPLETED" ||
+                                                  selectedItem.completion_status ===
+                                                    "CANCELLED";
+
                                               return (
                                                 <li
                                                   key={idx}
                                                   className={`text-xs flex flex-col gap-0.5 px-2 py-1.5 rounded-md border ${
-                                                    isDone ? "bg-emerald-950/10 border-emerald-900/20 text-gray-400" : "bg-orange-950/10 border-orange-900/20 text-gray-300"
+                                                    isDone
+                                                      ? "bg-emerald-950/10 border-emerald-900/20 text-gray-400"
+                                                      : "bg-orange-950/10 border-orange-900/20 text-gray-300"
                                                   }`}
                                                 >
                                                   <div className="flex items-center gap-1.5 leading-tight">
-                                                    {isDone ? <span className="text-emerald-500 text-[10px]">✓</span> : <span className="text-red-400 text-[10px]">🔴</span>}
-                                                    <span className={isDone ? "line-through" : ""}>{depName}</span>
+                                                    {isDone ? (
+                                                      <span className="text-emerald-500 text-[10px]">
+                                                        ✓
+                                                      </span>
+                                                    ) : (
+                                                      <span className="text-red-400 text-[10px]">
+                                                        🔴
+                                                      </span>
+                                                    )}
+                                                    <span
+                                                      className={
+                                                        isDone
+                                                          ? "line-through"
+                                                          : ""
+                                                      }
+                                                    >
+                                                      {depName}
+                                                    </span>
                                                   </div>
-                                                  <span className={`text-[10px] font-medium ml-4 ${isDone ? "text-emerald-500/70" : "text-gray-500"}`}>
-                                                    {isDone ? "Completed" : "Pending"}
+                                                  <span
+                                                    className={`text-[10px] font-medium ml-4 ${isDone ? "text-emerald-500/70" : "text-gray-500"}`}
+                                                  >
+                                                    {isDone
+                                                      ? "Completed"
+                                                      : "Pending"}
                                                   </span>
-                                                  {isObject && depObj.evidence && (
-                                                    <div className="ml-4 mt-0.5 text-[9px] text-gray-500 italic border-l border-gray-700/50 pl-2">
-                                                      {depObj.evidence}
-                                                    </div>
-                                                  )}
-                                                  {isObject && depObj.resolved_by_document && isDone && (
-                                                    <div className="ml-4 text-[9px] text-emerald-500/50">
-                                                      Resolved in document {depObj.resolved_by_document}
-                                                    </div>
-                                                  )}
+                                                  {isObject &&
+                                                    depObj.evidence && (
+                                                      <div className="ml-4 mt-0.5 text-[9px] text-gray-500 italic border-l border-gray-700/50 pl-2">
+                                                        {depObj.evidence}
+                                                      </div>
+                                                    )}
+                                                  {isObject &&
+                                                    depObj.resolved_by_document &&
+                                                    isDone && (
+                                                      <div className="ml-4 text-[9px] text-emerald-500/50">
+                                                        Resolved in document{" "}
+                                                        {
+                                                          depObj.resolved_by_document
+                                                        }
+                                                      </div>
+                                                    )}
                                                 </li>
                                               );
                                             })}
@@ -2408,7 +2760,10 @@ export const BaselineReviewPage: React.FC = () => {
                                                     : "bg-blue-600 text-white shadow-md shadow-blue-600/25"
                                                 : `text-gray-400 ${opt.color}`
                                             }`}
-                                            disabled={project?.monitoring_status === "CLOSED"}
+                                            disabled={
+                                              project?.monitoring_status ===
+                                              "CLOSED"
+                                            }
                                           >
                                             {opt.label}
                                           </button>
@@ -2437,7 +2792,10 @@ export const BaselineReviewPage: React.FC = () => {
                                             e.target.value,
                                           )
                                         }
-                                        disabled={project?.monitoring_status === "CLOSED"}
+                                        disabled={
+                                          project?.monitoring_status ===
+                                          "CLOSED"
+                                        }
                                       />
                                     </div>
                                   </div>
@@ -2457,15 +2815,16 @@ export const BaselineReviewPage: React.FC = () => {
               <h2 className="text-2xl font-bold">Scope Items Baseline</h2>
               <div className="flex items-center gap-3">
                 {(user?.role === "ADMIN" ||
-                  user?.role === "ENGAGEMENT_MANAGER") && project?.monitoring_status !== "CLOSED" && (
-                  <button
-                    onClick={() => setShowAddItemModal(true)}
-                    className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-md flex items-center gap-2 cursor-pointer transition-all shadow-md text-xs font-semibold"
-                  >
-                    <Plus className="w-4 h-4" />
-                    <span>Add Scope Item</span>
-                  </button>
-                )}
+                  user?.role === "ENGAGEMENT_MANAGER") &&
+                  project?.monitoring_status !== "CLOSED" && (
+                    <button
+                      onClick={() => setShowAddItemModal(true)}
+                      className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-md flex items-center gap-2 cursor-pointer transition-all shadow-md text-xs font-semibold"
+                    >
+                      <Plus className="w-4 h-4" />
+                      <span>Add Scope Item</span>
+                    </button>
+                  )}
                 {baseline && (
                   <div className="relative">
                     <button
@@ -2564,28 +2923,29 @@ export const BaselineReviewPage: React.FC = () => {
                                 );
                               })()}
                               {(user?.role === "ADMIN" ||
-                                user?.role === "ENGAGEMENT_MANAGER") && project?.monitoring_status !== "CLOSED" && (
-                                <>
-                                  {item.completion_status === "COMPLETED" && (
-                                    <div
-                                      title="Completed"
-                                      className="p-1.5 rounded-lg flex-shrink-0 border text-emerald-400 bg-emerald-950/30 border-emerald-500/20"
+                                user?.role === "ENGAGEMENT_MANAGER") &&
+                                project?.monitoring_status !== "CLOSED" && (
+                                  <>
+                                    {item.completion_status === "COMPLETED" && (
+                                      <div
+                                        title="Completed"
+                                        className="p-1.5 rounded-lg flex-shrink-0 border text-emerald-400 bg-emerald-950/30 border-emerald-500/20"
+                                      >
+                                        <CheckCircle2 className="w-3.5 h-3.5" />
+                                      </div>
+                                    )}
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setDeletingItemId(item.id);
+                                      }}
+                                      title="Delete scope item"
+                                      className="p-1.5 text-rose-400 hover:text-white bg-rose-950/30 hover:bg-rose-900/50 border border-rose-500/20 rounded-lg transition-colors cursor-pointer flex-shrink-0"
                                     >
-                                      <CheckCircle2 className="w-3.5 h-3.5" />
-                                    </div>
-                                  )}
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setDeletingItemId(item.id);
-                                    }}
-                                    title="Delete scope item"
-                                    className="p-1.5 text-rose-400 hover:text-white bg-rose-950/30 hover:bg-rose-900/50 border border-rose-500/20 rounded-lg transition-colors cursor-pointer flex-shrink-0"
-                                  >
-                                    <Trash2 className="w-3.5 h-3.5" />
-                                  </button>
-                                </>
-                              )}
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
+                                  </>
+                                )}
                             </div>
                           </div>
                           <details className="mt-3 mb-4 group cursor-pointer">
@@ -2736,28 +3096,29 @@ export const BaselineReviewPage: React.FC = () => {
                                 );
                               })()}
                               {(user?.role === "ADMIN" ||
-                                user?.role === "ENGAGEMENT_MANAGER") && project?.monitoring_status !== "CLOSED" && (
-                                <>
-                                  {item.completion_status === "COMPLETED" && (
-                                    <div
-                                      title="Completed"
-                                      className="p-1.5 rounded-lg flex-shrink-0 border text-emerald-400 bg-emerald-950/30 border-emerald-500/20"
+                                user?.role === "ENGAGEMENT_MANAGER") &&
+                                project?.monitoring_status !== "CLOSED" && (
+                                  <>
+                                    {item.completion_status === "COMPLETED" && (
+                                      <div
+                                        title="Completed"
+                                        className="p-1.5 rounded-lg flex-shrink-0 border text-emerald-400 bg-emerald-950/30 border-emerald-500/20"
+                                      >
+                                        <CheckCircle2 className="w-3.5 h-3.5" />
+                                      </div>
+                                    )}
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setDeletingItemId(item.id);
+                                      }}
+                                      title="Delete scope item"
+                                      className="p-1.5 text-rose-400 hover:text-white bg-rose-950/30 hover:bg-rose-900/50 border border-rose-500/20 rounded-lg transition-colors cursor-pointer flex-shrink-0"
                                     >
-                                      <CheckCircle2 className="w-3.5 h-3.5" />
-                                    </div>
-                                  )}
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setDeletingItemId(item.id);
-                                    }}
-                                    title="Delete scope item"
-                                    className="p-1.5 text-rose-400 hover:text-white bg-rose-950/30 hover:bg-rose-900/50 border border-rose-500/20 rounded-lg transition-colors cursor-pointer flex-shrink-0"
-                                  >
-                                    <Trash2 className="w-3.5 h-3.5" />
-                                  </button>
-                                </>
-                              )}
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
+                                  </>
+                                )}
                             </div>
                           </div>
                           <details className="mt-3 mb-4 group cursor-pointer">
@@ -2876,7 +3237,7 @@ export const BaselineReviewPage: React.FC = () => {
                     // Filtering scope items for version history:
                     // If version === 1, show all items.
                     // If version > 1, show only items where source_document_id === ver.source_document_id.
-                    const rawItems = ver.scope_items || [];
+                    const rawItems = (ver.scope_items || []).filter((i: any) => i.category !== "MILESTONE");
                     const filteredItems =
                       ver.version === 1
                         ? rawItems
@@ -2887,13 +3248,13 @@ export const BaselineReviewPage: React.FC = () => {
                           );
 
                     const inScope = filteredItems.filter(
-                      (i: any) => i.scope_type === "IN_SCOPE",
+                      (i: any) => i.scope_type === "IN_SCOPE" && i.category !== "MILESTONE",
                     );
                     const outOfScope = filteredItems.filter(
-                      (i: any) => i.scope_type === "OUT_OF_SCOPE",
+                      (i: any) => i.scope_type === "OUT_OF_SCOPE" && i.category !== "MILESTONE",
                     );
                     const uncertain = filteredItems.filter(
-                      (i: any) => i.scope_type === "UNCERTAIN",
+                      (i: any) => i.scope_type === "UNCERTAIN" && i.category !== "MILESTONE",
                     );
 
                     const approvedDate = formatDate(ver.approved_at);

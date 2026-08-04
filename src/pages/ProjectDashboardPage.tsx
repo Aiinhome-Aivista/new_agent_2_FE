@@ -1015,7 +1015,7 @@ export const ProjectDashboardPage: React.FC = () => {
                         </p>
                       </div>
                     ) : (
-                      <ul className="space-y-2 max-h-[280px] overflow-y-auto pr-1">
+                      <ul className="space-y-2 max-h-[280px] overflow-y-auto pr-1 custom-scrollbar">
                         {trackerDocs.map((doc) => (
                           <li
                             key={doc.id}
