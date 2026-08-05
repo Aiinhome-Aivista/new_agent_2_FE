@@ -347,15 +347,32 @@ export const BaselineReviewPage: React.FC = () => {
 
   const [isApproving, setIsApproving] = useState(false);
 
-  const handleApprove = async () => {
+  const handleApprove = async (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     setIsApproving(true);
     try {
       const res = await apiClient.post(`/projects/${id}/baseline/approve`);
       if (res.data.success) {
         showNotification("Baseline Approved!", "success");
-        setTimeout(() => {
-          window.location.reload();
-        }, 1500);
+        const [baselineRes, projectRes, versionsRes] = await Promise.all([
+          apiClient.get(`/projects/${id}/baseline/`),
+          apiClient.get(`/projects/${id}`),
+          apiClient.get(`/projects/${id}/baseline/versions`),
+        ]);
+        if (baselineRes.data.success) {
+          setBaseline(baselineRes.data.data);
+        }
+        if (projectRes.data.success) {
+          setProject(projectRes.data.data);
+        }
+        if (versionsRes.data.success) {
+          setVersions(versionsRes.data.data);
+        }
+        // Dispatch event so Sidebar can update without page reload
+        window.dispatchEvent(new Event("project-updated"));
       }
     } catch (error: any) {
       showNotification(
@@ -1042,6 +1059,7 @@ export const BaselineReviewPage: React.FC = () => {
               (user?.role === "ENGAGEMENT_MANAGER" || user?.role === "ADMIN") &&
               project?.monitoring_status !== "CLOSED" && (
                 <button
+                  type="button"
                   onClick={handleApprove}
                   disabled={isApproving}
                   className="group relative inline-flex items-center justify-center gap-2 px-6 py-2.5 font-semibold text-white transition-all duration-300 rounded-lg bg-gradient-to-r from-emerald-500 via-teal-500 to-green-600 hover:from-emerald-400 hover:via-teal-400 hover:to-green-500 shadow-[0_0_15px_rgba(16,185,129,0.4)] hover:shadow-[0_0_25px_rgba(20,184,166,0.6)] hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none cursor-pointer"
@@ -1482,9 +1500,13 @@ export const BaselineReviewPage: React.FC = () => {
                                         item.milestone_normalized,
                                       );
                                       if (!mData) return null;
-                                      const milestoneStatus = (
+                                      const progressPct = item.latest_progress?.progress_percentage || 0;
+                                      let milestoneStatus = (
                                         mData.status || "PENDING"
                                       ).toUpperCase();
+                                      if (progressPct > 0 && milestoneStatus === "BLOCKED") {
+                                          milestoneStatus = "IN_PROGRESS";
+                                      }
                                       const isCompleted =
                                         milestoneStatus === "COMPLETED" ||
                                         milestoneStatus === "CANCELLED";
@@ -1958,11 +1980,15 @@ export const BaselineReviewPage: React.FC = () => {
                             latestProgress?.status_code ||
                             selectedItem.completion_status ||
                             "ACTIVE";
-                          const statusLabel =
+                          let statusLabel =
                             latestProgress?.status_label ||
                             completionStatus.replace("_", " ");
                           const progressPct =
                             latestProgress?.progress_percentage;
+                            
+                          if ((progressPct || 0) > 0 && completionStatus === "BLOCKED") {
+                              statusLabel = "IN PROGRESS";
+                          }
                           const executionSummary =
                             latestProgress?.execution_summary;
                           const updateSource = latestProgress?.document_name;
@@ -2104,9 +2130,12 @@ export const BaselineReviewPage: React.FC = () => {
 
                                       if (!mData) return null;
 
-                                      const milestoneStatus = (
+                                      let milestoneStatus = (
                                         mData.status || "PENDING"
                                       ).toUpperCase();
+                                      if ((progressPct || 0) > 0 && milestoneStatus === "BLOCKED") {
+                                          milestoneStatus = "IN_PROGRESS";
+                                      }
                                       const isCompleted =
                                         milestoneStatus === "COMPLETED" ||
                                         milestoneStatus === "CANCELLED";
@@ -2436,8 +2465,7 @@ export const BaselineReviewPage: React.FC = () => {
                                             ) : hasPredecessors ? (
                                               <div className="flex items-center gap-2 text-xs text-emerald-400">
                                                 <span className="w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0" />
-                                                All predecessors complete —
-                                                ready to execute
+                                                {(progressPct || 0) > 0 ? `✓ Execution started (${progressPct}% complete)` : "All predecessors complete — ready to execute"}
                                               </div>
                                             ) : null}
 
@@ -2532,8 +2560,13 @@ export const BaselineReviewPage: React.FC = () => {
                                                       }
                                                     >
                                                       {depName}
-                                                    </span>
-                                                  </div>
+                                                      </span>
+                                                      {isObject && depObj.owner && (
+                                                        <span className="ml-2 px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider bg-indigo-950 text-indigo-300 border border-indigo-900">
+                                                          {depObj.owner}
+                                                        </span>
+                                                      )}
+                                                    </div>
                                                   <span
                                                     className={`text-[10px] font-medium ml-4 ${isDone ? "text-emerald-500/70" : "text-gray-500"}`}
                                                   >

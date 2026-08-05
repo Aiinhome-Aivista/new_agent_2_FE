@@ -16,6 +16,7 @@ import {
   Users,
   LayoutGrid,
   MessageSquare,
+  ShieldAlert,
 } from "lucide-react";
 
 export const Sidebar: React.FC = () => {

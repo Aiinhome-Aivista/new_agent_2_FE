@@ -625,11 +625,7 @@ export const ProjectDashboardPage: React.FC = () => {
                                   {doc.document_type}
                                 </span>
                               </div>
-                              {doc.processing_status === "FAILED" && doc.processing_error && (
-                                <p className="text-[10px] text-rose-400 font-medium font-mono mt-1 whitespace-pre-wrap max-w-full break-words border border-rose-500/20 bg-rose-950/20 rounded-md px-2 py-1 select-text">
-                                  Error: {doc.processing_error}
-                                </p>
-                              )}
+
                             </div>
 
                             <div className="flex items-center gap-2 flex-shrink-0">
@@ -1030,11 +1026,7 @@ export const ProjectDashboardPage: React.FC = () => {
                                   {doc.document_type}
                                 </span>
                               </div>
-                              {doc.processing_status === "FAILED" && doc.processing_error && (
-                                <p className="text-[10px] text-rose-400 font-medium font-mono mt-1 whitespace-pre-wrap max-w-full break-words border border-rose-500/20 bg-rose-950/20 rounded-md px-2 py-1 select-text">
-                                  Error: {doc.processing_error}
-                                </p>
-                              )}
+
                             </div>
 
                             <div className="flex items-center gap-2 flex-shrink-0">
