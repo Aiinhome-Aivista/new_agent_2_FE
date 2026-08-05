@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import apiClient from "../api/apiClient";
 import { useAuth } from "../auth/AuthContext";
+import { useTheme } from "../context/ThemeContext";
 import { Loader } from "../components/Loader";
 import {
   AlertTriangle,
@@ -151,6 +152,8 @@ const HealthRing: React.FC<{ score: number; color: string }> = ({
 export const ProjectOverviewPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
 
   const [project, setProject] = useState<any>(null);
   const [documents, setDocuments] = useState<any[]>([]);
@@ -297,27 +300,49 @@ export const ProjectOverviewPage: React.FC = () => {
           <div className="flex flex-wrap gap-2 flex-shrink-0">
             <Link
               to={`/projects/${id}/cockpit`}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-bg-hover/80 hover:bg-bg-hover/80 border border-border-strong text-text-secondary text-xs font-semibold rounded-xl transition-all"
+              className={
+                isDark
+                  ? "inline-flex items-center gap-1.5 px-3.5 py-2 bg-bg-hover/80 hover:bg-bg-hover border border-border-strong text-text-secondary text-xs font-semibold rounded-xl transition-all"
+                  : "inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#FFF7F2] hover:bg-[#FFEFE5] border border-[#D8D8D8] text-[#4A4A4A] text-xs font-bold rounded-xl transition-all shadow-sm"
+              }
             >
               <UploadCloud className="w-3.5 h-3.5" /> Upload Documents
             </Link>
             <Link
               to={`/projects/${id}/baseline`}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/40 text-purple-600 dark:text-purple-300 text-xs font-semibold rounded-xl transition-all"
+              className={
+                isDark
+                  ? "inline-flex items-center gap-1.5 px-3.5 py-2 bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/40 text-purple-300 text-xs font-semibold rounded-xl transition-all"
+                  : "inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#F3E8FF] hover:bg-[#E9D5FF] border border-[#A855F7] text-[#4C1D95] text-xs font-black rounded-xl transition-all shadow-sm"
+              }
             >
-              <ScrollText className="w-3.5 h-3.5" /> Baseline Review
+              <ScrollText
+                className={`w-3.5 h-3.5 ${isDark ? "text-purple-300" : "text-[#4C1D95]"}`}
+              />{" "}
+              Baseline Review
             </Link>
             <Link
               to={`/projects/${id}/tracker`}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-rose-600/20 hover:bg-rose-600/30 border border-rose-500/40 text-rose-600 dark:text-rose-300 text-xs font-semibold rounded-xl transition-all"
+              className={
+                isDark
+                  ? "inline-flex items-center gap-1.5 px-3.5 py-2 bg-rose-600/20 hover:bg-rose-600/30 border border-rose-500/40 text-rose-300 text-xs font-semibold rounded-xl transition-all"
+                  : "inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#FFE4E6] hover:bg-[#FECDD3] border border-[#F43F5E] text-[#881337] text-xs font-black rounded-xl transition-all shadow-sm"
+              }
             >
-              <Activity className="w-3.5 h-3.5" /> Risk Tracker
+              <Activity
+                className={`w-3.5 h-3.5 ${isDark ? "text-rose-300" : "text-[#881337]"}`}
+              />{" "}
+              Risk Tracker
             </Link>
             <Link
               to={`/projects/${id}/members`}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#FF5A14]/20 hover:bg-[#FF5A14]/30 border border-[#FF8A55]/40 text-[#FF5A14] text-xs font-semibold rounded-xl transition-all"
+              className={
+                isDark
+                  ? "inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#FF5A14]/20 hover:bg-[#FF5A14]/30 border border-[#FF8A55]/40 text-[#FF5A14] text-xs font-semibold rounded-xl transition-all"
+                  : "inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#FFF7F2] hover:bg-[#FFEFE5] border border-[#FF8A55] text-[#FF5A14] text-xs font-bold rounded-xl transition-all shadow-sm"
+              }
             >
-              <Users className="w-3.5 h-3.5" /> Members
+              <Users className="w-3.5 h-3.5 text-[#FF5A14]" /> Members
             </Link>
           </div>
         </div>
@@ -1325,32 +1350,80 @@ export const ProjectOverviewPage: React.FC = () => {
                 .map((item, i) => (
                   <div
                     key={i}
-                    className={`flex items-start gap-3 p-3 rounded-xl border ${
-                      item.level === "critical"
-                        ? "bg-rose-950/20 border-rose-500/20"
-                        : "bg-amber-950/20 border-amber-500/20"
-                    }`}
+                    className={
+                      isDark
+                        ? `flex items-start gap-3 p-3 rounded-xl border ${
+                            item.level === "critical"
+                              ? "bg-rose-950/20 border-rose-500/20"
+                              : "bg-amber-950/20 border-amber-500/20"
+                          }`
+                        : `flex items-center gap-3 p-3.5 rounded-xl border shadow-sm ${
+                            item.level === "critical"
+                              ? "bg-[#FFE4E6] border-[#FDA4AF]"
+                              : "bg-[#FEF3C7] border-[#FCD34D]"
+                          }`
+                    }
                   >
                     {item.level === "critical" ? (
-                      <XCircle className="w-4 h-4 text-rose-500 dark:text-rose-400 flex-shrink-0 mt-0.5" />
+                      <XCircle
+                        className={`w-5 h-5 flex-shrink-0 ${
+                          isDark ? "text-rose-400" : "text-[#E11D48]"
+                        }`}
+                      />
                     ) : (
-                      <AlertCircle className="w-4 h-4 text-amber-500 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+                      <AlertCircle
+                        className={`w-5 h-5 flex-shrink-0 ${
+                          isDark ? "text-amber-400" : "text-[#D97706]"
+                        }`}
+                      />
                     )}
                     <div className="flex-1 min-w-0">
                       <p
-                        className={`text-xs font-bold ${item.level === "critical" ? "text-rose-600 dark:text-rose-300" : "text-amber-300"}`}
+                        className={
+                          isDark
+                            ? `text-xs font-bold ${
+                                item.level === "critical"
+                                  ? "text-rose-300"
+                                  : "text-amber-300"
+                              }`
+                            : `text-xs font-black ${
+                                item.level === "critical"
+                                  ? "text-[#9F1239]"
+                                  : "text-[#78350F]"
+                              }`
+                        }
                       >
                         {item.title}
                       </p>
-                      <p className="text-[11px] text-text-muted">{item.desc}</p>
+                      <p
+                        className={
+                          isDark
+                            ? "text-[11px] text-text-muted"
+                            : `text-[11px] font-medium leading-snug ${
+                                item.level === "critical"
+                                  ? "text-[#881337]"
+                                  : "text-[#92400E]"
+                              }`
+                        }
+                      >
+                        {item.desc}
+                      </p>
                     </div>
                     <Link
                       to={item.action.to}
-                      className={`text-[10px] font-bold px-2.5 py-1 rounded-lg flex-shrink-0 transition-all ${
-                        item.level === "critical"
-                          ? "bg-rose-500/20 text-rose-600 dark:text-rose-300 hover:bg-rose-500/30 border border-rose-500/30"
-                          : "bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 border border-amber-500/30"
-                      }`}
+                      className={
+                        isDark
+                          ? `text-[10px] font-bold px-2.5 py-1 rounded-lg flex-shrink-0 transition-all ${
+                              item.level === "critical"
+                                ? "bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 border border-rose-500/30"
+                                : "bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 border border-amber-500/30"
+                            }`
+                          : `text-xs font-black px-3 py-1.5 rounded-lg flex-shrink-0 transition-all shadow-md ${
+                              item.level === "critical"
+                                ? "bg-rose-600 hover:bg-rose-700 text-white shadow-rose-600/20"
+                                : "bg-amber-600 hover:bg-amber-700 text-white shadow-amber-600/20"
+                            }`
+                      }
                     >
                       {item.action.label}
                     </Link>
