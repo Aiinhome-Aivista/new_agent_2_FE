@@ -186,7 +186,6 @@ export const ProjectDashboardPage: React.FC = () => {
 
   const handleProcessDocument = async (docId: number, docType: string) => {
     try {
-
       setDocuments((prev) =>
         prev.map((d) =>
           d.id === docId ? { ...d, processing_status: "PROCESSING" } : d,
@@ -272,7 +271,10 @@ export const ProjectDashboardPage: React.FC = () => {
           showNotification("Document uploaded successfully!", "success");
         } else {
           setMonitoringFile(null);
-          showNotification("Document uploaded successfully! You can now process it.", "success");
+          showNotification(
+            "Document uploaded successfully! You can now process it.",
+            "success",
+          );
         }
       }
     } catch (error: any) {
@@ -349,7 +351,9 @@ export const ProjectDashboardPage: React.FC = () => {
             <h1 className="text-3xl font-black tracking-tight text-text-primary">
               {project.project_name}
             </h1>
-            <p className="text-text-muted text-sm mt-1">{project.description}</p>
+            <p className="text-text-muted text-sm mt-1">
+              {project.description}
+            </p>
             {(project.start_date || project.end_date) && (
               <div className="flex flex-wrap gap-x-6 gap-y-1 items-center text-xs text-text-muted mt-2.5">
                 {project.start_date && (
@@ -405,9 +409,9 @@ export const ProjectDashboardPage: React.FC = () => {
 
             <Link
               to={`/projects/${id}/baseline`}
-              className="inline-flex items-center gap-1.5 px-4 py-2 bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/40 text-purple-600 dark:text-purple-300 text-xs font-semibold rounded-xl transition-all"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#FF7A45] hover:bg-[#F56B2F] text-white font-bold text-xs rounded-xl shadow-md shadow-[#FF5A14]/20 transition-all duration-300 active:scale-[0.98] cursor-pointer"
             >
-              <Sparkles className="w-3.5 h-3.5 text-purple-500 dark:text-purple-400" />
+              <Sparkles className="w-4 h-4 text-white" />
               Review Baseline &rarr;
             </Link>
           </div>
@@ -421,10 +425,11 @@ export const ProjectDashboardPage: React.FC = () => {
                 Project Closed
               </h3>
               <p className="text-xs text-text-muted max-w-md leading-relaxed">
-                This project has been marked as closed. No further initiation documents can be uploaded.
+                This project has been marked as closed. No further initiation
+                documents can be uploaded.
               </p>
             </div>
-          ) : (user?.role === "ENGAGEMENT_MANAGER" || user?.role === "ADMIN") ? (
+          ) : user?.role === "ENGAGEMENT_MANAGER" || user?.role === "ADMIN" ? (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 <div
@@ -434,13 +439,13 @@ export const ProjectDashboardPage: React.FC = () => {
                   }}
                   className={`p-4 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
                     baselineDocType === "EL"
-                      ? "bg-gradient-to-r from-emerald-500/10 dark:from-emerald-50/50 dark:from-emerald-950/50 to-teal-500/10 dark:to-teal-50/40 dark:to-teal-950/40 border-emerald-500/60 shadow-lg shadow-emerald-500/10 ring-1 ring-emerald-500/30"
-                      : "bg-bg-hover/40 border-border-strong/60 hover:bg-bg-hover/80"
+                      ? "bg-[#FFF7F2] dark:bg-[#332822] border-2 border-[#FF8A55] shadow-md shadow-[#FF5A14]/10"
+                      : "bg-bg-card border border-[#D8D8D8] dark:border-[#444444] hover:border-[#FF8A55]/50 hover:bg-[#FFF7F2]/50"
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <div
-                      className={`p-2.5 rounded-xl ${baselineDocType === "EL" ? "bg-emerald-500/20 text-emerald-700 dark:text-emerald-400" : "bg-bg-hover text-text-muted"}`}
+                      className={`p-2.5 rounded-xl ${baselineDocType === "EL" ? "bg-[#FF5A14]/20 text-[#FF5A14]" : "bg-bg-hover text-text-muted"}`}
                     >
                       <FileText className="w-5 h-5" />
                     </div>
@@ -462,13 +467,13 @@ export const ProjectDashboardPage: React.FC = () => {
                   }}
                   className={`p-4 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
                     baselineDocType === "IFA"
-                      ? "bg-gradient-to-r from-emerald-500/10 dark:from-emerald-50/50 dark:from-emerald-950/50 to-teal-500/10 dark:to-teal-50/40 dark:to-teal-950/40 border-emerald-500/60 shadow-lg shadow-emerald-500/10 ring-1 ring-emerald-500/30"
-                      : "bg-bg-hover/40 border-border-strong/60 hover:bg-bg-hover/80"
+                      ? "bg-[#FFF7F2] dark:bg-[#332822] border-2 border-[#FF8A55] shadow-md shadow-[#FF5A14]/10"
+                      : "bg-bg-card border border-[#D8D8D8] dark:border-[#444444] hover:border-[#FF8A55]/50 hover:bg-[#FFF7F2]/50"
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <div
-                      className={`p-2.5 rounded-xl ${baselineDocType === "IFA" ? "bg-emerald-500/20 text-emerald-700 dark:text-emerald-400" : "bg-bg-hover text-text-muted"}`}
+                      className={`p-2.5 rounded-xl ${baselineDocType === "IFA" ? "bg-[#FF5A14]/20 text-[#FF5A14]" : "bg-bg-hover text-text-muted"}`}
                     >
                       <FileSpreadsheet className="w-5 h-5" />
                     </div>
@@ -489,9 +494,9 @@ export const ProjectDashboardPage: React.FC = () => {
                   <div>
                     <div className="flex items-center justify-between mb-3">
                       <h4 className="text-xs font-semibold text-text-secondary uppercase tracking-wider flex items-center gap-2">
-                        <UploadCloud className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
+                        <UploadCloud className="w-4 h-4 text-[#FF5A14]" />
                         Target Category:{" "}
-                        <span className="text-emerald-300 font-bold">
+                        <span className="text-[#FF5A14] font-bold">
                           {getDocTypeLabel(baselineDocType)}
                         </span>
                       </h4>
@@ -514,10 +519,10 @@ export const ProjectDashboardPage: React.FC = () => {
                           uploading
                             ? "border-border-strong bg-bg-card/10 cursor-not-allowed opacity-50"
                             : isDragging
-                              ? "border-emerald-400 bg-emerald-950/20 cursor-pointer"
+                              ? "border-[#FF8A55] bg-[#FF5A14]/10 cursor-pointer"
                               : baselineFile
                                 ? "border-green-500 bg-green-950/10 cursor-pointer"
-                                : "border-slate-300 dark:border-gray-600 hover:border-gray-400 bg-bg-card/40 hover:bg-bg-card/60 cursor-pointer"
+                                : "border-slate-300 dark:border-gray-600 hover:border-[#FF8A55] bg-bg-card/40 hover:bg-[#FFF7F2]/40 cursor-pointer"
                         }`}
                       >
                         <input
@@ -562,18 +567,19 @@ export const ProjectDashboardPage: React.FC = () => {
                           </div>
                         ) : (
                           <>
-                            <div className="bg-emerald-500/10 p-4 rounded-full mb-4 ring-8 ring-emerald-500/5">
-                              <UploadCloud className="w-8 h-8 text-emerald-700 dark:text-emerald-400" />
+                            <div className="bg-[#FF5A14]/10 p-4 rounded-full mb-4 ring-8 ring-[#FF5A14]/5">
+                              <UploadCloud className="w-8 h-8 text-[#FF5A14]" />
                             </div>
                             <div className="text-center">
                               <p className="text-sm text-text-secondary font-medium">
                                 Upload{" "}
-                                <strong className="text-emerald-300">
+                                <strong className="text-[#FF5A14]">
                                   {getDocTypeLabel(baselineDocType)}
                                 </strong>
                               </p>
                               <p className="text-xs text-text-muted mt-1">
-                                Drag & drop (.pdf, .docx, .txt) or click to browse
+                                Drag & drop (.pdf, .docx, .txt) or click to
+                                browse
                               </p>
                             </div>
                           </>
@@ -583,7 +589,7 @@ export const ProjectDashboardPage: React.FC = () => {
                       <button
                         type="submit"
                         disabled={!baselineFile || uploading}
-                        className="w-full py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-text-primary font-semibold rounded-xl text-xs transition-all shadow-md shadow-emerald-500/20 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                        className="w-full py-2.5 bg-[#FF7A45] hover:bg-[#F56B2F] text-white font-bold rounded-xl text-xs transition-all duration-300 shadow-md shadow-[#FF5A14]/20 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2"
                       >
                         {uploading
                           ? "Uploading Document..."
@@ -625,11 +631,12 @@ export const ProjectDashboardPage: React.FC = () => {
                                   {doc.document_type}
                                 </span>
                               </div>
-                              {doc.processing_status === "FAILED" && doc.processing_error && (
-                                <p className="text-[10px] text-rose-500 dark:text-rose-700 dark:text-rose-400 font-medium font-mono mt-1 whitespace-pre-wrap max-w-full break-words border border-rose-500/20 bg-rose-950/20 rounded-md px-2 py-1 select-text">
-                                  Error: {doc.processing_error}
-                                </p>
-                              )}
+                              {doc.processing_status === "FAILED" &&
+                                doc.processing_error && (
+                                  <p className="text-[10px] text-rose-500 dark:text-rose-700 dark:text-rose-400 font-medium font-mono mt-1 whitespace-pre-wrap max-w-full break-words border border-rose-500/20 bg-rose-950/20 rounded-md px-2 py-1 select-text">
+                                    Error: {doc.processing_error}
+                                  </p>
+                                )}
                             </div>
 
                             <div className="flex items-center gap-2 flex-shrink-0">
@@ -647,7 +654,8 @@ export const ProjectDashboardPage: React.FC = () => {
                               >
                                 {doc.processing_status}
                               </span>
-                              {user?.role === "ENGAGEMENT_MANAGER" && project.monitoring_status !== "CLOSED" &&
+                              {user?.role === "ENGAGEMENT_MANAGER" &&
+                                project.monitoring_status !== "CLOSED" &&
                                 (doc.processing_status === "UPLOADED" ||
                                   doc.processing_status === "FAILED") && (
                                   <button
@@ -659,7 +667,8 @@ export const ProjectDashboardPage: React.FC = () => {
                                   </button>
                                 )}
 
-                              {user?.role === "ENGAGEMENT_MANAGER" && project.monitoring_status !== "CLOSED" &&
+                              {user?.role === "ENGAGEMENT_MANAGER" &&
+                                project.monitoring_status !== "CLOSED" &&
                                 (doc.processing_status === "UPLOADED" ||
                                   doc.processing_status === "FAILED") && (
                                   <button
@@ -759,9 +768,9 @@ export const ProjectDashboardPage: React.FC = () => {
 
             <Link
               to={`/projects/${id}/tracker`}
-              className="inline-flex items-center gap-1.5 px-4 py-2 bg-rose-600/20 hover:bg-rose-600/30 border border-rose-500/40 text-rose-600 dark:text-rose-300 text-xs font-semibold rounded-xl transition-all"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#FF7A45] hover:bg-[#F56B2F] text-white font-bold text-xs rounded-xl shadow-md shadow-[#FF5A14]/20 transition-all duration-300 active:scale-[0.98] cursor-pointer"
             >
-              <Clock className="w-3.5 h-3.5 text-rose-500 dark:text-rose-700 dark:text-rose-400" />
+              <Clock className="w-4 h-4 text-white" />
               View Risk Tracker &rarr;
             </Link>
           </div>
@@ -775,7 +784,8 @@ export const ProjectDashboardPage: React.FC = () => {
                 Project Closed
               </h3>
               <p className="text-xs text-text-muted max-w-md leading-relaxed">
-                This project has been marked as closed. No further execution documents can be uploaded.
+                This project has been marked as closed. No further execution
+                documents can be uploaded.
               </p>
             </div>
           ) : project.monitoring_status !== "ACTIVE" ? (
@@ -802,13 +812,13 @@ export const ProjectDashboardPage: React.FC = () => {
                   }}
                   className={`p-4 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
                     monitoringDocType === "MOM"
-                      ? "bg-gradient-to-r from-indigo-500/10 dark:from-indigo-50/50 dark:from-indigo-950/50 to-blue-500/10 dark:to-blue-50/40 dark:to-blue-950/40 border-indigo-500/60 shadow-lg shadow-indigo-500/10 ring-1 ring-indigo-500/30"
-                      : "bg-bg-hover/40 border-border-strong/60 hover:bg-bg-hover/80"
+                      ? "bg-[#FFF7F2] dark:bg-[#332822] border-2 border-[#FF8A55] shadow-md shadow-[#FF5A14]/10"
+                      : "bg-bg-card border border-[#D8D8D8] dark:border-[#444444] hover:border-[#FF8A55]/50 hover:bg-[#FFF7F2]/50"
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <div
-                      className={`p-2.5 rounded-xl ${monitoringDocType === "MOM" ? "bg-indigo-500/20 text-indigo-700 dark:text-indigo-400" : "bg-bg-hover text-text-muted"}`}
+                      className={`p-2.5 rounded-xl ${monitoringDocType === "MOM" ? "bg-[#FF5A14]/20 text-[#FF5A14]" : "bg-bg-hover text-text-muted"}`}
                     >
                       <Clock className="w-5 h-5" />
                     </div>
@@ -830,13 +840,13 @@ export const ProjectDashboardPage: React.FC = () => {
                   }}
                   className={`p-4 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
                     monitoringDocType === "STATUS_REPORT"
-                      ? "bg-gradient-to-r from-indigo-500/10 dark:from-indigo-50/50 dark:from-indigo-950/50 to-blue-500/10 dark:to-blue-50/40 dark:to-blue-950/40 border-indigo-500/60 shadow-lg shadow-indigo-500/10 ring-1 ring-indigo-500/30"
-                      : "bg-bg-hover/40 border-border-strong/60 hover:bg-bg-hover/80"
+                      ? "bg-[#FFF7F2] dark:bg-[#332822] border-2 border-[#FF8A55] shadow-md shadow-[#FF5A14]/10"
+                      : "bg-bg-card border border-[#D8D8D8] dark:border-[#444444] hover:border-[#FF8A55]/50 hover:bg-[#FFF7F2]/50"
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <div
-                      className={`p-2.5 rounded-xl ${monitoringDocType === "STATUS_REPORT" ? "bg-indigo-500/20 text-indigo-700 dark:text-indigo-400" : "bg-bg-hover text-text-muted"}`}
+                      className={`p-2.5 rounded-xl ${monitoringDocType === "STATUS_REPORT" ? "bg-[#FF5A14]/20 text-[#FF5A14]" : "bg-bg-hover text-text-muted"}`}
                     >
                       <Layers className="w-5 h-5" />
                     </div>
@@ -853,15 +863,15 @@ export const ProjectDashboardPage: React.FC = () => {
 
                 <div
                   onClick={() => setShowCustomModal(true)}
-                  className="p-4 rounded-xl border border-dashed border-border-strong hover:border-indigo-500/50 bg-bg-hover/20 hover:bg-bg-hover/60 transition-all cursor-pointer flex items-center justify-between"
+                  className="p-4 rounded-xl border border-dashed border-[#D8D8D8] dark:border-[#444444] hover:border-[#FF8A55] bg-bg-hover/20 hover:bg-[#FFF7F2]/50 transition-all cursor-pointer flex items-center justify-between"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="p-2.5 rounded-xl bg-bg-hover text-indigo-700 dark:text-indigo-400">
+                    <div className="p-2.5 rounded-xl bg-[#FF5A14]/10 text-[#FF5A14]">
                       <Plus className="w-5 h-5" />
                     </div>
                     <div>
                       <h3 className="text-sm font-bold text-text-primary">
-                        + Add Custom Type
+                        Add Custom Type
                       </h3>
                       <p className="text-xs text-text-muted">
                         Create custom category
@@ -871,132 +881,143 @@ export const ProjectDashboardPage: React.FC = () => {
                 </div>
               </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="bg-bg-hover/50 p-5 rounded-xl border border-border-strong/70 flex flex-col justify-between relative overflow-hidden min-h-[300px]">
-                {!(user?.role === "PROJECT_LEAD" || user?.role === "ENGAGEMENT_MANAGER" || user?.role === "ADMIN") ? (
-                  <div className="flex-1 flex flex-col items-center justify-center py-12 px-4 text-center">
-                    <div className="bg-amber-500/10 p-3 rounded-full mb-3 border border-amber-500/20 shadow-sm animate-pulse">
-                      <Lock className="w-6 h-6 text-amber-500 dark:text-amber-400" />
-                    </div>
-                    <h4 className="text-sm font-bold text-text-primary mb-1">
-                      Upload Restricted
-                    </h4>
-                    <p className="text-xs text-text-muted max-w-[280px] leading-relaxed">
-                      Only users with the <strong className="text-indigo-700 dark:text-indigo-400">Project Lead</strong> or <strong className="text-indigo-700 dark:text-indigo-400">Engagement Manager</strong> role are authorized to upload or modify Progress Ingestion documents (MOMs & Status Reports).
-                    </p>
-                  </div>
-                ) : (
-                  <div>
-                    <div className="flex items-center justify-between mb-3">
-                      <h4 className="text-xs font-semibold text-text-secondary uppercase tracking-wider flex items-center gap-2">
-                        <UploadCloud className="w-4 h-4 text-indigo-700 dark:text-indigo-400" />
-                        Target Category:{" "}
-                        <span className="text-indigo-300 font-bold">
-                          {getDocTypeLabel(monitoringDocType)}
-                        </span>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="bg-bg-hover/50 p-5 rounded-xl border border-border-strong/70 flex flex-col justify-between relative overflow-hidden min-h-[300px]">
+                  {!(
+                    user?.role === "PROJECT_LEAD" ||
+                    user?.role === "ENGAGEMENT_MANAGER" ||
+                    user?.role === "ADMIN"
+                  ) ? (
+                    <div className="flex-1 flex flex-col items-center justify-center py-12 px-4 text-center">
+                      <div className="bg-amber-500/10 p-3 rounded-full mb-3 border border-amber-500/20 shadow-sm animate-pulse">
+                        <Lock className="w-6 h-6 text-amber-500 dark:text-amber-400" />
+                      </div>
+                      <h4 className="text-sm font-bold text-text-primary mb-1">
+                        Upload Restricted
                       </h4>
+                      <p className="text-xs text-text-muted max-w-[280px] leading-relaxed">
+                        Only users with the{" "}
+                        <strong className="text-[#FF5A14]">Project Lead</strong>{" "}
+                        or{" "}
+                        <strong className="text-[#FF5A14]">
+                          Engagement Manager
+                        </strong>{" "}
+                        role are authorized to upload or modify Progress
+                        Ingestion documents (MOMs & Status Reports).
+                      </p>
                     </div>
-
-                    <form
-                      onSubmit={(e) => handleUpload(e, "MONITORING")}
-                      className="space-y-4"
-                    >
-                      <div
-                        onDragOver={handleDragOver}
-                        onDragLeave={handleDragLeave}
-                        onDrop={(e) => handleDrop(e, "MONITORING")}
-                        onClick={
-                          uploading
-                            ? undefined
-                            : () => triggerFileSelect("MONITORING")
-                        }
-                        className={`border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center transition-all duration-200 ${
-                          uploading
-                            ? "border-border-strong bg-bg-card/10 cursor-not-allowed opacity-50"
-                            : isDragging
-                              ? "border-indigo-400 bg-indigo-950/20 cursor-pointer"
-                              : monitoringFile
-                                ? "border-green-500 bg-green-950/10 cursor-pointer"
-                                : "border-slate-300 dark:border-gray-600 hover:border-gray-400 bg-bg-card/40 hover:bg-bg-card/60 cursor-pointer"
-                        }`}
-                      >
-                        <input
-                          type="file"
-                          ref={monitoringFileInputRef}
-                          accept=".pdf,.docx,.txt"
-                          disabled={uploading}
-                          onChange={(e) => {
-                            if (e.target.files && e.target.files[0]) {
-                              validateAndSetFile(
-                                e.target.files[0],
-                                "MONITORING",
-                              );
-                            }
-                          }}
-                          className="hidden"
-                        />
-
-                        {monitoringFile ? (
-                          <div className="flex flex-col items-center w-full">
-                            <div className="flex items-center justify-between bg-bg-hover/80 border border-border-strong rounded-lg p-3 w-full max-w-xs">
-                              <div className="flex items-center gap-2 overflow-hidden mr-2">
-                                <FileText className="h-5 w-5 text-green-400 flex-shrink-0" />
-                                <span className="text-sm truncate text-text-primary">
-                                  {monitoringFile.name}
-                                </span>
-                              </div>
-                              <button
-                                type="button"
-                                disabled={uploading}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setMonitoringFile(null);
-                                }}
-                                className="p-1 hover:bg-bg-hover rounded text-text-muted hover:text-red-400 transition-colors disabled:opacity-30"
-                              >
-                                <X className="h-4 w-4" />
-                              </button>
-                            </div>
-                            {!uploading && (
-                              <span className="text-xs text-text-muted mt-2">
-                                Click or drag new file to replace
-                              </span>
-                            )}
-                          </div>
-                        ) : (
-                          <>
-                            <div className="bg-indigo-500/10 p-4 rounded-full mb-4 ring-8 ring-indigo-500/5">
-                              <UploadCloud className="w-8 h-8 text-indigo-700 dark:text-indigo-400" />
-                            </div>
-                            <div className="text-center">
-                              <p className="text-sm text-text-secondary font-medium">
-                                Upload{" "}
-                                <strong className="text-indigo-300">
-                                  {getDocTypeLabel(monitoringDocType)}
-                                </strong>
-                              </p>
-                              <p className="text-xs text-text-muted mt-1">
-                                Drag & drop (.pdf, .docx, .txt) or click to
-                                browse
-                              </p>
-                            </div>
-                          </>
-                        )}
+                  ) : (
+                    <div>
+                      <div className="flex items-center justify-between mb-3">
+                        <h4 className="text-xs font-semibold text-text-secondary uppercase tracking-wider flex items-center gap-2">
+                          <UploadCloud className="w-4 h-4 text-[#FF5A14]" />
+                          Target Category:{" "}
+                          <span className="text-[#FF5A14] font-bold">
+                            {getDocTypeLabel(monitoringDocType)}
+                          </span>
+                        </h4>
                       </div>
 
-                      <button
-                        type="submit"
-                        disabled={!monitoringFile || uploading}
-                        className="w-full py-2.5 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-text-primary font-semibold rounded-xl text-xs transition-all shadow-md shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                      <form
+                        onSubmit={(e) => handleUpload(e, "MONITORING")}
+                        className="space-y-4"
                       >
-                        {uploading
-                          ? "Uploading Document..."
-                          : `Upload ${getDocTypeLabel(monitoringDocType)}`}
-                      </button>
-                    </form>
-                  </div>
-                )}
-              </div>
+                        <div
+                          onDragOver={handleDragOver}
+                          onDragLeave={handleDragLeave}
+                          onDrop={(e) => handleDrop(e, "MONITORING")}
+                          onClick={
+                            uploading
+                              ? undefined
+                              : () => triggerFileSelect("MONITORING")
+                          }
+                          className={`border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center transition-all duration-200 ${
+                            uploading
+                              ? "border-border-strong bg-bg-card/10 cursor-not-allowed opacity-50"
+                              : isDragging
+                                ? "border-[#FF8A55] bg-[#FF5A14]/10 cursor-pointer"
+                                : monitoringFile
+                                  ? "border-green-500 bg-green-950/10 cursor-pointer"
+                                  : "border-slate-300 dark:border-gray-600 hover:border-[#FF8A55] bg-bg-card/40 hover:bg-[#FFF7F2]/40 cursor-pointer"
+                          }`}
+                        >
+                          <input
+                            type="file"
+                            ref={monitoringFileInputRef}
+                            accept=".pdf,.docx,.txt"
+                            disabled={uploading}
+                            onChange={(e) => {
+                              if (e.target.files && e.target.files[0]) {
+                                validateAndSetFile(
+                                  e.target.files[0],
+                                  "MONITORING",
+                                );
+                              }
+                            }}
+                            className="hidden"
+                          />
+
+                          {monitoringFile ? (
+                            <div className="flex flex-col items-center w-full">
+                              <div className="flex items-center justify-between bg-bg-hover/80 border border-border-strong rounded-lg p-3 w-full max-w-xs">
+                                <div className="flex items-center gap-2 overflow-hidden mr-2">
+                                  <FileText className="h-5 w-5 text-green-400 flex-shrink-0" />
+                                  <span className="text-sm truncate text-text-primary">
+                                    {monitoringFile.name}
+                                  </span>
+                                </div>
+                                <button
+                                  type="button"
+                                  disabled={uploading}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setMonitoringFile(null);
+                                  }}
+                                  className="p-1 hover:bg-bg-hover rounded text-text-muted hover:text-red-400 transition-colors disabled:opacity-30"
+                                >
+                                  <X className="h-4 w-4" />
+                                </button>
+                              </div>
+                              {!uploading && (
+                                <span className="text-xs text-text-muted mt-2">
+                                  Click or drag new file to replace
+                                </span>
+                              )}
+                            </div>
+                          ) : (
+                            <>
+                              <div className="bg-[#FF5A14]/10 p-4 rounded-full mb-4 ring-8 ring-[#FF5A14]/5">
+                                <UploadCloud className="w-8 h-8 text-[#FF5A14]" />
+                              </div>
+                              <div className="text-center">
+                                <p className="text-sm text-text-secondary font-medium">
+                                  Upload{" "}
+                                  <strong className="text-[#FF5A14]">
+                                    {getDocTypeLabel(monitoringDocType)}
+                                  </strong>
+                                </p>
+                                <p className="text-xs text-text-muted mt-1">
+                                  Drag & drop (.pdf, .docx, .txt) or click to
+                                  browse
+                                </p>
+                              </div>
+                            </>
+                          )}
+                        </div>
+
+                        <button
+                          type="submit"
+                          disabled={!monitoringFile || uploading}
+                          className="w-full py-2.5 bg-[#FF7A45] hover:bg-[#F56B2F] text-white font-bold rounded-xl text-xs transition-all duration-300 shadow-md shadow-[#FF5A14]/20 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2"
+                        >
+                          {uploading
+                            ? "Uploading Document..."
+                            : `Upload ${getDocTypeLabel(monitoringDocType)}`}
+                        </button>
+                      </form>
+                    </div>
+                  )}
+                </div>
 
                 <div className="bg-bg-hover/50 p-5 rounded-xl border border-border-strong/70 flex flex-col justify-between">
                   <div>
@@ -1030,11 +1051,12 @@ export const ProjectDashboardPage: React.FC = () => {
                                   {doc.document_type}
                                 </span>
                               </div>
-                              {doc.processing_status === "FAILED" && doc.processing_error && (
-                                <p className="text-[10px] text-rose-500 dark:text-rose-700 dark:text-rose-400 font-medium font-mono mt-1 whitespace-pre-wrap max-w-full break-words border border-rose-500/20 bg-rose-950/20 rounded-md px-2 py-1 select-text">
-                                  Error: {doc.processing_error}
-                                </p>
-                              )}
+                              {doc.processing_status === "FAILED" &&
+                                doc.processing_error && (
+                                  <p className="text-[10px] text-rose-500 dark:text-rose-700 dark:text-rose-400 font-medium font-mono mt-1 whitespace-pre-wrap max-w-full break-words border border-rose-500/20 bg-rose-950/20 rounded-md px-2 py-1 select-text">
+                                    Error: {doc.processing_error}
+                                  </p>
+                                )}
                             </div>
 
                             <div className="flex items-center gap-2 flex-shrink-0">
@@ -1053,7 +1075,9 @@ export const ProjectDashboardPage: React.FC = () => {
                                 {doc.processing_status}
                               </span>
 
-                              {(user?.role === "PROJECT_LEAD" || user?.role === "ENGAGEMENT_MANAGER" || user?.role === "ADMIN") &&
+                              {(user?.role === "PROJECT_LEAD" ||
+                                user?.role === "ENGAGEMENT_MANAGER" ||
+                                user?.role === "ADMIN") &&
                                 (doc.processing_status === "UPLOADED" ||
                                   doc.processing_status === "FAILED") && (
                                   <button
@@ -1065,7 +1089,9 @@ export const ProjectDashboardPage: React.FC = () => {
                                   </button>
                                 )}
 
-                              {(user?.role === "PROJECT_LEAD" || user?.role === "ENGAGEMENT_MANAGER" || user?.role === "ADMIN") &&
+                              {(user?.role === "PROJECT_LEAD" ||
+                                user?.role === "ENGAGEMENT_MANAGER" ||
+                                user?.role === "ADMIN") &&
                                 (doc.processing_status === "UPLOADED" ||
                                   doc.processing_status === "FAILED") && (
                                   <button
@@ -1090,27 +1116,37 @@ export const ProjectDashboardPage: React.FC = () => {
       </div>
 
       {showCustomModal && (
-        <div className="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-[#111827] border border-border-strong rounded-2xl p-6 w-full max-w-md shadow-2xl">
-            <h2 className="text-xl font-bold mb-4 text-text-primary">
+        <div className="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
+          <div className="bg-bg-panel border border-border-strong/80 rounded-2xl p-6 md:p-8 w-full max-w-lg shadow-2xl relative my-auto">
+            <button
+              onClick={() => setShowCustomModal(false)}
+              className="absolute top-4 right-4 text-text-muted hover:text-text-primary p-1 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <h3 className="text-xl font-bold text-text-primary mb-1">
               Add Custom Document Type
-            </h2>
+            </h3>
+            <p className="text-xs text-text-muted mb-6">
+              Define a custom document category for recurring progress ingestion.
+            </p>
 
             <div className="space-y-4 mb-6">
               <div>
-                <label className="block text-text-muted text-sm mb-1">
-                  Document Type Name
+                <label className="block text-xs font-medium text-text-muted mb-1.5">
+                  Document Type Name *
                 </label>
                 <input
                   type="text"
                   value={customName}
                   onChange={(e) => setCustomName(e.target.value)}
-                  placeholder="e.g. Technical Spec"
-                  className="w-full bg-bg-card border border-border-strong rounded-lg p-3 text-text-primary focus:outline-none focus:ring-2 focus:ring-[#00e5ff]"
+                  placeholder="e.g. Technical Spec, Architecture Overview..."
+                  className="w-full bg-[#FFF7F2] border border-[#D8D8D8] rounded-xl px-4 py-2.5 text-xs text-[#666666] placeholder-[#B0B0B0] focus:outline-none focus:ring-2 focus:ring-[#FF8A55]/50 focus:border-[#FF8A55] transition-all"
                 />
               </div>
               <div>
-                <label className="block text-text-muted text-sm mb-1">
+                <label className="block text-xs font-medium text-text-muted mb-1.5">
                   Description
                 </label>
                 <textarea
@@ -1118,29 +1154,29 @@ export const ProjectDashboardPage: React.FC = () => {
                   onChange={(e) => setCustomDesc(e.target.value)}
                   placeholder="What is this document used for?"
                   rows={3}
-                  className="w-full bg-bg-card border border-border-strong rounded-lg p-3 text-text-primary focus:outline-none focus:ring-2 focus:ring-[#00e5ff] resize-none"
+                  className="w-full bg-[#FFF7F2] border border-[#D8D8D8] rounded-xl px-4 py-2.5 text-xs text-[#666666] placeholder-[#B0B0B0] focus:outline-none focus:ring-2 focus:ring-[#FF8A55]/50 focus:border-[#FF8A55] resize-none transition-all"
                 />
               </div>
             </div>
 
-            <div className="flex justify-end gap-3">
+            <div className="flex gap-3 pt-4 border-t border-border-subtle">
               <button
-                onClick={() => {
-                  setShowCustomModal(false);
-                }}
+                type="button"
+                onClick={() => setShowCustomModal(false)}
                 disabled={addingCustomType}
-                className={`px-4 py-2 rounded-lg font-medium text-text-secondary hover:bg-bg-hover transition-colors text-sm ${addingCustomType ? "opacity-50 cursor-not-allowed" : ""}`}
+                className="flex-1 py-2.5 bg-[#FFF7F2] hover:bg-white dark:bg-[#2a2a2a] dark:hover:bg-[#333333] border border-[#D8D8D8] dark:border-[#444444] text-[#666666] dark:text-gray-200 rounded-xl text-xs font-semibold transition-all cursor-pointer"
               >
                 Cancel
               </button>
               <button
+                type="button"
                 onClick={handleAddCustomType}
                 disabled={addingCustomType || !customName.trim()}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors text-sm flex items-center justify-center ${addingCustomType || !customName.trim() ? "bg-blue-900/50 text-blue-700 cursor-not-allowed" : "bg-[#00e5ff] text-black hover:bg-[#00cce5]"}`}
+                className="flex-1 py-2.5 bg-[#FF7A45] hover:bg-[#F56B2F] text-white font-bold rounded-xl text-xs transition-all shadow-md shadow-[#FF5A14]/20 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
               >
                 {addingCustomType ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader2 className="w-4 h-4 animate-spin text-white" />
                     Adding...
                   </>
                 ) : (
@@ -1218,7 +1254,9 @@ export const ProjectDashboardPage: React.FC = () => {
             </h2>
             <p className="text-sm text-text-muted mb-6 text-center leading-relaxed font-medium">
               This document{" "}
-              <span className="text-text-primary font-bold">cannot be deleted</span>{" "}
+              <span className="text-text-primary font-bold">
+                cannot be deleted
+              </span>{" "}
               once processed. Are you sure you want to add this and start the
               analysis?
             </p>
