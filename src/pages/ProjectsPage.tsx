@@ -41,6 +41,12 @@ export const ProjectsPage: React.FC = () => {
   const [editingProjectId, setEditingProjectId] = useState<number | null>(null);
   const [editingEndDate, setEditingEndDate] = useState("");
 
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("ALL");
+
+  const [isCloseModalOpen, setIsCloseModalOpen] = useState(false);
+  const [projectToClose, setProjectToClose] = useState<number | null>(null);
+
   const handleSaveEndDate = async (projectId: number) => {
     const proj = projects.find((p) => p.id === projectId);
     if (proj && proj.start_date && editingEndDate) {
@@ -61,6 +67,27 @@ export const ProjectsPage: React.FC = () => {
       }
     } catch (error) {
       console.error("Failed to update end date", error);
+    }
+  };
+
+  const handleCloseProject = (projectId: number) => {
+    setProjectToClose(projectId);
+    setIsCloseModalOpen(true);
+  };
+
+  const confirmCloseProject = async () => {
+    if (!projectToClose) return;
+    try {
+      const res = await apiClient.put(`/projects/${projectToClose}`, {
+        monitoring_status: "CLOSED",
+      });
+      if (res.data.success) {
+        setIsCloseModalOpen(false);
+        setProjectToClose(null);
+        fetchProjects(); // Refresh the list
+      }
+    } catch (error) {
+      console.error("Failed to close project", error);
     }
   };
 
@@ -168,6 +195,21 @@ export const ProjectsPage: React.FC = () => {
     return <Loader message="Fetching projects directory..." />;
   }
 
+  const filteredProjects = projects.filter((p) => {
+    const matchesSearch = p.project_name
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
+    const matchesStatus =
+      statusFilter === "ALL"
+        ? true
+        : statusFilter === "ACTIVE"
+          ? p.monitoring_status === "ACTIVE"
+          : statusFilter === "CLOSED"
+            ? p.monitoring_status === "CLOSED"
+            : true;
+    return matchesSearch && matchesStatus;
+  });
+
   return (
     <div className="flex-1 bg-transparent p-6 md:p-10 relative overflow-hidden">
       <div className="max-w-6xl mx-auto space-y-8">
@@ -191,15 +233,39 @@ export const ProjectsPage: React.FC = () => {
           )}
         </div>
 
-        {!projects || projects.length === 0 ? (
-          <div className="p-12 rounded-2xl bg-bg-base border border-border-subtle text-center">
-            <p className="text-text-muted text-sm">
-              No projects currently initialized.
-            </p>
+        {/* Search and Filters */}
+        <div className="flex flex-col md:flex-row gap-4">
+          <input
+            type="text"
+            placeholder="Search projects by name..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="flex-1 bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 text-white placeholder-gray-500 text-sm transition-all"
+          />
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="w-full md:w-48 bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 text-white text-sm transition-all"
+          >
+            <option value="ALL" className="bg-[#0b0e17] text-white">
+              All Projects
+            </option>
+            <option value="ACTIVE" className="bg-[#0b0e17] text-white">
+              Active
+            </option>
+            <option value="CLOSED" className="bg-[#0b0e17] text-white">
+              Closed
+            </option>
+          </select>
+        </div>
+
+        {!filteredProjects || filteredProjects.length === 0 ? (
+          <div className="p-12 rounded-2xl bg-white/[0.01] border border-white/5 text-center">
+            <p className="text-gray-500 text-sm">No projects found.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {(projects || []).map((p) => (
+            {(filteredProjects || []).map((p) => (
               <div
                 key={p.id}
                 className="group p-6 rounded-2xl bg-bg-card border border-border-subtle hover:border-teal-500/30 hover:bg-white/[0.04] transition-all duration-300 hover:shadow-2xl hover:shadow-teal-500/5 hover:-translate-y-1 flex flex-col justify-between"
@@ -276,22 +342,36 @@ export const ProjectsPage: React.FC = () => {
                     className={`text-[10px] font-semibold px-2.5 py-1 rounded-full uppercase tracking-wider ${
                       p.monitoring_status === "ACTIVE"
                         ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/20"
-                        : p.monitoring_status === "DRAFT"
-                          ? "bg-gray-500/15 text-text-muted border border-gray-500/20"
-                          : "bg-amber-500/15 text-amber-500 dark:text-amber-400 border border-amber-500/20"
+                        : p.monitoring_status === "CLOSED"
+                          ? "bg-rose-500/15 text-rose-400 border border-rose-500/20"
+                          : p.monitoring_status === "DRAFT"
+                            ? "bg-gray-500/15 text-gray-400 border border-gray-500/20"
+                            : "bg-amber-500/15 text-amber-400 border border-amber-500/20"
                     }`}
                   >
                     {p.monitoring_status}
                   </span>
-                  <Link
-                    to={`/projects/${p.id}`}
-                    className="text-xs font-semibold text-teal-500 dark:text-teal-400 hover:text-teal-600 dark:text-teal-300 flex items-center gap-1 group/btn transition-colors"
-                  >
-                    Open Dashboard
-                    <span className="group-hover/btn:translate-x-1 transition-transform">
-                      &rarr;
-                    </span>
-                  </Link>
+                  <div className="flex items-center gap-3">
+                    {(user?.role === "ADMIN" ||
+                      user?.role === "ENGAGEMENT_MANAGER") &&
+                      p.monitoring_status !== "CLOSED" && (
+                        <button
+                          onClick={() => handleCloseProject(p.id)}
+                          className="text-[10px] text-rose-400 hover:text-rose-300 font-semibold cursor-pointer transition-colors uppercase tracking-wider"
+                        >
+                          Close
+                        </button>
+                      )}
+                    <Link
+                      to={`/projects/${p.id}`}
+                      className="text-xs font-semibold text-teal-400 hover:text-teal-300 flex items-center gap-1 group/btn transition-colors"
+                    >
+                      Open Dashboard
+                      <span className="group-hover/btn:translate-x-1 transition-transform">
+                        &rarr;
+                      </span>
+                    </Link>
+                  </div>
                 </div>
               </div>
             ))}
@@ -471,6 +551,36 @@ export const ProjectsPage: React.FC = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {isCloseModalOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
+          <div className="max-w-md w-full bg-[#0b0e17] p-8 rounded-2xl border border-white/5 shadow-2xl relative">
+            <h2 className="font-display text-2xl font-bold mb-4 text-white">
+              Close Project
+            </h2>
+            <p className="text-gray-400 text-sm mb-6">
+              Are you sure you want to close this project?
+            </p>
+            <div className="flex gap-4">
+              <button
+                onClick={() => {
+                  setIsCloseModalOpen(false);
+                  setProjectToClose(null);
+                }}
+                className="flex-1 py-2.5 bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 rounded-xl text-xs font-semibold transition-all text-white cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmCloseProject}
+                className="flex-1 py-2.5 bg-rose-600 hover:bg-rose-500 text-white font-semibold rounded-xl text-xs transition-all shadow-md shadow-rose-500/10 flex items-center justify-center gap-2 cursor-pointer"
+              >
+                Yes, Close
+              </button>
+            </div>
           </div>
         </div>
       )}

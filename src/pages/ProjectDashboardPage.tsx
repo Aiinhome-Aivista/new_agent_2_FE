@@ -412,7 +412,19 @@ export const ProjectDashboardPage: React.FC = () => {
             </Link>
           </div>
 
-          {user?.role === "ENGAGEMENT_MANAGER" || user?.role === "ADMIN" ? (
+          {project.monitoring_status === "CLOSED" ? (
+            <div className="bg-rose-950/20 border border-rose-500/30 rounded-xl p-8 flex flex-col items-center justify-center text-center">
+              <div className="w-12 h-12 rounded-full bg-rose-500/10 border border-rose-500/30 flex items-center justify-center mb-3">
+                <Lock className="w-6 h-6 text-rose-400" />
+              </div>
+              <h3 className="text-base font-bold text-white mb-2">
+                Project Closed
+              </h3>
+              <p className="text-xs text-gray-400 max-w-md leading-relaxed">
+                This project has been marked as closed. No further initiation documents can be uploaded.
+              </p>
+            </div>
+          ) : (user?.role === "ENGAGEMENT_MANAGER" || user?.role === "ADMIN") ? (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 <div
@@ -635,7 +647,7 @@ export const ProjectDashboardPage: React.FC = () => {
                               >
                                 {doc.processing_status}
                               </span>
-                              {user?.role === "ENGAGEMENT_MANAGER" &&
+                              {user?.role === "ENGAGEMENT_MANAGER" && project.monitoring_status !== "CLOSED" &&
                                 (doc.processing_status === "UPLOADED" ||
                                   doc.processing_status === "FAILED") && (
                                   <button
@@ -647,7 +659,7 @@ export const ProjectDashboardPage: React.FC = () => {
                                   </button>
                                 )}
 
-                              {user?.role === "ENGAGEMENT_MANAGER" &&
+                              {user?.role === "ENGAGEMENT_MANAGER" && project.monitoring_status !== "CLOSED" &&
                                 (doc.processing_status === "UPLOADED" ||
                                   doc.processing_status === "FAILED") && (
                                   <button
@@ -754,7 +766,19 @@ export const ProjectDashboardPage: React.FC = () => {
             </Link>
           </div>
 
-          {project.monitoring_status !== "ACTIVE" ? (
+          {project.monitoring_status === "CLOSED" ? (
+            <div className="bg-rose-950/20 border border-rose-500/30 rounded-xl p-8 flex flex-col items-center justify-center text-center">
+              <div className="w-12 h-12 rounded-full bg-rose-500/10 border border-rose-500/30 flex items-center justify-center mb-3">
+                <Lock className="w-6 h-6 text-rose-400" />
+              </div>
+              <h3 className="text-base font-bold text-white mb-2">
+                Project Closed
+              </h3>
+              <p className="text-xs text-gray-400 max-w-md leading-relaxed">
+                This project has been marked as closed. No further execution documents can be uploaded.
+              </p>
+            </div>
+          ) : project.monitoring_status !== "ACTIVE" ? (
             <div className="bg-amber-950/20 border border-amber-500/30 rounded-xl p-8 flex flex-col items-center justify-center text-center">
               <div className="w-12 h-12 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center mb-3">
                 <Lock className="w-6 h-6 text-amber-500 dark:text-amber-400" />

@@ -77,7 +77,7 @@ export const ProjectMembersPage: React.FC = () => {
         </div>
 
         {/* Project Members Component */}
-        {id && <ProjectMembersSection projectId={Number(id)} />}
+        {id && <ProjectMembersSection projectId={Number(id)} isClosed={project?.monitoring_status === "CLOSED"} />}
       </div>
     </div>
   );

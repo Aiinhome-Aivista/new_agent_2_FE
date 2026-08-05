@@ -23,11 +23,12 @@ import {
 
 interface ProjectMembersSectionProps {
   projectId: number;
+  isClosed?: boolean;
 }
 
-export const ProjectMembersSection: React.FC<ProjectMembersSectionProps> = ({ projectId }) => {
+export const ProjectMembersSection: React.FC<ProjectMembersSectionProps> = ({ projectId, isClosed }) => {
   const { user } = useAuth();
-  const isManagerOrAdmin = user?.role === 'ENGAGEMENT_MANAGER' || user?.role === 'ADMIN';
+  const isManagerOrAdmin = (user?.role === 'ENGAGEMENT_MANAGER' || user?.role === 'ADMIN') && !isClosed;
 
   const [members, setMembers] = useState<ProjectMember[]>([]);
   const [loading, setLoading] = useState(true);
