@@ -45,22 +45,22 @@ export const DashboardPage: React.FC = () => {
   }, []);
 
   const stats = [
-    { label: 'Active Projects', value: data.active_projects.toString(), change: 'Total tracked', icon: <Briefcase className="w-5 h-5 text-teal-500 dark:text-teal-400" />, bg: 'from-teal-500/10 to-teal-400/5' },
-    { label: 'Contract Baselines', value: data.contract_baselines.total.toString(), change: `${data.contract_baselines.approved} Approved`, icon: <ScrollText className="w-5 h-5 text-blue-500 dark:text-blue-400" />, bg: 'from-blue-500/10 to-blue-400/5' },
+    { label: 'Active Projects', value: data.active_projects.toString(), change: 'Total tracked', icon: <Briefcase className="w-5 h-5 text-[#FF5A14]" />, bg: 'from-[#FF5A14]/15 to-[#FF5A14]/5' },
+    { label: 'Contract Baselines', value: data.contract_baselines.total.toString(), change: `${data.contract_baselines.approved} Approved`, icon: <ScrollText className="w-5 h-5 text-[#4A4A4A]" />, bg: 'from-[#4A4A4A]/10 to-[#4A4A4A]/5' },
     { label: 'Scope Creep Risks', value: data.scope_creep_risks.total.toString(), change: `${data.scope_creep_risks.high_severity} High severity`, icon: <AlertTriangle className="w-5 h-5 text-amber-500 dark:text-amber-400" />, bg: 'from-amber-500/10 to-amber-400/5' },
     { label: 'System Alerts Sent', value: data.system_alerts.toString(), change: 'All delivered', icon: <Bell className="w-5 h-5 text-rose-500 dark:text-rose-400" />, bg: 'from-rose-500/10 to-rose-400/5' },
   ];
 
   const getLogIcon = (type: string) => {
     if (type.includes('FAIL') || type.includes('ERROR')) return <AlertTriangle className="w-4 h-4 text-rose-500 dark:text-rose-400" />;
-    if (type.includes('SUCCESS') || type.includes('APPROVE')) return <CheckCircle className="w-4 h-4 text-teal-500 dark:text-teal-400" />;
-    return <Info className="w-4 h-4 text-blue-500 dark:text-blue-400" />;
+    if (type.includes('SUCCESS') || type.includes('APPROVE')) return <CheckCircle className="w-4 h-4 text-[#FF5A14]" />;
+    return <Info className="w-4 h-4 text-[#4A4A4A]" />;
   };
 
   return (
     <div className="flex-1 bg-bg-base text-text-primary p-6 md:p-10 relative overflow-hidden">
       {/* Visual background lights */}
-      <div className="absolute top-[-30%] right-[-10%] w-[500px] h-[500px] rounded-full bg-teal-500/10 dark:bg-teal-500/5 blur-[120px] pointer-events-none" />
+      <div className="absolute top-[-30%] right-[-10%] w-[500px] h-[500px] rounded-full bg-[#FF5A14]/10 blur-[120px] pointer-events-none" />
       
       <div className="max-w-6xl mx-auto space-y-8 relative z-10">
         
@@ -75,19 +75,19 @@ export const DashboardPage: React.FC = () => {
         </div>
 
         {/* Welcome Banner Hero */}
-        <div className="p-8 rounded-2xl bg-gradient-to-r from-teal-50/50 dark:from-teal-900/30 via-blue-50/30 dark:via-blue-900/10 to-transparent dark:to-white/[0.02] border border-border-subtle relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-[200px] h-[200px] rounded-full bg-teal-500/10 blur-[80px] pointer-events-none" />
+        <div className="p-8 rounded-2xl bg-gradient-to-r from-[#FF5A14]/10 via-[#FFF7F2] to-transparent border border-[#D8D8D8] relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-[200px] h-[200px] rounded-full bg-[#FF5A14]/10 blur-[80px] pointer-events-none" />
           <div className="max-w-2xl">
             <h2 className="text-2xl font-bold mb-3 text-text-primary">
-              Welcome back, <span className="bg-clip-text text-transparent bg-gradient-to-r from-teal-600 dark:from-teal-300 to-blue-600 dark:to-blue-400">{user?.name}</span>!
+              Welcome back, <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#FF5A14] to-[#4A4A4A]">{user?.name}</span>!
             </h2>
-            <p className="text-text-secondary text-sm leading-relaxed mb-6">
-              The AI autonomous systems are currently monitoring contract scope parameters across all active pipelines. There are currently <span className="text-teal-600 dark:text-teal-300 font-semibold">{loading ? '...' : data.unresolved_risks} unresolved risk warnings</span> that require evaluation review.
+            <p className="text-[#666666] text-sm leading-relaxed mb-6">
+              The AI autonomous systems are currently monitoring contract scope parameters across all active pipelines. There are currently <span className="text-[#FF5A14] font-semibold">{loading ? '...' : data.unresolved_risks} unresolved risk warnings</span> that require evaluation review.
             </p>
             <div className="flex flex-wrap gap-4">
               <Link 
                 to="/projects" 
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-400 hover:to-blue-500 rounded-xl text-xs font-semibold transition-all duration-300 shadow-md shadow-teal-500/10"
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#FF7A45] hover:bg-[#F56B2F] text-white rounded-xl text-xs font-bold transition-all duration-300 shadow-md shadow-[#FF5A14]/20"
               >
                 Launch Projects List
                 <ArrowRight className="w-3.5 h-3.5" />

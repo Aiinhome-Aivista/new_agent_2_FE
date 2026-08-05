@@ -88,21 +88,21 @@ export const LoginPage: React.FC = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-bg-base text-text-primary px-4 py-12 relative overflow-hidden">
       {/* Decorative Glow Bubbles */}
-      <div className="absolute top-[-10%] left-[-10%] w-[400px] h-[400px] rounded-full bg-teal-500/5 blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[400px] h-[400px] rounded-full bg-blue-500/5 blur-[120px] pointer-events-none" />
+      <div className="absolute top-[-10%] left-[-10%] w-[400px] h-[400px] rounded-full bg-[#FF5A14]/10 blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[400px] h-[400px] rounded-full bg-[#FF7A45]/10 blur-[120px] pointer-events-none" />
 
       {/* Back Button */}
       <Link
         to="/"
-        className="absolute top-6 left-6 flex items-center gap-2 text-text-muted hover:text-text-primary bg-bg-hover hover:bg-white/10 px-4 py-2 border border-border-subtle hover:border-border-strong rounded-xl transition-all duration-300 font-medium text-sm group"
+        className="absolute top-6 left-6 flex items-center gap-2 text-text-muted hover:text-text-primary bg-bg-hover hover:bg-white/10 px-4 py-2 border border-[#D8D8D8] hover:border-[#FF8A55] rounded-xl transition-all duration-300 font-medium text-sm group"
       >
         <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
         Back to Home
       </Link>
 
-      <div className="max-w-md w-full bg-bg-card p-8 rounded-2xl shadow-2xl border border-border-subtle backdrop-blur-md relative z-10 flex flex-col">
+      <div className="max-w-md w-full bg-bg-card p-8 rounded-2xl shadow-2xl border border-[#D8D8D8] backdrop-blur-md relative z-10 flex flex-col">
         <div>
-          <h2 className="font-display text-3xl font-extrabold text-center mb-6 bg-clip-text text-transparent bg-gradient-to-r from-teal-300 via-emerald-200 to-blue-400">
+          <h2 className="font-display text-3xl font-extrabold text-center mb-6 bg-clip-text text-transparent bg-gradient-to-r from-[#FF5A14] via-[#FF7A45] to-[#4A4A4A]">
             ACSE Portal
           </h2>
 
@@ -120,7 +120,7 @@ export const LoginPage: React.FC = () => {
               <input
                 type="email"
                 required
-                className="w-full px-4 py-3 bg-bg-hover border border-border-strong rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 text-text-primary placeholder-gray-500 transition-all duration-300"
+                className="w-full px-4 py-3 bg-[#FFF7F2] border border-[#D8D8D8] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF8A55]/50 focus:border-[#FF8A55] text-[#666666] placeholder-[#B0B0B0] transition-all duration-300"
                 placeholder="name@company.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -134,7 +134,7 @@ export const LoginPage: React.FC = () => {
                 <input
                   type={showPassword ? "text" : "password"}
                   required
-                  className="w-full px-4 py-3 bg-bg-hover border border-border-strong rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 text-text-primary pr-12 transition-all duration-300"
+                  className="w-full px-4 py-3 bg-[#FFF7F2] border border-[#D8D8D8] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF8A55]/50 focus:border-[#FF8A55] text-[#666666] pr-12 transition-all duration-300"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
@@ -150,7 +150,7 @@ export const LoginPage: React.FC = () => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full py-3 px-4 bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-400 hover:to-blue-500 disabled:opacity-50 text-text-primary font-semibold rounded-xl transition-all duration-300 shadow-lg shadow-teal-500/10 hover:shadow-teal-400/20 active:scale-[0.98]"
+              className="w-full py-3 px-4 bg-[#FF7A45] hover:bg-[#F56B2F] disabled:opacity-50 text-white font-bold rounded-xl transition-all duration-300 shadow-lg shadow-[#FF5A14]/20 active:scale-[0.98]"
             >
               {isSubmitting ? "Signing in..." : "Sign In"}
             </button>
@@ -160,7 +160,7 @@ export const LoginPage: React.FC = () => {
         {/* Compact Persona Selector Section */}
         <div className="mt-8 pt-6 border-t border-border-strong">
           <div className="flex items-center gap-2 mb-3">
-            <UserCheck className="w-4 h-4 text-teal-500 dark:text-teal-400" />
+            <UserCheck className="w-4 h-4 text-[#fd5108]" />
             <span className="text-xs font-semibold text-text-secondary">
               Quick Login Personas
             </span>
@@ -175,14 +175,14 @@ export const LoginPage: React.FC = () => {
                   onClick={() => handlePersonaSelect(p.email, p.password)}
                   className={`text-left p-2.5 rounded-xl border transition-all duration-300 flex items-center gap-2.5 group cursor-pointer ${
                     isSelected
-                      ? "bg-white/[0.06] border-teal-500/50 shadow-md shadow-teal-500/5 scale-[1.01]"
+                      ? "bg-white/[0.06] border-[#fd5108]/50 shadow-md shadow-[#fd5108]/10 scale-[1.01]"
                       : "bg-bg-base border-border-subtle " + p.bg
                   } ${p.email === "admin@example.com" ? "col-span-2" : ""}`}
                 >
                   <div
                     className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold text-[10px] border transition-all duration-300 shrink-0 ${
                       isSelected
-                        ? "bg-teal-500/20 text-teal-200 border-teal-500/40 scale-105"
+                        ? "bg-[#fd5108]/20 text-[#fd5108] border-[#fd5108]/40 scale-105"
                         : p.badgeBg + " group-hover:scale-105"
                     }`}
                   >

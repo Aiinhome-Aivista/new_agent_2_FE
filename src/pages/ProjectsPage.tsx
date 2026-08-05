@@ -226,7 +226,7 @@ export const ProjectsPage: React.FC = () => {
           {(user?.role === "ADMIN" || user?.role === "ENGAGEMENT_MANAGER") && (
             <button
               onClick={() => setIsModalOpen(true)}
-              className="px-5 py-2.5 bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-400 hover:to-blue-500 text-text-primary font-semibold rounded-xl text-xs transition-all duration-300 shadow-md shadow-teal-500/10 active:scale-[0.98] cursor-pointer"
+              className="px-5 py-2.5 bg-[#FF7A45] hover:bg-[#F56B2F] text-white font-bold rounded-xl text-xs transition-all duration-300 shadow-md shadow-[#FF5A14]/20 active:scale-[0.98] cursor-pointer"
             >
               Create Project
             </button>
@@ -240,20 +240,20 @@ export const ProjectsPage: React.FC = () => {
             placeholder="Search projects by name..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="flex-1 bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 text-white placeholder-gray-500 text-sm transition-all"
+            className="flex-1 bg-[#FFF7F2] border border-[#D8D8D8] rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#FF8A55]/50 focus:border-[#FF8A55] text-[#666666] placeholder-[#B0B0B0] text-sm transition-all"
           />
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="w-full md:w-48 bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 text-white text-sm transition-all"
+            className="w-full md:w-48 bg-[#FFF7F2] border border-[#D8D8D8] rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#FF8A55]/50 focus:border-[#FF8A55] text-[#666666] text-sm transition-all"
           >
-            <option value="ALL" className="bg-[#0b0e17] text-white">
+            <option value="ALL" className="bg-bg-panel text-text-primary">
               All Projects
             </option>
-            <option value="ACTIVE" className="bg-[#0b0e17] text-white">
+            <option value="ACTIVE" className="bg-bg-panel text-text-primary">
               Active
             </option>
-            <option value="CLOSED" className="bg-[#0b0e17] text-white">
+            <option value="CLOSED" className="bg-bg-panel text-text-primary">
               Closed
             </option>
           </select>
@@ -268,10 +268,10 @@ export const ProjectsPage: React.FC = () => {
             {(filteredProjects || []).map((p) => (
               <div
                 key={p.id}
-                className="group p-6 rounded-2xl bg-bg-card border border-border-subtle hover:border-teal-500/30 hover:bg-white/[0.04] transition-all duration-300 hover:shadow-2xl hover:shadow-teal-500/5 hover:-translate-y-1 flex flex-col justify-between"
+                className="group p-6 rounded-2xl bg-bg-card border border-border-subtle hover:border-[#fd5108]/30 hover:bg-white/[0.04] transition-all duration-300 hover:shadow-2xl hover:shadow-[#fd5108]/5 hover:-translate-y-1 flex flex-col justify-between"
               >
                 <div>
-                  <h3 className="font-display text-lg font-bold mb-1 text-text-primary group-hover:text-teal-600 dark:text-teal-300 transition-colors duration-300">
+                  <h3 className="font-display text-lg font-bold mb-1 text-text-primary group-hover:text-[#fd5108] transition-colors duration-300">
                     {p.project_name}
                   </h3>
                   <p className="text-text-muted text-xs mb-3">
@@ -284,21 +284,25 @@ export const ProjectsPage: React.FC = () => {
                       <span className="text-text-muted font-medium">
                         Start Date:
                       </span>
-                      <span className="text-text-secondary font-semibold">
-                        {formatDate(p.start_date)}
+                      <span>
+                        {p.start_date
+                          ? p.start_date.split("T")[0]
+                          : "Not set"}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between min-h-[24px]">
+                    <div className="flex items-center justify-between">
                       <span className="text-text-muted font-medium">
                         End Date:
                       </span>
                       {editingProjectId === p.id ? (
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1.5">
                           <input
                             type="date"
                             value={editingEndDate}
-                            onChange={(e) => setEditingEndDate(e.target.value)}
-                            className="bg-bg-hover border border-border-strong rounded px-1.5 py-0.5 text-[11px] text-text-primary focus:outline-none focus:border-teal-500"
+                            onChange={(e) =>
+                              setEditingEndDate(e.target.value)
+                            }
+                            className="bg-bg-hover border border-border-strong rounded px-1.5 py-0.5 text-[11px] text-text-primary focus:outline-none focus:border-[#fd5108]"
                           />
                           <button
                             onClick={() => handleSaveEndDate(p.id)}
@@ -308,15 +312,15 @@ export const ProjectsPage: React.FC = () => {
                           </button>
                           <button
                             onClick={() => setEditingProjectId(null)}
-                            className="px-1.5 py-0.5 bg-bg-hover hover:bg-bg-hover text-text-secondary rounded text-[10px] font-bold cursor-pointer"
+                            className="text-[10px] text-text-muted hover:text-text-primary cursor-pointer"
                           >
                             Cancel
                           </button>
                         </div>
                       ) : (
-                        <div className="flex items-center gap-2">
-                          <span className="text-text-secondary font-semibold">
-                            {formatDate(p.end_date)}
+                        <div className="flex items-center gap-1.5">
+                          <span>
+                            {p.end_date ? p.end_date.split("T")[0] : "Not set"}
                           </span>
                           {(user?.role === "ADMIN" ||
                             user?.role === "ENGAGEMENT_MANAGER") && (
@@ -327,7 +331,7 @@ export const ProjectsPage: React.FC = () => {
                                   p.end_date ? p.end_date.split("T")[0] : "",
                                 );
                               }}
-                              className="text-[10px] text-teal-500 dark:text-teal-400 hover:text-teal-600 dark:text-teal-300 underline font-medium cursor-pointer"
+                              className="text-[10px] text-[#fd5108] hover:opacity-80 underline font-medium cursor-pointer"
                             >
                               Edit
                             </button>
@@ -364,7 +368,7 @@ export const ProjectsPage: React.FC = () => {
                       )}
                     <Link
                       to={`/projects/${p.id}`}
-                      className="text-xs font-semibold text-teal-400 hover:text-teal-300 flex items-center gap-1 group/btn transition-colors"
+                      className="text-xs font-semibold text-[#fd5108] hover:text-[#ff7539] flex items-center gap-1 group/btn transition-colors"
                     >
                       Open Dashboard
                       <span className="group-hover/btn:translate-x-1 transition-transform">
@@ -399,7 +403,7 @@ export const ProjectsPage: React.FC = () => {
             >
               &times;
             </button>
-            <h2 className="font-display text-2xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-teal-300 to-blue-400">
+            <h2 className="font-display text-2xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-[#FF5A14] to-[#FF7A45]">
               Create New Project
             </h2>
             {formError && (
@@ -417,7 +421,7 @@ export const ProjectsPage: React.FC = () => {
                   type="text"
                   value={projectName}
                   onChange={(e) => setProjectName(e.target.value)}
-                  className="w-full bg-bg-hover border border-border-strong rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 text-text-primary placeholder-gray-500 text-sm transition-all"
+                  className="w-full bg-[#FFF7F2] border border-[#D8D8D8] rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#FF8A55]/50 focus:border-[#FF8A55] text-[#666666] placeholder-[#B0B0B0] text-sm transition-all"
                   placeholder="e.g. Acme Audit 2026"
                 />
               </div>
@@ -429,7 +433,7 @@ export const ProjectsPage: React.FC = () => {
                   type="text"
                   value={clientName}
                   onChange={(e) => setClientName(e.target.value)}
-                  className="w-full bg-bg-hover border border-border-strong rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 text-text-primary placeholder-gray-500 text-sm transition-all"
+                  className="w-full bg-[#FFF7F2] border border-[#D8D8D8] rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#FF8A55]/50 focus:border-[#FF8A55] text-[#666666] placeholder-[#B0B0B0] text-sm transition-all"
                   placeholder="e.g. Acme Corp"
                 />
               </div>
@@ -442,7 +446,7 @@ export const ProjectsPage: React.FC = () => {
                     type="date"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
-                    className="w-full bg-bg-hover border border-border-strong rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 text-text-primary text-xs transition-all"
+                    className="w-full bg-[#FFF7F2] border border-[#D8D8D8] rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#FF8A55]/50 focus:border-[#FF8A55] text-[#666666] text-xs transition-all"
                   />
                 </div>
                 <div>
@@ -453,7 +457,7 @@ export const ProjectsPage: React.FC = () => {
                     type="date"
                     value={endDate}
                     onChange={(e) => setEndDate(e.target.value)}
-                    className="w-full bg-bg-hover border border-border-strong rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 text-text-primary text-xs transition-all"
+                    className="w-full bg-[#FFF7F2] border border-[#D8D8D8] rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#FF8A55]/50 focus:border-[#FF8A55] text-[#666666] text-xs transition-all"
                   />
                 </div>
               </div>
@@ -464,7 +468,7 @@ export const ProjectsPage: React.FC = () => {
                 <select
                   value={assignedLeadId}
                   onChange={(e) => setAssignedLeadId(e.target.value)}
-                  className="w-full bg-bg-hover border border-border-strong rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 text-text-primary text-sm transition-all"
+                  className="w-full bg-[#FFF7F2] border border-[#D8D8D8] rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#FF8A55]/50 focus:border-[#FF8A55] text-[#666666] text-sm transition-all"
                 >
                   <option value="" className="bg-bg-panel text-text-muted">
                     -- Select Project Lead --
@@ -489,7 +493,7 @@ export const ProjectsPage: React.FC = () => {
                     type="button"
                     onClick={handleGenerateDescription}
                     disabled={isGeneratingDesc}
-                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-teal-500/10 hover:bg-teal-500/20 border border-teal-500/30 hover:border-teal-500/50 text-[11px] text-teal-500 dark:text-teal-400 hover:text-teal-600 dark:text-teal-300 font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#FF5A14]/10 hover:bg-[#FF5A14]/20 border border-[#FF8A55]/40 text-[#FF5A14] font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
                     title="Generate description with AI"
                   >
                     {isGeneratingDesc ? (
@@ -511,7 +515,7 @@ export const ProjectsPage: React.FC = () => {
                     setDescription(e.target.value);
                     setIsDescriptionManuallyEdited(true);
                   }}
-                  className="w-full bg-bg-hover border border-border-strong rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 text-text-primary placeholder-gray-500 text-sm transition-all"
+                  className="w-full bg-[#FFF7F2] border border-[#D8D8D8] rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#FF8A55]/50 focus:border-[#FF8A55] text-[#666666] placeholder-[#B0B0B0] text-sm transition-all"
                   placeholder="Summarize project requirements..."
                   rows={4}
                 />
@@ -545,7 +549,7 @@ export const ProjectsPage: React.FC = () => {
                     isGeneratingDesc ||
                     isCreating
                   }
-                  className="flex-1 py-2.5 bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-400 hover:to-blue-500 text-text-primary font-semibold rounded-xl text-xs transition-all shadow-md shadow-teal-500/10 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="flex-1 py-2.5 bg-[#FF7A45] hover:bg-[#F56B2F] text-white font-bold rounded-xl text-xs transition-all shadow-md shadow-[#FF5A14]/20 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {isCreating ? "Creating..." : "Create"}
                 </button>
@@ -557,11 +561,11 @@ export const ProjectsPage: React.FC = () => {
 
       {isCloseModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
-          <div className="max-w-md w-full bg-[#0b0e17] p-8 rounded-2xl border border-white/5 shadow-2xl relative">
-            <h2 className="font-display text-2xl font-bold mb-4 text-white">
+          <div className="max-w-md w-full bg-bg-panel p-8 rounded-2xl border border-border-subtle shadow-2xl relative">
+            <h2 className="font-display text-2xl font-bold mb-4 text-text-primary">
               Close Project
             </h2>
-            <p className="text-gray-400 text-sm mb-6">
+            <p className="text-text-muted text-sm mb-6">
               Are you sure you want to close this project?
             </p>
             <div className="flex gap-4">
@@ -570,7 +574,7 @@ export const ProjectsPage: React.FC = () => {
                   setIsCloseModalOpen(false);
                   setProjectToClose(null);
                 }}
-                className="flex-1 py-2.5 bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 rounded-xl text-xs font-semibold transition-all text-white cursor-pointer"
+                className="flex-1 py-2.5 bg-bg-hover hover:bg-bg-hover border border-border-subtle text-text-secondary hover:text-text-primary rounded-xl text-xs font-semibold transition-all cursor-pointer"
               >
                 Cancel
               </button>

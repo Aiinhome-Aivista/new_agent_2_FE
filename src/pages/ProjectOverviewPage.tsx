@@ -264,8 +264,8 @@ export const ProjectOverviewPage: React.FC = () => {
   return (
     <div className="flex-1 bg-bg-base text-text-primary p-6 md:p-8 min-h-screen overflow-auto">
       {/* Background glows */}
-      <div className="fixed top-[-20%] right-[-5%] w-[600px] h-[600px] rounded-full bg-teal-500/4 blur-[150px] pointer-events-none" />
-      <div className="fixed bottom-[-20%] left-[10%] w-[400px] h-[400px] rounded-full bg-blue-500/4 blur-[120px] pointer-events-none" />
+      <div className="fixed top-[-20%] right-[-5%] w-[600px] h-[600px] rounded-full bg-[#FF5A14]/10 blur-[150px] pointer-events-none" />
+      <div className="fixed bottom-[-20%] left-[10%] w-[400px] h-[400px] rounded-full bg-[#FF7A45]/10 blur-[120px] pointer-events-none" />
 
       <div className="max-w-7xl mx-auto space-y-6 relative z-10">
         {/* ── TOP HEADER ───────────────────────────────────────────────── */}
@@ -274,12 +274,12 @@ export const ProjectOverviewPage: React.FC = () => {
             <div className="flex items-center gap-2 mb-1">
               <Link
                 to="/projects"
-                className="text-[11px] text-gray-500 hover:text-teal-400 transition-colors"
+                className="text-[11px] text-gray-500 hover:text-[#FF5A14] transition-colors"
               >
                 Projects Directory
               </Link>
               <ChevronRight className="w-3 h-3 text-gray-600" />
-              <span className="text-[11px] text-teal-500 dark:text-teal-400 font-semibold">
+              <span className="text-[11px] text-[#FF5A14] font-semibold">
                 Project Overview
               </span>
             </div>
@@ -315,7 +315,7 @@ export const ProjectOverviewPage: React.FC = () => {
             </Link>
             <Link
               to={`/projects/${id}/members`}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-teal-600/20 hover:bg-teal-600/30 border border-teal-500/40 text-teal-600 dark:text-teal-300 text-xs font-semibold rounded-xl transition-all"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#FF5A14]/20 hover:bg-[#FF5A14]/30 border border-[#FF8A55]/40 text-[#FF5A14] text-xs font-semibold rounded-xl transition-all"
             >
               <Users className="w-3.5 h-3.5" /> Members
             </Link>
@@ -689,15 +689,15 @@ export const ProjectOverviewPage: React.FC = () => {
                 <span className="text-[10px] font-bold uppercase tracking-wider text-text-muted">
                   Timeline
                 </span>
-                <div className="p-1.5 bg-teal-500/10 rounded-lg">
-                  <Calendar className="w-4 h-4 text-teal-500 dark:text-teal-400" />
+                <div className="p-1.5 bg-[#FF5A14]/10 rounded-lg">
+                  <Calendar className="w-4 h-4 text-[#FF5A14]" />
                 </div>
               </div>
               <div>
                 {daysRemaining !== null ? (
                   <>
                     <p
-                      className={`text-3xl font-black mb-1 ${daysRemaining < 0 ? "text-rose-500 dark:text-rose-400" : daysRemaining < 14 ? "text-amber-500 dark:text-amber-400" : "text-teal-500 dark:text-teal-400"}`}
+                      className={`text-3xl font-black mb-1 ${daysRemaining < 0 ? "text-rose-500 dark:text-rose-400" : daysRemaining < 14 ? "text-amber-500 dark:text-amber-400" : "text-[#FF5A14]"}`}
                     >
                       {Math.abs(daysRemaining)}
                     </p>
@@ -827,7 +827,7 @@ export const ProjectOverviewPage: React.FC = () => {
                 </h3>
                 <Link
                   to={`/projects/${id}/cockpit`}
-                  className="text-[11px] text-teal-500 dark:text-teal-400 hover:text-teal-600 dark:text-teal-300 flex items-center gap-1 font-semibold"
+                  className="text-[11px] text-[#fd5108] hover:opacity-80 flex items-center gap-1 font-semibold"
                 >
                   Upload <ArrowRight className="w-3 h-3" />
                 </Link>
@@ -1179,7 +1179,7 @@ export const ProjectOverviewPage: React.FC = () => {
               </h3>
               <Link
                 to={`/projects/${id}/members`}
-                className="text-[11px] text-teal-500 dark:text-teal-400 hover:text-teal-600 dark:text-teal-300 flex items-center gap-1 font-semibold"
+                className="text-[11px] text-[#fd5108] hover:opacity-80 flex items-center gap-1 font-semibold"
               >
                 Manage <ArrowRight className="w-3 h-3" />
               </Link>
@@ -1194,7 +1194,7 @@ export const ProjectOverviewPage: React.FC = () => {
                 {isEM && (
                   <Link
                     to={`/projects/${id}/members`}
-                    className="text-[11px] text-teal-500 dark:text-teal-400 hover:text-teal-600 dark:text-teal-300 font-semibold mt-2 inline-flex items-center gap-1"
+                    className="text-[11px] text-[#fd5108] hover:opacity-80 font-semibold mt-2 inline-flex items-center gap-1"
                   >
                     Add Members <ArrowRight className="w-3 h-3" />
                   </Link>
