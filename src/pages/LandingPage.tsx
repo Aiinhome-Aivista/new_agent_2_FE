@@ -36,7 +36,7 @@ export const LandingPage: React.FC = () => {
           <div className="p-2 bg-gradient-to-tr from-[#FF5A14] to-[#FF7A45] rounded-xl shadow-lg shadow-[#FF5A14]/20">
             <ShieldCheck className="w-6 h-6 text-white" />
           </div>
-          <span className="font-display text-2xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-[#4A4A4A] dark:from-white via-[#FF5A14] to-[#FF7A45]">
+          <span className="font-display text-2xl font-black tracking-tight text-[#FF5A14]">
             ACSE
           </span>
         </div>
