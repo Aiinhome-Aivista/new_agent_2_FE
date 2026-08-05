@@ -234,29 +234,47 @@ export const ProjectsPage: React.FC = () => {
         </div>
 
         {/* Search and Filters */}
-        <div className="flex flex-col md:flex-row gap-4">
+        <div className="flex flex-col md:flex-row gap-4 items-center">
           <input
             type="text"
             placeholder="Search projects by name..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="flex-1 bg-[#FFF7F2] border border-[#D8D8D8] rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#FF8A55]/50 focus:border-[#FF8A55] text-[#666666] placeholder-[#B0B0B0] text-sm transition-all"
+            className="flex-1 w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 text-white placeholder-gray-500 text-sm transition-all"
           />
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="w-full md:w-48 bg-[#FFF7F2] border border-[#D8D8D8] rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#FF8A55]/50 focus:border-[#FF8A55] text-[#666666] text-sm transition-all"
-          >
-            <option value="ALL" className="bg-bg-panel text-text-primary">
-              All Projects
-            </option>
-            <option value="ACTIVE" className="bg-bg-panel text-text-primary">
-              Active
-            </option>
-            <option value="CLOSED" className="bg-bg-panel text-text-primary">
-              Closed
-            </option>
-          </select>
+          <div className="flex bg-white/[0.03] border border-white/10 rounded-xl p-1 w-full md:w-[380px] shrink-0 h-[46px]">
+            <div className="relative flex w-full">
+              <div
+                className="absolute top-0 bottom-0 w-1/3 bg-gradient-to-r from-teal-500/20 to-blue-500/20 border border-teal-500/30 rounded-lg transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] shadow-[0_0_10px_rgba(20,184,166,0.1)]"
+                style={{
+                  transform: `translateX(${
+                    statusFilter === "ALL"
+                      ? "0%"
+                      : statusFilter === "ACTIVE"
+                        ? "100%"
+                        : "200%"
+                  })`,
+                }}
+              />
+              {[
+                { id: "ALL", label: "All Projects" },
+                { id: "ACTIVE", label: "Active" },
+                { id: "CLOSED", label: "Closed" },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setStatusFilter(tab.id)}
+                  className={`relative z-10 flex-1 px-4 py-1.5 text-sm font-semibold transition-colors duration-300 rounded-lg cursor-pointer flex items-center justify-center ${
+                    statusFilter === tab.id
+                      ? "text-teal-300"
+                      : "text-gray-400 hover:text-gray-200"
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
         {!filteredProjects || filteredProjects.length === 0 ? (
@@ -285,9 +303,7 @@ export const ProjectsPage: React.FC = () => {
                         Start Date:
                       </span>
                       <span>
-                        {p.start_date
-                          ? p.start_date.split("T")[0]
-                          : "Not set"}
+                        {p.start_date ? p.start_date.split("T")[0] : "Not set"}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
@@ -299,9 +315,7 @@ export const ProjectsPage: React.FC = () => {
                           <input
                             type="date"
                             value={editingEndDate}
-                            onChange={(e) =>
-                              setEditingEndDate(e.target.value)
-                            }
+                            onChange={(e) => setEditingEndDate(e.target.value)}
                             className="bg-bg-hover border border-border-strong rounded px-1.5 py-0.5 text-[11px] text-text-primary focus:outline-none focus:border-[#fd5108]"
                           />
                           <button

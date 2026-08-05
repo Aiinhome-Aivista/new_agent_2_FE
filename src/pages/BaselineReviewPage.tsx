@@ -1030,7 +1030,7 @@ export const BaselineReviewPage: React.FC = () => {
               project?.monitoring_status !== "CLOSED" && (
                 <button
                   onClick={handleExtractClick}
-                  className="group relative inline-flex items-center justify-center gap-2 px-6 py-2.5 font-semibold text-text-primary transition-all duration-300 rounded-lg bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-400 hover:via-purple-400 hover:to-pink-400 shadow-[0_0_15px_rgba(168,85,247,0.4)] hover:shadow-[0_0_25px_rgba(236,72,153,0.6)] hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
+                  className="group relative inline-flex items-center justify-center gap-2 px-6 py-2.5 font-semibold text-white transition-all duration-300 rounded-lg bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-400 hover:via-purple-400 hover:to-pink-400 shadow-[0_0_15px_rgba(168,85,247,0.4)] hover:shadow-[0_0_25px_rgba(236,72,153,0.6)] hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
                 >
                   <Sparkles className="w-4 h-4 text-pink-100 group-hover:animate-pulse" />
                   <span className="tracking-wide text-sm">
@@ -2821,7 +2821,7 @@ export const BaselineReviewPage: React.FC = () => {
                   project?.monitoring_status !== "CLOSED" && (
                     <button
                       onClick={() => setShowAddItemModal(true)}
-                      className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-text-primary rounded-md flex items-center gap-2 cursor-pointer transition-all shadow-md text-xs font-semibold"
+                      className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-md flex items-center gap-2 cursor-pointer transition-all shadow-md text-xs font-semibold"
                     >
                       <Plus className="w-4 h-4" />
                       <span>Add Scope Item</span>
@@ -2942,7 +2942,7 @@ export const BaselineReviewPage: React.FC = () => {
                                         setDeletingItemId(item.id);
                                       }}
                                       title="Delete scope item"
-                                      className="p-1.5 text-rose-500 dark:text-rose-400 hover:text-text-primary bg-rose-950/30 hover:bg-rose-900/50 border border-rose-500/20 rounded-lg transition-colors cursor-pointer flex-shrink-0"
+                                      className="p-1.5 text-rose-400 hover:text-white bg-rose-950/30 hover:bg-rose-900/50 border border-rose-500/20 rounded-lg transition-colors cursor-pointer flex-shrink-0"
                                     >
                                       <Trash2 className="w-3.5 h-3.5" />
                                     </button>
@@ -3115,7 +3115,7 @@ export const BaselineReviewPage: React.FC = () => {
                                         setDeletingItemId(item.id);
                                       }}
                                       title="Delete scope item"
-                                      className="p-1.5 text-rose-500 dark:text-rose-400 hover:text-text-primary bg-rose-950/30 hover:bg-rose-900/50 border border-rose-500/20 rounded-lg transition-colors cursor-pointer flex-shrink-0"
+                                      className="p-1.5 text-rose-400 hover:text-white bg-rose-950/30 hover:bg-rose-900/50 border border-rose-500/20 rounded-lg transition-colors cursor-pointer flex-shrink-0"
                                     >
                                       <Trash2 className="w-3.5 h-3.5" />
                                     </button>
@@ -3239,7 +3239,9 @@ export const BaselineReviewPage: React.FC = () => {
                     // Filtering scope items for version history:
                     // If version === 1, show all items.
                     // If version > 1, show only items where source_document_id === ver.source_document_id.
-                    const rawItems = ver.scope_items || [];
+                    const rawItems = (ver.scope_items || []).filter(
+                      (i: any) => i.category !== "MILESTONE",
+                    );
                     const filteredItems =
                       ver.version === 1
                         ? rawItems
@@ -3250,13 +3252,19 @@ export const BaselineReviewPage: React.FC = () => {
                           );
 
                     const inScope = filteredItems.filter(
-                      (i: any) => i.scope_type === "IN_SCOPE",
+                      (i: any) =>
+                        i.scope_type === "IN_SCOPE" &&
+                        i.category !== "MILESTONE",
                     );
                     const outOfScope = filteredItems.filter(
-                      (i: any) => i.scope_type === "OUT_OF_SCOPE",
+                      (i: any) =>
+                        i.scope_type === "OUT_OF_SCOPE" &&
+                        i.category !== "MILESTONE",
                     );
                     const uncertain = filteredItems.filter(
-                      (i: any) => i.scope_type === "UNCERTAIN",
+                      (i: any) =>
+                        i.scope_type === "UNCERTAIN" &&
+                        i.category !== "MILESTONE",
                     );
 
                     const approvedDate = formatDate(ver.approved_at);
