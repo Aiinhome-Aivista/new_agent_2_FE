@@ -266,13 +266,13 @@ export const ProjectMembersSection: React.FC<ProjectMembersSectionProps> = ({ pr
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-border-strong/60 mb-6">
         <div>
           <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-gradient-to-tr from-teal-500/20 to-blue-600/20 border border-teal-500/30 rounded-xl text-teal-500 dark:text-teal-400">
+            <div className="p-2.5 bg-[#FF5A14]/10 border border-[#FF8A55]/30 rounded-xl text-[#FF5A14]">
               <Users className="w-6 h-6" />
             </div>
             <div>
               <h2 className="text-2xl font-bold text-text-primary tracking-tight flex items-center gap-2">
                 Project Members
-                <span className="text-xs px-2.5 py-0.5 rounded-full bg-teal-500/10 border border-teal-500/30 text-teal-600 dark:text-teal-300 font-semibold">
+                <span className="text-xs px-2.5 py-0.5 rounded-full bg-[#FF5A14]/10 border border-[#FF8A55]/30 text-[#FF5A14] font-semibold">
                   {members.length}
                 </span>
               </h2>
@@ -286,7 +286,7 @@ export const ProjectMembersSection: React.FC<ProjectMembersSectionProps> = ({ pr
         {isManagerOrAdmin && (
           <button
             onClick={openAddModal}
-            className="flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-400 hover:to-blue-500 text-text-primary text-xs font-semibold rounded-xl transition-all duration-200 shadow-lg shadow-teal-500/20 active:scale-[0.98]"
+            className="flex items-center justify-center gap-2 px-5 py-2.5 bg-[#FF7A45] hover:bg-[#F56B2F] text-white font-bold rounded-xl text-xs transition-all duration-300 shadow-md shadow-[#FF5A14]/20 active:scale-[0.98] cursor-pointer"
           >
             <UserPlus className="w-4 h-4" />
             Add Member
@@ -297,13 +297,13 @@ export const ProjectMembersSection: React.FC<ProjectMembersSectionProps> = ({ pr
       {/* Search & Filter Controls */}
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
         <div className="relative flex-1">
-          <Search className="w-4 h-4 text-text-muted absolute left-3.5 top-3" />
+          <Search className="w-4 h-4 text-[#B0B0B0] absolute left-3.5 top-3" />
           <input
             type="text"
             placeholder="Search member by name, role, email, or responsibilities..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-bg-card/80 border border-border-strong/80 rounded-xl pl-10 pr-4 py-2 text-xs text-text-primary placeholder-gray-500 focus:outline-none focus:border-teal-500 transition-all"
+            className="w-full bg-[#FFF7F2] border border-[#D8D8D8] rounded-xl pl-10 pr-4 py-2 text-xs text-[#666666] placeholder-[#B0B0B0] focus:outline-none focus:ring-2 focus:ring-[#FF8A55]/50 focus:border-[#FF8A55] transition-all"
           />
           {searchQuery && (
             <button
@@ -315,7 +315,7 @@ export const ProjectMembersSection: React.FC<ProjectMembersSectionProps> = ({ pr
           )}
         </div>
 
-        <div className="flex gap-1.5 bg-bg-card/80 p-1 border border-border-strong/80 rounded-xl">
+        <div className="flex gap-1.5 bg-[#FFF7F2] dark:bg-[#2a2a2a] p-1 border border-[#D8D8D8] dark:border-[#444444] rounded-xl">
           {[
             { id: 'ALL', label: 'All' },
             { id: 'STAKEHOLDER', label: 'Stakeholders' },
@@ -327,8 +327,8 @@ export const ProjectMembersSection: React.FC<ProjectMembersSectionProps> = ({ pr
               onClick={() => setSelectedRoleFilter(tab.id)}
               className={`px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all ${
                 selectedRoleFilter === tab.id
-                  ? 'bg-teal-500/20 text-teal-600 dark:text-teal-300 border border-teal-500/30 font-semibold'
-                  : 'text-text-muted hover:text-text-primary'
+                  ? 'bg-[#FF7A45] text-white font-bold shadow-sm'
+                  : 'text-[#666666] dark:text-[#cccccc] hover:text-[#FF5A14]'
               }`}
             >
               {tab.label}
@@ -340,13 +340,13 @@ export const ProjectMembersSection: React.FC<ProjectMembersSectionProps> = ({ pr
       {/* Member Content Grid */}
       {loading ? (
         <div className="flex flex-col items-center justify-center py-12 text-text-muted">
-          <Loader2 className="w-8 h-8 animate-spin text-teal-500 dark:text-teal-400 mb-2" />
+          <Loader2 className="w-8 h-8 animate-spin text-[#FF5A14] mb-2" />
           <p className="text-xs">Loading project members...</p>
         </div>
       ) : filteredMembers.length === 0 ? (
-        <div className="text-center py-12 bg-bg-card/40 rounded-xl border border-dashed border-border-strong">
-          <Users className="w-10 h-10 text-gray-600 mx-auto mb-3" />
-          <p className="text-sm font-semibold text-text-secondary mb-1">
+        <div className="text-center py-12 bg-bg-card/40 rounded-xl border border-dashed border-[#D8D8D8]">
+          <Users className="w-10 h-10 text-[#FF7A45] mx-auto mb-3" />
+          <p className="text-sm font-semibold text-text-primary mb-1">
             {searchQuery || selectedRoleFilter !== 'ALL'
               ? 'No matching members found'
               : 'No project members assigned yet'}
@@ -359,7 +359,7 @@ export const ProjectMembersSection: React.FC<ProjectMembersSectionProps> = ({ pr
           {isManagerOrAdmin && !searchQuery && selectedRoleFilter === 'ALL' && (
             <button
               onClick={openAddModal}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-teal-500/10 hover:bg-teal-500/20 border border-teal-500/30 text-teal-600 dark:text-teal-300 text-xs font-semibold rounded-xl transition-all"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#FF7A45] hover:bg-[#F56B2F] text-white font-bold rounded-xl text-xs transition-all duration-300 shadow-md shadow-[#FF5A14]/20 active:scale-[0.98] cursor-pointer"
             >
               <Plus className="w-4 h-4" /> Add First Member
             </button>
@@ -379,19 +379,19 @@ export const ProjectMembersSection: React.FC<ProjectMembersSectionProps> = ({ pr
             return (
               <div
                 key={member.id}
-                className="group relative bg-bg-card/60 border border-border-strong/70 hover:border-teal-500/40 rounded-xl p-4 transition-all duration-200 hover:shadow-lg hover:shadow-teal-500/5 flex flex-col justify-between"
+                className="group relative bg-bg-card/60 border border-border-strong/70 hover:border-[#FF8A55]/50 rounded-xl p-4 transition-all duration-200 hover:shadow-lg hover:shadow-[#FF5A14]/5 flex flex-col justify-between"
               >
                 <div>
                   {/* Top row: Avatar & Action Buttons */}
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-3">
                       <div
-                        className={`w-10 h-10 rounded-xl bg-gradient-to-tr ${badgeStyle.gradient} flex items-center justify-center font-bold text-text-primary text-xs shadow-md`}
+                        className={`w-10 h-10 rounded-xl bg-gradient-to-tr ${badgeStyle.gradient} flex items-center justify-center font-bold text-white text-xs shadow-md`}
                       >
                         {initials}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <h3 className="font-semibold text-sm text-text-primary group-hover:text-teal-600 dark:text-teal-300 transition-colors truncate">
+                        <h3 className="font-semibold text-sm text-text-primary group-hover:text-[#FF5A14] transition-colors truncate">
                           {member.name}
                         </h3>
                         <div
@@ -415,7 +415,7 @@ export const ProjectMembersSection: React.FC<ProjectMembersSectionProps> = ({ pr
                         <button
                           onClick={() => setDeletingMember(member)}
                           title="Remove Member"
-                          className="p-1.5 text-rose-500 dark:text-rose-400 hover:text-text-primary bg-rose-950/20 hover:bg-rose-900/40 border border-rose-500/20 rounded-lg transition-all"
+                          className="p-1.5 text-rose-500 dark:text-rose-400 hover:text-white bg-rose-950/20 hover:bg-rose-900/40 border border-rose-500/20 rounded-lg transition-all"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -429,7 +429,7 @@ export const ProjectMembersSection: React.FC<ProjectMembersSectionProps> = ({ pr
                       <Mail className="w-3.5 h-3.5 text-text-muted flex-shrink-0" />
                       <a
                         href={`mailto:${member.email}`}
-                        className="hover:text-teal-600 dark:text-teal-300 transition-colors truncate"
+                        className="hover:text-[#FF5A14] transition-colors truncate"
                       >
                         {member.email}
                       </a>
@@ -448,8 +448,8 @@ export const ProjectMembersSection: React.FC<ProjectMembersSectionProps> = ({ pr
                 {/* Footer badge if linked to system user */}
                 {member.user_id && (
                   <div className="mt-3 pt-2 border-t border-border-subtle/80 flex items-center justify-between text-[10px] text-text-muted">
-                    <span className="flex items-center gap-1 text-teal-500 dark:text-teal-400 font-medium">
-                      <UserIcon className="w-3 h-3 text-teal-500 dark:text-teal-400" /> Linked User Account
+                    <span className="flex items-center gap-1 text-[#FF5A14] font-medium">
+                      <UserIcon className="w-3 h-3 text-[#FF5A14]" /> Linked User Account
                     </span>
                   </div>
                 )}
@@ -487,11 +487,11 @@ export const ProjectMembersSection: React.FC<ProjectMembersSectionProps> = ({ pr
                   <select
                     value={selectedUserId}
                     onChange={handleSystemUserSelect}
-                    className="w-full bg-bg-card border border-border-strong rounded-xl px-3.5 py-2.5 text-xs text-text-primary focus:outline-none focus:border-teal-500"
+                    className="w-full bg-[#FFF7F2] border border-[#D8D8D8] rounded-xl px-3.5 py-2.5 text-xs text-[#666666] focus:outline-none focus:ring-2 focus:ring-[#FF8A55]/50 focus:border-[#FF8A55]"
                   >
                     <option value="">-- Manual Entry / Custom Member --</option>
                     {systemUsers.map((u) => (
-                      <option key={u.id} value={u.id}>
+                      <option key={u.id} value={u.id} className="bg-bg-panel text-text-primary">
                         {u.name} ({u.email}) - {u.role}
                       </option>
                     ))}
@@ -514,8 +514,8 @@ export const ProjectMembersSection: React.FC<ProjectMembersSectionProps> = ({ pr
                       onClick={() => setRoleCategory(cat.id as any)}
                       className={`flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl border text-xs font-medium transition-all ${
                         roleCategory === cat.id
-                          ? 'bg-teal-500/20 border-teal-500/50 text-teal-600 dark:text-teal-300 font-semibold shadow-md'
-                          : 'bg-bg-card/60 border-border-strong text-text-muted hover:text-text-primary'
+                          ? 'bg-[#FF5A14]/15 border-[#FF8A55] text-[#FF5A14] font-bold shadow-sm'
+                          : 'bg-[#FFF7F2] dark:bg-[#2a2a2a] border-[#D8D8D8] dark:border-[#444444] text-[#666666] dark:text-[#cccccc] hover:text-[#FF5A14]'
                       }`}
                     >
                       {cat.icon}
@@ -535,7 +535,7 @@ export const ProjectMembersSection: React.FC<ProjectMembersSectionProps> = ({ pr
                     placeholder="e.g. Technical Director, Finance Reviewer..."
                     value={customRole}
                     onChange={(e) => setCustomRole(e.target.value)}
-                    className="w-full bg-bg-card border border-border-strong rounded-xl px-4 py-2.5 text-xs text-text-primary placeholder-gray-500 focus:outline-none focus:border-teal-500"
+                    className="w-full bg-[#FFF7F2] border border-[#D8D8D8] rounded-xl px-4 py-2.5 text-xs text-[#666666] placeholder-[#B0B0B0] focus:outline-none focus:ring-2 focus:ring-[#FF8A55]/50 focus:border-[#FF8A55]"
                   />
                 </div>
               )}
@@ -549,7 +549,7 @@ export const ProjectMembersSection: React.FC<ProjectMembersSectionProps> = ({ pr
                   placeholder="e.g. Sarah Jenkins"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full bg-bg-card border border-border-strong rounded-xl px-4 py-2.5 text-xs text-text-primary placeholder-gray-500 focus:outline-none focus:border-teal-500"
+                  className="w-full bg-[#FFF7F2] border border-[#D8D8D8] rounded-xl px-4 py-2.5 text-xs text-[#666666] placeholder-[#B0B0B0] focus:outline-none focus:ring-2 focus:ring-[#FF8A55]/50 focus:border-[#FF8A55]"
                 />
               </div>
 
@@ -561,7 +561,7 @@ export const ProjectMembersSection: React.FC<ProjectMembersSectionProps> = ({ pr
                   placeholder="e.g. sarah.jenkins@pwc.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-bg-card border border-border-strong rounded-xl px-4 py-2.5 text-xs text-text-primary placeholder-gray-500 focus:outline-none focus:border-teal-500"
+                  className="w-full bg-[#FFF7F2] border border-[#D8D8D8] rounded-xl px-4 py-2.5 text-xs text-[#666666] placeholder-[#B0B0B0] focus:outline-none focus:ring-2 focus:ring-[#FF8A55]/50 focus:border-[#FF8A55]"
                 />
               </div>
 
@@ -575,7 +575,7 @@ export const ProjectMembersSection: React.FC<ProjectMembersSectionProps> = ({ pr
                   placeholder="e.g. Oversees delivery milestones, approves technical baseline deliverables..."
                   value={responsibility}
                   onChange={(e) => setResponsibility(e.target.value)}
-                  className="w-full bg-bg-card border border-border-strong rounded-xl px-4 py-2.5 text-xs text-text-primary placeholder-gray-500 focus:outline-none focus:border-teal-500 resize-none"
+                  className="w-full bg-[#FFF7F2] border border-[#D8D8D8] rounded-xl px-4 py-2.5 text-xs text-[#666666] placeholder-[#B0B0B0] focus:outline-none focus:ring-2 focus:ring-[#FF8A55]/50 focus:border-[#FF8A55] resize-none"
                 />
               </div>
 
@@ -585,14 +585,14 @@ export const ProjectMembersSection: React.FC<ProjectMembersSectionProps> = ({ pr
                   type="button"
                   onClick={() => setIsModalOpen(false)}
                   disabled={saving}
-                  className="flex-1 py-2.5 bg-bg-hover hover:bg-bg-hover text-text-secondary rounded-xl text-xs font-semibold transition-all"
+                  className="flex-1 py-2.5 bg-[#FFF7F2] hover:bg-white dark:bg-[#2a2a2a] dark:hover:bg-[#333333] border border-[#D8D8D8] dark:border-[#444444] text-[#666666] dark:text-gray-200 rounded-xl text-xs font-semibold transition-all"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={saving || !name.trim()}
-                  className="flex-1 py-2.5 bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-400 hover:to-blue-500 text-text-primary rounded-xl text-xs font-semibold transition-all shadow-md shadow-teal-500/20 disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="flex-1 py-2.5 bg-[#FF7A45] hover:bg-[#F56B2F] text-white font-bold rounded-xl text-xs transition-all shadow-md shadow-[#FF5A14]/20 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {saving ? (
                     <>
@@ -628,14 +628,14 @@ export const ProjectMembersSection: React.FC<ProjectMembersSectionProps> = ({ pr
               <button
                 onClick={() => setDeletingMember(null)}
                 disabled={deleting}
-                className="flex-1 py-2.5 bg-bg-hover hover:bg-bg-hover text-text-secondary rounded-xl text-xs font-semibold transition-all"
+                className="flex-1 py-2.5 bg-[#FFF7F2] hover:bg-white dark:bg-[#2a2a2a] border border-[#D8D8D8] text-[#666666] rounded-xl text-xs font-semibold transition-all"
               >
                 Cancel
               </button>
               <button
                 onClick={handleDeleteMember}
                 disabled={deleting}
-                className="flex-1 py-2.5 bg-rose-600 hover:bg-rose-500 text-text-primary rounded-xl text-xs font-semibold transition-all shadow-md shadow-rose-600/20 disabled:opacity-50 flex items-center justify-center gap-2"
+                className="flex-1 py-2.5 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-xl text-xs transition-all shadow-md shadow-rose-600/20 disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {deleting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Confirm Delete'}
               </button>
