@@ -128,6 +128,7 @@ const baselineSteps: TrackerStep[] = [
 
 const categoryLabels: Record<string, string> = {
   SCOPE_CREEP: "Scope Creep",
+  SCOPE_CHANGE: "Scope Change",
   DELAY: "Delay Risk",
   MISSING_DELIVERABLE: "Missing Deliverable",
   DEPENDENCY: "Dependency Risk",
@@ -135,11 +136,14 @@ const categoryLabels: Record<string, string> = {
   STAKEHOLDER: "Stakeholder Risk",
   ROOT_CAUSE: "Root Cause Blocker",
   ROOT_CAUSE_BLOCKER: "Root Cause Blocker",
-  EXECUTION_BLOCKER: "Execution Blocker",
+  EXECUTION_BLOCKER: "🔴 Execution Blocker",
+  CRITICAL_PATH_RISK: "🟠 Cascade Impact",
+  SCHEDULE_RISK: "🟡 Schedule Risk",
   CUSTOMER_DEPENDENCY: "Customer Dependency",
   INTERNAL_DEPENDENCY: "Internal Dependency",
   TECHNICAL_DEPENDENCY: "Technical Dependency",
   ISSUE: "Issue",
+  ACTION_ITEM: "Action Item",
   CHANGE_REQUEST: "Change Request",
   IN_PROGRESS_RISK: "Execution Risk",
   GENERAL: "Execution Risk",
