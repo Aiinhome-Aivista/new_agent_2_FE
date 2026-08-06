@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './auth/AuthContext';
 import { DocumentProgressProvider } from './context/DocumentProgressContext';
+import { ThemeProvider } from './context/ThemeContext';
 import { GlobalProgressWidget } from './components/GlobalProgressWidget';
 import { LandingPage } from './pages/LandingPage';
 import { LoginPage } from './pages/LoginPage';
@@ -19,7 +20,7 @@ import { Sidebar } from './components/Sidebar';
 
 const ProtectedLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
-    <div className="min-h-screen bg-[#080b14] flex flex-col md:flex-row text-white">
+    <div className="min-h-screen bg-bg-base flex flex-col md:flex-row text-text-primary transition-colors duration-300">
       <Sidebar />
       <div className="flex-1 md:pl-64 min-h-screen pt-16 md:pt-0 flex flex-col">
         {children}
@@ -31,10 +32,11 @@ const ProtectedLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
 
 const App: React.FC = () => {
   return (
-    <AuthProvider>
-      <DocumentProgressProvider>
-        <Router>
-          <Routes>
+    <ThemeProvider>
+      <AuthProvider>
+        <DocumentProgressProvider>
+          <Router>
+            <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/unauthorized" element={<UnauthorizedPage />} />
@@ -74,6 +76,7 @@ const App: React.FC = () => {
         </Router>
       </DocumentProgressProvider>
     </AuthProvider>
+    </ThemeProvider>
   );
 };
 
