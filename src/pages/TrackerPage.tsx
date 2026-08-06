@@ -27,6 +27,7 @@ import {
   ScrollText,
   Tag,
   Hash,
+  ListOrdered,
 } from "lucide-react";
 import { useAuth } from "../auth/AuthContext";
 
@@ -353,7 +354,11 @@ export const TrackerPage: React.FC = () => {
 
   const activeItems = items.filter((item: any) => item.status !== "RESOLVED");
   const resolvedItems = items.filter((item: any) => item.status === "RESOLVED");
-  const currentTabItems = activeTab === "ACTIVE" ? activeItems : resolvedItems;
+
+  const currentTabItems = useMemo(() => {
+    let base = activeTab === "ACTIVE" ? activeItems : resolvedItems;
+    return [...base].sort((a, b) => (b.execution_priority || 0) - (a.execution_priority || 0));
+  }, [activeItems, resolvedItems, activeTab]);
 
   const fetchTrackerAndProject = async () => {
     try {
@@ -1060,6 +1065,7 @@ export const TrackerPage: React.FC = () => {
     let executionChain = "";
     let scheduleUrgency = "";
     let blockedBy = "";
+    let executionReason = "";
     let evidenceText = "";
     let pmInsights = null;
     let scoreBreakdown: Record<string, string> = {};
@@ -1076,6 +1082,11 @@ export const TrackerPage: React.FC = () => {
           executionChain = sec.replace("Execution Chain", "").trim();
         } else if (sec.startsWith("Schedule Urgency")) {
           scheduleUrgency = sec.replace("Schedule Urgency", "").trim();
+        } else if (sec.startsWith("Current Status") || sec.startsWith("Current Status:")) {
+          if (sec.includes("Execution Reason")) {
+            const parts = sec.split("Execution Reason");
+            executionReason = parts[1].trim();
+          }
         } else if (
           sec.startsWith("Blocked By") ||
           sec.startsWith("Dependency / Waiting For")
@@ -1219,11 +1230,11 @@ export const TrackerPage: React.FC = () => {
               )}
             </div>
             {/* Score badge — show 0 for resolved, actual score otherwise */}
-            <span
-              className={`text-sm font-black font-mono px-2 py-1 rounded-lg border ${isResolved ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : item.risk_score >= 71 ? "bg-rose-500/10 text-rose-400 border-rose-500/20" : item.risk_score >= 41 ? "bg-orange-500/10 text-orange-400 border-orange-500/20" : item.risk_score >= 21 ? "bg-yellow-500/10 text-yellow-400 border-yellow-500/20" : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"} shrink-0`}
+            <div
+              className={`text-sm font-black font-mono px-2 py-1 rounded-lg border ${isResolved ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : (item.execution_priority || 0) >= 71 ? "bg-rose-500/10 text-rose-400 border-rose-500/20" : (item.execution_priority || 0) >= 41 ? "bg-orange-500/10 text-orange-400 border-orange-500/20" : (item.execution_priority || 0) >= 21 ? "bg-yellow-500/10 text-yellow-400 border-yellow-500/20" : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"} shrink-0`}
             >
-              {isResolved ? "0" : item.risk_score}/100
-            </span>
+              {isResolved ? "0" : (item.execution_priority || 0)}/100
+            </div>
           </div>
 
           <h2 className="text-sm font-bold text-text-primary leading-snug mb-3">
@@ -1315,7 +1326,19 @@ export const TrackerPage: React.FC = () => {
             </div>
           )}
 
-          {/* 2. Dependency Chain */}
+          {/* 2. Execution Reason (PMO Priority) */}
+          {!isResolved && executionReason && (
+            <div className="p-3 rounded-xl bg-cyan-500/[0.04] border border-cyan-500/20">
+              <p className="text-[9px] font-bold text-cyan-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                <ShieldAlert className="w-3 h-3" /> Execution Reason
+              </p>
+              <p className="text-[11px] text-gray-300 leading-relaxed whitespace-pre-line font-medium">
+                {executionReason}
+              </p>
+            </div>
+          )}
+
+          {/* 3. Dependency Chain */}
           {!isResolved && executionChain && (
             <div className="p-3 rounded-xl bg-indigo-500/[0.04] border border-indigo-500/20">
               <p className="text-[9px] font-bold text-indigo-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
@@ -1952,7 +1975,7 @@ export const TrackerPage: React.FC = () => {
                     className={`relative z-10 flex-1 flex items-center justify-center gap-2 py-2 text-[10px] font-bold uppercase tracking-wider transition-all duration-300 cursor-pointer ${activeTab === "ACTIVE" ? "text-text-primary" : "text-text-muted hover:text-text-secondary"}`}
                   >
                     <ShieldAlert className="w-3 h-3" />
-                    Active Risks
+                    Execution Queue
                     <span
                       className={`px-1.5 py-0.5 text-[9px] rounded border font-black font-mono transition-all duration-300 ${activeTab === "ACTIVE" ? "bg-red-500/10 text-red-400 border-red-500/20" : "bg-bg-hover/40 text-text-muted border-border-strong/30"}`}
                     >
@@ -2127,11 +2150,11 @@ export const TrackerPage: React.FC = () => {
                                   >
                                     {level}
                                   </span>
-                                  <span
-                                    className={`text-[8px] font-mono font-black px-1.5 py-0.5 rounded border ${item.risk_score >= 71 ? "bg-rose-500/10 text-rose-400 border-rose-500/20" : item.risk_score >= 41 ? "bg-orange-500/10 text-orange-400 border-orange-500/20" : item.risk_score >= 21 ? "bg-yellow-500/10 text-yellow-400 border-yellow-500/20" : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"}`}
+                                  <div
+                                    className={`text-[8px] font-mono font-black px-1.5 py-0.5 rounded border ${(item.execution_priority || 0) >= 71 ? "bg-rose-500/10 text-rose-400 border-rose-500/20" : (item.execution_priority || 0) >= 41 ? "bg-orange-500/10 text-orange-400 border-orange-500/20" : (item.execution_priority || 0) >= 21 ? "bg-yellow-500/10 text-yellow-400 border-yellow-500/20" : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"}`}
                                   >
-                                    {item.risk_score}/100
-                                  </span>
+                                    {(item.execution_priority || 0)}/100
+                                  </div>
                                 </div>
                               )}
                             </div>
