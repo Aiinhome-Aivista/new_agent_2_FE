@@ -1289,7 +1289,7 @@ export const TrackerPage: React.FC = () => {
                 </p>
               </div>
             )}
-            {item.is_out_of_scope && (
+            {!!item.is_out_of_scope && (
               <div>
                 <p className="text-[9px] font-bold text-gray-600 uppercase tracking-widest mb-0.5">
                   Scope
@@ -2188,7 +2188,7 @@ export const TrackerPage: React.FC = () => {
                                     <span className="text-[7px] font-extrabold text-gray-500 bg-gray-800/70 border border-gray-700/40 px-1 py-px rounded uppercase tracking-wider shrink-0">
                                       {categoryLabel}
                                     </span>
-                                    {item.is_out_of_scope && (
+                                    {!!item.is_out_of_scope && (
                                       <span className="text-[7px] font-black px-1 py-px bg-red-500/10 text-red-400 border border-red-500/20 rounded uppercase">
                                         OOS
                                       </span>
