@@ -357,7 +357,7 @@ export const TrackerPage: React.FC = () => {
 
   const currentTabItems = useMemo(() => {
     let base = activeTab === "ACTIVE" ? activeItems : resolvedItems;
-    return [...base].sort((a, b) => (b.execution_priority || 0) - (a.execution_priority || 0));
+    return [...base].sort((a, b) => (b.risk_score || 0) - (a.risk_score || 0));
   }, [activeItems, resolvedItems, activeTab]);
 
   const fetchTrackerAndProject = async () => {
@@ -2126,11 +2126,6 @@ export const TrackerPage: React.FC = () => {
                                     {item.is_out_of_scope && (
                                       <span className="text-[7px] font-black px-1 py-px bg-red-500/10 text-red-400 border border-red-500/20 rounded uppercase">
                                         OOS
-                                      </span>
-                                    )}
-                                    {item.requires_escalation && (
-                                      <span className="text-[7px] font-black px-1 py-px bg-orange-500/10 text-orange-400 border border-orange-500/20 rounded uppercase">
-                                        Esc
                                       </span>
                                     )}
                                   </div>
