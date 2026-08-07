@@ -137,9 +137,9 @@ const categoryLabels: Record<string, string> = {
   STAKEHOLDER: "Stakeholder Risk",
   ROOT_CAUSE: "Root Cause Blocker",
   ROOT_CAUSE_BLOCKER: "Root Cause Blocker",
-  EXECUTION_BLOCKER: "🔴 Execution Blocker",
-  CRITICAL_PATH_RISK: "🟠 Cascade Impact",
-  SCHEDULE_RISK: "🟡 Schedule Risk",
+  EXECUTION_BLOCKER: "Execution Blocker",
+  CRITICAL_PATH_RISK: "Cascade Impact",
+  SCHEDULE_RISK: "Schedule Risk",
   CUSTOMER_DEPENDENCY: "Customer Dependency",
   INTERNAL_DEPENDENCY: "Internal Dependency",
   TECHNICAL_DEPENDENCY: "Technical Dependency",
@@ -1231,9 +1231,9 @@ export const TrackerPage: React.FC = () => {
             </div>
             {/* Score badge — show 0 for resolved, actual score otherwise */}
             <div
-              className={`text-sm font-black font-mono px-2 py-1 rounded-lg border ${isResolved ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : (item.execution_priority || 0) >= 71 ? "bg-rose-500/10 text-rose-400 border-rose-500/20" : (item.execution_priority || 0) >= 41 ? "bg-orange-500/10 text-orange-400 border-orange-500/20" : (item.execution_priority || 0) >= 21 ? "bg-yellow-500/10 text-yellow-400 border-yellow-500/20" : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"} shrink-0`}
+              className={`text-sm font-black font-mono px-2 py-1 rounded-lg border ${isResolved ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : (item.risk_score || item.execution_priority_score || 0) >= 71 ? "bg-rose-500/10 text-rose-400 border-rose-500/20" : (item.risk_score || item.execution_priority_score || 0) >= 41 ? "bg-orange-500/10 text-orange-400 border-orange-500/20" : (item.risk_score || item.execution_priority_score || 0) >= 21 ? "bg-yellow-500/10 text-yellow-400 border-yellow-500/20" : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"} shrink-0`}
             >
-              {isResolved ? "0" : (item.execution_priority || 0)}/100
+              {isResolved ? "0" : (item.risk_score || item.execution_priority_score || 0)}/100
             </div>
           </div>
 
@@ -1304,6 +1304,71 @@ export const TrackerPage: React.FC = () => {
 
         {/* Scrollable body */}
         <div className="flex-1 overflow-y-auto custom-scrollbar px-5 py-4 space-y-4">
+          
+          {/* EL Comparison Feature */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Commitment (from EL) */}
+            <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.06]">
+              <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                <FileText className="w-3 h-3" /> Commitment (from EL)
+              </p>
+              <div className="space-y-2">
+                <div>
+                  <p className="text-[9px] text-gray-500 uppercase mb-0.5">Commitment</p>
+                  <p className="text-[11px] font-medium text-gray-200">{item.deliverable}</p>
+                </div>
+                <div>
+                  <p className="text-[9px] text-gray-500 uppercase mb-0.5">Planned Finish</p>
+                  <p className="text-[11px] font-medium text-gray-200">{item.expected_date !== "Unknown" ? item.expected_date : "TBD"}</p>
+                </div>
+                <div>
+                  <p className="text-[9px] text-gray-500 uppercase mb-0.5">Owner</p>
+                  <p className="text-[11px] font-medium text-gray-200">{item.dependency_owner || "Internal"}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Current Status (from MoM) */}
+            <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.06]">
+              <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                <Activity className="w-3 h-3" /> Current Status (from MoM)
+              </p>
+              <div className="space-y-2">
+                <div>
+                  <p className="text-[9px] text-gray-500 uppercase mb-0.5">Current Status</p>
+                  <p className="text-[11px] font-medium text-gray-200">{item.progress !== null && item.progress !== undefined ? `${item.progress}% Complete` : (item.current_status || "UNKNOWN").replace(/_/g, " ")}</p>
+                </div>
+                {item.blockers && item.blockers.length > 0 && (
+                  <div>
+                    <p className="text-[9px] text-gray-500 uppercase mb-0.5">Blockers</p>
+                    <p className="text-[11px] text-rose-400">{item.blockers.join(", ")}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+          
+          {/* Commitment Assessment */}
+          <div className={`p-3 rounded-xl border ${item.delay_days > 0 || item.current_status === "BLOCKED" ? 'bg-orange-500/[0.04] border-orange-500/20' : 'bg-emerald-500/[0.04] border-emerald-500/20'}`}>
+            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+              <CheckCircle2 className="w-3 h-3" /> Commitment Assessment
+            </p>
+            <div className="flex gap-4 items-start">
+              <div className="shrink-0 min-w-[120px]">
+                <p className="text-[9px] text-gray-500 uppercase mb-0.5">Commitment Status</p>
+                <p className={`text-[11px] font-bold mt-0.5 ${item.delay_days > 0 || item.current_status === "BLOCKED" ? 'text-orange-400' : 'text-emerald-400'}`}>
+                  {item.delay_days > 0 ? `At Risk (${item.delay_days} days)` : item.current_status === "BLOCKED" ? "Blocked" : "On Track"}
+                </p>
+              </div>
+              <div>
+                <p className="text-[9px] text-gray-500 uppercase mb-0.5">Reason</p>
+                <p className="text-[11px] text-gray-300 leading-relaxed mt-0.5">
+                  {(item.delay_days > 0 || item.current_status === "BLOCKED") ? (description || "Commitment is currently obstructed by active execution blockers.") : "Executing to plan."}
+                </p>
+              </div>
+            </div>
+          </div>
+
           {/* 1. Why is this a risk? */}
           {!isResolved && description && (
             <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.06]">
@@ -1338,11 +1403,11 @@ export const TrackerPage: React.FC = () => {
             </div>
           )}
 
-          {/* 3. Dependency Chain */}
+          {/* 3. Execution Chain */}
           {!isResolved && executionChain && (
             <div className="p-3 rounded-xl bg-indigo-500/[0.04] border border-indigo-500/20">
               <p className="text-[9px] font-bold text-indigo-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
-                <Activity className="w-3 h-3" /> Dependency Chain
+                <Activity className="w-3 h-3" /> Execution Chain
               </p>
               <p className="text-[11px] font-mono text-gray-300 leading-relaxed whitespace-pre-line">
                 {executionChain}
@@ -2146,9 +2211,9 @@ export const TrackerPage: React.FC = () => {
                                     {level}
                                   </span>
                                   <div
-                                    className={`text-[8px] font-mono font-black px-1.5 py-0.5 rounded border ${(item.execution_priority || 0) >= 71 ? "bg-rose-500/10 text-rose-400 border-rose-500/20" : (item.execution_priority || 0) >= 41 ? "bg-orange-500/10 text-orange-400 border-orange-500/20" : (item.execution_priority || 0) >= 21 ? "bg-yellow-500/10 text-yellow-400 border-yellow-500/20" : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"}`}
+                                    className={`text-[8px] font-mono font-black px-1.5 py-0.5 rounded border ${(item.risk_score || item.execution_priority_score || 0) >= 71 ? "bg-rose-500/10 text-rose-400 border-rose-500/20" : (item.risk_score || item.execution_priority_score || 0) >= 41 ? "bg-orange-500/10 text-orange-400 border-orange-500/20" : (item.risk_score || item.execution_priority_score || 0) >= 21 ? "bg-yellow-500/10 text-yellow-400 border-yellow-500/20" : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"}`}
                                   >
-                                    {(item.execution_priority || 0)}/100
+                                    {(item.risk_score || item.execution_priority_score || 0)}/100
                                   </div>
                                 </div>
                               )}
