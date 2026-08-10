@@ -357,7 +357,18 @@ export const TrackerPage: React.FC = () => {
 
   const currentTabItems = useMemo(() => {
     let base = activeTab === "ACTIVE" ? activeItems : resolvedItems;
-    return [...base].sort((a, b) => (b.risk_score || 0) - (a.risk_score || 0));
+    return [...base].sort((a, b) => {
+      // Sort by execution priority first (highest = most urgent)
+      const aPriority = a.execution_priority_score || a.risk_score || 0;
+      const bPriority = b.execution_priority_score || b.risk_score || 0;
+      if (bPriority !== aPriority) return bPriority - aPriority;
+      // Then by priority_order (lower = higher priority)
+      const aOrder = a.priority_order ?? 999;
+      const bOrder = b.priority_order ?? 999;
+      if (aOrder !== bOrder) return aOrder - bOrder;
+      // Final tie-breaker: risk_score descending
+      return (b.risk_score || 0) - (a.risk_score || 0);
+    });
   }, [activeItems, resolvedItems, activeTab]);
 
   const fetchTrackerAndProject = async () => {
@@ -1058,138 +1069,27 @@ export const TrackerPage: React.FC = () => {
     const isResolved = item.status === "RESOLVED";
     const typeLabel = typeLabels[item.item_type] || item.item_type;
 
-    // Parse description/reasoning
-    const reasoningText = item.reasoning || "";
-    let description = reasoningText;
-    let detailedReasoning = "";
-    let executionChain = "";
-    let scheduleUrgency = "";
-    let blockedBy = "";
-    let executionReason = "";
-    let evidenceText = "";
-    let pmInsights = null;
-    let scoreBreakdown: Record<string, string> = {};
-
-    if (reasoningText.includes("------------------------")) {
-      const sections = reasoningText
-        .split("------------------------")
-        .map((s) => s.trim());
-
-      sections.forEach((sec) => {
-        if (sec.startsWith("Why is this a risk?")) {
-          description = sec.replace("Why is this a risk?", "").trim();
-        } else if (sec.startsWith("Execution Chain")) {
-          executionChain = sec.replace("Execution Chain", "").trim();
-        } else if (sec.startsWith("Schedule Urgency")) {
-          scheduleUrgency = sec.replace("Schedule Urgency", "").trim();
-        } else if (sec.startsWith("Current Status") || sec.startsWith("Current Status:")) {
-          if (sec.includes("Execution Reason")) {
-            const parts = sec.split("Execution Reason");
-            executionReason = parts[1].trim();
-          }
-        } else if (
-          sec.startsWith("Blocked By") ||
-          sec.startsWith("Dependency / Waiting For")
-        ) {
-          blockedBy = sec;
-        } else if (sec.startsWith("Score Breakdown")) {
-          const lines = sec
-            .replace("Score Breakdown", "")
-            .trim()
-            .split(/\r?\n/);
-          lines.forEach((line) => {
-            const [key, ...valParts] = line.split(":");
-            if (key && valParts.length > 0) {
-              scoreBreakdown[key.trim()] = valParts.join(":").trim();
-            }
-          });
-        } else if (
-          sec.startsWith("Evidence (MoM)") ||
-          sec.startsWith("Original Contract")
-        ) {
-          evidenceText += (evidenceText ? "\n\n" : "") + sec;
+    let narratives: any = {};
+    let legacyDescription = "";
+    
+    if (item.reasoning) {
+      try {
+        const parsed = JSON.parse(item.reasoning);
+        if (parsed._type === "pmo_narrative") {
+          narratives = parsed;
+        } else {
+          legacyDescription = item.reasoning;
         }
-      });
-    } else {
-      // Legacy parsing
-      const hasSplit =
-        reasoningText.includes("\nReasoning:\n") ||
-        reasoningText.includes("\nReasoning:\r\n");
-      if (hasSplit) {
-        const parts = reasoningText.split(/\nReasoning:\r?\n/);
-        description = parts[0].replace(/Description:\r?\n/, "").trim();
-        detailedReasoning = parts[1]?.trim() || "";
-      } else if (
-        reasoningText.startsWith("Description:\n") ||
-        reasoningText.startsWith("Description:\r\n")
-      ) {
-        description = reasoningText.replace(/Description:\r?\n/, "").trim();
+      } catch (e) {
+        legacyDescription = item.reasoning;
       }
-
-      if (description.startsWith("Execution Priority Score:")) {
-        const lines = description.split(/\r?\n/);
-        if (
-          lines.length >= 2 &&
-          lines[0].includes("Execution Priority Score:")
-        ) {
-          const execMatch = lines[0].match(/Execution Priority Score:\s*(\d+)/);
-          const sevMatch = lines[0].match(/Severity:\s*([A-Za-z]+)/);
-          const catMatch = lines[1].match(/Category:\s*(.+)/);
-          if (execMatch || sevMatch || catMatch) {
-            pmInsights = {
-              priority: execMatch?.[1],
-              severity: sevMatch?.[1],
-              category: catMatch?.[1],
-            };
-            description = lines.slice(2).join("\n").trim();
-          }
-        }
-      }
-
-      const breakdownMarker = "Score Breakdown:";
-      if (detailedReasoning.includes(breakdownMarker)) {
-        const parts = detailedReasoning.split(breakdownMarker);
-        detailedReasoning = parts[0].trim();
-        const breakdownLines = parts[1].trim().split(/\r?\n/);
-        breakdownLines.forEach((line: string) => {
-          const [key, ...valParts] = line.split(":");
-          if (key && valParts.length > 0)
-            scoreBreakdown[key.trim()] = valParts.join(":").trim();
-        });
-      } else if (description.includes(breakdownMarker)) {
-        const parts = description.split(breakdownMarker);
-        description = parts[0].trim();
-        const breakdownLines = parts[1].trim().split(/\r?\n/);
-        breakdownLines.forEach((line: string) => {
-          const [key, ...valParts] = line.split(":");
-          if (key && valParts.length > 0)
-            scoreBreakdown[key.trim()] = valParts.join(":").trim();
-        });
-      }
-    }
-
-    // For resolved items we suppress reasoning — the resolution field is the source of truth.
-    // The full history is still visible in the Audit Trail below.
-    if (isResolved) {
-      description = "";
-      detailedReasoning = "";
-      pmInsights = null;
-      scoreBreakdown = {};
     }
 
     const auditIconMap: Record<string, React.ReactNode> = {
-      created: (
-        <Activity className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-700 dark:text-cyan-400" />
-      ),
-      resolved: (
-        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
-      ),
-      reactivated: (
-        <RotateCcw className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />
-      ),
-      updated: (
-        <TrendingUp className="w-3.5 h-3.5 text-purple-500 dark:text-purple-400" />
-      ),
+      created: <Activity className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" />,
+      resolved: <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />,
+      reactivated: <RotateCcw className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />,
+      updated: <TrendingUp className="w-3.5 h-3.5 text-purple-500 dark:text-purple-400" />,
     };
 
     const auditColorMap: Record<string, string> = {
@@ -1205,7 +1105,6 @@ export const TrackerPage: React.FC = () => {
       reactivated: "bg-amber-400",
       updated: "bg-purple-400",
     };
-
     return (
       <div className="h-full flex flex-col overflow-hidden">
         {/* ── Risk Detail Header ── */}
@@ -1229,12 +1128,23 @@ export const TrackerPage: React.FC = () => {
                 </span>
               )}
             </div>
-            {/* Score badge — show 0 for resolved, actual score otherwise */}
-            <div
-              className={`text-sm font-black font-mono px-2 py-1 rounded-lg border ${isResolved ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : (item.risk_score || item.execution_priority_score || 0) >= 71 ? "bg-rose-500/10 text-rose-400 border-rose-500/20" : (item.risk_score || item.execution_priority_score || 0) >= 41 ? "bg-orange-500/10 text-orange-400 border-orange-500/20" : (item.risk_score || item.execution_priority_score || 0) >= 21 ? "bg-yellow-500/10 text-yellow-400 border-yellow-500/20" : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"} shrink-0`}
-            >
-              {isResolved ? "0" : (item.risk_score || item.execution_priority_score || 0)}/100
-            </div>
+            {/* Score badge — show execution priority and risk severity */}
+            {(() => {
+              const execScore = item.execution_priority_score || item.risk_score || 0;
+              const sevScore = item.risk_score || 0;
+              const displayScore = isResolved ? 0 : execScore;
+              const scoreColor = isResolved ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : displayScore >= 70 ? "bg-rose-500/10 text-rose-400 border-rose-500/20" : displayScore >= 40 ? "bg-orange-500/10 text-orange-400 border-orange-500/20" : displayScore >= 20 ? "bg-yellow-500/10 text-yellow-400 border-yellow-500/20" : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
+              return (
+                <div className="flex flex-col items-end gap-0.5 shrink-0">
+                  <div className={`text-sm font-black font-mono px-2 py-1 rounded-lg border ${scoreColor}`}>
+                    {displayScore}/100
+                  </div>
+                  {!isResolved && sevScore !== execScore && sevScore > 0 && (
+                    <span className="text-[8px] text-gray-500 font-mono">Severity: {sevScore}</span>
+                  )}
+                </div>
+              );
+            })()}
           </div>
 
           <h2 className="text-sm font-bold text-text-primary leading-snug mb-3">
@@ -1363,155 +1273,158 @@ export const TrackerPage: React.FC = () => {
               <div>
                 <p className="text-[9px] text-gray-500 uppercase mb-0.5">Reason</p>
                 <p className="text-[11px] text-gray-300 leading-relaxed mt-0.5">
-                  {(item.delay_days > 0 || item.current_status === "BLOCKED") ? (description || "Commitment is currently obstructed by active execution blockers.") : "Executing to plan."}
+                  {(item.delay_days > 0 || item.current_status === "BLOCKED") ? (legacyDescription || "Commitment is currently obstructed by active execution blockers.") : "Executing to plan."}
                 </p>
               </div>
             </div>
           </div>
 
-          {/* 1. Why is this a risk? */}
-          {!isResolved && description && (
-            <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.06]">
-              <p className="text-[9px] font-bold text-gray-600 uppercase tracking-widest mb-2 flex items-center gap-1.5">
-                <Info className="w-3 h-3" /> Why is this a risk?
-              </p>
-              <p className="text-[11px] text-gray-300 leading-relaxed whitespace-pre-line">
-                {description}
-              </p>
-              {detailedReasoning && (
-                <>
-                  <p className="text-[9px] font-bold text-purple-400 uppercase tracking-widest mt-4 mb-2 flex items-center gap-1.5">
-                    <Sparkles className="w-3 h-3" /> AI Reasoning
-                  </p>
-                  <p className="text-[11px] text-gray-400 leading-relaxed whitespace-pre-line">
-                    {detailedReasoning}
-                  </p>
-                </>
-              )}
-            </div>
-          )}
-
-          {/* 2. Execution Reason (PMO Priority) */}
-          {!isResolved && executionReason && (
-            <div className="p-3 rounded-xl bg-cyan-500/[0.04] border border-cyan-500/20">
+          {!isResolved && narratives.executive_summary && (
+            <div className="p-4 rounded-xl bg-cyan-900/10 border border-cyan-500/20">
               <p className="text-[9px] font-bold text-cyan-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
-                <ShieldAlert className="w-3 h-3" /> Execution Reason
+                <ShieldAlert className="w-3 h-3" /> Executive Summary
               </p>
-              <p className="text-[11px] text-gray-300 leading-relaxed whitespace-pre-line font-medium">
-                {executionReason}
-              </p>
-            </div>
-          )}
-
-          {/* 3. Execution Chain */}
-          {!isResolved && executionChain && (
-            <div className="p-3 rounded-xl bg-indigo-500/[0.04] border border-indigo-500/20">
-              <p className="text-[9px] font-bold text-indigo-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
-                <Activity className="w-3 h-3" /> Execution Chain
-              </p>
-              <p className="text-[11px] font-mono text-gray-300 leading-relaxed whitespace-pre-line">
-                {executionChain}
+              <p className="text-xs text-gray-300 leading-relaxed font-semibold">
+                {narratives.executive_summary}
               </p>
             </div>
           )}
 
-          {/* 3. Execution Impact */}
-          {!isResolved && (blockedBy || scheduleUrgency) && (
-            <div className="p-3 rounded-xl bg-rose-500/[0.04] border border-rose-500/20">
-              <p className="text-[9px] font-bold text-rose-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
-                <AlertCircle className="w-3 h-3" /> Execution Impact
-              </p>
-              {blockedBy && (
-                <p className="text-[11px] text-gray-300 leading-relaxed whitespace-pre-line mb-3">
-                  {blockedBy}
+          {!isResolved && narratives.original_contract_sentence && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.06]">
+                <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                  <FileText className="w-3 h-3" /> Contract Commitment (EL)
                 </p>
-              )}
-              {scheduleUrgency && (
-                <p className="text-[11px] text-gray-300 leading-relaxed whitespace-pre-line">
-                  {scheduleUrgency}
-                </p>
-              )}
-            </div>
-          )}
-
-          {/* 4. Evidence */}
-          {(item.document_name || evidenceText) && (
-            <div className="p-3 rounded-xl bg-cyan-500/[0.04] border border-cyan-500/20">
-              <p className="text-[9px] font-bold text-cyan-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
-                <FileText className="w-3 h-3" /> Evidence
-              </p>
-              {item.document_name && (
-                <div className="flex items-center justify-between gap-2 mb-3 bg-gray-900/40 p-2 rounded-lg border border-gray-700/50">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <div className="w-6 h-6 rounded-md bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center shrink-0">
-                      <FileText className="w-3 h-3 text-cyan-400" />
-                    </div>
-                    <span
-                      className="text-[10px] text-gray-300 font-medium truncate"
-                      title={item.document_name}
-                    >
-                      {item.document_name}
-                    </span>
+                <div className="space-y-2">
+                  <div>
+                    <span className="text-[9px] text-gray-500 uppercase">Deliverable</span>
+                    <p className="text-[11px] font-medium text-gray-300">{item.title || item.name}</p>
                   </div>
-                  {item.source_document_id && (
-                    <button
-                      onClick={() =>
-                        handleDownloadDocument(
-                          item.source_document_id,
-                          item.document_name,
-                        )
-                      }
-                      className="flex items-center gap-1 px-2 py-1 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 rounded shrink-0 transition-colors text-[9px]"
-                    >
-                      <Download className="w-3 h-3" />
-                    </button>
+                  <div>
+                    <span className="text-[9px] text-gray-500 uppercase">Commitment</span>
+                    <p className="text-[11px] text-gray-300 italic">"{narratives.original_contract_sentence}"</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.06]">
+                <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                  <Activity className="w-3 h-3" /> Current Progress (MoM)
+                </p>
+                <div className="space-y-2">
+                  <div>
+                    <span className="text-[9px] text-gray-500 uppercase">Status</span>
+                    <p className="text-[11px] font-medium text-gray-300">{item.status.replace("_", " ")} {item.progress ? `(${item.progress}%)` : ""}</p>
+                  </div>
+                  {narratives.mom_evidence && (
+                    <div>
+                      <span className="text-[9px] text-gray-500 uppercase">Latest Update</span>
+                      <p className="text-[11px] text-gray-300 italic">"{narratives.mom_evidence}"</p>
+                    </div>
                   )}
                 </div>
-              )}
-              {evidenceText && (
-                <p className="text-[11px] text-gray-300 italic leading-relaxed whitespace-pre-line border-l-2 border-cyan-500/30 pl-2 ml-1">
-                  {evidenceText}
-                </p>
-              )}
+              </div>
             </div>
           )}
 
-          {/* 5. Recommended Action */}
-          {!isResolved && item.recommended_action && (
-            <div className="p-3 rounded-xl bg-emerald-500/[0.04] border border-emerald-500/20">
-              <p className="text-[9px] font-bold text-emerald-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
-                <ShieldAlert className="w-3 h-3" /> Recommended Action
+          {!isResolved && narratives.gap_analysis && (
+            <div className="p-3 rounded-xl bg-amber-500/[0.05] border border-amber-500/20">
+              <p className="text-[9px] font-bold text-amber-500 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                <TrendingUp className="w-3 h-3" /> Gap Analysis
               </p>
-              <p className="text-[11px] text-gray-300 leading-relaxed font-semibold">
+              <p className="text-[11px] text-gray-300 leading-relaxed font-medium">
+                {narratives.gap_analysis}
+              </p>
+            </div>
+          )}
+
+          {!isResolved && narratives.why_important && (
+            <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.06]">
+              <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                <Info className="w-3 h-3" /> Why is this important?
+              </p>
+              <p className="text-[11px] text-gray-300 leading-relaxed">
+                {narratives.why_important}
+              </p>
+            </div>
+          )}
+
+          {!isResolved && narratives.business_impact && (
+            <div className="p-3 rounded-xl bg-rose-500/[0.05] border border-rose-500/20">
+              <p className="text-[9px] font-bold text-rose-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                <AlertTriangle className="w-3 h-3" /> Business Impact
+              </p>
+              <div className="space-y-3">
+                {narratives.business_impact.immediate && (
+                  <div>
+                    <span className="text-[9px] text-rose-400/80 uppercase tracking-wider block mb-0.5">Immediate Impact</span>
+                    <p className="text-[11px] text-gray-300 leading-relaxed font-medium">{narratives.business_impact.immediate}</p>
+                  </div>
+                )}
+                {narratives.business_impact.future && (
+                  <div>
+                    <span className="text-[9px] text-rose-400/80 uppercase tracking-wider block mb-0.5">Future Impact</span>
+                    <p className="text-[11px] text-gray-300 leading-relaxed">{narratives.business_impact.future}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {!isResolved && item.recommended_action && (
+            <div className="p-3 rounded-xl bg-emerald-500/[0.05] border border-emerald-500/20">
+              <p className="text-[9px] font-bold text-emerald-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                <CheckCheck className="w-3 h-3" /> Recommended Action
+              </p>
+              <p className="text-[11px] text-gray-300 leading-relaxed font-medium">
                 {item.recommended_action}
               </p>
             </div>
           )}
 
-          {/* 6. Score Breakdown Dashboard */}
-          {!isResolved && Object.keys(scoreBreakdown).length > 0 && (
-            <div className="p-3 rounded-xl bg-gradient-to-r from-purple-900/10 to-pink-900/5 border border-purple-500/20">
-              <p className="text-[9px] font-bold text-purple-400 uppercase tracking-widest mb-3 flex items-center gap-1.5">
-                <Activity className="w-3 h-3" /> Score Breakdown
+          {!isResolved && narratives.execution_chain && narratives.execution_chain.length > 0 && (
+            <div className="p-3 rounded-xl bg-indigo-500/[0.05] border border-indigo-500/20">
+              <p className="text-[9px] font-bold text-indigo-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                <ListOrdered className="w-3 h-3" /> Execution Flow
               </p>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {Object.entries(scoreBreakdown).map(([key, value], idx) => (
-                  <div
-                    key={idx}
-                    className="bg-gray-900/60 rounded-lg p-2 border border-gray-700/50 flex flex-col justify-between"
-                  >
-                    <p
-                      className="text-[8px] font-bold text-gray-500 uppercase tracking-widest mb-1.5 truncate"
-                      title={key}
-                    >
-                      {key}
-                    </p>
-                    <p className="text-sm font-black text-purple-300">
-                      {value}
-                    </p>
-                  </div>
-                ))}
+              <div className="flex flex-col space-y-1">
+                {narratives.execution_chain.map((step: any, idx: number) => {
+                  const stepName = typeof step === 'string' ? step : step?.name || step?.title || step?.activity;
+                  if (!stepName) return null;
+                  return (
+                    <div key={idx} className="flex items-start gap-2">
+                      <div className="w-4 h-4 rounded-full bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center shrink-0 mt-0.5 z-10 text-[9px] font-black text-indigo-400">
+                        {idx + 1}
+                      </div>
+                      <span className="text-[11px] text-gray-300 font-medium py-0.5">{stepName}</span>
+                    </div>
+                  );
+                })}
               </div>
+            </div>
+          )}
+
+          {!isResolved && narratives.ai_interpretation && (
+            <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.06]">
+              <p className="text-[9px] font-bold text-purple-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                <Sparkles className="w-3 h-3" /> AI Interpretation
+              </p>
+              <p className="text-[11px] text-gray-300 leading-relaxed italic">
+                {narratives.ai_interpretation}
+              </p>
+            </div>
+          )}
+
+          {/* Legacy Rendering if missing narratives */}
+          {!isResolved && !narratives._type && legacyDescription && (
+            <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.06]">
+              <p className="text-[9px] font-bold text-gray-600 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                <Info className="w-3 h-3" /> Why is this a risk?
+              </p>
+              <p className="text-[11px] text-gray-300 leading-relaxed whitespace-pre-line">
+                {legacyDescription}
+              </p>
             </div>
           )}
 
@@ -2136,12 +2049,15 @@ export const TrackerPage: React.FC = () => {
                       const level = item.risk_level || "LOW";
                       const levelStyle =
                         riskLevelConfig[level] || riskLevelConfig.LOW;
-                      const categoryLabel =
-                        categoryLabels[item.risk_category] ||
-                        categoryLabels.GENERAL;
-                      const typeLabel =
-                        typeLabels[item.item_type] || item.item_type;
                       const isSelected = selectedItem?.id === item.id;
+                      
+                      let narratives: any = {};
+                      if (item.reasoning) {
+                        try {
+                          const parsed = JSON.parse(item.reasoning);
+                          if (parsed._type === "pmo_narrative") narratives = parsed;
+                        } catch (e) {}
+                      }
 
                       const borderColor = isSelected
                         ? "border-cyan-500/50 shadow-cyan-500/5"
@@ -2155,6 +2071,12 @@ export const TrackerPage: React.FC = () => {
                                 ? "border-yellow-500/15"
                                 : "border-white/[0.05]";
 
+                      const impactText = narratives.business_impact?.immediate || "Unknown Impact";
+                      const ownerText = item.dependency_owner || item.owner || (item.risk_category?.includes("CUSTOMER") ? "Customer" : "Internal");
+                      const waitingForText = item.dependency_names || "None";
+                      const priorityScore = item.execution_priority_score || item.risk_score || 0;
+                      const severityScore = item.risk_score || 0;
+
                       return (
                         <div
                           key={item.id}
@@ -2162,98 +2084,48 @@ export const TrackerPage: React.FC = () => {
                           className={`group rounded-xl border cursor-pointer transition-all duration-200 overflow-hidden ${borderColor} ${isSelected ? "bg-gradient-to-br from-cyan-950/30 to-gray-900/80 shadow-lg" : "bg-gradient-to-br from-gray-900/60 to-gray-950/80 hover:border-gray-600/50 hover:bg-gray-900/80"}`}
                           style={{ animationDelay: `${index * 40}ms` }}
                         >
-                          {/* Card Top Bar — colored by risk level */}
-                          <div
-                            className={`px-3 py-2.5 border-b ${isSelected ? "border-cyan-500/20" : "border-white/[0.04]"}`}
-                          >
-                            <div className="flex items-start justify-between gap-2">
-                              <div className="flex items-center gap-2 flex-1 min-w-0">
-                                {activeTab === "ACTIVE" && (
-                                  <input
-                                    type="checkbox"
-                                    checked={selectedItemIds.includes(item.id)}
-                                    onChange={(e) => {
-                                      e.stopPropagation();
-                                      toggleSelectItem(item.id);
-                                    }}
-                                    onClick={(e) => e.stopPropagation()}
-                                    className="w-3 h-3 rounded border-gray-700 bg-gray-950 text-cyan-500 focus:ring-cyan-500/30 cursor-pointer accent-cyan-500 shrink-0"
-                                  />
-                                )}
-                                <span
-                                  className={`w-1.5 h-1.5 rounded-full shrink-0 ${levelStyle.dot}`}
-                                />
-                                <div className="min-w-0 flex-1">
-                                  <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
-                                    <span className="text-[7px] font-extrabold text-gray-500 bg-gray-800/70 border border-gray-700/40 px-1 py-px rounded uppercase tracking-wider shrink-0">
-                                      {categoryLabel}
-                                    </span>
-                                    {!!item.is_out_of_scope && (
-                                      <span className="text-[7px] font-black px-1 py-px bg-red-500/10 text-red-400 border border-red-500/20 rounded uppercase">
-                                        OOS
-                                      </span>
-                                    )}
-                                  </div>
-                                  <h3
-                                    className={`text-[11px] font-semibold leading-snug transition-colors ${isSelected ? "text-white" : "text-gray-200 group-hover:text-white"}`}
-                                  >
-                                    {item.title ||
-                                      item.name ||
-                                      `${categoryLabel} #${item.id}`}
-                                  </h3>
-                                </div>
-                              </div>
-                              {item._type === "RISK" && (
-                                <div className="flex flex-col items-end gap-1 shrink-0">
-                                  <span
-                                    className={`text-[8px] font-black px-1.5 py-0.5 rounded border ${levelStyle.bg} ${levelStyle.text} ${levelStyle.border}`}
-                                  >
-                                    {level}
+                          <div className={`px-4 py-3 border-b ${isSelected ? "border-cyan-500/20" : "border-white/[0.04]"}`}>
+                            <div className="flex items-start justify-between gap-2 mb-2">
+                              <h3 className={`text-[12px] font-bold leading-snug flex items-center gap-2 transition-colors ${isSelected ? "text-white" : "text-gray-200 group-hover:text-white"}`}>
+                                <span className={`w-2 h-2 rounded-full shrink-0 ${levelStyle.dot}`} />
+                                #{index + 1} {item.title || item.name || `Item #${item.id}`}
+                              </h3>
+                              {item.status === "RESOLVED" ? (
+                                <span className="text-[9px] font-black px-1.5 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded uppercase">
+                                  ✓ Done
+                                </span>
+                              ) : (
+                                <div className="flex items-center gap-1.5 shrink-0">
+                                  <span className={`text-[9px] font-mono font-black px-1.5 py-0.5 rounded border ${priorityScore >= 70 ? "bg-rose-500/10 text-rose-400 border-rose-500/20" : priorityScore >= 40 ? "bg-orange-500/10 text-orange-400 border-orange-500/20" : "bg-yellow-500/10 text-yellow-400 border-yellow-500/20"}`}>
+                                    {priorityScore}
                                   </span>
-                                  <div
-                                    className={`text-[8px] font-mono font-black px-1.5 py-0.5 rounded border ${(item.risk_score || item.execution_priority_score || 0) >= 71 ? "bg-rose-500/10 text-rose-400 border-rose-500/20" : (item.risk_score || item.execution_priority_score || 0) >= 41 ? "bg-orange-500/10 text-orange-400 border-orange-500/20" : (item.risk_score || item.execution_priority_score || 0) >= 21 ? "bg-yellow-500/10 text-yellow-400 border-yellow-500/20" : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"}`}
-                                  >
-                                    {(item.risk_score || item.execution_priority_score || 0)}/100
-                                  </div>
+                                </div>
+                              )}
+                            </div>
+                            
+                            <div className="grid grid-cols-2 gap-y-1.5 gap-x-2 mt-3">
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-[9px] text-gray-500 uppercase tracking-widest w-16 shrink-0">Status</span>
+                                <span className={`text-[10px] font-semibold ${item.status === "BLOCKED" ? "text-rose-400" : item.status === "IN_PROGRESS" ? "text-cyan-400" : "text-gray-300"}`}>{item.status.replace(/_/g, " ")}</span>
+                              </div>
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-[9px] text-gray-500 uppercase tracking-widest w-12 shrink-0">Owner</span>
+                                <span className={`text-[10px] font-semibold ${ownerText === "Customer" ? "text-amber-400" : ownerText === "Vendor" ? "text-purple-400" : "text-gray-300"}`}>{ownerText}</span>
+                              </div>
+                              
+                              <div className="flex items-center gap-1.5 col-span-2">
+                                <span className="text-[9px] text-gray-500 uppercase tracking-widest w-16 shrink-0">Impact</span>
+                                <span className="text-[10px] text-gray-300 font-medium truncate">{impactText}</span>
+                              </div>
+                              
+                              {waitingForText !== "None" && (
+                                <div className="flex items-center gap-1.5 col-span-2">
+                                  <span className="text-[9px] text-gray-500 uppercase tracking-widest w-16 shrink-0">Waiting For</span>
+                                  <span className="text-[10px] text-amber-400/90 font-medium truncate">{waitingForText}</span>
                                 </div>
                               )}
                             </div>
                           </div>
-
-                          {/* Card Footer */}
-                          <div className="px-3 py-2 flex items-center justify-between gap-2">
-                            <div className="flex items-center gap-1.5 min-w-0">
-                              <Briefcase className="w-2.5 h-2.5 text-gray-600 shrink-0" />
-                              <span
-                                className="text-[9px] text-gray-500 truncate"
-                                title={item.document_name}
-                              >
-                                {item.document_name || "—"}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-1.5 shrink-0">
-                              <span className="text-[8px] font-bold text-gray-600 bg-gray-800/40 px-1 py-px rounded border border-gray-700/30">
-                                {typeLabel}
-                              </span>
-                              {item.status === "RESOLVED" &&
-                                (item.risk_score === 0 ||
-                                  !!item.resolution) && (
-                                  <span className="text-[7px] font-black px-1 py-px bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded">
-                                    ✓ Done
-                                  </span>
-                                )}
-                            </div>
-                          </div>
-
-                          {/* Timestamp row */}
-                          {item.created_at && (
-                            <div className="px-3 pb-2 flex items-center gap-1.5">
-                              <Clock className="w-2.5 h-2.5 text-gray-700 shrink-0" />
-                              <span className="text-[8px] text-gray-600">
-                                {formatTimestamp(item.created_at)}
-                              </span>
-                            </div>
-                          )}
                         </div>
                       );
                     })}
