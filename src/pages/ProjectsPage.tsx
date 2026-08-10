@@ -226,7 +226,7 @@ export const ProjectsPage: React.FC = () => {
           {(user?.role === "ADMIN" || user?.role === "ENGAGEMENT_MANAGER") && (
             <button
               onClick={() => setIsModalOpen(true)}
-              className="px-5 py-2.5 bg-[#FF7A45] hover:bg-[#F56B2F] text-white font-bold rounded-xl text-xs transition-all duration-300 shadow-md shadow-[#FF5A14]/20 active:scale-[0.98] cursor-pointer"
+              className="px-5 py-2.5 bg-primary-button hover:bg-primary-hover text-white font-bold rounded-xl text-xs transition-all duration-300 shadow-md shadow-primary-border/20 active:scale-[0.98] cursor-pointer"
             >
               Create Project
             </button>
@@ -240,20 +240,19 @@ export const ProjectsPage: React.FC = () => {
             placeholder="Search projects by name..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="flex-1 w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 text-white placeholder-gray-500 text-sm transition-all"
+            className="flex-1 w-full bg-bg-input border border-border-subtle rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary-border/50 focus:border-primary-border text-text-primary placeholder-text-muted text-sm transition-all"
           />
-          <div className="flex bg-white/[0.03] border border-white/10 rounded-xl p-1 w-full md:w-[380px] shrink-0 h-[46px]">
+          <div className="flex bg-bg-input border border-border-subtle rounded-xl p-1 w-full md:w-[380px] shrink-0 h-[46px]">
             <div className="relative flex w-full">
               <div
-                className="absolute top-0 bottom-0 w-1/3 bg-gradient-to-r from-teal-500/20 to-blue-500/20 border border-teal-500/30 rounded-lg transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] shadow-[0_0_10px_rgba(20,184,166,0.1)]"
+                className="absolute top-0 bottom-0 w-1/3 bg-primary/20 border border-primary-border/30 rounded-lg transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] shadow-[0_0_10px_rgba(255,90,20,0.1)]"
                 style={{
-                  transform: `translateX(${
-                    statusFilter === "ALL"
+                  transform: `translateX(${statusFilter === "ALL"
                       ? "0%"
                       : statusFilter === "ACTIVE"
                         ? "100%"
                         : "200%"
-                  })`,
+                    })`,
                 }}
               />
               {[
@@ -264,11 +263,10 @@ export const ProjectsPage: React.FC = () => {
                 <button
                   key={tab.id}
                   onClick={() => setStatusFilter(tab.id)}
-                  className={`relative z-10 flex-1 px-4 py-1.5 text-sm font-semibold transition-colors duration-300 rounded-lg cursor-pointer flex items-center justify-center ${
-                    statusFilter === tab.id
-                      ? "text-teal-300"
-                      : "text-gray-400 hover:text-gray-200"
-                  }`}
+                  className={`relative z-10 flex-1 px-4 py-1.5 text-sm font-semibold transition-colors duration-300 rounded-lg cursor-pointer flex items-center justify-center ${statusFilter === tab.id
+                      ? "text-primary"
+                      : "text-text-muted hover:text-text-primary"
+                    }`}
                 >
                   {tab.label}
                 </button>
@@ -286,10 +284,10 @@ export const ProjectsPage: React.FC = () => {
             {(filteredProjects || []).map((p) => (
               <div
                 key={p.id}
-                className="group p-6 rounded-2xl bg-bg-card border border-border-subtle hover:border-[#fd5108]/30 hover:bg-white/[0.04] transition-all duration-300 hover:shadow-2xl hover:shadow-[#fd5108]/5 hover:-translate-y-1 flex flex-col justify-between"
+                className="group p-6 rounded-2xl bg-bg-card border border-border-subtle hover:border-primary-border/30 hover:bg-bg-hover transition-all duration-300 hover:shadow-2xl hover:shadow-primary-border/5 hover:-translate-y-1 flex flex-col justify-between"
               >
                 <div>
-                  <h3 className="font-display text-lg font-bold mb-1 text-text-primary group-hover:text-[#fd5108] transition-colors duration-300">
+                  <h3 className="font-display text-lg font-bold mb-1 text-text-primary group-hover:text-primary transition-colors duration-300">
                     {p.project_name}
                   </h3>
                   <p className="text-text-muted text-xs mb-3">
@@ -316,7 +314,7 @@ export const ProjectsPage: React.FC = () => {
                             type="date"
                             value={editingEndDate}
                             onChange={(e) => setEditingEndDate(e.target.value)}
-                            className="bg-bg-hover border border-border-strong rounded px-1.5 py-0.5 text-[11px] text-text-primary focus:outline-none focus:border-[#fd5108]"
+                            className="bg-bg-hover border border-border-strong rounded px-1.5 py-0.5 text-[11px] text-text-primary focus:outline-none focus:border-primary-border"
                           />
                           <button
                             onClick={() => handleSaveEndDate(p.id)}
@@ -338,18 +336,18 @@ export const ProjectsPage: React.FC = () => {
                           </span>
                           {(user?.role === "ADMIN" ||
                             user?.role === "ENGAGEMENT_MANAGER") && (
-                            <button
-                              onClick={() => {
-                                setEditingProjectId(p.id);
-                                setEditingEndDate(
-                                  p.end_date ? p.end_date.split("T")[0] : "",
-                                );
-                              }}
-                              className="text-[10px] text-[#fd5108] hover:opacity-80 underline font-medium cursor-pointer"
-                            >
-                              Edit
-                            </button>
-                          )}
+                              <button
+                                onClick={() => {
+                                  setEditingProjectId(p.id);
+                                  setEditingEndDate(
+                                    p.end_date ? p.end_date.split("T")[0] : "",
+                                  );
+                                }}
+                                className="text-[10px] text-primary hover:opacity-80 underline font-medium cursor-pointer"
+                              >
+                                Edit
+                              </button>
+                            )}
                         </div>
                       )}
                     </div>
@@ -357,15 +355,14 @@ export const ProjectsPage: React.FC = () => {
                 </div>
                 <div className="flex justify-between items-center border-t border-border-subtle pt-4 mt-2">
                   <span
-                    className={`text-[10px] font-semibold px-2.5 py-1 rounded-full uppercase tracking-wider ${
-                      p.monitoring_status === "ACTIVE"
+                    className={`text-[10px] font-semibold px-2.5 py-1 rounded-full uppercase tracking-wider ${p.monitoring_status === "ACTIVE"
                         ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/20"
                         : p.monitoring_status === "CLOSED"
                           ? "bg-rose-500/15 text-rose-400 border border-rose-500/20"
                           : p.monitoring_status === "DRAFT"
                             ? "bg-gray-500/15 text-gray-400 border border-gray-500/20"
                             : "bg-amber-500/15 text-amber-400 border border-amber-500/20"
-                    }`}
+                      }`}
                   >
                     {p.monitoring_status}
                   </span>
@@ -382,7 +379,7 @@ export const ProjectsPage: React.FC = () => {
                       )}
                     <Link
                       to={`/projects/${p.id}`}
-                      className="text-xs font-semibold text-[#fd5108] hover:text-[#ff7539] flex items-center gap-1 group/btn transition-colors"
+                      className="text-xs font-semibold text-primary hover:text-primary-hover flex items-center gap-1 group/btn transition-colors"
                     >
                       Open Dashboard
                       <span className="group-hover/btn:translate-x-1 transition-transform">
@@ -417,7 +414,7 @@ export const ProjectsPage: React.FC = () => {
             >
               &times;
             </button>
-            <h2 className="font-display text-2xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-[#FF5A14] to-[#FF7A45]">
+            <h2 className="font-display text-2xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary-button">
               Create New Project
             </h2>
             {formError && (
@@ -435,7 +432,7 @@ export const ProjectsPage: React.FC = () => {
                   type="text"
                   value={projectName}
                   onChange={(e) => setProjectName(e.target.value)}
-                  className="w-full bg-[#FFF7F2] border border-[#D8D8D8] rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#FF8A55]/50 focus:border-[#FF8A55] text-[#666666] placeholder-[#B0B0B0] text-sm transition-all"
+                  className="w-full bg-bg-input border border-border-subtle rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary-border/50 focus:border-primary-border text-text-primary placeholder-text-muted text-sm transition-all"
                   placeholder="e.g. Acme Audit 2026"
                 />
               </div>
@@ -447,7 +444,7 @@ export const ProjectsPage: React.FC = () => {
                   type="text"
                   value={clientName}
                   onChange={(e) => setClientName(e.target.value)}
-                  className="w-full bg-[#FFF7F2] border border-[#D8D8D8] rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#FF8A55]/50 focus:border-[#FF8A55] text-[#666666] placeholder-[#B0B0B0] text-sm transition-all"
+                  className="w-full bg-bg-input border border-border-subtle rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary-border/50 focus:border-primary-border text-text-primary placeholder-text-muted text-sm transition-all"
                   placeholder="e.g. Acme Corp"
                 />
               </div>
@@ -460,7 +457,7 @@ export const ProjectsPage: React.FC = () => {
                     type="date"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
-                    className="w-full bg-[#FFF7F2] border border-[#D8D8D8] rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#FF8A55]/50 focus:border-[#FF8A55] text-[#666666] text-xs transition-all"
+                    className="w-full bg-bg-input border border-border-subtle rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary-border/50 focus:border-primary-border text-text-primary text-xs transition-all"
                   />
                 </div>
                 <div>
@@ -471,7 +468,7 @@ export const ProjectsPage: React.FC = () => {
                     type="date"
                     value={endDate}
                     onChange={(e) => setEndDate(e.target.value)}
-                    className="w-full bg-[#FFF7F2] border border-[#D8D8D8] rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#FF8A55]/50 focus:border-[#FF8A55] text-[#666666] text-xs transition-all"
+                    className="w-full bg-bg-input border border-border-subtle rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary-border/50 focus:border-primary-border text-text-primary text-xs transition-all"
                   />
                 </div>
               </div>
@@ -482,7 +479,7 @@ export const ProjectsPage: React.FC = () => {
                 <select
                   value={assignedLeadId}
                   onChange={(e) => setAssignedLeadId(e.target.value)}
-                  className="w-full bg-[#FFF7F2] border border-[#D8D8D8] rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#FF8A55]/50 focus:border-[#FF8A55] text-[#666666] text-sm transition-all"
+                  className="w-full bg-bg-input border border-border-subtle rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary-border/50 focus:border-primary-border text-text-primary text-sm transition-all"
                 >
                   <option value="" className="bg-bg-panel text-text-muted">
                     -- Select Project Lead --
@@ -507,7 +504,7 @@ export const ProjectsPage: React.FC = () => {
                     type="button"
                     onClick={handleGenerateDescription}
                     disabled={isGeneratingDesc}
-                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#FF5A14]/10 hover:bg-[#FF5A14]/20 border border-[#FF8A55]/40 text-[#FF5A14] font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-primary/10 hover:bg-primary/20 border border-primary-border/40 text-primary font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
                     title="Generate description with AI"
                   >
                     {isGeneratingDesc ? (
@@ -529,7 +526,7 @@ export const ProjectsPage: React.FC = () => {
                     setDescription(e.target.value);
                     setIsDescriptionManuallyEdited(true);
                   }}
-                  className="w-full bg-[#FFF7F2] border border-[#D8D8D8] rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#FF8A55]/50 focus:border-[#FF8A55] text-[#666666] placeholder-[#B0B0B0] text-sm transition-all"
+                  className="w-full bg-bg-input border border-border-subtle rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary-border/50 focus:border-primary-border text-text-primary placeholder-text-muted text-sm transition-all"
                   placeholder="Summarize project requirements..."
                   rows={4}
                 />
@@ -563,7 +560,7 @@ export const ProjectsPage: React.FC = () => {
                     isGeneratingDesc ||
                     isCreating
                   }
-                  className="flex-1 py-2.5 bg-[#FF7A45] hover:bg-[#F56B2F] text-white font-bold rounded-xl text-xs transition-all shadow-md shadow-[#FF5A14]/20 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="flex-1 py-2.5 bg-primary-button hover:bg-primary-hover text-white font-bold rounded-xl text-xs transition-all shadow-md shadow-primary-border/20 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {isCreating ? "Creating..." : "Create"}
                 </button>
