@@ -1473,7 +1473,7 @@ export const BaselineReviewPage: React.FC = () => {
                               item.completion_status ||
                               "ACTIVE";
                             const isCompleted =
-                              completionStatus === "COMPLETED";
+                              completionStatus === "COMPLETED" || completionStatus === "CANCELLED" || (item.latest_progress?.progress_percentage || 0) >= 100;
                             const isCancelled =
                               completionStatus === "CANCELLED";
                             const isAlert =
@@ -1519,9 +1519,9 @@ export const BaselineReviewPage: React.FC = () => {
                                       title={dateStr}
                                     >
                                       <span>{dateStr}</span>
-                                      {item._hasPrerequisites && (
+                                      {item._hasPrerequisites && !isCompleted && (
                                         <span
-                                          className="w-3.5 h-3.5 rounded-full bg-amber-500 text-gray-950 font-black text-[9px] flex items-center justify-center shadow-[0_0_6px_rgba(245,158,11,0.8)] leading-none flex-shrink-0"
+                                          className="w-3.5 h-3.5 rounded-full bg-gradient-to-r from-amber-400 to-amber-500 text-gray-950 font-black text-[9px] flex items-center justify-center shadow-[0_0_10px_rgba(245,158,11,1)] leading-none flex-shrink-0 animate-pulse border border-amber-200 ring-2 ring-amber-400/40"
                                           title="Has Execution Prerequisites (!)"
                                         >
                                           !
@@ -1607,16 +1607,13 @@ export const BaselineReviewPage: React.FC = () => {
 
                                       return (
                                         <div className="flex flex-col gap-0.5 mt-1 items-center">
-                                          {item._hasPrerequisites &&
-                                            !isCompleted && (
+                                          {item._hasPrerequisites && !isCompleted && (
                                               <span
-                                                className="text-[8px] bg-amber-950/70 text-amber-300 border border-amber-500/50 px-1.5 py-0.5 rounded-sm truncate max-w-[120px] shadow-sm font-bold flex items-center gap-1 animate-pulse"
-                                                title="Has Execution Prerequisites (!)"
+                                                className="text-[8px] bg-amber-500/10 hover:bg-amber-500/15 text-amber-300 border border-amber-500/35 px-2 py-0.5 rounded-full truncate max-w-[130px] font-semibold flex items-center gap-1 animate-pulse transition-all duration-300"
+                                                title="Has Execution Prerequisites"
                                               >
-                                                <span className="w-2.5 h-2.5 rounded-full bg-amber-500 text-gray-950 font-black text-[8px] flex items-center justify-center leading-none">
-                                                  !
-                                                </span>
-                                                <span>Prerequisites</span>
+                                                <AlertTriangle className="w-2.5 h-2.5 text-amber-400 flex-shrink-0" />
+                                                <span>Prerequisites Required</span>
                                               </span>
                                             )}
                                           {!isCompleted &&
@@ -1698,10 +1695,9 @@ export const BaselineReviewPage: React.FC = () => {
                                         animationDelay: `${idx * 60}ms`,
                                       }}
                                     >
-                                      {item._hasPrerequisites &&
-                                        !isCompleted && (
+                                      {item._hasPrerequisites && !isCompleted && (
                                           <span
-                                            className="absolute -top-2.5 -right-2.5 w-4 h-4 rounded-full bg-amber-500 text-gray-950 font-black text-[10px] flex items-center justify-center border border-amber-200 shadow-[0_0_8px_rgba(245,158,11,0.9)] z-20"
+                                            className="absolute -top-2.5 -right-2.5 w-4 h-4 rounded-full bg-gradient-to-r from-amber-400 to-amber-500 text-gray-950 font-black text-[10px] flex items-center justify-center border-2 border-amber-100 shadow-[0_0_12px_rgba(245,158,11,1)] z-20 animate-pulse ring-2 ring-amber-400/50"
                                             title="Has Execution Prerequisites (!)"
                                           >
                                             !
@@ -1792,10 +1788,9 @@ export const BaselineReviewPage: React.FC = () => {
                                         animationDelay: `${idx * 60}ms`,
                                       }}
                                     >
-                                      {item._hasPrerequisites &&
-                                        !isCompleted && (
+                                      {item._hasPrerequisites && !isCompleted && (
                                           <span
-                                            className="absolute -top-2.5 -right-2.5 w-4 h-4 rounded-full bg-amber-500 text-gray-950 font-black text-[10px] flex items-center justify-center border border-amber-200 shadow-[0_0_8px_rgba(245,158,11,0.9)] z-20"
+                                            className="absolute -top-2.5 -right-2.5 w-4 h-4 rounded-full bg-gradient-to-r from-amber-400 to-amber-500 text-gray-950 font-black text-[10px] flex items-center justify-center border-2 border-amber-100 shadow-[0_0_12px_rgba(245,158,11,1)] z-20 animate-pulse ring-2 ring-amber-400/50"
                                             title="Has Execution Prerequisites (!)"
                                           >
                                             !
@@ -1885,9 +1880,9 @@ export const BaselineReviewPage: React.FC = () => {
                                       title={dateStr}
                                     >
                                       <span>{dateStr}</span>
-                                      {item._hasPrerequisites && (
+                                      {item._hasPrerequisites && !isCompleted && (
                                         <span
-                                          className="w-3.5 h-3.5 rounded-full bg-amber-500 text-gray-950 font-black text-[9px] flex items-center justify-center shadow-[0_0_6px_rgba(245,158,11,0.8)] leading-none flex-shrink-0"
+                                          className="w-3.5 h-3.5 rounded-full bg-gradient-to-r from-amber-400 to-amber-500 text-gray-950 font-black text-[9px] flex items-center justify-center shadow-[0_0_10px_rgba(245,158,11,1)] leading-none flex-shrink-0 animate-pulse border border-amber-200 ring-2 ring-amber-400/40"
                                           title="Has Execution Prerequisites (!)"
                                         >
                                           !
@@ -1973,16 +1968,13 @@ export const BaselineReviewPage: React.FC = () => {
 
                                       return (
                                         <div className="flex flex-col gap-0.5 mt-1 items-center">
-                                          {item._hasPrerequisites &&
-                                            !isCompleted && (
+                                          {item._hasPrerequisites && !isCompleted && (
                                               <span
-                                                className="text-[8px] bg-amber-950/70 text-amber-300 border border-amber-500/50 px-1.5 py-0.5 rounded-sm truncate max-w-[120px] shadow-sm font-bold flex items-center gap-1 animate-pulse"
-                                                title="Has Execution Prerequisites (!)"
+                                                className="text-[8px] bg-amber-500/10 hover:bg-amber-500/15 text-amber-300 border border-amber-500/35 px-2 py-0.5 rounded-full truncate max-w-[130px] font-semibold flex items-center gap-1 animate-pulse transition-all duration-300"
+                                                title="Has Execution Prerequisites"
                                               >
-                                                <span className="w-2.5 h-2.5 rounded-full bg-amber-500 text-gray-950 font-black text-[8px] flex items-center justify-center leading-none">
-                                                  !
-                                                </span>
-                                                <span>Prerequisites</span>
+                                                <AlertTriangle className="w-2.5 h-2.5 text-amber-400 flex-shrink-0" />
+                                                <span>Prerequisites Required</span>
                                               </span>
                                             )}
                                           {!isCompleted &&
@@ -2065,12 +2057,10 @@ export const BaselineReviewPage: React.FC = () => {
                               Cancelled
                             </span>
                           </div>
-                          <div className="flex items-center gap-1.5">
-                            <span className="w-3.5 h-3.5 rounded-full bg-amber-500 text-gray-950 font-black text-[9px] flex items-center justify-center border border-amber-200 shadow-xs">
-                              !
-                            </span>
-                            <span className="text-[10px] text-text-muted font-medium">
-                              Execution Prerequisites (!)
+                          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-amber-500/10 border border-amber-500/25 shadow-sm">
+                            <AlertTriangle className="w-3.5 h-3.5 text-amber-400 animate-pulse flex-shrink-0" />
+                            <span className="text-[10px] text-amber-300 font-semibold">
+                              Execution Prerequisites Required
                             </span>
                           </div>
                         </div>
@@ -2623,11 +2613,24 @@ export const BaselineReviewPage: React.FC = () => {
 
                                     {dependencies &&
                                       dependencies.length > 0 && (
-                                        <div className="mt-4">
-                                          <h5 className="text-[10px] font-bold text-orange-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                                            <AlertTriangle className="w-3 h-3" />{" "}
-                                            Execution Prerequisites
-                                          </h5>
+                                        <div className="mt-4 p-3 rounded-lg bg-gradient-to-br from-amber-950/40 via-gray-900/90 to-amber-950/30 border border-amber-500/50 shadow-[0_0_15px_rgba(245,158,11,0.2)] relative overflow-hidden">
+                                          <div className="flex items-center justify-between mb-2.5 pb-2 border-b border-amber-500/25">
+                                            <h5 className="text-[11px] font-bold text-amber-300 uppercase tracking-wider flex items-center gap-2">
+                                              <span className="w-4 h-4 rounded-full bg-amber-500 text-gray-950 font-black text-[10px] flex items-center justify-center shadow-[0_0_8px_rgba(245,158,11,0.9)] animate-pulse">
+                                                !
+                                              </span>
+                                              Execution Prerequisites
+                                            </h5>
+                                            <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[9px] font-bold shadow-xs">
+                                              {dependencies.filter((d: any) =>
+                                                typeof d === "object" &&
+                                                d !== null
+                                                  ? d.status === "COMPLETED"
+                                                  : false,
+                                              ).length}{" "}
+                                              / {dependencies.length} Satisfied
+                                            </span>
+                                          </div>
                                           <ul className="space-y-2">
                                             {dependencies.map((dep, idx) => {
                                               const depObj = dep as any;
@@ -2649,48 +2652,57 @@ export const BaselineReviewPage: React.FC = () => {
                                               return (
                                                 <li
                                                   key={idx}
-                                                  className={`text-xs flex flex-col gap-0.5 px-2 py-1.5 rounded-md border ${
+                                                  className={`text-xs flex flex-col gap-1.5 px-3.5 py-3 rounded-lg border-l-4 transition-all duration-300 ${
                                                     isDone
-                                                      ? "bg-emerald-950/10 border-emerald-900/20 text-gray-400"
-                                                      : "bg-orange-950/10 border-orange-900/20 text-gray-300"
+                                                      ? "bg-emerald-950/15 border-l-emerald-500 border-y-emerald-950/20 border-r-emerald-950/20 text-gray-400"
+                                                      : "bg-amber-950/20 border-l-amber-500 border-y-amber-950/30 border-r-amber-950/30 text-amber-100 shadow-[0_2px_8px_rgba(245,158,11,0.08)]"
                                                   }`}
                                                 >
-                                                  <div className="flex items-center gap-1.5 leading-tight">
-                                                    {isDone ? (
-                                                      <span className="text-emerald-500 text-[10px]">
-                                                        ✓
+                                                  <div className="flex items-start justify-between gap-2 leading-tight">
+                                                    <div className="flex items-center gap-2">
+                                                      {isDone ? (
+                                                        <span className="w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] flex items-center justify-center font-bold flex-shrink-0">
+                                                          ✓
+                                                        </span>
+                                                      ) : (
+                                                        <span className="w-4 h-4 rounded-full bg-amber-500/20 text-amber-400 text-[10px] flex items-center justify-center font-bold animate-pulse flex-shrink-0">
+                                                          !
+                                                        </span>
+                                                      )}
+                                                      <span
+                                                        className={`font-semibold tracking-wide ${
+                                                          isDone
+                                                            ? "line-through text-gray-500"
+                                                            : "text-amber-200"
+                                                        }`}
+                                                      >
+                                                        {depName}
                                                       </span>
-                                                    ) : (
-                                                      <span className="text-red-400 text-[10px]">
-                                                        🔴
-                                                      </span>
-                                                    )}
-                                                    <span
-                                                      className={
-                                                        isDone
-                                                          ? "line-through"
-                                                          : ""
-                                                      }
-                                                    >
-                                                      {depName}
-                                                    </span>
+                                                    </div>
                                                     {isObject &&
                                                       depObj.owner && (
-                                                        <span className="ml-2 px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider bg-indigo-950 text-indigo-300 border border-indigo-900">
+                                                        <span className="px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider bg-indigo-950/80 text-indigo-300 border border-indigo-800/60 shadow-xs flex-shrink-0">
                                                           {depObj.owner}
                                                         </span>
                                                       )}
                                                   </div>
-                                                  <span
-                                                    className={`text-[10px] font-medium ml-4 ${isDone ? "text-emerald-500/70" : "text-gray-500"}`}
-                                                  >
-                                                    {isDone
-                                                      ? "Completed"
-                                                      : "Pending"}
-                                                  </span>
+                                                  <div className="flex items-center gap-1.5 pl-6 text-[10px]">
+                                                    <span
+                                                      className={`font-semibold uppercase tracking-wider ${
+                                                        isDone
+                                                          ? "text-emerald-400"
+                                                          : "text-amber-400 animate-pulse"
+                                                      }`}
+                                                    >
+                                                      {isDone
+                                                        ? "Ready"
+                                                        : "Pending Action"}
+                                                    </span>
+                                                  </div>
                                                   {isObject &&
                                                     depObj.evidence && (
-                                                      <div className="ml-4 mt-0.5 text-[9px] text-gray-500 italic border-l border-gray-700/50 pl-2">
+                                                      <div className="ml-6 mt-1 text-[10px] text-gray-400 italic border-l border-gray-700/60 pl-2.5">
+                                                        <strong>AI Evidence:</strong>{" "}
                                                         {depObj.evidence}
                                                       </div>
                                                     )}
