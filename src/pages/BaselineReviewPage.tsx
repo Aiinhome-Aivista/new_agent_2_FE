@@ -1147,6 +1147,45 @@ export const BaselineReviewPage: React.FC = () => {
                         }
                       }
 
+                      // Check for Execution Prerequisites
+                      let hasPrerequisites = false;
+                      let prereqCount = 0;
+                      try {
+                        const rawDeps =
+                          item.latest_progress?.dependencies ||
+                          item.dependencies ||
+                          item.prerequisites ||
+                          item.execution_prerequisites;
+                        if (rawDeps) {
+                          const parsed =
+                            typeof rawDeps === "string"
+                              ? JSON.parse(rawDeps)
+                              : rawDeps;
+                          if (Array.isArray(parsed) && parsed.length > 0) {
+                            hasPrerequisites = true;
+                            prereqCount = parsed.length;
+                          }
+                        }
+                      } catch (e) {}
+
+                      const mData = getMilestoneData(
+                        item.name,
+                        item.milestone_normalized,
+                      );
+                      if (mData) {
+                        const blockedByIds = mData.blocked_by_ids
+                          ? mData.blocked_by_ids.split(",").filter(Boolean)
+                          : [];
+                        if (
+                          mData.predecessor_details ||
+                          blockedByIds.length > 0
+                        ) {
+                          hasPrerequisites = true;
+                          if (prereqCount === 0)
+                            prereqCount = blockedByIds.length || 1;
+                        }
+                      }
+
                       // Determine status-based color scheme
                       const completionStatus =
                         item.completion_status || "ACTIVE";
@@ -1180,6 +1219,8 @@ export const BaselineReviewPage: React.FC = () => {
                         _dateMs: dateMs,
                         _idx: idx,
                         _color: itemColor,
+                        _hasPrerequisites: hasPrerequisites,
+                        _prereqCount: prereqCount,
                       };
                     },
                   );
@@ -1459,7 +1500,7 @@ export const BaselineReviewPage: React.FC = () => {
                                   <>
                                     {/* Date label */}
                                     <div
-                                      className="px-2 py-0.5 rounded-md text-[10px] font-semibold shadow-md transition-all duration-300 border whitespace-nowrap max-w-[110px] truncate text-center"
+                                      className="px-2 py-0.5 rounded-md text-[10px] font-semibold shadow-md transition-all duration-300 border whitespace-nowrap max-w-[120px] truncate text-center flex items-center justify-center gap-1"
                                       style={
                                         isSelected
                                           ? {
@@ -1477,7 +1518,15 @@ export const BaselineReviewPage: React.FC = () => {
                                       }
                                       title={dateStr}
                                     >
-                                      {dateStr}
+                                      <span>{dateStr}</span>
+                                      {item._hasPrerequisites && (
+                                        <span
+                                          className="w-3.5 h-3.5 rounded-full bg-amber-500 text-gray-950 font-black text-[9px] flex items-center justify-center shadow-[0_0_6px_rgba(245,158,11,0.8)] leading-none flex-shrink-0"
+                                          title="Has Execution Prerequisites (!)"
+                                        >
+                                          !
+                                        </span>
+                                      )}
                                     </div>
                                     {/* Name */}
                                     <span
@@ -1501,24 +1550,26 @@ export const BaselineReviewPage: React.FC = () => {
                                         item.name,
                                         item.milestone_normalized,
                                       );
-                                      if (!mData) return null;
-                                      const progressPct = item.latest_progress?.progress_percentage || 0;
+                                      const progressPct =
+                                        item.latest_progress
+                                          ?.progress_percentage || 0;
                                       let milestoneStatus = (
-                                        mData.status || "PENDING"
+                                        mData?.status || "PENDING"
                                       ).toUpperCase();
-                                      if (progressPct > 0 && milestoneStatus === "BLOCKED") {
-                                          milestoneStatus = "IN_PROGRESS";
+                                      if (
+                                        progressPct > 0 &&
+                                        milestoneStatus === "BLOCKED"
+                                      ) {
+                                        milestoneStatus = "IN_PROGRESS";
                                       }
                                       const isCompleted =
                                         milestoneStatus === "COMPLETED" ||
                                         milestoneStatus === "CANCELLED";
 
-                                      if (isCompleted) return null;
-
-                                      const blockedByIds = mData.blocked_by_ids
+                                      const blockedByIds = mData?.blocked_by_ids
                                         ? mData.blocked_by_ids.split(",")
                                         : [];
-                                      const blockingIds = mData.blocking_ids
+                                      const blockingIds = mData?.blocking_ids
                                         ? mData.blocking_ids.split(",")
                                         : [];
 
@@ -1554,27 +1605,31 @@ export const BaselineReviewPage: React.FC = () => {
                                                 "CANCELLED",
                                           );
 
-                                      if (
-                                        incompletePredecessors.length === 0 &&
-                                        activelyBlockingSuccessors.length ===
-                                          0 &&
-                                        milestoneStatus !== "BLOCKED" &&
-                                        milestoneStatus !== "PENDING"
-                                      ) {
-                                        return null;
-                                      }
-
                                       return (
                                         <div className="flex flex-col gap-0.5 mt-1 items-center">
-                                          {milestoneStatus === "BLOCKED" && (
-                                            <span
-                                              className="text-[8px] bg-red-900/40 text-red-300 border border-red-800/50 px-1.5 py-0.5 rounded-sm truncate max-w-[120px] shadow-sm font-medium"
-                                              title="Waiting for predecessor"
-                                            >
-                                              ⛔ Waiting for predecessor
-                                            </span>
-                                          )}
-                                          {milestoneStatus === "PENDING" &&
+                                          {item._hasPrerequisites &&
+                                            !isCompleted && (
+                                              <span
+                                                className="text-[8px] bg-amber-950/70 text-amber-300 border border-amber-500/50 px-1.5 py-0.5 rounded-sm truncate max-w-[120px] shadow-sm font-bold flex items-center gap-1 animate-pulse"
+                                                title="Has Execution Prerequisites (!)"
+                                              >
+                                                <span className="w-2.5 h-2.5 rounded-full bg-amber-500 text-gray-950 font-black text-[8px] flex items-center justify-center leading-none">
+                                                  !
+                                                </span>
+                                                <span>Prerequisites</span>
+                                              </span>
+                                            )}
+                                          {!isCompleted &&
+                                            milestoneStatus === "BLOCKED" && (
+                                              <span
+                                                className="text-[8px] bg-red-900/40 text-red-300 border border-red-800/50 px-1.5 py-0.5 rounded-sm truncate max-w-[120px] shadow-sm font-medium"
+                                                title="Waiting for predecessor"
+                                              >
+                                                ⛔ Waiting for predecessor
+                                              </span>
+                                            )}
+                                          {!isCompleted &&
+                                            milestoneStatus === "PENDING" &&
                                             incompletePredecessors.length >
                                               0 && (
                                               <span
@@ -1584,8 +1639,10 @@ export const BaselineReviewPage: React.FC = () => {
                                                 ⏳ Waiting to start
                                               </span>
                                             )}
-                                          {(milestoneStatus === "IN_PROGRESS" ||
-                                            milestoneStatus === "ACTIVE") &&
+                                          {!isCompleted &&
+                                            (milestoneStatus ===
+                                              "IN_PROGRESS" ||
+                                              milestoneStatus === "ACTIVE") &&
                                             activelyBlockingSuccessors.length >
                                               0 && (
                                               <span
@@ -1641,6 +1698,15 @@ export const BaselineReviewPage: React.FC = () => {
                                         animationDelay: `${idx * 60}ms`,
                                       }}
                                     >
+                                      {item._hasPrerequisites &&
+                                        !isCompleted && (
+                                          <span
+                                            className="absolute -top-2.5 -right-2.5 w-4 h-4 rounded-full bg-amber-500 text-gray-950 font-black text-[10px] flex items-center justify-center border border-amber-200 shadow-[0_0_8px_rgba(245,158,11,0.9)] z-20"
+                                            title="Has Execution Prerequisites (!)"
+                                          >
+                                            !
+                                          </span>
+                                        )}
                                       {isCompleted ? (
                                         <CheckCircle2
                                           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[18px] h-[18px] text-emerald-400 bg-bg-card rounded-full z-10"
@@ -1726,6 +1792,15 @@ export const BaselineReviewPage: React.FC = () => {
                                         animationDelay: `${idx * 60}ms`,
                                       }}
                                     >
+                                      {item._hasPrerequisites &&
+                                        !isCompleted && (
+                                          <span
+                                            className="absolute -top-2.5 -right-2.5 w-4 h-4 rounded-full bg-amber-500 text-gray-950 font-black text-[10px] flex items-center justify-center border border-amber-200 shadow-[0_0_8px_rgba(245,158,11,0.9)] z-20"
+                                            title="Has Execution Prerequisites (!)"
+                                          >
+                                            !
+                                          </span>
+                                        )}
                                       {isCompleted ? (
                                         <CheckCircle2
                                           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[18px] h-[18px] text-emerald-400 bg-bg-card rounded-full z-10"
@@ -1791,7 +1866,7 @@ export const BaselineReviewPage: React.FC = () => {
                                     ></div>
                                     {/* Date label */}
                                     <div
-                                      className="px-2 py-0.5 rounded-md text-[10px] font-semibold shadow-md transition-all duration-300 border whitespace-nowrap max-w-[110px] truncate text-center"
+                                      className="px-2 py-0.5 rounded-md text-[10px] font-semibold shadow-md transition-all duration-300 border whitespace-nowrap max-w-[120px] truncate text-center flex items-center justify-center gap-1"
                                       style={
                                         isSelected
                                           ? {
@@ -1809,7 +1884,15 @@ export const BaselineReviewPage: React.FC = () => {
                                       }
                                       title={dateStr}
                                     >
-                                      {dateStr}
+                                      <span>{dateStr}</span>
+                                      {item._hasPrerequisites && (
+                                        <span
+                                          className="w-3.5 h-3.5 rounded-full bg-amber-500 text-gray-950 font-black text-[9px] flex items-center justify-center shadow-[0_0_6px_rgba(245,158,11,0.8)] leading-none flex-shrink-0"
+                                          title="Has Execution Prerequisites (!)"
+                                        >
+                                          !
+                                        </span>
+                                      )}
                                     </div>
                                     {/* Name */}
                                     <span
@@ -1833,20 +1916,26 @@ export const BaselineReviewPage: React.FC = () => {
                                         item.name,
                                         item.milestone_normalized,
                                       );
-                                      if (!mData) return null;
-                                      const milestoneStatus = (
-                                        mData.status || "PENDING"
+                                      const progressPct =
+                                        item.latest_progress
+                                          ?.progress_percentage || 0;
+                                      let milestoneStatus = (
+                                        mData?.status || "PENDING"
                                       ).toUpperCase();
+                                      if (
+                                        progressPct > 0 &&
+                                        milestoneStatus === "BLOCKED"
+                                      ) {
+                                        milestoneStatus = "IN_PROGRESS";
+                                      }
                                       const isCompleted =
                                         milestoneStatus === "COMPLETED" ||
                                         milestoneStatus === "CANCELLED";
 
-                                      if (isCompleted) return null;
-
-                                      const blockedByIds = mData.blocked_by_ids
+                                      const blockedByIds = mData?.blocked_by_ids
                                         ? mData.blocked_by_ids.split(",")
                                         : [];
-                                      const blockingIds = mData.blocking_ids
+                                      const blockingIds = mData?.blocking_ids
                                         ? mData.blocking_ids.split(",")
                                         : [];
 
@@ -1882,27 +1971,31 @@ export const BaselineReviewPage: React.FC = () => {
                                                 "CANCELLED",
                                           );
 
-                                      if (
-                                        incompletePredecessors.length === 0 &&
-                                        activelyBlockingSuccessors.length ===
-                                          0 &&
-                                        milestoneStatus !== "BLOCKED" &&
-                                        milestoneStatus !== "PENDING"
-                                      ) {
-                                        return null;
-                                      }
-
                                       return (
                                         <div className="flex flex-col gap-0.5 mt-1 items-center">
-                                          {milestoneStatus === "BLOCKED" && (
-                                            <span
-                                              className="text-[8px] bg-red-900/40 text-red-300 border border-red-800/50 px-1.5 py-0.5 rounded-sm truncate max-w-[120px] shadow-sm font-medium"
-                                              title="Waiting for predecessor"
-                                            >
-                                              ⛔ Waiting for predecessor
-                                            </span>
-                                          )}
-                                          {milestoneStatus === "PENDING" &&
+                                          {item._hasPrerequisites &&
+                                            !isCompleted && (
+                                              <span
+                                                className="text-[8px] bg-amber-950/70 text-amber-300 border border-amber-500/50 px-1.5 py-0.5 rounded-sm truncate max-w-[120px] shadow-sm font-bold flex items-center gap-1 animate-pulse"
+                                                title="Has Execution Prerequisites (!)"
+                                              >
+                                                <span className="w-2.5 h-2.5 rounded-full bg-amber-500 text-gray-950 font-black text-[8px] flex items-center justify-center leading-none">
+                                                  !
+                                                </span>
+                                                <span>Prerequisites</span>
+                                              </span>
+                                            )}
+                                          {!isCompleted &&
+                                            milestoneStatus === "BLOCKED" && (
+                                              <span
+                                                className="text-[8px] bg-red-900/40 text-red-300 border border-red-800/50 px-1.5 py-0.5 rounded-sm truncate max-w-[120px] shadow-sm font-medium"
+                                                title="Waiting for predecessor"
+                                              >
+                                                ⛔ Waiting for predecessor
+                                              </span>
+                                            )}
+                                          {!isCompleted &&
+                                            milestoneStatus === "PENDING" &&
                                             incompletePredecessors.length >
                                               0 && (
                                               <span
@@ -1912,8 +2005,10 @@ export const BaselineReviewPage: React.FC = () => {
                                                 ⏳ Waiting to start
                                               </span>
                                             )}
-                                          {(milestoneStatus === "IN_PROGRESS" ||
-                                            milestoneStatus === "ACTIVE") &&
+                                          {!isCompleted &&
+                                            (milestoneStatus ===
+                                              "IN_PROGRESS" ||
+                                              milestoneStatus === "ACTIVE") &&
                                             activelyBlockingSuccessors.length >
                                               0 && (
                                               <span
@@ -1970,6 +2065,14 @@ export const BaselineReviewPage: React.FC = () => {
                               Cancelled
                             </span>
                           </div>
+                          <div className="flex items-center gap-1.5">
+                            <span className="w-3.5 h-3.5 rounded-full bg-amber-500 text-gray-950 font-black text-[9px] flex items-center justify-center border border-amber-200 shadow-xs">
+                              !
+                            </span>
+                            <span className="text-[10px] text-text-muted font-medium">
+                              Execution Prerequisites (!)
+                            </span>
+                          </div>
                         </div>
                       </div>
 
@@ -1987,9 +2090,12 @@ export const BaselineReviewPage: React.FC = () => {
                             completionStatus.replace("_", " ");
                           const progressPct =
                             latestProgress?.progress_percentage;
-                            
-                          if ((progressPct || 0) > 0 && completionStatus === "BLOCKED") {
-                              statusLabel = "IN PROGRESS";
+
+                          if (
+                            (progressPct || 0) > 0 &&
+                            completionStatus === "BLOCKED"
+                          ) {
+                            statusLabel = "IN PROGRESS";
                           }
                           const executionSummary =
                             latestProgress?.execution_summary;
@@ -2135,8 +2241,11 @@ export const BaselineReviewPage: React.FC = () => {
                                       let milestoneStatus = (
                                         mData.status || "PENDING"
                                       ).toUpperCase();
-                                      if ((progressPct || 0) > 0 && milestoneStatus === "BLOCKED") {
-                                          milestoneStatus = "IN_PROGRESS";
+                                      if (
+                                        (progressPct || 0) > 0 &&
+                                        milestoneStatus === "BLOCKED"
+                                      ) {
+                                        milestoneStatus = "IN_PROGRESS";
                                       }
                                       const isCompleted =
                                         milestoneStatus === "COMPLETED" ||
@@ -2467,7 +2576,9 @@ export const BaselineReviewPage: React.FC = () => {
                                             ) : hasPredecessors ? (
                                               <div className="flex items-center gap-2 text-xs text-emerald-400">
                                                 <span className="w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0" />
-                                                {(progressPct || 0) > 0 ? `✓ Execution started (${progressPct}% complete)` : "All predecessors complete — ready to execute"}
+                                                {(progressPct || 0) > 0
+                                                  ? `✓ Execution started (${progressPct}% complete)`
+                                                  : "All predecessors complete — ready to execute"}
                                               </div>
                                             ) : null}
 
@@ -2562,13 +2673,14 @@ export const BaselineReviewPage: React.FC = () => {
                                                       }
                                                     >
                                                       {depName}
-                                                      </span>
-                                                      {isObject && depObj.owner && (
+                                                    </span>
+                                                    {isObject &&
+                                                      depObj.owner && (
                                                         <span className="ml-2 px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider bg-indigo-950 text-indigo-300 border border-indigo-900">
                                                           {depObj.owner}
                                                         </span>
                                                       )}
-                                                    </div>
+                                                  </div>
                                                   <span
                                                     className={`text-[10px] font-medium ml-4 ${isDone ? "text-emerald-500/70" : "text-gray-500"}`}
                                                   >
