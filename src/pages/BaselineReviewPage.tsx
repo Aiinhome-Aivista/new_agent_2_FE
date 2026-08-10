@@ -37,6 +37,8 @@ import {
   Calendar,
   MapPin,
   Sparkles,
+  Repeat,
+  RefreshCw,
 } from "lucide-react";
 
 const baselineSteps = [
@@ -246,14 +248,46 @@ export const BaselineReviewPage: React.FC = () => {
   };
 
   // Compute timelineItems early so handlers can reference it
+  // Recurring parent items expand their occurrences; each occurrence becomes
+  // its own timeline node tagged with _is_occurrence=true and _parent_item.
   const timelineItems = React.useMemo(() => {
-    return (baseline?.scope_items || [])
-      .filter((item: any) => item.deadline || item.milestone)
-      .sort((a: any, b: any) => {
-        if (!a.deadline) return 1;
-        if (!b.deadline) return -1;
-        return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
-      });
+    const result: any[] = [];
+    const allItems: any[] = baseline?.scope_items || [];
+    for (const item of allItems) {
+      const isRecurringParent =
+        item.is_recurring && !item.parent_scope_item_id;
+      const occurrences: any[] = item.recurring_occurrences || [];
+      if (isRecurringParent && occurrences.length > 0) {
+        // Push each occurrence as its own timeline node
+        for (const occ of occurrences) {
+          result.push({
+            ...occ,
+            _is_occurrence: true,
+            _parent_item: item,
+          });
+        }
+        // Also add the parent itself (without deadline filtering) so the
+        // group header is selectable, but only if it has its own deadline
+        // (e.g. the LLM gave it one). If not, skip it — occurrences cover it.
+        if (item.deadline || item.milestone) {
+          result.push({ ...item, _is_occurrence: false, _parent_item: null });
+        }
+      } else if (item.deadline || item.milestone) {
+        result.push({ ...item, _is_occurrence: false, _parent_item: null });
+      }
+    }
+    return result.sort((a: any, b: any) => {
+      if (!a.deadline) return 1;
+      if (!b.deadline) return -1;
+      return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
+    });
+  }, [baseline]);
+
+  // Recurring groups for summary badge
+  const recurringGroups = React.useMemo(() => {
+    return (baseline?.scope_items || []).filter(
+      (item: any) => item.is_recurring && !item.parent_scope_item_id,
+    );
   }, [baseline]);
 
   useEffect(() => {
@@ -1111,6 +1145,15 @@ export const BaselineReviewPage: React.FC = () => {
                 <h2 className="text-xl font-bold tracking-tight">
                   Deliverables Timeline
                 </h2>
+                {recurringGroups.length > 0 && (
+                  <span
+                    title={`${recurringGroups.length} recurring commitment${recurringGroups.length > 1 ? "s" : ""} auto-expanded from EL`}
+                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-violet-500/15 border border-violet-500/35 text-violet-300 text-[10px] font-bold uppercase tracking-wider cursor-default"
+                  >
+                    <Repeat className="w-3 h-3" />
+                    {recurringGroups.length} Recurring
+                  </span>
+                )}
                 <span className="ml-auto text-xs font-medium text-text-muted flex items-center gap-1.5">
                   <Calendar className="w-3.5 h-3.5" />
                   {new Date().toLocaleDateString(undefined, {
@@ -1544,6 +1587,16 @@ export const BaselineReviewPage: React.FC = () => {
                                     >
                                       {item.scope_item_normalized || item.name}
                                     </span>
+                                    {/* Recurring occurrence badge */}
+                                    {item._is_occurrence && (
+                                      <span
+                                        className="mt-0.5 flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-violet-500/20 border border-violet-500/35 text-violet-300 text-[8px] font-bold uppercase tracking-wider whitespace-nowrap"
+                                        title={`Recurring ${item.recurrence_frequency || (item._parent_item?.recurrence_frequency) || ""} occurrence from EL`}
+                                      >
+                                        <Repeat className="w-2 h-2" />
+                                        {item.occurrence_period || (item.recurrence_frequency || item._parent_item?.recurrence_frequency || "Recurring")}
+                                      </span>
+                                    )}
                                     {/* Badges */}
                                     {(() => {
                                       const mData = getMilestoneData(
@@ -1905,6 +1958,16 @@ export const BaselineReviewPage: React.FC = () => {
                                     >
                                       {item.scope_item_normalized || item.name}
                                     </span>
+                                    {/* Recurring occurrence badge */}
+                                    {item._is_occurrence && (
+                                      <span
+                                        className="mt-0.5 flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-violet-500/20 border border-violet-500/35 text-violet-300 text-[8px] font-bold uppercase tracking-wider whitespace-nowrap"
+                                        title={`Recurring ${item.recurrence_frequency || (item._parent_item?.recurrence_frequency) || ""} occurrence from EL`}
+                                      >
+                                        <Repeat className="w-2 h-2" />
+                                        {item.occurrence_period || (item.recurrence_frequency || item._parent_item?.recurrence_frequency || "Recurring")}
+                                      </span>
+                                    )}
                                     {/* Badges */}
                                     {(() => {
                                       const mData = getMilestoneData(
@@ -2066,6 +2129,55 @@ export const BaselineReviewPage: React.FC = () => {
                         </div>
                       </div>
 
+                      {/* ── Recurring Commitments Summary ── */}
+                      {recurringGroups.length > 0 && (
+                        <div className="mt-8">
+                          <h3 className="text-sm font-bold text-text-primary uppercase tracking-wider mb-4 flex items-center gap-2">
+                            <Repeat className="w-4 h-4 text-violet-400" />
+                            Recurring Commitments
+                          </h3>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {recurringGroups.map((group: any) => (
+                              <div
+                                key={group.id}
+                                className="p-4 rounded-xl bg-bg-card border border-border-subtle shadow-sm flex flex-col gap-2 relative overflow-hidden group/card cursor-pointer transition-colors hover:border-violet-500/50 hover:bg-violet-950/10"
+                                onClick={() => {
+                                  // Find the first occurrence of this group
+                                  const firstOcc = timelineItems.find(
+                                    (item) => item._parent_item?.id === group.id
+                                  );
+                                  if (firstOcc) setSelectedDeliverableId(firstOcc.id);
+                                }}
+                              >
+                                <div className="absolute top-0 right-0 w-24 h-24 bg-violet-500/5 rounded-bl-full -z-10 group-hover/card:bg-violet-500/10 transition-colors"></div>
+                                <div className="flex items-start justify-between gap-4">
+                                  <h4 className="font-bold text-sm text-text-primary leading-snug">
+                                    {group.scope_item_normalized || group.name}
+                                  </h4>
+                                  <span className="flex-shrink-0 px-2 py-1 rounded-md bg-violet-500/10 border border-violet-500/20 text-violet-400 text-[10px] font-bold uppercase tracking-wider">
+                                    {group.recurrence_frequency}
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-3 text-xs text-text-muted mt-auto">
+                                  <span className="flex items-center gap-1.5">
+                                    <RefreshCw className="w-3.5 h-3.5" />
+                                    {group.recurring_occurrences?.length || 0} Occurrences
+                                  </span>
+                                  {(group.recurrence_start_date || group.recurrence_end_date) && (
+                                    <span className="flex items-center gap-1.5 border-l border-border-subtle pl-3">
+                                      <Calendar className="w-3.5 h-3.5" />
+                                      {group.recurrence_start_date ? new Date(group.recurrence_start_date).toLocaleDateString(undefined, { month: 'short', year: 'numeric' }) : 'Start'}
+                                      {" - "}
+                                      {group.recurrence_end_date ? new Date(group.recurrence_end_date).toLocaleDateString(undefined, { month: 'short', year: 'numeric' }) : 'End'}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
                       {/* ── Selected Item Detail Card ── */}
                       {selectedItem &&
                         (() => {
@@ -2139,6 +2251,18 @@ export const BaselineReviewPage: React.FC = () => {
                                       {selectedItem.scope_item_normalized ||
                                         selectedItem.name}
                                     </h3>
+
+                                    {selectedItem._is_occurrence && (
+                                      <div className="mt-2.5 flex items-center gap-2">
+                                        <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-violet-500/15 border border-violet-500/30 text-violet-300 text-[10px] font-bold uppercase tracking-wider">
+                                          <Repeat className="w-3 h-3" />
+                                          Recurring {selectedItem.recurrence_frequency || selectedItem._parent_item?.recurrence_frequency || "Commitment"}
+                                        </span>
+                                        <span className="text-xs text-gray-400">
+                                          Occurrence for <strong className="text-gray-200">{selectedItem.occurrence_period || selectedItem.deadline_text}</strong>
+                                        </span>
+                                      </div>
+                                    )}
 
                                     {executionSummary && (
                                       <div className="mt-4 p-3 bg-blue-950/20 border border-blue-900/30 rounded-lg">
