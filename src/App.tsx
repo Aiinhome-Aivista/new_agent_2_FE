@@ -15,6 +15,7 @@ import { BaselineReviewPage } from './pages/BaselineReviewPage';
 import { TrackerPage } from './pages/TrackerPage';
 import { ProjectMembersPage } from './pages/ProjectMembersPage';
 import { AIAssistantPage } from './pages/AIAssistantPage';
+import { DriveInboxPage } from './pages/DriveInboxPage';
 import { ProtectedRoute } from './routes/ProtectedRoute';
 import { Sidebar } from './components/Sidebar';
 
@@ -71,6 +72,10 @@ const App: React.FC = () => {
             <Route 
               path="/projects/:id/members" 
               element={<ProtectedRoute><ProtectedLayout><ProjectMembersPage /></ProtectedLayout></ProtectedRoute>} 
+            />
+            <Route 
+              path="/drive" 
+              element={<ProtectedRoute><ProtectedLayout><DriveInboxPage /></ProtectedLayout></ProtectedRoute>} 
             />
           </Routes>
         </Router>

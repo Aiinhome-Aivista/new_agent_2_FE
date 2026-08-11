@@ -20,6 +20,7 @@ import {
   ShieldAlert,
   Sun,
   Moon,
+  CloudDownload,
 } from "lucide-react";
 
 export const Sidebar: React.FC = () => {
@@ -60,6 +61,15 @@ export const Sidebar: React.FC = () => {
       icon: <FolderKanban className="w-5 h-5" />,
     },
   ];
+
+  // Only show Drive Inbox if user is ADMIN or ENGAGEMENT_MANAGER
+  if (user?.role === "ADMIN" || user?.role === "ENGAGEMENT_MANAGER") {
+    navLinks.push({
+      to: "/drive",
+      label: "Drive Inbox",
+      icon: <CloudDownload className="w-5 h-5" />,
+    });
+  }
 
   const sidebarContent = (
     <div className="flex flex-col h-full bg-[#4A4A4A] text-white">
