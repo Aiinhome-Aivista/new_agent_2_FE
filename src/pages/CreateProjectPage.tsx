@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../api/apiClient';
+import { API_ENDPOINTS } from '../api/endpoints';
 
 export const CreateProjectPage: React.FC = () => {
   const [projectName, setProjectName] = useState('');
@@ -13,7 +14,7 @@ export const CreateProjectPage: React.FC = () => {
   useEffect(() => {
     const fetchLeads = async () => {
       try {
-        const res = await apiClient.get('/users/?role=PROJECT_LEAD');
+        const res = await apiClient.get(API_ENDPOINTS.USERS.LIST_BY_ROLE('PROJECT_LEAD'));
         if (res.data.success) {
           setProjectLeads(res.data.data);
         }
@@ -27,7 +28,7 @@ export const CreateProjectPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await apiClient.post('/projects/', {
+      const res = await apiClient.post(API_ENDPOINTS.PROJECTS.CREATE, {
         project_name: projectName,
         client_name: clientName,
         description,

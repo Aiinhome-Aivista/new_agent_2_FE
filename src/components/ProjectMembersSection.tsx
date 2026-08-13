@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import type { ProjectMember, User } from '../types';
 import apiClient from '../api/apiClient';
+import { API_ENDPOINTS } from '../api/endpoints';
 import { useAuth } from '../auth/AuthContext';
 import {
   Users,
@@ -66,7 +67,7 @@ export const ProjectMembersSection: React.FC<ProjectMembersSectionProps> = ({ pr
   const fetchMembers = async () => {
     try {
       setLoading(true);
-      const res = await apiClient.get(`/projects/${projectId}/stakeholders/`);
+      const res = await apiClient.get(API_ENDPOINTS.PROJECTS.STAKEHOLDERS(projectId));
       if (res.data.success) {
         setMembers(res.data.data);
       }
@@ -155,7 +156,7 @@ export const ProjectMembersSection: React.FC<ProjectMembersSectionProps> = ({ pr
     try {
       if (editingMember) {
         // Edit mode
-        const res = await apiClient.put(`/projects/${projectId}/stakeholders/${editingMember.id}`, payload);
+        const res = await apiClient.put(API_ENDPOINTS.PROJECTS.STAKEHOLDER_DETAIL(projectId, editingMember.id), payload);
         if (res.data.success) {
           showNotification('Project member updated successfully!');
           setIsModalOpen(false);
@@ -163,7 +164,7 @@ export const ProjectMembersSection: React.FC<ProjectMembersSectionProps> = ({ pr
         }
       } else {
         // Add mode
-        const res = await apiClient.post(`/projects/${projectId}/stakeholders/`, payload);
+        const res = await apiClient.post(API_ENDPOINTS.PROJECTS.STAKEHOLDERS(projectId), payload);
         if (res.data.success) {
           showNotification('Project member added successfully!');
           setIsModalOpen(false);
@@ -183,7 +184,7 @@ export const ProjectMembersSection: React.FC<ProjectMembersSectionProps> = ({ pr
     if (!deletingMember) return;
     setDeleting(true);
     try {
-      const res = await apiClient.delete(`/projects/${projectId}/stakeholders/${deletingMember.id}`);
+      const res = await apiClient.delete(API_ENDPOINTS.PROJECTS.STAKEHOLDER_DETAIL(projectId, deletingMember.id));
       if (res.data.success) {
         showNotification('Project member removed successfully!');
         setDeletingMember(null);

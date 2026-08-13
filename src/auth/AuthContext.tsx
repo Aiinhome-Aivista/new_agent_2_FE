@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import type { User, ApiResponse } from '../types';
 import apiClient from '../api/apiClient';
+import { API_ENDPOINTS } from '../api/endpoints';
 
 interface AuthContextType {
   user: User | null;
@@ -21,7 +22,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const token = localStorage.getItem('token');
       if (token) {
         try {
-          const res = await apiClient.get<ApiResponse<User>>('/auth/me');
+          const res = await apiClient.get<ApiResponse<User>>(API_ENDPOINTS.AUTH.ME);
           if (res.data.success && res.data.data) {
             setUser(res.data.data);
           }

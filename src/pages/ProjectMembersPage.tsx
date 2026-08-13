@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import apiClient from '../api/apiClient';
-import type { Project } from '../types';
-import { Loader } from '../components/Loader';
+
+import apiClient from "../api/apiClient";
+import { API_ENDPOINTS } from "../api/endpoints";
+import { Loader } from "../components/Loader";
 import { ProjectMembersSection } from '../components/ProjectMembersSection';
 import { ArrowLeft } from 'lucide-react';
+import type { Project } from '../types';
 
 export const ProjectMembersPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -14,7 +16,7 @@ export const ProjectMembersPage: React.FC = () => {
   useEffect(() => {
     const fetchProject = async () => {
       try {
-        const res = await apiClient.get(`/projects/${id}`);
+        const res = await apiClient.get(API_ENDPOINTS.PROJECTS.DETAIL(id!));
         if (res.data.success) {
           setProject(res.data.data);
         }

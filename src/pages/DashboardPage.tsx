@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../auth/AuthContext';
 import { Link } from 'react-router-dom';
 import apiClient from '../api/apiClient';
+import { API_ENDPOINTS } from '../api/endpoints';
 import { 
   Briefcase, 
   ScrollText, 
@@ -31,7 +32,7 @@ export const DashboardPage: React.FC = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const response = await apiClient.get('/dashboard/stats');
+        const response = await apiClient.get(API_ENDPOINTS.DASHBOARD.STATS);
         if (response.data.success) {
           setData(response.data.data);
         }

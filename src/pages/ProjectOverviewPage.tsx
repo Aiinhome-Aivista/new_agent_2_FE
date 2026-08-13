@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import apiClient from "../api/apiClient";
+import { API_ENDPOINTS } from "../api/endpoints";
 import { useAuth } from "../auth/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import { Loader } from "../components/Loader";
@@ -168,16 +169,16 @@ export const ProjectOverviewPage: React.FC = () => {
       try {
         const [projRes, docsRes, baselineRes, membersRes, risksRes] =
           await Promise.all([
-            apiClient.get(`/projects/${id}`),
-            apiClient.get(`/projects/${id}/documents/`),
+            apiClient.get(API_ENDPOINTS.PROJECTS.DETAIL(id!)),
+            apiClient.get(API_ENDPOINTS.DOCUMENTS.LIST(id!)),
             apiClient
-              .get(`/projects/${id}/baseline/`)
+              .get(API_ENDPOINTS.BASELINE.LIST(id!))
               .catch(() => ({ data: { success: false } })),
             apiClient
-              .get(`/projects/${id}/stakeholders/`)
+              .get(API_ENDPOINTS.PROJECTS.STAKEHOLDERS(id!))
               .catch(() => ({ data: { success: false, data: [] } })),
             apiClient
-              .get(`/projects/${id}/tracker/`)
+              .get(API_ENDPOINTS.TRACKER.LIST(id!))
               .catch(() => ({ data: { success: false, data: [] } })),
           ]);
         if (projRes.data.success) setProject(projRes.data.data);

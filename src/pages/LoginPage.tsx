@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import apiClient from "../api/apiClient";
+import { API_ENDPOINTS } from "../api/endpoints";
 import { Eye, EyeOff, ArrowLeft, UserCheck } from "lucide-react";
 
 const personas = [
@@ -70,7 +71,7 @@ export const LoginPage: React.FC = () => {
     setError("");
     setIsSubmitting(true);
     try {
-      const res = await apiClient.post("/auth/login", { email, password });
+      const res = await apiClient.post(API_ENDPOINTS.AUTH.LOGIN, { email, password });
       if (res.data.success) {
         login(res.data.data.access_token, res.data.data.user);
         navigate(from, { replace: true });

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import type { Project } from "../types";
 import apiClient from "../api/apiClient";
+import { API_ENDPOINTS } from "../api/endpoints";
 import { useAuth } from "../auth/AuthContext";
 import { Link } from "react-router-dom";
 import { Loader } from "../components/Loader";
@@ -58,7 +59,7 @@ export const ProjectsPage: React.FC = () => {
       }
     }
     try {
-      const res = await apiClient.put(`/projects/${projectId}`, {
+      const res = await apiClient.put(API_ENDPOINTS.PROJECTS.DETAIL(projectId), {
         end_date: editingEndDate || null,
       });
       if (res.data.success) {
@@ -78,7 +79,7 @@ export const ProjectsPage: React.FC = () => {
   const confirmCloseProject = async () => {
     if (!projectToClose) return;
     try {
-      const res = await apiClient.put(`/projects/${projectToClose}`, {
+      const res = await apiClient.put(API_ENDPOINTS.PROJECTS.DETAIL(projectToClose), {
         monitoring_status: "CLOSED",
       });
       if (res.data.success) {
@@ -93,7 +94,7 @@ export const ProjectsPage: React.FC = () => {
 
   const fetchProjects = async () => {
     try {
-      const res = await apiClient.get("/projects/");
+      const res = await apiClient.get(API_ENDPOINTS.PROJECTS.LIST);
       if (res.data.success) {
         const sorted = (res.data.data || []).sort((a: Project, b: Project) => {
           const timeA = a.created_at ? new Date(a.created_at).getTime() : 0;
@@ -111,7 +112,7 @@ export const ProjectsPage: React.FC = () => {
 
   const fetchLeads = async () => {
     try {
-      const res = await apiClient.get("/users/?role=PROJECT_LEAD");
+      const res = await apiClient.get(API_ENDPOINTS.USERS.LIST_BY_ROLE('PROJECT_LEAD'));
       if (res.data.success) {
         setProjectLeads(res.data.data);
       }
@@ -137,7 +138,7 @@ export const ProjectsPage: React.FC = () => {
     setFormError("");
     setIsGeneratingDesc(true);
     try {
-      const res = await apiClient.post("/projects/generate-description", {
+      const res = await apiClient.post(API_ENDPOINTS.PROJECTS.GENERATE_DESC, {
         project_name: projectName,
         client_name: clientName,
       });
@@ -164,7 +165,7 @@ export const ProjectsPage: React.FC = () => {
     setFormError("");
     setIsCreating(true);
     try {
-      const res = await apiClient.post("/projects/", {
+      const res = await apiClient.post(API_ENDPOINTS.PROJECTS.CREATE, {
         project_name: projectName,
         client_name: clientName,
         description,

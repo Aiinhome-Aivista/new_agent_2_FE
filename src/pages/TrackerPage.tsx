@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import apiClient from "../api/apiClient";
+import { API_ENDPOINTS } from "../api/endpoints";
 import { Loader } from "../components/Loader";
 import { useDocumentProgress } from "../context/DocumentProgressContext";
 import {
@@ -374,8 +375,8 @@ export const TrackerPage: React.FC = () => {
   const fetchTrackerAndProject = async () => {
     try {
       const [trackerRes, projectRes] = await Promise.all([
-        apiClient.get(`/projects/${id}/tracker`),
-        apiClient.get(`/projects/${id}`),
+        apiClient.get(API_ENDPOINTS.TRACKER.LIST(id!)),
+        apiClient.get(API_ENDPOINTS.PROJECTS.DETAIL(id!)),
       ]);
       if (trackerRes.data?.success) {
         setItems(trackerRes.data.data || []);
@@ -663,7 +664,7 @@ export const TrackerPage: React.FC = () => {
     setIsResolving(true);
     try {
       const res = await apiClient.post(
-        `/projects/${id}/tracker/${resolveModalState.itemId}/resolve`,
+        API_ENDPOINTS.TRACKER.RESOLVE(id!, resolveModalState.itemId.toString()),
         { resolution: resolutionText, status: "RESOLVED" },
       );
       if (res.data.success) {
@@ -690,7 +691,7 @@ export const TrackerPage: React.FC = () => {
     setIsReactivating(true);
     try {
       const res = await apiClient.post(
-        `/projects/${id}/tracker/${reactivateModalState.itemId}/reactivate`,
+        API_ENDPOINTS.TRACKER.REACTIVATE(id!, reactivateModalState.itemId.toString()),
       );
       if (res.data.success) {
         const updatedItem = res.data.data;
@@ -720,7 +721,7 @@ export const TrackerPage: React.FC = () => {
   ) => {
     try {
       const response = await apiClient.get(
-        `/projects/${id}/documents/${documentId}/download`,
+        API_ENDPOINTS.DOCUMENTS.DOWNLOAD(id!, documentId.toString()),
         { responseType: "blob" },
       );
       const contentType =
@@ -773,7 +774,7 @@ export const TrackerPage: React.FC = () => {
     setLoadingDocs(true);
     setShowProcessModal(true);
     try {
-      const res = await apiClient.get(`/projects/${id}/documents/`);
+      const res = await apiClient.get(API_ENDPOINTS.DOCUMENTS.LIST(id!));
       if (res.data.success) {
         const docs = res.data.data.filter(
           (doc: any) =>

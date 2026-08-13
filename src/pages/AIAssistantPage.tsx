@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import apiClient from '../api/apiClient';
+import { API_ENDPOINTS } from '../api/endpoints';
 import { Loader } from '../components/Loader';
 import { Loader2, Send, MessageSquare, Plus, Trash2, Calendar, FileText, Download, User, Bot, CornerDownLeft } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
@@ -62,7 +63,7 @@ export const AIAssistantPage: React.FC = () => {
     fetchSessions();
     const fetchProjectDetails = async () => {
       try {
-        const res = await apiClient.get(`/projects/${id}`);
+        const res = await apiClient.get(API_ENDPOINTS.PROJECTS.DETAIL(id!));
         if (res.data.success) {
           setProject(res.data.data);
         }
@@ -118,7 +119,7 @@ export const AIAssistantPage: React.FC = () => {
   const fetchSessions = async () => {
     setLoadingSessions(true);
     try {
-      const res = await apiClient.get(`/projects/${id}/rag/sessions`);
+      const res = await apiClient.get(API_ENDPOINTS.RAG.SESSIONS(id!));
       if (res.data.success) {
         setSessions(res.data.data);
         if (res.data.data.length > 0 && currentSessionIdRef.current === null) {
@@ -135,7 +136,7 @@ export const AIAssistantPage: React.FC = () => {
   const fetchMessages = async (sessionId: number) => {
     setLoadingMessages(true);
     try {
-      const res = await apiClient.get(`/projects/${id}/rag/sessions/${sessionId}/messages`);
+      const res = await apiClient.get(API_ENDPOINTS.RAG.MESSAGES(id!, sessionId));
       if (res.data.success) {
         setMessages(res.data.data);
         lastFetchedSessionIdRef.current = sessionId;
@@ -152,7 +153,7 @@ export const AIAssistantPage: React.FC = () => {
     setCreatingSession(true);
     try {
       const name = 'New Chat';
-      const res = await apiClient.post(`/projects/${id}/rag/sessions`, {
+      const res = await apiClient.post(API_ENDPOINTS.RAG.SESSIONS(id!), {
         session_name: name
       });
       if (res.data.success) {
@@ -176,7 +177,7 @@ export const AIAssistantPage: React.FC = () => {
     e.stopPropagation();
     if (!confirm("Are you sure you want to delete this chat session and all its messages?")) return;
     try {
-      const res = await apiClient.delete(`/projects/${id}/rag/sessions/${sessionId}`);
+      const res = await apiClient.delete(API_ENDPOINTS.RAG.SESSION_DETAIL(id!, sessionId));
       if (res.data.success) {
         setSessions(prev => prev.filter(s => s.id !== sessionId));
         if (currentSessionIdRef.current === sessionId) {
@@ -210,7 +211,7 @@ export const AIAssistantPage: React.FC = () => {
     }
 
     try {
-      const res = await apiClient.post(`/projects/${id}/rag/sessions/${sessionIdToUse}/messages`, {
+      const res = await apiClient.post(API_ENDPOINTS.RAG.MESSAGES(id!, sessionIdToUse), {
         query: text
       });
       if (res.data.success) {
@@ -249,7 +250,7 @@ export const AIAssistantPage: React.FC = () => {
 
   const fetchSessionsWithoutReset = async () => {
     try {
-      const res = await apiClient.get(`/projects/${id}/rag/sessions`);
+      const res = await apiClient.get(API_ENDPOINTS.RAG.SESSIONS(id!));
       if (res.data.success) {
         setSessions(res.data.data);
       }
@@ -260,7 +261,7 @@ export const AIAssistantPage: React.FC = () => {
 
   const handleDownloadDoc = async (docId: number, docName: string) => {
     try {
-      const response = await apiClient.get(`/projects/${id}/documents/${docId}/download`, {
+      const response = await apiClient.get(API_ENDPOINTS.DOCUMENTS.DOWNLOAD(id!, docId), {
         responseType: 'blob',
       });
       const blob = new Blob([response.data], { type: (response.headers['content-type'] as string) || 'application/octet-stream' });

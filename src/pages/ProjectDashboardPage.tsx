@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import apiClient from "../api/apiClient";
+import { API_ENDPOINTS } from "../api/endpoints";
 import type { Project } from "../types";
 import { Loader } from "../components/Loader";
 import { useAuth } from "../auth/AuthContext";
@@ -73,7 +74,7 @@ export const ProjectDashboardPage: React.FC = () => {
 
   const fetchDriveInbox = async () => {
     try {
-      const res = await apiClient.get(`/drive/inbox?project_id=${id}`);
+      const res = await apiClient.get(API_ENDPOINTS.DRIVE.INBOX_BY_PROJECT(id!));
       setDriveItems(res.data?.data || []);
     } catch {
       // silent
@@ -83,7 +84,7 @@ export const ProjectDashboardPage: React.FC = () => {
   const handleDriveSync = async () => {
     setDriveSyncing(true);
     try {
-      await apiClient.post("/drive/sync");
+      await apiClient.post(API_ENDPOINTS.DRIVE.SYNC);
       await fetchDriveInbox();
       setNotification({ message: "Drive sync complete.", type: "success" });
     } catch {
@@ -97,7 +98,7 @@ export const ProjectDashboardPage: React.FC = () => {
     if (!item.matched_project_id && !id) return;
     setDriveProcessingId(item.id);
     try {
-      await apiClient.post(`/drive/inbox/${item.id}/process`, {
+      await apiClient.post(API_ENDPOINTS.DRIVE.PROCESS_INBOX(item.id), {
         project_id: item.matched_project_id || parseInt(id!),
         doc_type: item.doc_type || "MOM",
       });
@@ -105,7 +106,7 @@ export const ProjectDashboardPage: React.FC = () => {
       await fetchDriveInbox();
       
       // Refresh the Execution History section
-      const docsRes = await apiClient.get(`/projects/${id}/documents/`);
+      const docsRes = await apiClient.get(API_ENDPOINTS.DOCUMENTS.LIST(id!));
       if (docsRes.data.success) setDocuments(docsRes.data.data);
     } catch (err: any) {
       setNotification({ message: err?.response?.data?.detail || "Processing failed.", type: "error" });
@@ -116,14 +117,14 @@ export const ProjectDashboardPage: React.FC = () => {
 
   const handleDriveSkip = async (item: any) => {
     try {
-      await apiClient.patch(`/drive/inbox/${item.id}/skip`);
+      await apiClient.patch(API_ENDPOINTS.DRIVE.SKIP_INBOX(item.id));
       await fetchDriveInbox();
     } catch { /* silent */ }
   };
 
   const handleDriveResume = async (item: any) => {
     try {
-      await apiClient.patch(`/drive/inbox/${item.id}/resume`);
+      await apiClient.patch(API_ENDPOINTS.DRIVE.RESUME_INBOX(item.id));
       await fetchDriveInbox();
     } catch { /* silent */ }
   };
@@ -131,7 +132,7 @@ export const ProjectDashboardPage: React.FC = () => {
   const handleDriveDelete = async (item: any) => {
     if (!confirm(`Are you sure you want to permanently delete "${item.filename}" from the inbox?`)) return;
     try {
-      await apiClient.delete(`/drive/inbox/${item.id}`);
+      await apiClient.delete(API_ENDPOINTS.DRIVE.DELETE_INBOX(item.id));
       await fetchDriveInbox();
     } catch { /* silent */ }
   };
@@ -170,9 +171,9 @@ export const ProjectDashboardPage: React.FC = () => {
     const fetchProject = async () => {
       try {
         const [projRes, docsRes, typesRes] = await Promise.all([
-          apiClient.get(`/projects/${id}`),
-          apiClient.get(`/projects/${id}/documents/`),
-          apiClient.get(`/projects/${id}/documents/types`),
+          apiClient.get(API_ENDPOINTS.PROJECTS.DETAIL(id!)),
+          apiClient.get(API_ENDPOINTS.DOCUMENTS.LIST(id!)),
+          apiClient.get(API_ENDPOINTS.DOCUMENTS.TYPES(id!)),
         ]);
         if (projRes.data.success) setProject(projRes.data.data);
         if (docsRes.data.success) setDocuments(docsRes.data.data);
@@ -193,9 +194,9 @@ export const ProjectDashboardPage: React.FC = () => {
         label: customName,
         description: customDesc,
       };
-      await apiClient.post(`/projects/${id}/documents/types`, payload);
+      await apiClient.post(API_ENDPOINTS.DOCUMENTS.TYPES(id!), payload);
 
-      const typesRes = await apiClient.get(`/projects/${id}/documents/types`);
+      const typesRes = await apiClient.get(API_ENDPOINTS.DOCUMENTS.TYPES(id!));
       if (typesRes.data.success) {
         setDocumentTypes(typesRes.data.data);
         setMonitoringDocType(payload.name);
@@ -266,17 +267,15 @@ export const ProjectDashboardPage: React.FC = () => {
           d.id === docId ? { ...d, processing_status: "PROCESSING" } : d,
         ),
       );
-      const res = await apiClient.post(
-        `/projects/${id}/documents/${docId}/process`,
-      );
+      const res = await apiClient.post(API_ENDPOINTS.DOCUMENTS.PROCESS(id!, docId));
       if (res.data.success) {
-        const docsRes = await apiClient.get(`/projects/${id}/documents/`);
+        const docsRes = await apiClient.get(API_ENDPOINTS.DOCUMENTS.LIST(id!));
         if (docsRes.data.success) setDocuments(docsRes.data.data);
         showNotification("Document analysis has started!", "success");
       }
     } catch (error) {
       showNotification("Failed to start processing the document", "error");
-      const docsRes = await apiClient.get(`/projects/${id}/documents/`);
+      const docsRes = await apiClient.get(API_ENDPOINTS.DOCUMENTS.LIST(id!));
       if (docsRes.data.success) setDocuments(docsRes.data.data);
     }
   };
@@ -299,12 +298,12 @@ export const ProjectDashboardPage: React.FC = () => {
     if (!deleteReason.trim()) return;
     try {
       const res = await apiClient.delete(
-        `/projects/${id}/documents/${deletingDocId}?reason=${encodeURIComponent(deleteReason)}`,
+        API_ENDPOINTS.DOCUMENTS.DETAIL(id!, deletingDocId) + `?reason=${encodeURIComponent(deleteReason)}`,
       );
       if (res.data.success) {
         setDeletingDocId(null);
         setDeleteReason("");
-        const docsRes = await apiClient.get(`/projects/${id}/documents/`);
+        const docsRes = await apiClient.get(API_ENDPOINTS.DOCUMENTS.LIST(id!));
         if (docsRes.data.success) setDocuments(docsRes.data.data);
         showNotification("Document deleted successfully!", "success");
       }
@@ -332,14 +331,14 @@ export const ProjectDashboardPage: React.FC = () => {
     setUploading(true);
     try {
       const res = await apiClient.post(
-        `/projects/${id}/documents/confirm-upload`,
+        API_ENDPOINTS.DOCUMENTS.CONFIRM_UPLOAD(id!),
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },
         },
       );
       if (res.data.success) {
-        const docsRes = await apiClient.get(`/projects/${id}/documents/`);
+        const docsRes = await apiClient.get(API_ENDPOINTS.DOCUMENTS.LIST(id!));
         if (docsRes.data.success) setDocuments(docsRes.data.data);
         if (target === "BASELINE") {
           setBaselineFile(null);
@@ -375,7 +374,7 @@ export const ProjectDashboardPage: React.FC = () => {
         },
       );
       if (res.data.success) {
-        const docsRes = await apiClient.get(`/projects/${id}/documents/`);
+        const docsRes = await apiClient.get(API_ENDPOINTS.DOCUMENTS.LIST(id!));
         if (docsRes.data.success) setDocuments(docsRes.data.data);
         if (uploadTarget === "BASELINE") setBaselineFile(null);
         else setMonitoringFile(null);

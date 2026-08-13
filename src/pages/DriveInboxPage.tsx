@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../auth/AuthContext";
 import apiClient from "../api/apiClient";
+import { API_ENDPOINTS } from "../api/endpoints";
 import { CloudDownload, Plus, Trash2, RefreshCw, X, FileText, Check, AlertTriangle, ShieldCheck } from "lucide-react";
 
 export const DriveInboxPage: React.FC = () => {
@@ -22,9 +23,9 @@ export const DriveInboxPage: React.FC = () => {
   const fetchData = async () => {
     try {
       const [accRes, projRes, inboxRes] = await Promise.all([
-        apiClient.get("/drive/accounts"),
-        apiClient.get("/projects/"),
-        apiClient.get("/drive/inbox"),
+        apiClient.get(API_ENDPOINTS.DRIVE.ACCOUNTS),
+        apiClient.get(API_ENDPOINTS.PROJECTS.LIST),
+        apiClient.get(API_ENDPOINTS.DRIVE.INBOX),
       ]);
       setAccounts(accRes.data?.data || []);
       setProjects(projRes.data?.data || []);
@@ -45,7 +46,7 @@ export const DriveInboxPage: React.FC = () => {
     setAdding(true);
     setError("");
     try {
-      await apiClient.post("/drive/accounts", {
+      await apiClient.post(API_ENDPOINTS.DRIVE.ACCOUNTS, {
         label,
         service_email: serviceEmail,
         folder_id: folderId,
@@ -67,7 +68,7 @@ export const DriveInboxPage: React.FC = () => {
   const handleDeleteAccount = async (id: number) => {
     if (!confirm("Are you sure you want to remove this Drive account?")) return;
     try {
-      await apiClient.delete(`/drive/accounts/${id}`);
+      await apiClient.delete(API_ENDPOINTS.DRIVE.ACCOUNT_DETAIL(id));
       fetchData();
     } catch (err) {
       console.error(err);
@@ -76,7 +77,7 @@ export const DriveInboxPage: React.FC = () => {
 
   const handleSyncAll = async () => {
     try {
-      await apiClient.post("/drive/sync");
+      await apiClient.post(API_ENDPOINTS.DRIVE.SYNC);
       fetchData();
       alert("Sync completed.");
     } catch (err) {
@@ -87,7 +88,7 @@ export const DriveInboxPage: React.FC = () => {
   const handleAssignProject = async (inboxId: number, projectId: string) => {
     if (!projectId) return;
     try {
-      await apiClient.patch(`/drive/inbox/${inboxId}/assign`, {
+      await apiClient.patch(API_ENDPOINTS.DRIVE.ASSIGN_INBOX(inboxId), {
         project_id: parseInt(projectId),
         doc_type: "MOM",
       });
