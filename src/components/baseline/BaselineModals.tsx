@@ -1,6 +1,14 @@
 import React from "react";
 import { createPortal } from "react-dom";
-import { Loader2, CheckCircle2, Clock, X, Trash2 } from "lucide-react";
+import {
+  Loader2,
+  CheckCircle2,
+  Clock,
+  X,
+  Trash2,
+  Zap,
+  ScanSearch,
+} from "lucide-react";
 
 export interface BaselineModalsProps {
   // Extract Modal Props
@@ -14,6 +22,8 @@ export interface BaselineModalsProps {
   toggleDocSelection: (id: number) => void;
   extracting: boolean;
   confirmExtractAll: () => void;
+  extractionMode: "QUICK" | "DEEP_SCAN";
+  setExtractionMode: (mode: "QUICK" | "DEEP_SCAN") => void;
 
   // Add Item Modal Props
   showAddItemModal: boolean;
@@ -47,6 +57,8 @@ export const BaselineModals: React.FC<BaselineModalsProps> = ({
   toggleDocSelection,
   extracting,
   confirmExtractAll,
+  extractionMode,
+  setExtractionMode,
 
   showAddItemModal,
   setShowAddItemModal,
@@ -78,6 +90,68 @@ export const BaselineModals: React.FC<BaselineModalsProps> = ({
             <p className="text-text-muted text-sm mb-6">
               Choose a processed contract to extract scope items or budget details into your baseline.
             </p>
+
+            {/* Extraction mode selector */}
+            <div className="mb-6">
+              <label className="block text-xs font-semibold uppercase tracking-wide text-text-muted mb-2">
+                Extraction Mode
+              </label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setExtractionMode("QUICK")}
+                  disabled={extracting}
+                  className={`flex flex-col items-start gap-1 p-3 rounded-lg border text-left transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer ${
+                    extractionMode === "QUICK"
+                      ? "border-[#00e5ff] bg-[#00e5ff]/10 ring-1 ring-[#00e5ff]"
+                      : "border-border-strong bg-bg-hover hover:border-cyan-700"
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <Zap
+                      className={`h-4 w-4 ${
+                        extractionMode === "QUICK"
+                          ? "text-[#00e5ff]"
+                          : "text-text-muted"
+                      }`}
+                    />
+                    <span className="text-sm font-semibold text-text-primary">
+                      Quick Extract
+                    </span>
+                  </div>
+                  <span className="text-[11px] leading-snug text-text-muted">
+                    Fast &amp; token-efficient. Best for standard contracts.
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setExtractionMode("DEEP_SCAN")}
+                  disabled={extracting}
+                  className={`flex flex-col items-start gap-1 p-3 rounded-lg border text-left transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer ${
+                    extractionMode === "DEEP_SCAN"
+                      ? "border-[#00e5ff] bg-[#00e5ff]/10 ring-1 ring-[#00e5ff]"
+                      : "border-border-strong bg-bg-hover hover:border-cyan-700"
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <ScanSearch
+                      className={`h-4 w-4 ${
+                        extractionMode === "DEEP_SCAN"
+                          ? "text-[#00e5ff]"
+                          : "text-text-muted"
+                      }`}
+                    />
+                    <span className="text-sm font-semibold text-text-primary">
+                      Deep Scan
+                    </span>
+                  </div>
+                  <span className="text-[11px] leading-snug text-text-muted">
+                    Thorough Map-Reduce sweep. Best for dense or complex docs.
+                  </span>
+                </button>
+              </div>
+            </div>
 
             <div className="space-y-3 mb-6 max-h-60 overflow-y-auto">
               {eligibleDocs.map((doc) => {

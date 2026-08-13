@@ -43,6 +43,8 @@ import {
   Sparkles,
   Repeat,
   RefreshCw,
+  Zap,
+  ScanSearch,
 } from "lucide-react";
 
 const baselineSteps = [
@@ -378,6 +380,9 @@ export const BaselineReviewPage: React.FC = () => {
   const [extracting, setExtracting] = useState(false);
   const [completedDocIds, setCompletedDocIds] = useState<number[]>([]);
   const [selectedDocIds, setSelectedDocIds] = useState<number[]>([]);
+  const [extractionMode, setExtractionMode] = useState<"QUICK" | "DEEP_SCAN">(
+    "QUICK",
+  );
 
   const toggleDocSelection = (docId: number) => {
     setSelectedDocIds([docId]);
@@ -603,6 +608,7 @@ export const BaselineReviewPage: React.FC = () => {
         setExtractingDocId(doc.id);
         await apiClient.post(
           API_ENDPOINTS.BASELINE.EXTRACT(id!, doc.id),
+          { mode: extractionMode },
         );
         // Start polling immediately in the global context
         startPolling(
@@ -1514,6 +1520,68 @@ export const BaselineReviewPage: React.FC = () => {
                 details into your baseline.
               </p>
 
+              {/* Extraction mode selector */}
+              <div className="mb-6">
+                <label className="block text-xs font-semibold uppercase tracking-wide text-text-muted mb-2">
+                  Extraction Mode
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setExtractionMode("QUICK")}
+                    disabled={extracting}
+                    className={`flex flex-col items-start gap-1 p-3 rounded-lg border text-left transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer ${
+                      extractionMode === "QUICK"
+                        ? "border-[#00e5ff] bg-[#00e5ff]/10 ring-1 ring-[#00e5ff]"
+                        : "border-border-strong bg-bg-hover hover:border-cyan-700"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Zap
+                        className={`h-4 w-4 ${
+                          extractionMode === "QUICK"
+                            ? "text-[#00e5ff]"
+                            : "text-text-muted"
+                        }`}
+                      />
+                      <span className="text-sm font-semibold text-text-primary">
+                        Quick Extract
+                      </span>
+                    </div>
+                    <span className="text-[11px] leading-snug text-text-muted">
+                      Fast &amp; token-efficient. Best for standard contracts.
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setExtractionMode("DEEP_SCAN")}
+                    disabled={extracting}
+                    className={`flex flex-col items-start gap-1 p-3 rounded-lg border text-left transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer ${
+                      extractionMode === "DEEP_SCAN"
+                        ? "border-[#00e5ff] bg-[#00e5ff]/10 ring-1 ring-[#00e5ff]"
+                        : "border-border-strong bg-bg-hover hover:border-cyan-700"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <ScanSearch
+                        className={`h-4 w-4 ${
+                          extractionMode === "DEEP_SCAN"
+                            ? "text-[#00e5ff]"
+                            : "text-text-muted"
+                        }`}
+                      />
+                      <span className="text-sm font-semibold text-text-primary">
+                        Deep Scan
+                      </span>
+                    </div>
+                    <span className="text-[11px] leading-snug text-text-muted">
+                      Thorough Map-Reduce sweep. Best for dense or complex docs.
+                    </span>
+                  </button>
+                </div>
+              </div>
+
               <div className="space-y-3 mb-6 max-h-60 overflow-y-auto">
                 {eligibleDocs.map((doc) => {
                   const isExtractingThis = extractingDocId === doc.id;
@@ -1603,6 +1671,8 @@ export const BaselineReviewPage: React.FC = () => {
           completedDocIds={completedDocIds}
           selectedDocIds={selectedDocIds}
           toggleDocSelection={toggleDocSelection}
+          extractionMode={extractionMode}
+          setExtractionMode={setExtractionMode}
           showAddItemModal={showAddItemModal}
           setShowAddItemModal={setShowAddItemModal}
           handleAddItem={handleAddItem}
