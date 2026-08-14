@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
-import type { Project } from "../types";
+import type { Project, HealthRagStatus } from "../types";
 import apiClient from "../api/apiClient";
 import { API_ENDPOINTS } from "../api/endpoints";
 import { useAuth } from "../auth/AuthContext";
 import { Link } from "react-router-dom";
 import { Loader } from "../components/Loader";
-import { Sparkles, Loader2 } from "lucide-react";
+import { Sparkles, Loader2, Activity } from "lucide-react";
+import { getHealthConfig } from "../utils/health";
 
 const formatDate = (dateStr: string | null | undefined) => {
   if (!dateStr) return "Not Specified";
@@ -44,6 +45,7 @@ export const ProjectsPage: React.FC = () => {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
+  const [healthFilter, setHealthFilter] = useState<string>("ALL");
 
   const [isCloseModalOpen, setIsCloseModalOpen] = useState(false);
   const [projectToClose, setProjectToClose] = useState<number | null>(null);
@@ -197,9 +199,9 @@ export const ProjectsPage: React.FC = () => {
   }
 
   const filteredProjects = projects.filter((p) => {
-    const matchesSearch = p.project_name
+    const matchesSearch = (p.project_name || "")
       .toLowerCase()
-      .includes(searchQuery.toLowerCase());
+      .includes((searchQuery || "").toLowerCase());
     const matchesStatus =
       statusFilter === "ALL"
         ? true
@@ -208,7 +210,14 @@ export const ProjectsPage: React.FC = () => {
           : statusFilter === "CLOSED"
             ? p.monitoring_status === "CLOSED"
             : true;
-    return matchesSearch && matchesStatus;
+
+    const currentHealthConfig = getHealthConfig(p.health_score ?? 100, p.rag_status);
+    const matchesHealth =
+      healthFilter === "ALL"
+        ? true
+        : currentHealthConfig.status === healthFilter;
+
+    return matchesSearch && matchesStatus && matchesHealth;
   });
 
   return (
@@ -235,43 +244,96 @@ export const ProjectsPage: React.FC = () => {
         </div>
 
         {/* Search and Filters */}
-        <div className="flex flex-col md:flex-row gap-4 items-center">
-          <input
-            type="text"
-            placeholder="Search projects by name..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="flex-1 w-full bg-bg-input border border-border-subtle rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary-border/50 focus:border-primary-border text-text-primary placeholder-text-muted text-sm transition-all"
-          />
-          <div className="flex bg-bg-input border border-border-subtle rounded-xl p-1 w-full md:w-[380px] shrink-0 h-[46px]">
-            <div className="relative flex w-full">
-              <div
-                className="absolute top-0 bottom-0 w-1/3 bg-primary/20 border border-primary-border/30 rounded-lg transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] shadow-[0_0_10px_rgba(255,90,20,0.1)]"
-                style={{
-                  transform: `translateX(${statusFilter === "ALL"
-                      ? "0%"
-                      : statusFilter === "ACTIVE"
-                        ? "100%"
-                        : "200%"
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
+            <input
+              type="text"
+              placeholder="Search projects by name..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full lg:flex-1 bg-bg-input border border-border-subtle rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary-border/50 focus:border-primary-border text-text-primary placeholder-text-muted text-sm transition-all"
+            />
+
+            {/* Health Filter Pills (Red, Green, Amber) */}
+            <div className="flex items-center gap-1.5 bg-bg-input border border-border-subtle rounded-xl p-1 w-full lg:w-auto shrink-0 overflow-x-auto">
+              <button
+                onClick={() => setHealthFilter("ALL")}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
+                  healthFilter === "ALL"
+                    ? "bg-primary/20 text-primary border border-primary-border/30"
+                    : "text-text-muted hover:text-text-primary"
+                }`}
+              >
+                All Health
+              </button>
+              <button
+                onClick={() => setHealthFilter("GREEN")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
+                  healthFilter === "GREEN"
+                    ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                    : "text-text-muted hover:text-emerald-400"
+                }`}
+              >
+                <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
+                Healthy
+              </button>
+              <button
+                onClick={() => setHealthFilter("AMBER")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
+                  healthFilter === "AMBER"
+                    ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
+                    : "text-text-muted hover:text-amber-400"
+                }`}
+              >
+                <span className="w-2 h-2 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)]" />
+                At Risk
+              </button>
+              <button
+                onClick={() => setHealthFilter("RED")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
+                  healthFilter === "RED"
+                    ? "bg-rose-500/20 text-rose-400 border border-rose-500/30"
+                    : "text-text-muted hover:text-rose-400"
+                }`}
+              >
+                <span className="w-2 h-2 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.6)]" />
+                Critical
+              </button>
+            </div>
+
+            {/* Monitoring Status Filter */}
+            <div className="flex bg-bg-input border border-border-subtle rounded-xl p-1 w-full lg:w-[320px] shrink-0 h-[46px]">
+              <div className="relative flex w-full">
+                <div
+                  className="absolute top-0 bottom-0 w-1/3 bg-primary/20 border border-primary-border/30 rounded-lg transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] shadow-[0_0_10px_rgba(255,90,20,0.1)]"
+                  style={{
+                    transform: `translateX(${
+                      statusFilter === "ALL"
+                        ? "0%"
+                        : statusFilter === "ACTIVE"
+                          ? "100%"
+                          : "200%"
                     })`,
-                }}
-              />
-              {[
-                { id: "ALL", label: "All Projects" },
-                { id: "ACTIVE", label: "Active" },
-                { id: "CLOSED", label: "Closed" },
-              ].map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setStatusFilter(tab.id)}
-                  className={`relative z-10 flex-1 px-4 py-1.5 text-sm font-semibold transition-colors duration-300 rounded-lg cursor-pointer flex items-center justify-center ${statusFilter === tab.id
-                      ? "text-primary"
-                      : "text-text-muted hover:text-text-primary"
+                  }}
+                />
+                {[
+                  { id: "ALL", label: "All Status" },
+                  { id: "ACTIVE", label: "Active" },
+                  { id: "CLOSED", label: "Closed" },
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setStatusFilter(tab.id)}
+                    className={`relative z-10 flex-1 px-3 py-1.5 text-xs font-semibold transition-colors duration-300 rounded-lg cursor-pointer flex items-center justify-center ${
+                      statusFilter === tab.id
+                        ? "text-primary"
+                        : "text-text-muted hover:text-text-primary"
                     }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -282,21 +344,68 @@ export const ProjectsPage: React.FC = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {(filteredProjects || []).map((p) => (
-              <div
-                key={p.id}
-                className="group p-6 rounded-2xl bg-bg-card border border-border-subtle hover:border-primary-border/30 hover:bg-bg-hover transition-all duration-300 hover:shadow-2xl hover:shadow-primary-border/5 hover:-translate-y-1 flex flex-col justify-between"
-              >
-                <div>
-                  <h3 className="font-display text-lg font-bold mb-1 text-text-primary group-hover:text-primary transition-colors duration-300">
-                    {p.project_name}
-                  </h3>
-                  <p className="text-text-muted text-xs mb-3">
-                    {p.client_name || "No Client Name"}
-                  </p>
+            {(filteredProjects || []).map((p) => {
+              const health = getHealthConfig(p.health_score ?? 100, p.rag_status);
+              const scoreVal = p.health_score ?? 100;
 
-                  {/* Project Dates */}
-                  <div className="text-text-muted text-xs mt-3 mb-4 space-y-1.5 border-t border-border-subtle pt-3">
+              return (
+                <div
+                  key={p.id}
+                  className="group p-6 rounded-2xl bg-bg-card border border-border-subtle hover:border-primary-border/30 hover:bg-bg-hover transition-all duration-300 hover:shadow-2xl hover:shadow-primary-border/5 hover:-translate-y-1 flex flex-col justify-between"
+                >
+                  <div>
+                    {/* Header with Project Info & Red/Amber/Green Health Score Indicator */}
+                    <div className="flex items-start justify-between gap-2 mb-3">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-display text-lg font-bold text-text-primary group-hover:text-primary transition-colors duration-300 truncate">
+                          {p.project_name}
+                        </h3>
+                        <p className="text-text-muted text-xs truncate">
+                          {p.client_name || "No Client Name"}
+                        </p>
+                      </div>
+
+                      {/* Red / Green / Amber Health Score Indicator Badge */}
+                      <div
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-bold ${health.badgeBg} shrink-0 shadow-sm transition-all`}
+                        title={`Health Score: ${scoreVal}% (${health.label})`}
+                      >
+                        <span className="relative flex h-2 w-2">
+                          <span
+                            className={`animate-ping absolute inline-flex h-full w-full rounded-full ${health.pingBg} opacity-75`}
+                          />
+                          <span
+                            className={`relative inline-flex rounded-full h-2 w-2 ${health.dotBg}`}
+                          />
+                        </span>
+                        <span>{health.label}</span>
+                        <span className="font-mono text-[11px] opacity-90 font-black">
+                          {scoreVal}%
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Health Score Mini Progress Bar */}
+                    <div className="my-3 py-2 px-3 rounded-xl bg-bg-input/40 border border-border-subtle/40">
+                      <div className="flex justify-between items-center text-[11px] mb-1.5 font-medium">
+                        <span className="text-text-muted flex items-center gap-1">
+                          <Activity className="w-3.5 h-3.5 text-primary/80" />
+                          Project Health Score
+                        </span>
+                        <span className={`font-black font-mono ${health.text}`}>
+                          {scoreVal}/100
+                        </span>
+                      </div>
+                      <div className="w-full h-1.5 bg-bg-card rounded-full overflow-hidden border border-border-subtle/50">
+                        <div
+                          className={`h-full rounded-full transition-all duration-700 ease-out ${health.barBg}`}
+                          style={{ width: `${Math.min(100, Math.max(0, scoreVal))}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Project Dates */}
+                    <div className="text-text-muted text-xs mt-3 mb-4 space-y-1.5 border-t border-border-subtle pt-3">
                     <div className="flex items-center justify-between">
                       <span className="text-text-muted font-medium">
                         Start Date:
@@ -390,7 +499,8 @@ export const ProjectsPage: React.FC = () => {
                   </div>
                 </div>
               </div>
-            ))}
+            );
+          })}
           </div>
         )}
       </div>
