@@ -110,7 +110,7 @@ export const BaselineScopeItems: React.FC<BaselineScopeItemsProps> = ({
                       In Scope
                     </h3>
                   </div>
-                  <span className="px-3 py-1 text-xs font-semibold bg-emerald-500/10 text-emerald-400 rounded-full border border-emerald-500/20 shadow-sm">
+                  <span className="px-3 py-1 text-xs font-semibold bg-emerald-100 dark:bg-emerald-500/10 text-emerald-800 dark:text-emerald-400 rounded-full border border-emerald-300 dark:border-emerald-500/20 shadow-sm">
                     {inScopeItems.length}{" "}
                     {inScopeItems.length === 1 ? "item" : "items"}
                   </span>
@@ -134,7 +134,7 @@ export const BaselineScopeItems: React.FC<BaselineScopeItemsProps> = ({
                             <h4 className="font-bold text-lg text-text-primary group-hover:text-emerald-300 transition-colors flex items-center gap-2">
                               {item.scope_item_normalized || item.name}
                               {item.completion_status === "COMPLETED" && (
-                                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950/40 text-emerald-400 border border-emerald-800/30">
+                                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800/30">
                                   COMPLETED
                                 </span>
                               )}
@@ -146,7 +146,7 @@ export const BaselineScopeItems: React.FC<BaselineScopeItemsProps> = ({
                                 );
                                 if (!versionLabel) return null;
                                 return (
-                                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-950/40 text-purple-600 dark:text-purple-300 border border-purple-800/30">
+                                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-100 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800/30 shadow-xs">
                                     {versionLabel}
                                   </span>
                                 );
@@ -158,7 +158,7 @@ export const BaselineScopeItems: React.FC<BaselineScopeItemsProps> = ({
                                     {item.completion_status === "COMPLETED" && (
                                       <div
                                         title="Completed"
-                                        className="p-1.5 rounded-lg flex-shrink-0 border text-emerald-400 bg-emerald-950/30 border-emerald-500/20"
+                                        className="p-1.5 rounded-lg flex-shrink-0 border text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950/30 border-emerald-300 dark:border-emerald-500/20"
                                       >
                                         <CheckCircle2 className="w-3.5 h-3.5" />
                                       </div>
@@ -169,7 +169,7 @@ export const BaselineScopeItems: React.FC<BaselineScopeItemsProps> = ({
                                         setDeletingItemId(item.id);
                                       }}
                                       title="Delete scope item"
-                                      className="p-1.5 text-rose-400 hover:text-white bg-rose-950/30 hover:bg-rose-900/50 border border-rose-500/20 rounded-lg transition-colors cursor-pointer flex-shrink-0"
+                                      className="p-1.5 text-rose-600 dark:text-rose-400 hover:text-white bg-rose-100 dark:bg-rose-950/30 hover:bg-rose-600 border border-rose-200 dark:border-rose-500/20 rounded-lg transition-colors cursor-pointer flex-shrink-0 shadow-xs"
                                     >
                                       <Trash2 className="w-3.5 h-3.5" />
                                     </button>
@@ -232,14 +232,14 @@ export const BaselineScopeItems: React.FC<BaselineScopeItemsProps> = ({
                           {/* Milestone & Deadline Row */}
                           <div className="flex flex-wrap items-center gap-2 text-xs">
                             {item.milestone && (
-                              <span className="text-blue-300 font-semibold bg-blue-950/45 px-2 py-0.5 rounded border border-blue-800/30 flex items-center gap-1">
+                              <span className="text-blue-700 dark:text-blue-300 font-semibold bg-blue-50 dark:bg-blue-950/45 px-2 py-0.5 rounded border border-blue-200 dark:border-blue-800/30 flex items-center gap-1 shadow-xs">
                                 <CheckCircle2 className="w-3.5 h-3.5 text-blue-500 dark:text-blue-400" />
                                 {item.milestone}
                               </span>
                             )}
                             {item.deadline_text && (
                               <span
-                                className="text-purple-600 dark:text-purple-300 font-semibold bg-purple-950/45 px-2 py-0.5 rounded border border-purple-800/30 flex items-center gap-1"
+                                className="text-purple-700 dark:text-purple-300 font-semibold bg-purple-50 dark:bg-purple-950/45 px-2 py-0.5 rounded border border-purple-200 dark:border-purple-800/30 flex items-center gap-1 shadow-xs"
                                 title={
                                   item.deadline
                                     ? formatDate(item.deadline)
@@ -251,13 +251,13 @@ export const BaselineScopeItems: React.FC<BaselineScopeItemsProps> = ({
                               </span>
                             )}
                             {item.extraction_method && (
-                              <span className="text-text-muted font-medium text-[10px] bg-bg-hover px-1.5 py-0.5 rounded ml-auto">
+                              <span className="text-text-muted font-medium text-[10px] bg-bg-hover px-1.5 py-0.5 rounded ml-auto border border-border-subtle/50">
                                 By: {item.extraction_method}
                               </span>
                             )}
                           </div>
                           <div className="flex justify-between items-center text-xs">
-                            <span className="font-semibold text-emerald-400 px-2.5 py-0.5 bg-emerald-950/40 rounded border border-emerald-800/30">
+                            <span className="font-semibold text-emerald-800 dark:text-emerald-400 px-2.5 py-0.5 bg-emerald-100 dark:bg-emerald-950/40 rounded border border-emerald-300 dark:border-emerald-800/30 shadow-xs">
                               {item.scope_type}
                             </span>
                             <span className="text-text-muted font-medium">
@@ -283,7 +283,7 @@ export const BaselineScopeItems: React.FC<BaselineScopeItemsProps> = ({
                       Out of Scope
                     </h3>
                   </div>
-                  <span className="px-3 py-1 text-xs font-semibold bg-rose-500/10 text-rose-500 dark:text-rose-400 rounded-full border border-rose-500/20 shadow-sm">
+                  <span className="px-3 py-1 text-xs font-semibold bg-rose-100 dark:bg-rose-500/10 text-rose-800 dark:text-rose-400 rounded-full border border-rose-300 dark:border-rose-500/20 shadow-sm">
                     {outOfScopeItems.length}{" "}
                     {outOfScopeItems.length === 1 ? "item" : "items"}
                   </span>
@@ -307,7 +307,7 @@ export const BaselineScopeItems: React.FC<BaselineScopeItemsProps> = ({
                             <h4 className="font-bold text-lg text-text-primary group-hover:text-rose-600 dark:text-rose-300 transition-colors flex items-center gap-2">
                               {item.scope_item_normalized || item.name}
                               {item.completion_status === "COMPLETED" && (
-                                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950/40 text-emerald-400 border border-emerald-800/30">
+                                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800/30">
                                   COMPLETED
                                 </span>
                               )}
@@ -319,7 +319,7 @@ export const BaselineScopeItems: React.FC<BaselineScopeItemsProps> = ({
                                 );
                                 if (!versionLabel) return null;
                                 return (
-                                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-950/40 text-purple-600 dark:text-purple-300 border border-purple-800/30">
+                                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-100 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800/30 shadow-xs">
                                     {versionLabel}
                                   </span>
                                 );
@@ -331,7 +331,7 @@ export const BaselineScopeItems: React.FC<BaselineScopeItemsProps> = ({
                                     {item.completion_status === "COMPLETED" && (
                                       <div
                                         title="Completed"
-                                        className="p-1.5 rounded-lg flex-shrink-0 border text-emerald-400 bg-emerald-950/30 border-emerald-500/20"
+                                        className="p-1.5 rounded-lg flex-shrink-0 border text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950/30 border-emerald-300 dark:border-emerald-500/20"
                                       >
                                         <CheckCircle2 className="w-3.5 h-3.5" />
                                       </div>
@@ -342,7 +342,7 @@ export const BaselineScopeItems: React.FC<BaselineScopeItemsProps> = ({
                                         setDeletingItemId(item.id);
                                       }}
                                       title="Delete scope item"
-                                      className="p-1.5 text-rose-400 hover:text-white bg-rose-950/30 hover:bg-rose-900/50 border border-rose-500/20 rounded-lg transition-colors cursor-pointer flex-shrink-0"
+                                      className="p-1.5 text-rose-600 dark:text-rose-400 hover:text-white bg-rose-100 dark:bg-rose-950/30 hover:bg-rose-600 border border-rose-200 dark:border-rose-500/20 rounded-lg transition-colors cursor-pointer flex-shrink-0 shadow-xs"
                                     >
                                       <Trash2 className="w-3.5 h-3.5" />
                                     </button>
@@ -405,14 +405,14 @@ export const BaselineScopeItems: React.FC<BaselineScopeItemsProps> = ({
                           {/* Milestone & Deadline Row */}
                           <div className="flex flex-wrap items-center gap-2 text-xs">
                             {item.milestone && (
-                              <span className="text-blue-300 font-semibold bg-blue-950/45 px-2 py-0.5 rounded border border-blue-800/30 flex items-center gap-1">
+                              <span className="text-blue-700 dark:text-blue-300 font-semibold bg-blue-50 dark:bg-blue-950/45 px-2 py-0.5 rounded border border-blue-200 dark:border-blue-800/30 flex items-center gap-1 shadow-xs">
                                 <CheckCircle2 className="w-3.5 h-3.5 text-blue-500 dark:text-blue-400" />
                                 {item.milestone}
                               </span>
                             )}
                             {item.deadline_text && (
                               <span
-                                className="text-purple-600 dark:text-purple-300 font-semibold bg-purple-950/45 px-2 py-0.5 rounded border border-purple-800/30 flex items-center gap-1"
+                                className="text-purple-700 dark:text-purple-300 font-semibold bg-purple-50 dark:bg-purple-950/45 px-2 py-0.5 rounded border border-purple-200 dark:border-purple-800/30 flex items-center gap-1 shadow-xs"
                                 title={
                                   item.deadline
                                     ? formatDate(item.deadline)
@@ -424,17 +424,17 @@ export const BaselineScopeItems: React.FC<BaselineScopeItemsProps> = ({
                               </span>
                             )}
                             {item.extraction_method && (
-                              <span className="text-text-muted font-medium text-[10px] bg-bg-hover px-1.5 py-0.5 rounded ml-auto">
+                              <span className="text-text-muted font-medium text-[10px] bg-bg-hover px-1.5 py-0.5 rounded ml-auto border border-border-subtle/50">
                                 By: {item.extraction_method}
                               </span>
                             )}
                           </div>
                           <div className="flex justify-between items-center text-xs">
                             <span
-                              className={`font-semibold px-2.5 py-0.5 rounded border ${
+                              className={`font-semibold px-2.5 py-0.5 rounded border shadow-xs ${
                                 item.scope_type === "OUT_OF_SCOPE"
-                                  ? "text-rose-500 dark:text-rose-400 bg-rose-950/40 border-rose-800/30"
-                                  : "text-blue-500 dark:text-blue-400 bg-blue-950/40 border-blue-800/30"
+                                  ? "text-rose-800 dark:text-rose-400 bg-rose-100 dark:bg-rose-950/40 border-rose-300 dark:border-rose-800/30"
+                                  : "text-blue-800 dark:text-blue-400 bg-blue-100 dark:bg-blue-950/40 border-blue-300 dark:border-blue-800/30"
                               }`}
                             >
                               {item.scope_type}

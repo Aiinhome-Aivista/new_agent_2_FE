@@ -262,7 +262,7 @@ export const BaselineModals: React.FC<BaselineModalsProps> = ({
                       onClick={() => setNewItemScopeType("IN_SCOPE")}
                       className={`py-2 px-3 rounded-xl border text-xs font-semibold flex items-center justify-center gap-2 cursor-pointer ${
                         newItemScopeType === "IN_SCOPE"
-                          ? "bg-emerald-500/20 border-emerald-500 text-emerald-300"
+                          ? "bg-emerald-100 dark:bg-emerald-500/20 border-emerald-400 dark:border-emerald-500 text-emerald-800 dark:text-emerald-300 font-bold shadow-xs"
                           : "bg-bg-card border-border-strong text-text-muted"
                       }`}
                     >
@@ -273,7 +273,7 @@ export const BaselineModals: React.FC<BaselineModalsProps> = ({
                       onClick={() => setNewItemScopeType("OUT_OF_SCOPE")}
                       className={`py-2 px-3 rounded-xl border text-xs font-semibold flex items-center justify-center gap-2 cursor-pointer ${
                         newItemScopeType === "OUT_OF_SCOPE"
-                          ? "bg-rose-500/20 border-rose-500 text-rose-600 dark:text-rose-300"
+                          ? "bg-rose-100 dark:bg-rose-500/20 border-rose-400 dark:border-rose-500 text-rose-800 dark:text-rose-300 font-bold shadow-xs"
                           : "bg-bg-card border-border-strong text-text-muted"
                       }`}
                     >
@@ -334,7 +334,7 @@ export const BaselineModals: React.FC<BaselineModalsProps> = ({
                   <button
                     type="submit"
                     disabled={addingItem || !newItemName.trim()}
-                    className="flex-1 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-text-primary rounded-xl text-xs font-semibold transition-all shadow-md shadow-emerald-500/20 disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+                    className="flex-1 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl text-xs font-semibold transition-all shadow-md shadow-emerald-500/20 disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
                   >
                     {addingItem ? (
                       <Loader2 className="w-4 h-4 animate-spin" />

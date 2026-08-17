@@ -1248,12 +1248,12 @@ export const BaselineReviewPage: React.FC = () => {
                               {displayVersion}
                             </span>
                             <span
-                              className={`px-2.5 py-0.5 rounded text-xs font-bold ${
+                              className={`px-2.5 py-0.5 rounded text-xs font-bold shadow-xs ${
                                 ver.status === "APPROVED"
-                                  ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                                  ? "bg-emerald-100 dark:bg-emerald-500/10 text-emerald-800 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-500/20"
                                   : ver.status === "SUPERSEDED"
-                                    ? "bg-gray-500/10 text-text-muted border border-gray-500/20"
-                                    : "bg-amber-500/10 text-amber-500 dark:text-amber-400 border border-amber-500/20"
+                                    ? "bg-gray-100 dark:bg-gray-500/10 text-gray-700 dark:text-text-muted border border-gray-300 dark:border-gray-500/20"
+                                    : "bg-amber-100 dark:bg-amber-500/10 text-amber-800 dark:text-amber-400 border border-amber-300 dark:border-amber-500/20"
                               }`}
                             >
                               {ver.status}
@@ -1291,7 +1291,7 @@ export const BaselineReviewPage: React.FC = () => {
                               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-4">
                                 {/* In Scope */}
                                 <div className="bg-bg-card/40 p-5 rounded-lg border border-border-subtle/80">
-                                  <h4 className="text-sm font-bold text-emerald-400 uppercase tracking-wider mb-4 border-b border-border-subtle pb-2">
+                                  <h4 className="text-sm font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider mb-4 border-b border-border-subtle pb-2">
                                     In Scope ({inScope.length})
                                   </h4>
                                   {inScope.length === 0 ? (
@@ -1353,7 +1353,7 @@ export const BaselineReviewPage: React.FC = () => {
                                             </details>
                                           </div>
                                           {item.deadline && (
-                                            <div className="text-[10px] text-purple-600 dark:text-purple-300 font-semibold bg-purple-950/40 px-2 py-0.5 rounded border border-purple-800/20 w-fit flex items-center gap-1 mt-1">
+                                            <div className="text-[10px] text-purple-700 dark:text-purple-300 font-semibold bg-purple-50 dark:bg-purple-950/40 px-2 py-0.5 rounded border border-purple-200 dark:border-purple-800/20 w-fit flex items-center gap-1 mt-1 shadow-xs">
                                               <Clock className="w-3 h-3 text-purple-500 dark:text-purple-400" />
                                               {formatDate(item.deadline)}
                                             </div>
@@ -1368,7 +1368,7 @@ export const BaselineReviewPage: React.FC = () => {
                                 <div className="space-y-6">
                                   {/* Out of Scope */}
                                   <div className="bg-bg-card/40 p-5 rounded-lg border border-border-subtle/80">
-                                    <h4 className="text-sm font-bold text-rose-500 dark:text-rose-400 uppercase tracking-wider mb-4 border-b border-border-subtle pb-2">
+                                    <h4 className="text-sm font-bold text-rose-800 dark:text-rose-400 uppercase tracking-wider mb-4 border-b border-border-subtle pb-2">
                                       Out of Scope ({outOfScope.length})
                                     </h4>
                                     {outOfScope.length === 0 ? (
@@ -1436,7 +1436,7 @@ export const BaselineReviewPage: React.FC = () => {
                                   {/* Uncertain */}
                                   {uncertain.length > 0 && (
                                     <div className="bg-bg-card/40 p-5 rounded-lg border border-border-subtle/80">
-                                      <h4 className="text-sm font-bold text-amber-500 dark:text-amber-400 uppercase tracking-wider mb-4 border-b border-border-subtle pb-2">
+                                      <h4 className="text-sm font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider mb-4 border-b border-border-subtle pb-2">
                                         Uncertain ({uncertain.length})
                                       </h4>
                                       <div className="space-y-3">
