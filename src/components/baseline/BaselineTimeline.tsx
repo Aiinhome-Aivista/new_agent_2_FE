@@ -1,5 +1,6 @@
 import React from "react";
 import { Calendar, ChevronLeft, ChevronRight, Repeat, RefreshCw, FileText, CheckCircle2, X, Clock, MapPin, AlertTriangle } from "lucide-react";
+import { useTheme } from "../../context/ThemeContext";
 
 export interface BaselineTimelineProps {
   timelineItems: any[];
@@ -36,6 +37,9 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
   handleRescheduleDeadline,
   formatDate,
 }) => {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
+
   return (
     <>
             {/* Deliverables timeline */}
@@ -133,29 +137,53 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
                       // Determine status-based color scheme
                       const completionStatus =
                         item.completion_status || "ACTIVE";
-                      let itemColor = {
-                        bg: "rgba(245,158,11,0.12)",
-                        border: "#f59e0b",
-                        text: "#fcd34d",
-                        dot: "#f59e0b",
-                        glow: "rgba(245,158,11,0.3)",
-                      }; // Pending/Active (Amber)
+                      let itemColor = isDark
+                        ? {
+                            bg: "rgba(245,158,11,0.18)",
+                            border: "#f59e0b",
+                            text: "#fcd34d",
+                            dot: "#f59e0b",
+                            glow: "rgba(245,158,11,0.3)",
+                          }
+                        : {
+                            bg: "#FEF3C7",
+                            border: "#D97706",
+                            text: "#92400E",
+                            dot: "#F59E0B",
+                            glow: "rgba(245,158,11,0.25)",
+                          }; // Pending/Active (Amber)
                       if (completionStatus === "COMPLETED") {
-                        itemColor = {
-                          bg: "rgba(16,185,129,0.12)",
-                          border: "#10b981",
-                          text: "#6ee7b7",
-                          dot: "#10b981",
-                          glow: "rgba(16,185,129,0.3)",
-                        }; // Completed (Green)
+                        itemColor = isDark
+                          ? {
+                              bg: "rgba(16,185,129,0.18)",
+                              border: "#10b981",
+                              text: "#6ee7b7",
+                              dot: "#10b981",
+                              glow: "rgba(16,185,129,0.3)",
+                            }
+                          : {
+                              bg: "#D1FAE5",
+                              border: "#059669",
+                              text: "#065F46",
+                              dot: "#10B981",
+                              glow: "rgba(16,185,129,0.25)",
+                            }; // Completed (Green)
                       } else if (completionStatus === "CANCELLED") {
-                        itemColor = {
-                          bg: "rgba(244,63,94,0.12)",
-                          border: "#f43f5e",
-                          text: "#fda4af",
-                          dot: "#f43f5e",
-                          glow: "rgba(244,63,94,0.3)",
-                        }; // Cancelled (Red)
+                        itemColor = isDark
+                          ? {
+                              bg: "rgba(244,63,94,0.18)",
+                              border: "#f43f5e",
+                              text: "#fda4af",
+                              dot: "#f43f5e",
+                              glow: "rgba(244,63,94,0.3)",
+                            }
+                          : {
+                              bg: "#FFE4E6",
+                              border: "#E11D48",
+                              text: "#9F1239",
+                              dot: "#F43F5E",
+                              glow: "rgba(244,63,94,0.25)",
+                            }; // Cancelled (Red)
                       }
 
                       return {
@@ -485,7 +513,7 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
                                 <>
                                   {/* Date label */}
                                   <div
-                                    className="px-2 py-0.5 rounded-md text-[10px] font-semibold shadow-md transition-all duration-300 border whitespace-nowrap max-w-[120px] truncate text-center flex items-center justify-center gap-1"
+                                    className="px-2 py-0.5 rounded-md text-[10px] font-semibold shadow-sm transition-all duration-300 border whitespace-nowrap max-w-[120px] truncate text-center flex items-center justify-center gap-1 bg-bg-card border-border-subtle text-text-primary"
                                     style={
                                       isSelected
                                         ? {
@@ -495,10 +523,9 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
                                             boxShadow: `0 2px 12px ${color.glow}`,
                                           }
                                         : {
-                                            borderColor: "rgba(55,65,81,0.5)",
-                                            backgroundColor:
-                                              "rgba(17,24,39,0.85)",
-                                            color: "#9ca3af",
+                                            borderColor: "var(--border-subtle)",
+                                            backgroundColor: "var(--bg-card)",
+                                            color: "var(--text-primary)",
                                           }
                                     }
                                     title={dateStr}
@@ -519,7 +546,7 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
                                     className={`text-[9px] mt-0.5 max-w-[100px] truncate text-center leading-tight transition-colors ${
                                       isSelected
                                         ? "font-semibold"
-                                        : "text-gray-600 group-hover:text-text-muted"
+                                        : "text-text-muted font-medium group-hover:text-text-primary"
                                     }`}
                                     style={
                                       isSelected ? { color: color.text } : {}
@@ -613,7 +640,7 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
                                           ? color.dot
                                           : isCancelled
                                             ? color.dot
-                                            : "#4b5563",
+                                            : "var(--border-strong)",
                                     boxShadow:
                                       isSelected && !(isAlert || isCompleted)
                                         ? `0 0 10px ${color.glow}, 0 0 20px ${color.glow}`
@@ -699,7 +726,7 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
                                         height: "18px",
                                         backgroundColor: isSelected
                                           ? color.border
-                                          : "#374151",
+                                          : "var(--border-subtle)",
                                       }}
                                     ></div>
                                   </div>
@@ -712,7 +739,7 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
                                         height: "18px",
                                         backgroundColor: isSelected
                                           ? color.border
-                                          : "#374151",
+                                          : "var(--border-subtle)",
                                       }}
                                     ></div>
                                     {renderCardContent()}
@@ -855,10 +882,10 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
                           return (
                             <div
                               key={selectedItem.id}
-                              className="relative mt-5 rounded-2xl border backdrop-blur-sm shadow-2xl timeline-detail-enter overflow-hidden"
+                              className="relative mt-5 rounded-2xl border bg-bg-card border-border-subtle shadow-xl timeline-detail-enter overflow-hidden transition-colors"
                               style={{
-                                borderColor: `${color.border}25`,
-                                background: `linear-gradient(135deg, ${color.bg}, rgba(17,24,39,0.95))`,
+                                borderColor: `${color.border}40`,
+                                boxShadow: `0 10px 30px -10px ${color.glow}`,
                               }}
                             >
                               {/* Accent bar */}
@@ -891,19 +918,19 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
 
                                     {selectedItem._is_occurrence && (
                                       <div className="mt-2.5 flex items-center gap-2">
-                                        <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-violet-500/15 border border-violet-500/30 text-violet-300 text-[10px] font-bold uppercase tracking-wider">
+                                        <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-violet-500/15 border border-violet-500/30 text-violet-600 dark:text-violet-300 text-[10px] font-bold uppercase tracking-wider">
                                           <Repeat className="w-3 h-3" />
                                           Recurring {selectedItem.recurrence_frequency || selectedItem._parent_item?.recurrence_frequency || "Commitment"}
                                         </span>
-                                        <span className="text-xs text-gray-400">
-                                          Occurrence for <strong className="text-gray-200">{selectedItem.occurrence_period || selectedItem.deadline_text}</strong>
+                                        <span className="text-xs text-text-muted">
+                                          Occurrence for <strong className="text-text-primary">{selectedItem.occurrence_period || selectedItem.deadline_text}</strong>
                                         </span>
                                       </div>
                                     )}
 
                                     {executionSummary && (
-                                      <div className="mt-4 p-3 bg-blue-950/20 border border-blue-900/30 rounded-lg">
-                                        <h5 className="text-[10px] font-bold text-blue-500 dark:text-blue-400 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                                      <div className="mt-4 p-3 bg-blue-50/80 dark:bg-blue-950/20 border border-blue-200/80 dark:border-blue-900/30 rounded-lg">
+                                        <h5 className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider mb-1 flex items-center gap-1.5">
                                           <FileText className="w-3 h-3" />{" "}
                                           Latest Update
                                         </h5>
@@ -917,14 +944,14 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
                                       progressPct !== undefined && (
                                         <div className="mt-4">
                                           <div className="flex justify-between items-center mb-1.5">
-                                            <span className="text-xs font-semibold text-gray-400">
+                                            <span className="text-xs font-semibold text-text-muted">
                                               Execution Readiness
                                             </span>
                                             <span className="text-xs font-bold text-text-primary">
                                               {progressPct}%
                                             </span>
                                           </div>
-                                          <div className="w-full bg-bg-hover rounded-full h-1.5">
+                                          <div className="w-full bg-bg-hover border border-border-subtle/50 rounded-full h-1.5">
                                             <div
                                               className="bg-emerald-500 h-1.5 rounded-full"
                                               style={{
@@ -1046,8 +1073,8 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
                                       return (
                                         <div className="mt-4 space-y-3">
                                           {/* ── Section 1: Permanent Dependency Graph (never changes) ── */}
-                                          <div className="p-3 bg-gray-900/40 border border-indigo-900/30 rounded-lg">
-                                            <h5 className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                                          <div className="p-3 bg-indigo-50/50 dark:bg-gray-900/40 border border-indigo-200/60 dark:border-indigo-900/30 rounded-lg">
+                                            <h5 className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
                                               <svg
                                                 className="w-3 h-3"
                                                 fill="none"
@@ -1066,7 +1093,7 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
 
                                             {hasPredecessors ? (
                                               <div className="mb-2">
-                                                <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5 block">
+                                                <span className="text-[10px] font-semibold text-text-muted uppercase tracking-wider mb-1.5 block">
                                                   Predecessors
                                                 </span>
                                                 <ul className="space-y-1">
@@ -1084,7 +1111,7 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
                                                     return (
                                                       <li
                                                         key={i}
-                                                        className="text-xs text-gray-300 flex items-center gap-2 px-2 py-1.5 rounded bg-indigo-950/20 border border-indigo-900/20"
+                                                        className="text-xs text-text-primary flex items-center gap-2 px-2 py-1.5 rounded bg-bg-card border border-border-subtle"
                                                       >
                                                         {predDone ? (
                                                           <span className="text-emerald-500 text-[12px] font-bold flex-shrink-0">
@@ -1149,7 +1176,7 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
                                                     return (
                                                       <li
                                                         key={i}
-                                                        className="text-xs text-gray-300 flex items-center gap-2 px-2 py-1.5 rounded bg-gray-800/40 border border-gray-700/30"
+                                                        className="text-xs text-text-primary flex items-center gap-2 px-2 py-1.5 rounded bg-bg-card border border-border-subtle shadow-xs"
                                                       >
                                                         {succDone ? (
                                                           <span className="text-emerald-500 text-[12px] font-bold flex-shrink-0">
@@ -1215,11 +1242,11 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
                                           <div
                                             className={`p-3 rounded-lg border ${
                                               isCompleted
-                                                ? "bg-emerald-950/10 border-emerald-900/20"
+                                                ? "bg-emerald-50/70 dark:bg-emerald-950/10 border-emerald-200 dark:border-emerald-900/20"
                                                 : incompletePredecessors.length >
                                                     0
-                                                  ? "bg-red-950/10 border-red-900/20"
-                                                  : "bg-amber-950/10 border-amber-900/20"
+                                                  ? "bg-red-50/70 dark:bg-red-950/10 border-red-200 dark:border-red-900/20"
+                                                  : "bg-amber-50/70 dark:bg-amber-950/10 border-amber-200 dark:border-amber-900/20"
                                             }`}
                                           >
                                             <h5
@@ -1352,13 +1379,13 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
                                                       ) => (
                                                         <li
                                                           key={i}
-                                                          className="text-xs flex items-center gap-2 px-2 py-1 rounded bg-orange-950/10 border border-orange-900/20"
+                                                          className="text-xs flex items-center gap-2 px-2 py-1.5 rounded bg-amber-100/60 dark:bg-orange-950/10 border border-amber-300/60 dark:border-orange-900/20"
                                                         >
                                                           <span className="w-2 h-2 rounded-full bg-orange-500 flex-shrink-0" />
-                                                          <span className="text-gray-300">
+                                                          <span className="text-amber-950 dark:text-gray-300 font-medium">
                                                             {m.name}
                                                           </span>
-                                                          <span className="ml-auto text-[10px] text-orange-400 font-semibold">
+                                                          <span className="ml-auto text-[10px] text-amber-800 dark:text-orange-400 font-bold">
                                                             {m.status}
                                                           </span>
                                                         </li>
@@ -1374,15 +1401,15 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
 
                                     {dependencies &&
                                       dependencies.length > 0 && (
-                                        <div className="mt-4 p-3 rounded-lg bg-gradient-to-br from-amber-950/40 via-gray-900/90 to-amber-950/30 border border-amber-500/50 shadow-[0_0_15px_rgba(245,158,11,0.2)] relative overflow-hidden">
+                                        <div className="mt-4 p-3.5 rounded-xl bg-gradient-to-br from-amber-500/10 via-amber-50/80 to-amber-100/40 dark:from-amber-950/40 dark:via-gray-900/90 dark:to-amber-950/30 border border-amber-500/40 dark:border-amber-500/50 shadow-md relative overflow-hidden">
                                           <div className="flex items-center justify-between mb-2.5 pb-2 border-b border-amber-500/25">
-                                            <h5 className="text-[11px] font-bold text-amber-300 uppercase tracking-wider flex items-center gap-2">
+                                            <h5 className="text-[11px] font-bold text-amber-800 dark:text-amber-300 uppercase tracking-wider flex items-center gap-2">
                                               <span className="w-4 h-4 rounded-full bg-amber-500 text-gray-950 font-black text-[10px] flex items-center justify-center shadow-[0_0_8px_rgba(245,158,11,0.9)] animate-pulse">
                                                 !
                                               </span>
                                               Execution Prerequisites
                                             </h5>
-                                            <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[9px] font-bold shadow-xs">
+                                            <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-900 dark:text-amber-300 border border-amber-500/40 text-[9px] font-bold shadow-xs">
                                               {dependencies.filter((d: any) =>
                                                 typeof d === "object" &&
                                                 d !== null
@@ -1415,26 +1442,26 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
                                                   key={idx}
                                                   className={`text-xs flex flex-col gap-1.5 px-3.5 py-3 rounded-lg border-l-4 transition-all duration-300 ${
                                                     isDone
-                                                      ? "bg-emerald-950/15 border-l-emerald-500 border-y-emerald-950/20 border-r-emerald-950/20 text-gray-400"
-                                                      : "bg-amber-950/20 border-l-amber-500 border-y-amber-950/30 border-r-amber-950/30 text-amber-100 shadow-[0_2px_8px_rgba(245,158,11,0.08)]"
+                                                      ? "bg-emerald-50 dark:bg-emerald-950/15 border-l-emerald-500 border-y-emerald-200 dark:border-y-emerald-950/20 border-r-emerald-200 dark:border-r-emerald-950/20 text-emerald-900 dark:text-gray-400"
+                                                      : "bg-white dark:bg-amber-950/20 border-l-amber-500 border-y-amber-200 dark:border-y-amber-950/30 border-r-amber-200 dark:border-r-amber-950/30 text-text-primary dark:text-amber-100 shadow-sm"
                                                   }`}
                                                 >
                                                   <div className="flex items-start justify-between gap-2 leading-tight">
                                                     <div className="flex items-center gap-2">
                                                       {isDone ? (
-                                                        <span className="w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] flex items-center justify-center font-bold flex-shrink-0">
+                                                        <span className="w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[10px] flex items-center justify-center font-bold flex-shrink-0">
                                                           ✓
                                                         </span>
                                                       ) : (
-                                                        <span className="w-4 h-4 rounded-full bg-amber-500/20 text-amber-400 text-[10px] flex items-center justify-center font-bold animate-pulse flex-shrink-0">
+                                                        <span className="w-4 h-4 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-400 text-[10px] flex items-center justify-center font-bold animate-pulse flex-shrink-0">
                                                           !
                                                         </span>
                                                       )}
                                                       <span
                                                         className={`font-semibold tracking-wide ${
                                                           isDone
-                                                            ? "line-through text-gray-500"
-                                                            : "text-amber-200"
+                                                            ? "line-through text-text-muted"
+                                                            : "text-text-primary dark:text-amber-200"
                                                         }`}
                                                       >
                                                         {depName}
@@ -1442,7 +1469,7 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
                                                     </div>
                                                     {isObject &&
                                                       depObj.owner && (
-                                                        <span className="px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider bg-indigo-950/80 text-indigo-300 border border-indigo-800/60 shadow-xs flex-shrink-0">
+                                                        <span className="px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider bg-indigo-100 dark:bg-indigo-950/80 text-indigo-800 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/60 shadow-xs flex-shrink-0">
                                                           {depObj.owner}
                                                         </span>
                                                       )}
@@ -1451,8 +1478,8 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
                                                     <span
                                                       className={`font-semibold uppercase tracking-wider ${
                                                         isDone
-                                                          ? "text-emerald-400"
-                                                          : "text-amber-400 animate-pulse"
+                                                          ? "text-emerald-600 dark:text-emerald-400"
+                                                          : "text-amber-700 dark:text-amber-400 animate-pulse"
                                                       }`}
                                                     >
                                                       {isDone
@@ -1462,7 +1489,7 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
                                                   </div>
                                                   {isObject &&
                                                     depObj.evidence && (
-                                                      <div className="ml-6 mt-1 text-[10px] text-gray-400 italic border-l border-gray-700/60 pl-2.5">
+                                                      <div className="ml-6 mt-1 text-[10px] text-text-muted italic border-l border-border-subtle pl-2.5">
                                                         <strong>AI Evidence:</strong>{" "}
                                                         {depObj.evidence}
                                                       </div>
@@ -1556,13 +1583,14 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
                                     <div
                                       className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider border shadow-sm ${
                                         completionStatus === "COMPLETED"
-                                          ? "bg-emerald-950/60 text-emerald-300 border-emerald-700/50"
+                                          ? "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700/50"
                                           : completionStatus === "BLOCKED" ||
                                               completionStatus === "DELAYED"
-                                            ? "bg-red-950/60 text-red-300 border-red-700/50"
-                                            : completionStatus === "IN_PROGRESS"
-                                              ? "bg-blue-950/60 text-blue-300 border-blue-700/50"
-                                              : "bg-bg-hover/80 text-text-secondary border-border-strong/60"
+                                            ? "bg-red-100 dark:bg-red-950/60 text-red-800 dark:text-red-300 border-red-300 dark:border-red-700/50"
+                                            : completionStatus === "IN_PROGRESS" ||
+                                                completionStatus === "ACTIVE"
+                                              ? "bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 border-amber-300 dark:border-amber-700/50"
+                                              : "bg-bg-hover text-text-primary border-border-strong"
                                       }`}
                                     >
                                       {completionStatus === "COMPLETED" && (
@@ -1584,7 +1612,7 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
                                 <div className="flex flex-wrap gap-2 mt-3">
                                   {(selectedItem.milestone_normalized ||
                                     selectedItem.milestone) && (
-                                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-blue-950/30 text-blue-300 border border-blue-800/25 shadow-sm">
+                                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/25 shadow-sm">
                                       <MapPin className="w-3 h-3" />
                                       {selectedItem.milestone_normalized ||
                                         selectedItem.milestone}
@@ -1596,7 +1624,7 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
                                       className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border shadow-sm"
                                       style={{
                                         backgroundColor: `${color.bg}`,
-                                        borderColor: `${color.border}30`,
+                                        borderColor: `${color.border}40`,
                                         color: color.text,
                                       }}
                                     >
@@ -1614,12 +1642,12 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
                                     <span
                                       className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium border ${
                                         completionStatus === "COMPLETED"
-                                          ? "bg-emerald-950/20 text-emerald-300/80 border-emerald-800/20"
+                                          ? "bg-emerald-100 dark:bg-emerald-950/20 text-emerald-800 dark:text-emerald-300/80 border-emerald-200 dark:border-emerald-800/20"
                                           : selectedItem._dateMs < todayMs
-                                            ? "bg-red-950/20 text-red-300/80 border-red-800/20"
+                                            ? "bg-red-100 dark:bg-red-950/20 text-red-800 dark:text-red-300/80 border-red-200 dark:border-red-800/20"
                                             : selectedItem._dateMs === todayMs
-                                              ? "bg-orange-950/20 text-orange-300/80 border-orange-800/20"
-                                              : "bg-green-950/20 text-green-300/80 border-green-800/20"
+                                              ? "bg-orange-100 dark:bg-orange-950/20 text-orange-800 dark:text-orange-300/80 border-orange-200 dark:border-orange-800/20"
+                                              : "bg-emerald-100 dark:bg-green-950/20 text-emerald-800 dark:text-green-300/80 border-emerald-200 dark:border-green-800/20"
                                       }`}
                                     >
                                       {completionStatus === "COMPLETED"
@@ -1648,19 +1676,19 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
                                             value: "ACTIVE",
                                             label: "Pending",
                                             color:
-                                              "hover:bg-blue-600/80 hover:text-text-primary",
+                                              "hover:bg-blue-600/80 hover:text-white",
                                           },
                                           {
                                             value: "COMPLETED",
                                             label: "Completed",
                                             color:
-                                              "hover:bg-emerald-600/80 hover:text-text-primary",
+                                              "hover:bg-emerald-600/80 hover:text-white",
                                           },
                                           {
                                             value: "CANCELLED",
                                             label: "Cancelled",
                                             color:
-                                              "hover:bg-red-600/80 hover:text-text-primary",
+                                              "hover:bg-red-600/80 hover:text-white",
                                           },
                                         ].map((opt) => (
                                           <button
@@ -1674,10 +1702,10 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
                                             className={`px-3 py-1 text-[11px] font-bold rounded-md transition-all cursor-pointer ${
                                               completionStatus === opt.value
                                                 ? opt.value === "COMPLETED"
-                                                  ? "bg-emerald-600 text-text-primary shadow-md shadow-emerald-600/25"
+                                                  ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/25"
                                                   : opt.value === "CANCELLED"
-                                                    ? "bg-red-600 text-text-primary shadow-md shadow-red-600/25"
-                                                    : "bg-blue-600 text-text-primary shadow-md shadow-blue-600/25"
+                                                    ? "bg-red-600 text-white shadow-md shadow-red-600/25"
+                                                    : "bg-blue-600 text-white shadow-md shadow-blue-600/25"
                                                 : `text-text-muted ${opt.color}`
                                             }`}
                                             disabled={

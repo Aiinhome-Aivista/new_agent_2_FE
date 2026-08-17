@@ -1079,8 +1079,8 @@ export const BaselineReviewPage: React.FC = () => {
               <span
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wider ${
                   baseline.status === "APPROVED"
-                    ? "bg-green-600/20 border border-green-500/40 text-green-300"
-                    : "bg-amber-600/20 border border-amber-500/40 text-amber-300"
+                    ? "bg-emerald-100 dark:bg-green-600/20 border border-emerald-300 dark:border-green-500/40 text-emerald-800 dark:text-green-300 shadow-sm"
+                    : "bg-amber-100 dark:bg-amber-600/20 border border-amber-300 dark:border-amber-500/40 text-amber-800 dark:text-amber-300 shadow-sm"
                 }`}
               >
                 Status: {baseline.status}
