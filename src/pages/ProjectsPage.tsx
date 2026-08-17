@@ -61,9 +61,12 @@ export const ProjectsPage: React.FC = () => {
       }
     }
     try {
-      const res = await apiClient.put(API_ENDPOINTS.PROJECTS.DETAIL(projectId), {
-        end_date: editingEndDate || null,
-      });
+      const res = await apiClient.put(
+        API_ENDPOINTS.PROJECTS.DETAIL(projectId),
+        {
+          end_date: editingEndDate || null,
+        },
+      );
       if (res.data.success) {
         setEditingProjectId(null);
         fetchProjects(); // Refresh the list
@@ -81,9 +84,12 @@ export const ProjectsPage: React.FC = () => {
   const confirmCloseProject = async () => {
     if (!projectToClose) return;
     try {
-      const res = await apiClient.put(API_ENDPOINTS.PROJECTS.DETAIL(projectToClose), {
-        monitoring_status: "CLOSED",
-      });
+      const res = await apiClient.put(
+        API_ENDPOINTS.PROJECTS.DETAIL(projectToClose),
+        {
+          monitoring_status: "CLOSED",
+        },
+      );
       if (res.data.success) {
         setIsCloseModalOpen(false);
         setProjectToClose(null);
@@ -114,7 +120,9 @@ export const ProjectsPage: React.FC = () => {
 
   const fetchLeads = async () => {
     try {
-      const res = await apiClient.get(API_ENDPOINTS.USERS.LIST_BY_ROLE('PROJECT_LEAD'));
+      const res = await apiClient.get(
+        API_ENDPOINTS.USERS.LIST_BY_ROLE("PROJECT_LEAD"),
+      );
       if (res.data.success) {
         setProjectLeads(res.data.data);
       }
@@ -211,7 +219,10 @@ export const ProjectsPage: React.FC = () => {
             ? p.monitoring_status === "CLOSED"
             : true;
 
-    const currentHealthConfig = getHealthConfig(p.health_score ?? 100, p.rag_status);
+    const currentHealthConfig = getHealthConfig(
+      p.health_score ?? 100,
+      p.rag_status,
+    );
     const matchesHealth =
       healthFilter === "ALL"
         ? true
@@ -345,7 +356,10 @@ export const ProjectsPage: React.FC = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {(filteredProjects || []).map((p) => {
-              const health = getHealthConfig(p.health_score ?? 100, p.rag_status);
+              const health = getHealthConfig(
+                p.health_score ?? 100,
+                p.rag_status,
+              );
               const scoreVal = p.health_score ?? 100;
 
               return (
@@ -399,53 +413,61 @@ export const ProjectsPage: React.FC = () => {
                       <div className="w-full h-1.5 bg-bg-card rounded-full overflow-hidden border border-border-subtle/50">
                         <div
                           className={`h-full rounded-full transition-all duration-700 ease-out ${health.barBg}`}
-                          style={{ width: `${Math.min(100, Math.max(0, scoreVal))}%` }}
+                          style={{
+                            width: `${Math.min(100, Math.max(0, scoreVal))}%`,
+                          }}
                         />
                       </div>
                     </div>
 
                     {/* Project Dates */}
                     <div className="text-text-muted text-xs mt-3 mb-4 space-y-1.5 border-t border-border-subtle pt-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-text-muted font-medium">
-                        Start Date:
-                      </span>
-                      <span>
-                        {p.start_date ? p.start_date.split("T")[0] : "Not set"}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-text-muted font-medium">
-                        End Date:
-                      </span>
-                      {editingProjectId === p.id ? (
-                        <div className="flex items-center gap-1.5">
-                          <input
-                            type="date"
-                            value={editingEndDate}
-                            onChange={(e) => setEditingEndDate(e.target.value)}
-                            className="bg-bg-hover border border-border-strong rounded px-1.5 py-0.5 text-[11px] text-text-primary focus:outline-none focus:border-primary-border"
-                          />
-                          <button
-                            onClick={() => handleSaveEndDate(p.id)}
-                            className="px-2 py-0.5 bg-emerald-600 hover:bg-emerald-500 text-text-primary rounded text-[10px] font-bold cursor-pointer"
-                          >
-                            Save
-                          </button>
-                          <button
-                            onClick={() => setEditingProjectId(null)}
-                            className="text-[10px] text-text-muted hover:text-text-primary cursor-pointer"
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-1.5">
-                          <span>
-                            {p.end_date ? p.end_date.split("T")[0] : "Not set"}
-                          </span>
-                          {(user?.role === "ADMIN" ||
-                            user?.role === "ENGAGEMENT_MANAGER") && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-text-muted font-medium">
+                          Start Date:
+                        </span>
+                        <span>
+                          {p.start_date
+                            ? p.start_date.split("T")[0]
+                            : "Not set"}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-text-muted font-medium">
+                          End Date:
+                        </span>
+                        {editingProjectId === p.id ? (
+                          <div className="flex items-center gap-1.5">
+                            <input
+                              type="date"
+                              value={editingEndDate}
+                              onChange={(e) =>
+                                setEditingEndDate(e.target.value)
+                              }
+                              className="bg-bg-hover border border-border-strong rounded px-1.5 py-0.5 text-[11px] text-text-primary focus:outline-none focus:border-primary-border"
+                            />
+                            <button
+                              onClick={() => handleSaveEndDate(p.id)}
+                              className="px-2 py-0.5 bg-emerald-600 hover:bg-emerald-500 text-text-primary rounded text-[10px] font-bold cursor-pointer"
+                            >
+                              Save
+                            </button>
+                            <button
+                              onClick={() => setEditingProjectId(null)}
+                              className="text-[10px] text-text-muted hover:text-text-primary cursor-pointer"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-1.5">
+                            <span>
+                              {p.end_date
+                                ? p.end_date.split("T")[0]
+                                : "Not set"}
+                            </span>
+                            {(user?.role === "ADMIN" ||
+                              user?.role === "ENGAGEMENT_MANAGER") && (
                               <button
                                 onClick={() => {
                                   setEditingProjectId(p.id);
@@ -458,49 +480,50 @@ export const ProjectsPage: React.FC = () => {
                                 Edit
                               </button>
                             )}
-                        </div>
-                      )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex justify-between items-center border-t border-border-subtle pt-4 mt-2">
+                    <span
+                      className={`text-[10px] font-semibold px-2.5 py-1 rounded-full uppercase tracking-wider ${
+                        p.monitoring_status === "ACTIVE"
+                          ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/20"
+                          : p.monitoring_status === "CLOSED"
+                            ? "bg-rose-500/15 text-rose-400 border border-rose-500/20"
+                            : p.monitoring_status === "DRAFT"
+                              ? "bg-gray-500/15 text-gray-400 border border-gray-500/20"
+                              : "bg-amber-500/15 text-amber-400 border border-amber-500/20"
+                      }`}
+                    >
+                      {p.monitoring_status}
+                    </span>
+                    <div className="flex items-center gap-3">
+                      {(user?.role === "ADMIN" ||
+                        user?.role === "ENGAGEMENT_MANAGER") &&
+                        p.monitoring_status !== "CLOSED" && (
+                          <button
+                            onClick={() => handleCloseProject(p.id)}
+                            className="text-[10px] text-rose-400 hover:text-rose-300 font-semibold cursor-pointer transition-colors uppercase tracking-wider"
+                          >
+                            Close
+                          </button>
+                        )}
+                      <Link
+                        to={`/projects/${p.id}`}
+                        className="text-xs font-semibold text-primary hover:text-primary-hover flex items-center gap-1 group/btn transition-colors"
+                      >
+                        Open Dashboard
+                        <span className="group-hover/btn:translate-x-1 transition-transform">
+                          &rarr;
+                        </span>
+                      </Link>
                     </div>
                   </div>
                 </div>
-                <div className="flex justify-between items-center border-t border-border-subtle pt-4 mt-2">
-                  <span
-                    className={`text-[10px] font-semibold px-2.5 py-1 rounded-full uppercase tracking-wider ${p.monitoring_status === "ACTIVE"
-                        ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/20"
-                        : p.monitoring_status === "CLOSED"
-                          ? "bg-rose-500/15 text-rose-400 border border-rose-500/20"
-                          : p.monitoring_status === "DRAFT"
-                            ? "bg-gray-500/15 text-gray-400 border border-gray-500/20"
-                            : "bg-amber-500/15 text-amber-400 border border-amber-500/20"
-                      }`}
-                  >
-                    {p.monitoring_status}
-                  </span>
-                  <div className="flex items-center gap-3">
-                    {(user?.role === "ADMIN" ||
-                      user?.role === "ENGAGEMENT_MANAGER") &&
-                      p.monitoring_status !== "CLOSED" && (
-                        <button
-                          onClick={() => handleCloseProject(p.id)}
-                          className="text-[10px] text-rose-400 hover:text-rose-300 font-semibold cursor-pointer transition-colors uppercase tracking-wider"
-                        >
-                          Close
-                        </button>
-                      )}
-                    <Link
-                      to={`/projects/${p.id}`}
-                      className="text-xs font-semibold text-primary hover:text-primary-hover flex items-center gap-1 group/btn transition-colors"
-                    >
-                      Open Dashboard
-                      <span className="group-hover/btn:translate-x-1 transition-transform">
-                        &rarr;
-                      </span>
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+              );
+            })}
           </div>
         )}
       </div>
@@ -615,17 +638,17 @@ export const ProjectsPage: React.FC = () => {
                     type="button"
                     onClick={handleGenerateDescription}
                     disabled={isGeneratingDesc}
-                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-primary/10 hover:bg-primary/20 border border-primary-border/40 text-primary font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                    className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-primary/10 hover:bg-primary/20 border border-primary-border/40 text-primary text-xs font-medium transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
                     title="Generate description with AI"
                   >
                     {isGeneratingDesc ? (
                       <>
-                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        <Loader2 className="h-3 w-3 animate-spin" />
                         <span>Generating...</span>
                       </>
                     ) : (
                       <>
-                        <Sparkles className="h-3.5 w-3.5" />
+                        <Sparkles className="h-3 w-3" />
                         <span>AI Suggestion</span>
                       </>
                     )}

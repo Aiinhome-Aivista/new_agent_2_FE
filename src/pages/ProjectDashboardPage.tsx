@@ -513,13 +513,17 @@ export const ProjectDashboardPage: React.FC = () => {
                   }}
                   className={`p-4 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
                     baselineDocType === "EL"
-                      ? "bg-[#FFF7F2] dark:bg-[#332822] border-2 border-[#FF8A55] shadow-md shadow-[#FF5A14]/10"
+                      ? "bg-[#FFEFE5] dark:bg-[#332822] border-2 border-[#FF7A45] shadow-md shadow-[#FF5A14]/15"
                       : "bg-bg-card border border-[#D8D8D8] dark:border-[#444444] hover:border-[#FF8A55]/50 hover:bg-[#FFF7F2]/50"
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <div
-                      className={`p-2.5 rounded-xl ${baselineDocType === "EL" ? "bg-[#FF5A14]/20 text-[#FF5A14]" : "bg-bg-hover text-text-muted"}`}
+                      className={`p-2.5 rounded-xl transition-colors ${
+                        baselineDocType === "EL"
+                          ? "bg-[#FF5A14] text-white shadow-sm shadow-[#FF5A14]/30"
+                          : "bg-bg-hover text-text-muted"
+                      }`}
                     >
                       <FileText className="w-5 h-5" />
                     </div>
@@ -541,13 +545,17 @@ export const ProjectDashboardPage: React.FC = () => {
                   }}
                   className={`p-4 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
                     baselineDocType === "IFA"
-                      ? "bg-[#FFF7F2] dark:bg-[#332822] border-2 border-[#FF8A55] shadow-md shadow-[#FF5A14]/10"
+                      ? "bg-[#FFEFE5] dark:bg-[#332822] border-2 border-[#FF7A45] shadow-md shadow-[#FF5A14]/15"
                       : "bg-bg-card border border-[#D8D8D8] dark:border-[#444444] hover:border-[#FF8A55]/50 hover:bg-[#FFF7F2]/50"
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <div
-                      className={`p-2.5 rounded-xl ${baselineDocType === "IFA" ? "bg-[#FF5A14]/20 text-[#FF5A14]" : "bg-bg-hover text-text-muted"}`}
+                      className={`p-2.5 rounded-xl transition-colors ${
+                        baselineDocType === "IFA"
+                          ? "bg-[#FF5A14] text-white shadow-sm shadow-[#FF5A14]/30"
+                          : "bg-bg-hover text-text-muted"
+                      }`}
                     >
                       <FileSpreadsheet className="w-5 h-5" />
                     </div>
@@ -886,13 +894,17 @@ export const ProjectDashboardPage: React.FC = () => {
                   }}
                   className={`p-4 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
                     monitoringDocType === "MOM"
-                      ? "bg-[#FFF7F2] dark:bg-[#332822] border-2 border-[#FF8A55] shadow-md shadow-[#FF5A14]/10"
+                      ? "bg-[#FFEFE5] dark:bg-[#332822] border-2 border-[#FF7A45] shadow-md shadow-[#FF5A14]/15"
                       : "bg-bg-card border border-[#D8D8D8] dark:border-[#444444] hover:border-[#FF8A55]/50 hover:bg-[#FFF7F2]/50"
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <div
-                      className={`p-2.5 rounded-xl ${monitoringDocType === "MOM" ? "bg-[#FF5A14]/20 text-[#FF5A14]" : "bg-bg-hover text-text-muted"}`}
+                      className={`p-2.5 rounded-xl transition-colors ${
+                        monitoringDocType === "MOM"
+                          ? "bg-[#FF5A14] text-white shadow-sm shadow-[#FF5A14]/30"
+                          : "bg-bg-hover text-text-muted"
+                      }`}
                     >
                       <Clock className="w-5 h-5" />
                     </div>
@@ -914,13 +926,17 @@ export const ProjectDashboardPage: React.FC = () => {
                   }}
                   className={`p-4 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
                     monitoringDocType === "STATUS_REPORT"
-                      ? "bg-[#FFF7F2] dark:bg-[#332822] border-2 border-[#FF8A55] shadow-md shadow-[#FF5A14]/10"
+                      ? "bg-[#FFEFE5] dark:bg-[#332822] border-2 border-[#FF7A45] shadow-md shadow-[#FF5A14]/15"
                       : "bg-bg-card border border-[#D8D8D8] dark:border-[#444444] hover:border-[#FF8A55]/50 hover:bg-[#FFF7F2]/50"
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <div
-                      className={`p-2.5 rounded-xl ${monitoringDocType === "STATUS_REPORT" ? "bg-[#FF5A14]/20 text-[#FF5A14]" : "bg-bg-hover text-text-muted"}`}
+                      className={`p-2.5 rounded-xl transition-colors ${
+                        monitoringDocType === "STATUS_REPORT"
+                          ? "bg-[#FF5A14] text-white shadow-sm shadow-[#FF5A14]/30"
+                          : "bg-bg-hover text-text-muted"
+                      }`}
                     >
                       <Layers className="w-5 h-5" />
                     </div>
