@@ -202,6 +202,13 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
                   if (hasDates) {
                     const startDate = new Date(minMs);
                     const endDate = new Date(maxMs);
+                    
+                    const totalMonths =
+                      (endDate.getFullYear() - startDate.getFullYear()) * 12 +
+                      (endDate.getMonth() - startDate.getMonth()) +
+                      1;
+                    const monthStep = totalMonths > 12 ? 3 : totalMonths > 6 ? 2 : 1;
+
                     const cur = new Date(
                       startDate.getFullYear(),
                       startDate.getMonth(),
@@ -218,7 +225,7 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
                           }),
                         });
                       }
-                      cur.setMonth(cur.getMonth() + 1);
+                      cur.setMonth(cur.getMonth() + monthStep);
                     }
                   }
 
@@ -270,8 +277,8 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
                   });
 
                   /* ── Track midpoint Y for consistent reference ── */
-                  const TRACK_Y = 120;
-                  const ABOVE_LABEL_TOP = 16;
+                  const TRACK_Y = 135;
+                  const ABOVE_LABEL_TOP = 40;
                   const BELOW_LABEL_START = TRACK_Y + 8;
 
                   return (
@@ -316,7 +323,7 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
                         <div
                           ref={timelineContainerRef}
                           className="relative w-full"
-                          style={{ height: "260px", padding: "0 16px" }}
+                          style={{ height: "280px", padding: "0 16px" }}
                         >
                           {/* ── Month tick marks ── */}
                           {monthTicks.map((tick, i) => (
@@ -325,17 +332,17 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
                               className="absolute flex flex-col items-center pointer-events-none"
                               style={{
                                 left: `${tick.pct}%`,
-                                top: "10px",
-                                bottom: "40px",
+                                top: "8px",
+                                bottom: "20px",
                               }}
                             >
                               <span
-                                className="text-[9px] text-gray-600 font-medium tracking-wider uppercase whitespace-nowrap"
+                                className="text-[9px] text-gray-500/80 dark:text-gray-400/70 font-semibold tracking-wider uppercase whitespace-nowrap px-1 rounded bg-bg-card/40"
                                 style={{ transform: "translateX(-50%)" }}
                               >
                                 {tick.label}
                               </span>
-                              <div className="w-px flex-1 bg-bg-hover/40 mt-1"></div>
+                              <div className="w-px flex-1 bg-border-subtle/20 mt-1 border-r border-dashed border-border-subtle/30"></div>
                             </div>
                           ))}
 
@@ -417,22 +424,173 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
                               item.completion_status ||
                               "ACTIVE";
                             const isCompleted =
-                              completionStatus === "COMPLETED" || completionStatus === "CANCELLED" || (item.latest_progress?.progress_percentage || 0) >= 100;
+                              completionStatus === "COMPLETED" ||
+                              completionStatus === "CANCELLED" ||
+                              (item.latest_progress?.progress_percentage || 0) >= 100;
                             const isCancelled =
                               completionStatus === "CANCELLED";
                             const isAlert =
                               past && !isCompleted && !isCancelled;
 
+                            const renderCardContent = () => {
+                              const mData = getMilestoneData(
+                                item.name,
+                                item.milestone_normalized,
+                              );
+                              const progressPct =
+                                item.latest_progress?.progress_percentage || 0;
+                              let milestoneStatus = (
+                                mData?.status || "PENDING"
+                              ).toUpperCase();
+                              if (
+                                progressPct > 0 &&
+                                milestoneStatus === "BLOCKED"
+                              ) {
+                                milestoneStatus = "IN_PROGRESS";
+                              }
+                              const isCompletedStatus =
+                                milestoneStatus === "COMPLETED" ||
+                                milestoneStatus === "CANCELLED";
+
+                              const blockedByIds = mData?.blocked_by_ids
+                                ? mData.blocked_by_ids.split(",")
+                                : [];
+                              const blockingIds = mData?.blocking_ids
+                                ? mData.blocking_ids.split(",")
+                                : [];
+
+                              const incompletePredecessors = blockedByIds
+                                .map((id: string) => milestoneMap.get(id))
+                                .filter(
+                                  (
+                                    m: any,
+                                  ): m is NonNullable<typeof m> =>
+                                    !!m &&
+                                    m.status?.toUpperCase() !== "COMPLETED" &&
+                                    m.status?.toUpperCase() !== "CANCELLED",
+                                );
+
+                              const activelyBlockingSuccessors = blockingIds
+                                .map((id: string) => milestoneMap.get(id))
+                                .filter(
+                                  (
+                                    m: any,
+                                  ): m is NonNullable<typeof m> =>
+                                    !!m &&
+                                    m.status?.toUpperCase() !== "COMPLETED" &&
+                                    m.status?.toUpperCase() !== "CANCELLED",
+                                );
+
+                              return (
+                                <>
+                                  {/* Date label */}
+                                  <div
+                                    className="px-2 py-0.5 rounded-md text-[10px] font-semibold shadow-md transition-all duration-300 border whitespace-nowrap max-w-[120px] truncate text-center flex items-center justify-center gap-1"
+                                    style={
+                                      isSelected
+                                        ? {
+                                            borderColor: color.border,
+                                            backgroundColor: color.bg,
+                                            color: color.text,
+                                            boxShadow: `0 2px 12px ${color.glow}`,
+                                          }
+                                        : {
+                                            borderColor: "rgba(55,65,81,0.5)",
+                                            backgroundColor:
+                                              "rgba(17,24,39,0.85)",
+                                            color: "#9ca3af",
+                                          }
+                                    }
+                                    title={dateStr}
+                                  >
+                                    <span>{dateStr}</span>
+                                    {item._hasPrerequisites && !isCompleted && (
+                                      <span
+                                        className="w-3.5 h-3.5 rounded-full bg-gradient-to-r from-amber-400 to-amber-500 text-gray-950 font-black text-[9px] flex items-center justify-center shadow-[0_0_10px_rgba(245,158,11,1)] leading-none flex-shrink-0 animate-pulse border border-amber-200 ring-2 ring-amber-400/40"
+                                        title="Has Execution Prerequisites (!)"
+                                      >
+                                        !
+                                      </span>
+                                    )}
+                                  </div>
+
+                                  {/* Name */}
+                                  <span
+                                    className={`text-[9px] mt-0.5 max-w-[100px] truncate text-center leading-tight transition-colors ${
+                                      isSelected
+                                        ? "font-semibold"
+                                        : "text-gray-600 group-hover:text-text-muted"
+                                    }`}
+                                    style={
+                                      isSelected ? { color: color.text } : {}
+                                    }
+                                    title={
+                                      item.scope_item_normalized || item.name
+                                    }
+                                  >
+                                    {item.scope_item_normalized || item.name}
+                                  </span>
+
+                                  {/* Recurring occurrence badge */}
+                                  {item._is_occurrence && (
+                                    <span
+                                      className="mt-0.5 flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-violet-500/20 border border-violet-500/35 text-violet-300 text-[8px] font-bold uppercase tracking-wider whitespace-nowrap"
+                                      title={`Recurring ${item.recurrence_frequency || item._parent_item?.recurrence_frequency || ""} occurrence from EL`}
+                                    >
+                                      <Repeat className="w-2 h-2" />
+                                      {item.occurrence_period ||
+                                        item.recurrence_frequency ||
+                                        item._parent_item?.recurrence_frequency ||
+                                        "Recurring"}
+                                    </span>
+                                  )}
+
+                                  {/* Status badges */}
+                                  <div className="flex flex-col gap-0.5 mt-1 items-center">
+                                    {!isCompletedStatus &&
+                                      milestoneStatus === "BLOCKED" && (
+                                        <span
+                                          className="text-[8px] bg-red-900/40 text-red-300 border border-red-800/50 px-1.5 py-0.5 rounded-sm truncate max-w-[120px] shadow-sm font-medium"
+                                          title="Waiting for predecessor"
+                                        >
+                                          ⛔ Waiting for predecessor
+                                        </span>
+                                      )}
+                                    {!isCompletedStatus &&
+                                      milestoneStatus === "PENDING" &&
+                                      incompletePredecessors.length > 0 && (
+                                        <span
+                                          className="text-[8px] bg-blue-900/40 text-blue-300 border border-blue-800/50 px-1.5 py-0.5 rounded-sm truncate max-w-[120px] shadow-sm font-medium"
+                                          title="Waiting to start"
+                                        >
+                                          ⏳ Waiting to start
+                                        </span>
+                                      )}
+                                    {!isCompletedStatus &&
+                                      (milestoneStatus === "IN_PROGRESS" ||
+                                        milestoneStatus === "ACTIVE") &&
+                                      activelyBlockingSuccessors.length > 0 && (
+                                        <span
+                                          className="text-[8px] bg-orange-900/40 text-orange-300 border border-orange-800/50 px-1.5 py-0.5 rounded-sm truncate max-w-[120px] shadow-sm font-medium"
+                                          title={`Blocking ${activelyBlockingSuccessors.length} Milestones`}
+                                        >
+                                          🚧 Blocking:{" "}
+                                          {activelyBlockingSuccessors.length}
+                                        </span>
+                                      )}
+                                  </div>
+                                </>
+                              );
+                            };
+
                             return (
                               <div
                                 key={item.id}
                                 data-active={isSelected}
-                                className="absolute flex flex-col items-center cursor-pointer group"
+                                className="absolute cursor-pointer group flex flex-col items-center"
                                 style={{
                                   left: `${leftPct}%`,
-                                  top: isAbove
-                                    ? `${ABOVE_LABEL_TOP}px`
-                                    : `${TRACK_Y - 6}px`,
+                                  top: `${TRACK_Y - 6}px`,
                                   transform: "translateX(-50%)",
                                   zIndex: isSelected ? 20 : 10,
                                 }}
@@ -440,547 +598,125 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
                                   setSelectedDeliverableId(item.id)
                                 }
                               >
+                                {/* Node dot on the track line - ALWAYS FIXED AT TRACK_Y - 6px */}
+                                <div
+                                  className={`relative w-[14px] h-[14px] rounded-full timeline-node-enter transition-all duration-300 flex-shrink-0 ${
+                                    isSelected
+                                      ? "scale-[1.4]"
+                                      : "group-hover:scale-125"
+                                  }`}
+                                  style={{
+                                    backgroundColor:
+                                      isAlert || isCompleted
+                                        ? "transparent"
+                                        : isSelected
+                                          ? color.dot
+                                          : isCancelled
+                                            ? color.dot
+                                            : "#4b5563",
+                                    boxShadow:
+                                      isSelected && !(isAlert || isCompleted)
+                                        ? `0 0 10px ${color.glow}, 0 0 20px ${color.glow}`
+                                        : "none",
+                                    opacity: isCompleted
+                                      ? 0.75
+                                      : isCancelled
+                                        ? 0.5
+                                        : 1,
+                                    animationDelay: `${idx * 60}ms`,
+                                  }}
+                                >
+                                  {item._hasPrerequisites && !isCompleted && (
+                                    <span
+                                      className="absolute -top-2.5 -right-2.5 w-4 h-4 rounded-full bg-gradient-to-r from-amber-400 to-amber-500 text-gray-950 font-black text-[10px] flex items-center justify-center border-2 border-amber-100 shadow-[0_0_12px_rgba(245,158,11,1)] z-20 animate-pulse ring-2 ring-amber-400/50"
+                                      title="Has Execution Prerequisites (!)"
+                                    >
+                                      !
+                                    </span>
+                                  )}
+                                  {isCompleted ? (
+                                    <CheckCircle2
+                                      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[18px] h-[18px] text-emerald-400 bg-bg-card rounded-full z-10"
+                                      style={{
+                                        filter:
+                                          "drop-shadow(0 0 2px rgba(16,185,129,0.5))",
+                                      }}
+                                    />
+                                  ) : isAlert ? (
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      viewBox="0 0 24 24"
+                                      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[18px] h-[18px] z-10"
+                                      style={{
+                                        filter:
+                                          "drop-shadow(0 0 4px rgba(239,68,68,0.8))",
+                                      }}
+                                    >
+                                      <path
+                                        d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
+                                        fill="#ef4444"
+                                      />
+                                      <line
+                                        x1="12"
+                                        y1="9"
+                                        x2="12"
+                                        y2="13"
+                                        stroke="#ffffff"
+                                        strokeWidth="2.5"
+                                        strokeLinecap="round"
+                                      />
+                                      <circle
+                                        cx="12"
+                                        cy="17"
+                                        r="1.25"
+                                        fill="#ffffff"
+                                      />
+                                    </svg>
+                                  ) : null}
+                                  {isSelected && (
+                                    <span
+                                      className="absolute inset-0 rounded-full animate-ping"
+                                      style={{
+                                        backgroundColor: isAlert
+                                          ? "#ef4444"
+                                          : isCompleted
+                                            ? "#10b981"
+                                            : color.dot,
+                                        opacity: 0.25,
+                                      }}
+                                    ></span>
+                                  )}
+                                </div>
+
+                                {/* Card Content & Connecting Line */}
                                 {isAbove ? (
-                                  <>
-                                    {/* Date label */}
+                                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 flex flex-col items-center mb-0.5 pointer-events-auto">
+                                    {renderCardContent()}
+                                    {/* Connector line down to dot */}
                                     <div
-                                      className="px-2 py-0.5 rounded-md text-[10px] font-semibold shadow-md transition-all duration-300 border whitespace-nowrap max-w-[120px] truncate text-center flex items-center justify-center gap-1"
-                                      style={
-                                        isSelected
-                                          ? {
-                                              borderColor: color.border,
-                                              backgroundColor: color.bg,
-                                              color: color.text,
-                                              boxShadow: `0 2px 12px ${color.glow}`,
-                                            }
-                                          : {
-                                              borderColor: "rgba(55,65,81,0.5)",
-                                              backgroundColor:
-                                                "rgba(17,24,39,0.85)",
-                                              color: "#9ca3af",
-                                            }
-                                      }
-                                      title={dateStr}
-                                    >
-                                      <span>{dateStr}</span>
-                                      {item._hasPrerequisites && !isCompleted && (
-                                        <span
-                                          className="w-3.5 h-3.5 rounded-full bg-gradient-to-r from-amber-400 to-amber-500 text-gray-950 font-black text-[9px] flex items-center justify-center shadow-[0_0_10px_rgba(245,158,11,1)] leading-none flex-shrink-0 animate-pulse border border-amber-200 ring-2 ring-amber-400/40"
-                                          title="Has Execution Prerequisites (!)"
-                                        >
-                                          !
-                                        </span>
-                                      )}
-                                    </div>
-                                    {/* Name */}
-                                    <span
-                                      className={`text-[9px] mt-0.5 max-w-[100px] truncate text-center leading-tight transition-colors ${
-                                        isSelected
-                                          ? "font-semibold"
-                                          : "text-gray-600 group-hover:text-text-muted"
-                                      }`}
-                                      style={
-                                        isSelected ? { color: color.text } : {}
-                                      }
-                                      title={
-                                        item.scope_item_normalized || item.name
-                                      }
-                                    >
-                                      {item.scope_item_normalized || item.name}
-                                    </span>
-                                    {/* Recurring occurrence badge */}
-                                    {item._is_occurrence && (
-                                      <span
-                                        className="mt-0.5 flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-violet-500/20 border border-violet-500/35 text-violet-300 text-[8px] font-bold uppercase tracking-wider whitespace-nowrap"
-                                        title={`Recurring ${item.recurrence_frequency || (item._parent_item?.recurrence_frequency) || ""} occurrence from EL`}
-                                      >
-                                        <Repeat className="w-2 h-2" />
-                                        {item.occurrence_period || (item.recurrence_frequency || item._parent_item?.recurrence_frequency || "Recurring")}
-                                      </span>
-                                    )}
-                                    {/* Badges */}
-                                    {(() => {
-                                      const mData = getMilestoneData(
-                                        item.name,
-                                        item.milestone_normalized,
-                                      );
-                                      const progressPct =
-                                        item.latest_progress
-                                          ?.progress_percentage || 0;
-                                      let milestoneStatus = (
-                                        mData?.status || "PENDING"
-                                      ).toUpperCase();
-                                      if (
-                                        progressPct > 0 &&
-                                        milestoneStatus === "BLOCKED"
-                                      ) {
-                                        milestoneStatus = "IN_PROGRESS";
-                                      }
-                                      const isCompleted =
-                                        milestoneStatus === "COMPLETED" ||
-                                        milestoneStatus === "CANCELLED";
-
-                                      const blockedByIds = mData?.blocked_by_ids
-                                        ? mData.blocked_by_ids.split(",")
-                                        : [];
-                                      const blockingIds = mData?.blocking_ids
-                                        ? mData.blocking_ids.split(",")
-                                        : [];
-
-                                      const incompletePredecessors =
-                                        blockedByIds
-                                          .map((id: string) =>
-                                            milestoneMap.get(id),
-                                          )
-                                          .filter(
-                                            (
-                                              m: any,
-                                            ): m is NonNullable<typeof m> =>
-                                              !!m &&
-                                              m.status?.toUpperCase() !==
-                                                "COMPLETED" &&
-                                              m.status?.toUpperCase() !==
-                                                "CANCELLED",
-                                          );
-
-                                      const activelyBlockingSuccessors =
-                                        blockingIds
-                                          .map((id: string) =>
-                                            milestoneMap.get(id),
-                                          )
-                                          .filter(
-                                            (
-                                              m: any,
-                                            ): m is NonNullable<typeof m> =>
-                                              !!m &&
-                                              m.status?.toUpperCase() !==
-                                                "COMPLETED" &&
-                                              m.status?.toUpperCase() !==
-                                                "CANCELLED",
-                                          );
-
-                                      return (
-                                        <div className="flex flex-col gap-0.5 mt-1 items-center">
-                                          {item._hasPrerequisites && !isCompleted && (
-                                              <span
-                                                className="text-[8px] bg-amber-500/10 hover:bg-amber-500/15 text-amber-300 border border-amber-500/35 px-2 py-0.5 rounded-full truncate max-w-[130px] font-semibold flex items-center gap-1 animate-pulse transition-all duration-300"
-                                                title="Has Execution Prerequisites"
-                                              >
-                                                <AlertTriangle className="w-2.5 h-2.5 text-amber-400 flex-shrink-0" />
-                                                <span>Prerequisites Required</span>
-                                              </span>
-                                            )}
-                                          {!isCompleted &&
-                                            milestoneStatus === "BLOCKED" && (
-                                              <span
-                                                className="text-[8px] bg-red-900/40 text-red-300 border border-red-800/50 px-1.5 py-0.5 rounded-sm truncate max-w-[120px] shadow-sm font-medium"
-                                                title="Waiting for predecessor"
-                                              >
-                                                ⛔ Waiting for predecessor
-                                              </span>
-                                            )}
-                                          {!isCompleted &&
-                                            milestoneStatus === "PENDING" &&
-                                            incompletePredecessors.length >
-                                              0 && (
-                                              <span
-                                                className="text-[8px] bg-blue-900/40 text-blue-300 border border-blue-800/50 px-1.5 py-0.5 rounded-sm truncate max-w-[120px] shadow-sm font-medium"
-                                                title="Waiting to start"
-                                              >
-                                                ⏳ Waiting to start
-                                              </span>
-                                            )}
-                                          {!isCompleted &&
-                                            (milestoneStatus ===
-                                              "IN_PROGRESS" ||
-                                              milestoneStatus === "ACTIVE") &&
-                                            activelyBlockingSuccessors.length >
-                                              0 && (
-                                              <span
-                                                className="text-[8px] bg-orange-900/40 text-orange-300 border border-orange-800/50 px-1.5 py-0.5 rounded-sm truncate max-w-[120px] shadow-sm font-medium"
-                                                title={`Blocking ${activelyBlockingSuccessors.length} Milestones`}
-                                              >
-                                                🚧 Blocking:{" "}
-                                                {
-                                                  activelyBlockingSuccessors.length
-                                                }
-                                              </span>
-                                            )}
-                                        </div>
-                                      );
-                                    })()}
-                                    {/* Connector line down to track */}
-                                    <div
-                                      className="w-px transition-colors duration-300"
+                                      className="w-px mt-1 transition-colors duration-300 min-h-[14px]"
                                       style={{
-                                        height: `${TRACK_Y - ABOVE_LABEL_TOP - 40}px`,
+                                        height: "18px",
                                         backgroundColor: isSelected
                                           ? color.border
                                           : "#374151",
-                                        minHeight: "12px",
                                       }}
                                     ></div>
-                                    {/* Node dot on the track */}
-                                    <div
-                                      className={`relative w-[14px] h-[14px] rounded-full timeline-node-enter transition-all duration-300 flex-shrink-0 ${
-                                        isSelected
-                                          ? "scale-[1.4]"
-                                          : "group-hover:scale-125"
-                                      }`}
-                                      style={{
-                                        backgroundColor:
-                                          isAlert || isCompleted
-                                            ? "transparent"
-                                            : isSelected
-                                              ? color.dot
-                                              : isCancelled
-                                                ? color.dot
-                                                : "#4b5563",
-                                        boxShadow:
-                                          isSelected &&
-                                          !(isAlert || isCompleted)
-                                            ? `0 0 10px ${color.glow}, 0 0 20px ${color.glow}`
-                                            : "none",
-                                        opacity: isCompleted
-                                          ? 0.75
-                                          : isCancelled
-                                            ? 0.5
-                                            : 1,
-                                        animationDelay: `${idx * 60}ms`,
-                                      }}
-                                    >
-                                      {item._hasPrerequisites && !isCompleted && (
-                                          <span
-                                            className="absolute -top-2.5 -right-2.5 w-4 h-4 rounded-full bg-gradient-to-r from-amber-400 to-amber-500 text-gray-950 font-black text-[10px] flex items-center justify-center border-2 border-amber-100 shadow-[0_0_12px_rgba(245,158,11,1)] z-20 animate-pulse ring-2 ring-amber-400/50"
-                                            title="Has Execution Prerequisites (!)"
-                                          >
-                                            !
-                                          </span>
-                                        )}
-                                      {isCompleted ? (
-                                        <CheckCircle2
-                                          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[18px] h-[18px] text-emerald-400 bg-bg-card rounded-full z-10"
-                                          style={{
-                                            filter:
-                                              "drop-shadow(0 0 2px rgba(16,185,129,0.5))",
-                                          }}
-                                        />
-                                      ) : isAlert ? (
-                                        <svg
-                                          xmlns="http://www.w3.org/2000/svg"
-                                          viewBox="0 0 24 24"
-                                          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[18px] h-[18px] z-10"
-                                          style={{
-                                            filter:
-                                              "drop-shadow(0 0 4px rgba(239,68,68,0.8))",
-                                          }}
-                                        >
-                                          <path
-                                            d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
-                                            fill="#ef4444"
-                                          />
-                                          <line
-                                            x1="12"
-                                            y1="9"
-                                            x2="12"
-                                            y2="13"
-                                            stroke="#ffffff"
-                                            strokeWidth="2.5"
-                                            strokeLinecap="round"
-                                          />
-                                          <circle
-                                            cx="12"
-                                            cy="17"
-                                            r="1.25"
-                                            fill="#ffffff"
-                                          />
-                                        </svg>
-                                      ) : null}
-                                      {isSelected && (
-                                        <span
-                                          className="absolute inset-0 rounded-full animate-ping"
-                                          style={{
-                                            backgroundColor: isAlert
-                                              ? "#ef4444"
-                                              : isCompleted
-                                                ? "#10b981"
-                                                : color.dot,
-                                            opacity: 0.25,
-                                          }}
-                                        ></span>
-                                      )}
-                                    </div>
-                                  </>
+                                  </div>
                                 ) : (
-                                  <>
-                                    {/* Node dot on the track */}
+                                  <div className="absolute top-full left-1/2 -translate-x-1/2 flex flex-col items-center mt-0.5 pointer-events-auto">
+                                    {/* Connector line down from dot */}
                                     <div
-                                      className={`relative w-[14px] h-[14px] rounded-full timeline-node-enter transition-all duration-300 flex-shrink-0 ${
-                                        isSelected
-                                          ? "scale-[1.4]"
-                                          : "group-hover:scale-125"
-                                      }`}
+                                      className="w-px mb-1 transition-colors duration-300 min-h-[14px]"
                                       style={{
-                                        backgroundColor:
-                                          isAlert || isCompleted
-                                            ? "transparent"
-                                            : isSelected
-                                              ? color.dot
-                                              : isCancelled
-                                                ? color.dot
-                                                : "#4b5563",
-                                        boxShadow:
-                                          isSelected &&
-                                          !(isAlert || isCompleted)
-                                            ? `0 0 10px ${color.glow}, 0 0 20px ${color.glow}`
-                                            : "none",
-                                        opacity: isCompleted
-                                          ? 0.75
-                                          : isCancelled
-                                            ? 0.5
-                                            : 1,
-                                        animationDelay: `${idx * 60}ms`,
-                                      }}
-                                    >
-                                      {item._hasPrerequisites && !isCompleted && (
-                                          <span
-                                            className="absolute -top-2.5 -right-2.5 w-4 h-4 rounded-full bg-gradient-to-r from-amber-400 to-amber-500 text-gray-950 font-black text-[10px] flex items-center justify-center border-2 border-amber-100 shadow-[0_0_12px_rgba(245,158,11,1)] z-20 animate-pulse ring-2 ring-amber-400/50"
-                                            title="Has Execution Prerequisites (!)"
-                                          >
-                                            !
-                                          </span>
-                                        )}
-                                      {isCompleted ? (
-                                        <CheckCircle2
-                                          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[18px] h-[18px] text-emerald-400 bg-bg-card rounded-full z-10"
-                                          style={{
-                                            filter:
-                                              "drop-shadow(0 0 2px rgba(16,185,129,0.5))",
-                                          }}
-                                        />
-                                      ) : isAlert ? (
-                                        <svg
-                                          xmlns="http://www.w3.org/2000/svg"
-                                          viewBox="0 0 24 24"
-                                          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[18px] h-[18px] z-10"
-                                          style={{
-                                            filter:
-                                              "drop-shadow(0 0 4px rgba(239,68,68,0.8))",
-                                          }}
-                                        >
-                                          <path
-                                            d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
-                                            fill="#ef4444"
-                                          />
-                                          <line
-                                            x1="12"
-                                            y1="9"
-                                            x2="12"
-                                            y2="13"
-                                            stroke="#ffffff"
-                                            strokeWidth="2.5"
-                                            strokeLinecap="round"
-                                          />
-                                          <circle
-                                            cx="12"
-                                            cy="17"
-                                            r="1.25"
-                                            fill="#ffffff"
-                                          />
-                                        </svg>
-                                      ) : null}
-                                      {isSelected && (
-                                        <span
-                                          className="absolute inset-0 rounded-full animate-ping"
-                                          style={{
-                                            backgroundColor: isAlert
-                                              ? "#ef4444"
-                                              : isCompleted
-                                                ? "#10b981"
-                                                : color.dot,
-                                            opacity: 0.25,
-                                          }}
-                                        ></span>
-                                      )}
-                                    </div>
-                                    {/* Connector line down from track */}
-                                    <div
-                                      className="w-px transition-colors duration-300"
-                                      style={{
-                                        height: "16px",
+                                        height: "18px",
                                         backgroundColor: isSelected
                                           ? color.border
                                           : "#374151",
                                       }}
                                     ></div>
-                                    {/* Date label */}
-                                    <div
-                                      className="px-2 py-0.5 rounded-md text-[10px] font-semibold shadow-md transition-all duration-300 border whitespace-nowrap max-w-[120px] truncate text-center flex items-center justify-center gap-1"
-                                      style={
-                                        isSelected
-                                          ? {
-                                              borderColor: color.border,
-                                              backgroundColor: color.bg,
-                                              color: color.text,
-                                              boxShadow: `0 2px 12px ${color.glow}`,
-                                            }
-                                          : {
-                                              borderColor: "rgba(55,65,81,0.5)",
-                                              backgroundColor:
-                                                "rgba(17,24,39,0.85)",
-                                              color: "#9ca3af",
-                                            }
-                                      }
-                                      title={dateStr}
-                                    >
-                                      <span>{dateStr}</span>
-                                      {item._hasPrerequisites && !isCompleted && (
-                                        <span
-                                          className="w-3.5 h-3.5 rounded-full bg-gradient-to-r from-amber-400 to-amber-500 text-gray-950 font-black text-[9px] flex items-center justify-center shadow-[0_0_10px_rgba(245,158,11,1)] leading-none flex-shrink-0 animate-pulse border border-amber-200 ring-2 ring-amber-400/40"
-                                          title="Has Execution Prerequisites (!)"
-                                        >
-                                          !
-                                        </span>
-                                      )}
-                                    </div>
-                                    {/* Name */}
-                                    <span
-                                      className={`text-[9px] mt-0.5 max-w-[100px] truncate text-center leading-tight transition-colors ${
-                                        isSelected
-                                          ? "font-semibold"
-                                          : "text-gray-600 group-hover:text-text-muted"
-                                      }`}
-                                      style={
-                                        isSelected ? { color: color.text } : {}
-                                      }
-                                      title={
-                                        item.scope_item_normalized || item.name
-                                      }
-                                    >
-                                      {item.scope_item_normalized || item.name}
-                                    </span>
-                                    {/* Recurring occurrence badge */}
-                                    {item._is_occurrence && (
-                                      <span
-                                        className="mt-0.5 flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-violet-500/20 border border-violet-500/35 text-violet-300 text-[8px] font-bold uppercase tracking-wider whitespace-nowrap"
-                                        title={`Recurring ${item.recurrence_frequency || (item._parent_item?.recurrence_frequency) || ""} occurrence from EL`}
-                                      >
-                                        <Repeat className="w-2 h-2" />
-                                        {item.occurrence_period || (item.recurrence_frequency || item._parent_item?.recurrence_frequency || "Recurring")}
-                                      </span>
-                                    )}
-                                    {/* Badges */}
-                                    {(() => {
-                                      const mData = getMilestoneData(
-                                        item.name,
-                                        item.milestone_normalized,
-                                      );
-                                      const progressPct =
-                                        item.latest_progress
-                                          ?.progress_percentage || 0;
-                                      let milestoneStatus = (
-                                        mData?.status || "PENDING"
-                                      ).toUpperCase();
-                                      if (
-                                        progressPct > 0 &&
-                                        milestoneStatus === "BLOCKED"
-                                      ) {
-                                        milestoneStatus = "IN_PROGRESS";
-                                      }
-                                      const isCompleted =
-                                        milestoneStatus === "COMPLETED" ||
-                                        milestoneStatus === "CANCELLED";
-
-                                      const blockedByIds = mData?.blocked_by_ids
-                                        ? mData.blocked_by_ids.split(",")
-                                        : [];
-                                      const blockingIds = mData?.blocking_ids
-                                        ? mData.blocking_ids.split(",")
-                                        : [];
-
-                                      const incompletePredecessors =
-                                        blockedByIds
-                                          .map((id: string) =>
-                                            milestoneMap.get(id),
-                                          )
-                                          .filter(
-                                            (
-                                              m: any,
-                                            ): m is NonNullable<typeof m> =>
-                                              !!m &&
-                                              m.status?.toUpperCase() !==
-                                                "COMPLETED" &&
-                                              m.status?.toUpperCase() !==
-                                                "CANCELLED",
-                                          );
-
-                                      const activelyBlockingSuccessors =
-                                        blockingIds
-                                          .map((id: string) =>
-                                            milestoneMap.get(id),
-                                          )
-                                          .filter(
-                                            (
-                                              m: any,
-                                            ): m is NonNullable<typeof m> =>
-                                              !!m &&
-                                              m.status?.toUpperCase() !==
-                                                "COMPLETED" &&
-                                              m.status?.toUpperCase() !==
-                                                "CANCELLED",
-                                          );
-
-                                      return (
-                                        <div className="flex flex-col gap-0.5 mt-1 items-center">
-                                          {item._hasPrerequisites && !isCompleted && (
-                                              <span
-                                                className="text-[8px] bg-amber-500/10 hover:bg-amber-500/15 text-amber-300 border border-amber-500/35 px-2 py-0.5 rounded-full truncate max-w-[130px] font-semibold flex items-center gap-1 animate-pulse transition-all duration-300"
-                                                title="Has Execution Prerequisites"
-                                              >
-                                                <AlertTriangle className="w-2.5 h-2.5 text-amber-400 flex-shrink-0" />
-                                                <span>Prerequisites Required</span>
-                                              </span>
-                                            )}
-                                          {!isCompleted &&
-                                            milestoneStatus === "BLOCKED" && (
-                                              <span
-                                                className="text-[8px] bg-red-900/40 text-red-300 border border-red-800/50 px-1.5 py-0.5 rounded-sm truncate max-w-[120px] shadow-sm font-medium"
-                                                title="Waiting for predecessor"
-                                              >
-                                                ⛔ Waiting for predecessor
-                                              </span>
-                                            )}
-                                          {!isCompleted &&
-                                            milestoneStatus === "PENDING" &&
-                                            incompletePredecessors.length >
-                                              0 && (
-                                              <span
-                                                className="text-[8px] bg-blue-900/40 text-blue-300 border border-blue-800/50 px-1.5 py-0.5 rounded-sm truncate max-w-[120px] shadow-sm font-medium"
-                                                title="Waiting to start"
-                                              >
-                                                ⏳ Waiting to start
-                                              </span>
-                                            )}
-                                          {!isCompleted &&
-                                            (milestoneStatus ===
-                                              "IN_PROGRESS" ||
-                                              milestoneStatus === "ACTIVE") &&
-                                            activelyBlockingSuccessors.length >
-                                              0 && (
-                                              <span
-                                                className="text-[8px] bg-orange-900/40 text-orange-300 border border-orange-800/50 px-1.5 py-0.5 rounded-sm truncate max-w-[120px] shadow-sm font-medium"
-                                                title={`Blocking ${activelyBlockingSuccessors.length} Milestones`}
-                                              >
-                                                🚧 Blocking:{" "}
-                                                {
-                                                  activelyBlockingSuccessors.length
-                                                }
-                                              </span>
-                                            )}
-                                        </div>
-                                      );
-                                    })()}
-                                  </>
+                                    {renderCardContent()}
+                                  </div>
                                 )}
                               </div>
                             );
@@ -1021,10 +757,10 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
                               Cancelled
                             </span>
                           </div>
-                          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-amber-500/10 border border-amber-500/25 shadow-sm">
-                            <AlertTriangle className="w-3.5 h-3.5 text-amber-400 animate-pulse flex-shrink-0" />
+                          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 shadow-sm">
+                            <span className="w-3.5 h-3.5 rounded-full bg-amber-400 text-gray-950 font-black text-[9px] flex items-center justify-center flex-shrink-0 leading-none">!</span>
                             <span className="text-[10px] text-amber-300 font-semibold">
-                              Execution Prerequisites Required
+                              Execution Prerequisites
                             </span>
                           </div>
                         </div>
