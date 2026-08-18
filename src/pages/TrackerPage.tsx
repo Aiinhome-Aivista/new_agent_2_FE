@@ -417,16 +417,47 @@ export const TrackerPage: React.FC = () => {
     }
   }, [evaluationProgress?.status]);
 
+  // When activeTab changes, select the first element of the new tab
   useEffect(() => {
     setSelectedItemIds([]);
-    setSelectedItem(null);
+    const base = activeTab === "ACTIVE" ? activeItems : resolvedItems;
+    const sorted = [...base].sort((a, b) => {
+      const aPriority = a.execution_priority_score || a.risk_score || 0;
+      const bPriority = b.execution_priority_score || b.risk_score || 0;
+      if (bPriority !== aPriority) return bPriority - aPriority;
+      const aOrder = a.priority_order ?? 999;
+      const bOrder = b.priority_order ?? 999;
+      if (aOrder !== bOrder) return aOrder - bOrder;
+      return (b.risk_score || 0) - (a.risk_score || 0);
+    });
+    setSelectedItem(sorted[0] || null);
   }, [activeTab]);
 
-  // When items update, sync selectedItem
+  // When items update, sync selectedItem or select the first element if current selected item is missing from active tab
   useEffect(() => {
-    if (selectedItem) {
-      const updated = items.find((i: any) => i.id === selectedItem.id);
-      if (updated) setSelectedItem(updated);
+    if (items.length > 0) {
+      const base = activeTab === "ACTIVE" ? activeItems : resolvedItems;
+      const sorted = [...base].sort((a, b) => {
+        const aPriority = a.execution_priority_score || a.risk_score || 0;
+        const bPriority = b.execution_priority_score || b.risk_score || 0;
+        if (bPriority !== aPriority) return bPriority - aPriority;
+        const aOrder = a.priority_order ?? 999;
+        const bOrder = b.priority_order ?? 999;
+        if (aOrder !== bOrder) return aOrder - bOrder;
+        return (b.risk_score || 0) - (a.risk_score || 0);
+      });
+
+      if (selectedItem) {
+        const updated = items.find((i: any) => i.id === selectedItem.id);
+        const isStillInTab = sorted.some((i: any) => i.id === selectedItem.id);
+        if (isStillInTab && updated) {
+          setSelectedItem(updated);
+        } else {
+          setSelectedItem(sorted[0] || null);
+        }
+      } else {
+        setSelectedItem(sorted[0] || null);
+      }
     }
   }, [items]);
 
