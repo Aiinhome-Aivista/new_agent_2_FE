@@ -171,28 +171,28 @@ const riskLevelConfig: Record<
     text: "text-emerald-700 dark:text-emerald-400",
     border: "border-emerald-500/20",
     glow: "shadow-emerald-500/10",
-    dot: "bg-emerald-400 shadow-[0_0_6px_rgba(16,185,129,0.5)]",
+    dot: "bg-emerald-500 dark:bg-emerald-400 shadow-[0_0_6px_rgba(16,185,129,0.5)]",
   },
   MEDIUM: {
     bg: "bg-yellow-500/10",
-    text: "text-yellow-400",
+    text: "text-amber-700 dark:text-yellow-400",
     border: "border-yellow-500/20",
     glow: "shadow-yellow-500/10",
-    dot: "bg-yellow-400 shadow-[0_0_6px_rgba(234,179,8,0.5)]",
+    dot: "bg-amber-500 dark:bg-yellow-400 shadow-[0_0_6px_rgba(234,179,8,0.5)]",
   },
   HIGH: {
     bg: "bg-orange-500/10",
-    text: "text-orange-400",
+    text: "text-orange-700 dark:text-orange-400",
     border: "border-orange-500/20",
     glow: "shadow-orange-500/10",
-    dot: "bg-orange-400 shadow-[0_0_6px_rgba(249,115,22,0.5)]",
+    dot: "bg-orange-500 dark:bg-orange-400 shadow-[0_0_6px_rgba(249,115,22,0.5)]",
   },
   CRITICAL: {
     bg: "bg-rose-500/10",
-    text: "text-rose-500 dark:text-rose-700 dark:text-rose-400",
+    text: "text-rose-700 dark:text-rose-400",
     border: "border-rose-500/20",
     glow: "shadow-rose-500/10",
-    dot: "bg-red-400 shadow-[0_0_6px_rgba(239,68,68,0.6)] animate-pulse",
+    dot: "bg-red-500 dark:bg-red-400 shadow-[0_0_6px_rgba(239,68,68,0.6)] animate-pulse",
   },
 };
 
@@ -1109,7 +1109,7 @@ export const TrackerPage: React.FC = () => {
     return (
       <div className="h-full flex flex-col overflow-hidden">
         {/* ── Risk Detail Header ── */}
-        <div className="px-5 pt-5 pb-4 border-b border-slate-300 dark:border-white/[0.06] flex-shrink-0">
+        <div className="px-5 pt-5 pb-4 border-b border-slate-200 dark:border-white/[0.06] flex-shrink-0">
           <div className="flex items-start justify-between gap-3 mb-3">
             <div className="flex items-center gap-2 flex-wrap">
               <span
@@ -1134,14 +1134,14 @@ export const TrackerPage: React.FC = () => {
               const execScore = item.execution_priority_score || item.risk_score || 0;
               const sevScore = item.risk_score || 0;
               const displayScore = isResolved ? 0 : execScore;
-              const scoreColor = isResolved ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : displayScore >= 70 ? "bg-rose-500/10 text-rose-400 border-rose-500/20" : displayScore >= 40 ? "bg-orange-500/10 text-orange-400 border-orange-500/20" : displayScore >= 20 ? "bg-yellow-500/10 text-yellow-400 border-yellow-500/20" : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
+              const scoreColor = isResolved ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20" : displayScore >= 70 ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20" : displayScore >= 40 ? "bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20" : displayScore >= 20 ? "bg-yellow-500/10 text-amber-700 dark:text-yellow-400 border-yellow-500/20" : "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20";
               return (
                 <div className="flex flex-col items-end gap-0.5 shrink-0">
                   <div className={`text-sm font-black font-mono px-2 py-1 rounded-lg border ${scoreColor}`}>
                     {displayScore}/100
                   </div>
                   {!isResolved && sevScore !== execScore && sevScore > 0 && (
-                    <span className="text-[8px] text-gray-500 font-mono">Severity: {sevScore}</span>
+                    <span className="text-[8px] text-slate-400 dark:text-gray-500 font-mono">Severity: {sevScore}</span>
                   )}
                 </div>
               );
@@ -1155,7 +1155,7 @@ export const TrackerPage: React.FC = () => {
           {/* Meta Grid */}
           <div className="grid grid-cols-2 gap-x-4 gap-y-2">
             <div>
-              <p className="text-[9px] font-bold text-gray-600 uppercase tracking-widest mb-0.5">
+              <p className="text-[9px] font-bold text-slate-400 dark:text-gray-600 uppercase tracking-widest mb-0.5">
                 Risk Origin
               </p>
               <p className="text-[10px] font-semibold text-text-secondary">
@@ -1163,7 +1163,7 @@ export const TrackerPage: React.FC = () => {
               </p>
             </div>
             <div>
-              <p className="text-[9px] font-bold text-gray-600 uppercase tracking-widest mb-0.5">
+              <p className="text-[9px] font-bold text-slate-400 dark:text-gray-600 uppercase tracking-widest mb-0.5">
                 Risk ID
               </p>
               <p className="text-[10px] font-mono font-semibold text-text-secondary">
@@ -1172,40 +1172,40 @@ export const TrackerPage: React.FC = () => {
             </div>
             {item.created_at && (
               <div>
-                <p className="text-[9px] font-bold text-gray-600 uppercase tracking-widest mb-0.5">
+                <p className="text-[9px] font-bold text-slate-400 dark:text-gray-600 uppercase tracking-widest mb-0.5">
                   Detected
                 </p>
-                <p className="text-[10px] text-gray-400">
+                <p className="text-[10px] text-slate-500 dark:text-gray-400">
                   {formatTimestamp(item.created_at)}
                 </p>
               </div>
             )}
             {isResolved && item.resolved_at && (
               <div>
-                <p className="text-[9px] font-bold text-gray-600 uppercase tracking-widest mb-0.5">
+                <p className="text-[9px] font-bold text-slate-400 dark:text-gray-600 uppercase tracking-widest mb-0.5">
                   Resolved
                 </p>
-                <p className="text-[10px] text-emerald-400 font-medium">
+                <p className="text-[10px] text-emerald-700 dark:text-emerald-400 font-medium">
                   {formatTimestamp(item.resolved_at)}
                 </p>
               </div>
             )}
             {isResolved && item.previous_highest_score != null && (
               <div>
-                <p className="text-[9px] font-bold text-gray-600 uppercase tracking-widest mb-0.5">
+                <p className="text-[9px] font-bold text-slate-400 dark:text-gray-600 uppercase tracking-widest mb-0.5">
                   Peak Score
                 </p>
-                <p className="text-[10px] font-mono font-semibold text-orange-400">
+                <p className="text-[10px] font-mono font-semibold text-orange-600 dark:text-orange-400">
                   {item.previous_highest_score}/100
                 </p>
               </div>
             )}
             {!!item.is_out_of_scope && (
               <div>
-                <p className="text-[9px] font-bold text-gray-600 uppercase tracking-widest mb-0.5">
+                <p className="text-[9px] font-bold text-slate-400 dark:text-gray-600 uppercase tracking-widest mb-0.5">
                   Scope
                 </p>
-                <span className="text-[9px] font-black px-1.5 py-0.5 bg-red-500/10 text-red-400 border border-red-500/20 rounded">
+                <span className="text-[9px] font-black px-1.5 py-0.5 bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20 rounded">
                   OUT-OF-SCOPE
                 </span>
               </div>
@@ -1219,40 +1219,40 @@ export const TrackerPage: React.FC = () => {
           {/* EL Comparison Feature */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Commitment (from EL) */}
-            <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.06]">
-              <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+            <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 dark:bg-white/[0.02] dark:border-white/[0.06]">
+              <p className="text-[9px] font-bold text-slate-500 dark:text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                 <FileText className="w-3 h-3" /> Commitment (from EL)
               </p>
               <div className="space-y-2">
                 <div>
-                  <p className="text-[9px] text-gray-500 uppercase mb-0.5">Commitment</p>
-                  <p className="text-[11px] font-medium text-gray-200">{item.deliverable}</p>
+                  <p className="text-[9px] text-slate-400 dark:text-gray-500 uppercase mb-0.5">Commitment</p>
+                  <p className="text-[11px] font-medium text-slate-700 dark:text-gray-200">{item.deliverable}</p>
                 </div>
                 <div>
-                  <p className="text-[9px] text-gray-500 uppercase mb-0.5">Planned Finish</p>
-                  <p className="text-[11px] font-medium text-gray-200">{item.expected_date !== "Unknown" ? item.expected_date : "TBD"}</p>
+                  <p className="text-[9px] text-slate-400 dark:text-gray-500 uppercase mb-0.5">Planned Finish</p>
+                  <p className="text-[11px] font-medium text-slate-700 dark:text-gray-200">{item.expected_date !== "Unknown" ? item.expected_date : "TBD"}</p>
                 </div>
                 <div>
-                  <p className="text-[9px] text-gray-500 uppercase mb-0.5">Owner</p>
-                  <p className="text-[11px] font-medium text-gray-200">{item.dependency_owner || "Internal"}</p>
+                  <p className="text-[9px] text-slate-400 dark:text-gray-500 uppercase mb-0.5">Owner</p>
+                  <p className="text-[11px] font-medium text-slate-700 dark:text-gray-200">{item.dependency_owner || "Internal"}</p>
                 </div>
               </div>
             </div>
 
             {/* Current Status (from MoM) */}
-            <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.06]">
-              <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+            <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 dark:bg-white/[0.02] dark:border-white/[0.06]">
+              <p className="text-[9px] font-bold text-slate-500 dark:text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                 <Activity className="w-3 h-3" /> Current Status (from MoM)
               </p>
               <div className="space-y-2">
                 <div>
-                  <p className="text-[9px] text-gray-500 uppercase mb-0.5">Current Status</p>
-                  <p className="text-[11px] font-medium text-gray-200">{item.progress !== null && item.progress !== undefined ? `${item.progress}% Complete` : (item.current_status || "UNKNOWN").replace(/_/g, " ")}</p>
+                  <p className="text-[9px] text-slate-400 dark:text-gray-500 uppercase mb-0.5">Current Status</p>
+                  <p className="text-[11px] font-medium text-slate-700 dark:text-gray-200">{item.progress !== null && item.progress !== undefined ? `${item.progress}% Complete` : (item.current_status || "UNKNOWN").replace(/_/g, " ")}</p>
                 </div>
                 {item.blockers && item.blockers.length > 0 && (
                   <div>
-                    <p className="text-[9px] text-gray-500 uppercase mb-0.5">Blockers</p>
-                    <p className="text-[11px] text-rose-400">{item.blockers.join(", ")}</p>
+                    <p className="text-[9px] text-slate-400 dark:text-gray-500 uppercase mb-0.5">Blockers</p>
+                    <p className="text-[11px] text-rose-600 dark:text-rose-400">{item.blockers.join(", ")}</p>
                   </div>
                 )}
               </div>
@@ -1260,20 +1260,20 @@ export const TrackerPage: React.FC = () => {
           </div>
           
           {/* Commitment Assessment */}
-          <div className={`p-3 rounded-xl border ${item.delay_days > 0 || item.current_status === "BLOCKED" ? 'bg-orange-500/[0.04] border-orange-500/20' : 'bg-emerald-500/[0.04] border-emerald-500/20'}`}>
-            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+          <div className={`p-3 rounded-xl border ${item.delay_days > 0 || item.current_status === "BLOCKED" ? 'bg-orange-500/5 border-orange-500/30 dark:bg-orange-500/[0.04] dark:border-orange-500/20' : 'bg-emerald-500/5 border-emerald-500/30 dark:bg-emerald-500/[0.04] dark:border-emerald-500/20'}`}>
+            <p className="text-[9px] font-bold text-slate-500 dark:text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
               <CheckCircle2 className="w-3 h-3" /> Commitment Assessment
             </p>
             <div className="flex gap-4 items-start">
               <div className="shrink-0 min-w-[120px]">
-                <p className="text-[9px] text-gray-500 uppercase mb-0.5">Commitment Status</p>
-                <p className={`text-[11px] font-bold mt-0.5 ${item.delay_days > 0 || item.current_status === "BLOCKED" ? 'text-orange-400' : 'text-emerald-400'}`}>
+                <p className="text-[9px] text-slate-400 dark:text-gray-500 uppercase mb-0.5">Commitment Status</p>
+                <p className={`text-[11px] font-bold mt-0.5 ${item.delay_days > 0 || item.current_status === "BLOCKED" ? 'text-orange-600 dark:text-orange-400' : 'text-emerald-700 dark:text-emerald-400'}`}>
                   {item.delay_days > 0 ? `At Risk (${item.delay_days} days)` : item.current_status === "BLOCKED" ? "Blocked" : "On Track"}
                 </p>
               </div>
               <div>
-                <p className="text-[9px] text-gray-500 uppercase mb-0.5">Reason</p>
-                <p className="text-[11px] text-gray-300 leading-relaxed mt-0.5">
+                <p className="text-[9px] text-slate-400 dark:text-gray-500 uppercase mb-0.5">Reason</p>
+                <p className="text-[11px] text-slate-700 dark:text-gray-300 leading-relaxed mt-0.5">
                   {(item.delay_days > 0 || item.current_status === "BLOCKED") ? (legacyDescription || "Commitment is currently obstructed by active execution blockers.") : "Executing to plan."}
                 </p>
               </div>
@@ -1281,11 +1281,11 @@ export const TrackerPage: React.FC = () => {
           </div>
 
           {!isResolved && narratives.executive_summary && (
-            <div className="p-4 rounded-xl bg-cyan-900/10 border border-cyan-500/20">
-              <p className="text-[9px] font-bold text-cyan-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+            <div className="p-4 rounded-xl bg-cyan-50 border border-cyan-200 dark:bg-cyan-900/10 dark:border-cyan-500/20">
+              <p className="text-[9px] font-bold text-cyan-700 dark:text-cyan-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                 <ShieldAlert className="w-3 h-3" /> Executive Summary
               </p>
-              <p className="text-xs text-gray-300 leading-relaxed font-semibold">
+              <p className="text-xs text-slate-800 dark:text-gray-300 leading-relaxed font-semibold">
                 {narratives.executive_summary}
               </p>
             </div>
@@ -1293,35 +1293,35 @@ export const TrackerPage: React.FC = () => {
 
           {!isResolved && narratives.original_contract_sentence && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.06]">
-                <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 dark:bg-white/[0.02] dark:border-white/[0.06]">
+                <p className="text-[9px] font-bold text-slate-500 dark:text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                   <FileText className="w-3 h-3" /> Contract Commitment (EL)
                 </p>
                 <div className="space-y-2">
                   <div>
-                    <span className="text-[9px] text-gray-500 uppercase">Deliverable</span>
-                    <p className="text-[11px] font-medium text-gray-300">{item.title || item.name}</p>
+                    <span className="text-[9px] text-slate-400 dark:text-gray-500 uppercase">Deliverable</span>
+                    <p className="text-[11px] font-medium text-slate-700 dark:text-gray-300">{item.title || item.name}</p>
                   </div>
                   <div>
-                    <span className="text-[9px] text-gray-500 uppercase">Commitment</span>
-                    <p className="text-[11px] text-gray-300 italic">"{narratives.original_contract_sentence}"</p>
+                    <span className="text-[9px] text-slate-400 dark:text-gray-500 uppercase">Commitment</span>
+                    <p className="text-[11px] text-slate-700 dark:text-gray-300 italic">"{narratives.original_contract_sentence}"</p>
                   </div>
                 </div>
               </div>
 
-              <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.06]">
-                <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 dark:bg-white/[0.02] dark:border-white/[0.06]">
+                <p className="text-[9px] font-bold text-slate-500 dark:text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                   <Activity className="w-3 h-3" /> Current Progress (MoM)
                 </p>
                 <div className="space-y-2">
                   <div>
-                    <span className="text-[9px] text-gray-500 uppercase">Status</span>
-                    <p className="text-[11px] font-medium text-gray-300">{item.status.replace("_", " ")} {item.progress ? `(${item.progress}%)` : ""}</p>
+                    <span className="text-[9px] text-slate-400 dark:text-gray-500 uppercase">Status</span>
+                    <p className="text-[11px] font-medium text-slate-700 dark:text-gray-300">{item.status.replace("_", " ")} {item.progress ? `(${item.progress}%)` : ""}</p>
                   </div>
                   {narratives.mom_evidence && (
                     <div>
-                      <span className="text-[9px] text-gray-500 uppercase">Latest Update</span>
-                      <p className="text-[11px] text-gray-300 italic">"{narratives.mom_evidence}"</p>
+                      <span className="text-[9px] text-slate-400 dark:text-gray-500 uppercase">Latest Update</span>
+                      <p className="text-[11px] text-slate-700 dark:text-gray-300 italic">"{narratives.mom_evidence}"</p>
                     </div>
                   )}
                 </div>
@@ -1330,43 +1330,43 @@ export const TrackerPage: React.FC = () => {
           )}
 
           {!isResolved && narratives.gap_analysis && (
-            <div className="p-3 rounded-xl bg-amber-500/[0.05] border border-amber-500/20">
-              <p className="text-[9px] font-bold text-amber-500 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+            <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 dark:bg-amber-500/[0.05] dark:border-amber-500/20">
+              <p className="text-[9px] font-bold text-amber-700 dark:text-amber-500 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                 <TrendingUp className="w-3 h-3" /> Gap Analysis
               </p>
-              <p className="text-[11px] text-gray-300 leading-relaxed font-medium">
+              <p className="text-[11px] text-slate-700 dark:text-gray-300 leading-relaxed font-medium">
                 {narratives.gap_analysis}
               </p>
             </div>
           )}
 
           {!isResolved && narratives.why_important && (
-            <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.06]">
-              <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+            <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 dark:bg-white/[0.02] dark:border-white/[0.06]">
+              <p className="text-[9px] font-bold text-slate-500 dark:text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                 <Info className="w-3 h-3" /> Why is this important?
               </p>
-              <p className="text-[11px] text-gray-300 leading-relaxed">
+              <p className="text-[11px] text-slate-700 dark:text-gray-300 leading-relaxed">
                 {narratives.why_important}
               </p>
             </div>
           )}
 
           {!isResolved && narratives.business_impact && (
-            <div className="p-3 rounded-xl bg-rose-500/[0.05] border border-rose-500/20">
-              <p className="text-[9px] font-bold text-rose-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+            <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 dark:bg-rose-500/[0.05] dark:border-rose-500/20">
+              <p className="text-[9px] font-bold text-rose-700 dark:text-rose-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                 <AlertTriangle className="w-3 h-3" /> Business Impact
               </p>
               <div className="space-y-3">
                 {narratives.business_impact.immediate && (
                   <div>
-                    <span className="text-[9px] text-rose-400/80 uppercase tracking-wider block mb-0.5">Immediate Impact</span>
-                    <p className="text-[11px] text-gray-300 leading-relaxed font-medium">{narratives.business_impact.immediate}</p>
+                    <span className="text-[9px] text-rose-700/80 dark:text-rose-400/80 uppercase tracking-wider block mb-0.5">Immediate Impact</span>
+                    <p className="text-[11px] text-slate-700 dark:text-gray-300 leading-relaxed font-medium">{narratives.business_impact.immediate}</p>
                   </div>
                 )}
                 {narratives.business_impact.future && (
                   <div>
-                    <span className="text-[9px] text-rose-400/80 uppercase tracking-wider block mb-0.5">Future Impact</span>
-                    <p className="text-[11px] text-gray-300 leading-relaxed">{narratives.business_impact.future}</p>
+                    <span className="text-[9px] text-rose-700/80 dark:text-rose-400/80 uppercase tracking-wider block mb-0.5">Future Impact</span>
+                    <p className="text-[11px] text-slate-700 dark:text-gray-300 leading-relaxed">{narratives.business_impact.future}</p>
                   </div>
                 )}
               </div>
@@ -1374,19 +1374,19 @@ export const TrackerPage: React.FC = () => {
           )}
 
           {!isResolved && item.recommended_action && (
-            <div className="p-3 rounded-xl bg-emerald-500/[0.05] border border-emerald-500/20">
-              <p className="text-[9px] font-bold text-emerald-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+            <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 dark:bg-emerald-500/[0.05] dark:border-emerald-500/20">
+              <p className="text-[9px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                 <CheckCheck className="w-3 h-3" /> Recommended Action
               </p>
-              <p className="text-[11px] text-gray-300 leading-relaxed font-medium">
+              <p className="text-[11px] text-slate-700 dark:text-gray-300 leading-relaxed font-medium">
                 {item.recommended_action}
               </p>
             </div>
           )}
 
           {!isResolved && narratives.execution_chain && narratives.execution_chain.length > 0 && (
-            <div className="p-3 rounded-xl bg-indigo-500/[0.05] border border-indigo-500/20">
-              <p className="text-[9px] font-bold text-indigo-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+            <div className="p-3 rounded-xl bg-indigo-50 border border-indigo-200 dark:bg-indigo-500/[0.05] dark:border-indigo-500/20">
+              <p className="text-[9px] font-bold text-indigo-700 dark:text-indigo-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                 <ListOrdered className="w-3 h-3" /> Execution Flow
               </p>
               <div className="flex flex-col space-y-1">
@@ -1395,10 +1395,10 @@ export const TrackerPage: React.FC = () => {
                   if (!stepName) return null;
                   return (
                     <div key={idx} className="flex items-start gap-2">
-                      <div className="w-4 h-4 rounded-full bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center shrink-0 mt-0.5 z-10 text-[9px] font-black text-indigo-400">
+                      <div className="w-4 h-4 rounded-full bg-indigo-500/10 dark:bg-indigo-500/20 border border-indigo-500/30 dark:border-indigo-500/40 flex items-center justify-center shrink-0 mt-0.5 z-10 text-[9px] font-black text-indigo-700 dark:text-indigo-400">
                         {idx + 1}
                       </div>
-                      <span className="text-[11px] text-gray-300 font-medium py-0.5">{stepName}</span>
+                      <span className="text-[11px] text-slate-700 dark:text-gray-300 font-medium py-0.5">{stepName}</span>
                     </div>
                   );
                 })}
@@ -1407,11 +1407,11 @@ export const TrackerPage: React.FC = () => {
           )}
 
           {!isResolved && narratives.ai_interpretation && (
-            <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.06]">
-              <p className="text-[9px] font-bold text-purple-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+            <div className="p-3 rounded-xl bg-purple-50 border border-purple-200 dark:bg-white/[0.02] dark:border-white/[0.06]">
+              <p className="text-[9px] font-bold text-purple-700 dark:text-purple-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                 <Sparkles className="w-3 h-3" /> AI Interpretation
               </p>
-              <p className="text-[11px] text-gray-300 leading-relaxed italic">
+              <p className="text-[11px] text-slate-700 dark:text-gray-300 leading-relaxed italic">
                 {narratives.ai_interpretation}
               </p>
             </div>
@@ -1419,11 +1419,11 @@ export const TrackerPage: React.FC = () => {
 
           {/* Legacy Rendering if missing narratives */}
           {!isResolved && !narratives._type && legacyDescription && (
-            <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.06]">
-              <p className="text-[9px] font-bold text-gray-600 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+            <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 dark:bg-white/[0.02] dark:border-white/[0.06]">
+              <p className="text-[9px] font-bold text-slate-500 dark:text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                 <Info className="w-3 h-3" /> Why is this a risk?
               </p>
-              <p className="text-[11px] text-gray-300 leading-relaxed whitespace-pre-line">
+              <p className="text-[11px] text-slate-700 dark:text-gray-300 leading-relaxed whitespace-pre-line">
                 {legacyDescription}
               </p>
             </div>
@@ -1478,14 +1478,14 @@ export const TrackerPage: React.FC = () => {
 
             <div className="relative">
               {/* vertical line */}
-              <div className="absolute left-3.5 top-2 bottom-2 w-px bg-gradient-to-b from-gray-700/60 via-gray-700/30 to-transparent" />
+              <div className="absolute left-3.5 top-2 bottom-2 w-px bg-gradient-to-b from-slate-300 via-slate-200 to-transparent dark:from-gray-700/60 dark:via-gray-700/30" />
 
               <div className="space-y-3">
                 {auditEntries.map((entry, idx) => (
                   <div key={entry.id} className="relative flex gap-3 pl-2">
                     {/* dot on timeline */}
                     <div
-                      className={`relative z-10 w-4 h-4 rounded-full border-2 border-[#080b14] flex items-center justify-center shrink-0 mt-0.5 ${auditDotMap[entry.type] || "bg-bg-hover"}`}
+                      className={`relative z-10 w-4 h-4 rounded-full border-2 border-white dark:border-[#080b14] flex items-center justify-center shrink-0 mt-0.5 ${auditDotMap[entry.type] || "bg-bg-hover"}`}
                     >
                       <div className="w-1.5 h-1.5 rounded-full bg-white/80" />
                     </div>
@@ -1501,13 +1501,13 @@ export const TrackerPage: React.FC = () => {
                             {entry.action}
                           </span>
                           {idx === 0 && (
-                            <span className="text-[8px] font-black px-1 py-px bg-cyan-500/10 text-cyan-600 dark:text-cyan-700 dark:text-cyan-400 border border-cyan-500/20 rounded uppercase tracking-wide">
+                            <span className="text-[8px] font-black px-1 py-px bg-cyan-500/10 text-cyan-700 dark:text-cyan-400 border border-cyan-500/20 rounded uppercase tracking-wide">
                               Initial
                             </span>
                           )}
                           {idx === auditEntries.length - 1 &&
                             auditEntries.length > 1 && (
-                              <span className="text-[8px] font-black px-1 py-px bg-bg-hover text-text-muted border border-slate-300/30 dark:border-gray-600/30 rounded uppercase tracking-wide">
+                              <span className="text-[8px] font-black px-1 py-px bg-slate-100 text-slate-600 dark:bg-bg-hover dark:text-text-muted border border-slate-300/30 dark:border-gray-600/30 rounded uppercase tracking-wide">
                                 Latest
                               </span>
                             )}
@@ -1516,12 +1516,12 @@ export const TrackerPage: React.FC = () => {
 
                       {/* Actor */}
                       <div className="flex items-center gap-1.5 mb-1.5">
-                        <User className="w-2.5 h-2.5 text-gray-600 shrink-0" />
+                        <User className="w-2.5 h-2.5 text-slate-400 dark:text-gray-600 shrink-0" />
                         <span className="text-[10px] text-text-muted font-medium">
                           {entry.actor}
                         </span>
                         {entry.email && (
-                          <span className="text-[9px] text-gray-600">
+                          <span className="text-[9px] text-slate-400 dark:text-gray-600">
                             ({entry.email})
                           </span>
                         )}
@@ -1530,7 +1530,7 @@ export const TrackerPage: React.FC = () => {
                       {/* Timestamp — full */}
                       {entry.timestamp && (
                         <div className="flex items-center gap-1.5 mb-2">
-                          <Clock className="w-2.5 h-2.5 text-gray-600 shrink-0" />
+                          <Clock className="w-2.5 h-2.5 text-slate-400 dark:text-gray-600 shrink-0" />
                           <span className="text-[9px] text-text-muted font-mono">
                             {formatTimestamp(entry.timestamp, { full: true })}
                           </span>
@@ -1547,7 +1547,7 @@ export const TrackerPage: React.FC = () => {
                       {/* Document link */}
                       {entry.document && entry.documentId && (
                         <div className="mt-2 flex items-center gap-1.5">
-                          <FileText className="w-2.5 h-2.5 text-gray-600 shrink-0" />
+                          <FileText className="w-2.5 h-2.5 text-slate-400 dark:text-gray-600 shrink-0" />
                           <span
                             className="text-[9px] text-text-muted truncate"
                             title={entry.document}
@@ -1561,7 +1561,7 @@ export const TrackerPage: React.FC = () => {
                                 entry.document!,
                               )
                             }
-                            className="flex items-center gap-0.5 text-[9px] text-cyan-500 hover:text-cyan-600 dark:text-cyan-700 dark:text-cyan-400 font-bold transition-colors cursor-pointer shrink-0"
+                            className="flex items-center gap-0.5 text-[9px] text-cyan-600 hover:text-cyan-700 dark:text-cyan-400 font-bold transition-colors cursor-pointer shrink-0"
                           >
                             <Download className="w-2.5 h-2.5" /> DL
                           </button>
@@ -1692,7 +1692,7 @@ export const TrackerPage: React.FC = () => {
                   isEvaluating ||
                   project?.monitoring_status !== "ACTIVE"
                     ? "bg-bg-hover/40 border-border-subtle text-text-muted cursor-not-allowed"
-                    : "bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-text-primary border-blue-500/20 shadow-cyan-500/10 cursor-pointer"
+                    : "bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white border-blue-500/20 shadow-cyan-500/10 cursor-pointer"
                 }`}
               >
                 <Sparkles className="w-3.5 h-3.5" />
@@ -1876,12 +1876,12 @@ export const TrackerPage: React.FC = () => {
             <div className="flex flex-col border-b lg:border-b-0 lg:border-r border-border-subtle overflow-hidden w-full lg:w-[420px] lg:min-w-[340px] lg:max-w-[480px] h-[50vh] lg:h-auto shrink-0">
               {/* AI Priority Banner */}
               {project?.highestActionPriority && (
-                <div className="mx-4 mt-4 p-3 bg-gradient-to-r from-cyan-500/10 dark:from-cyan-50/50 dark:from-cyan-950/50 to-blue-500/10 dark:to-blue-50/30 dark:to-blue-900/30 border border-cyan-500/25 rounded-xl flex-shrink-0 relative overflow-hidden group">
+                <div className="mx-4 mt-4 p-3 bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-950/50 dark:to-blue-900/30 border border-cyan-200 dark:border-cyan-500/25 rounded-xl flex-shrink-0 relative overflow-hidden group">
                   <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/0 via-cyan-500/5 to-cyan-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
                   <div className="flex items-center justify-between mb-1.5 relative z-10">
                     <div className="flex items-center gap-1.5">
-                      <Sparkles className="w-3 h-3 text-cyan-600 dark:text-cyan-700 dark:text-cyan-400" />
-                      <span className="text-[9px] font-black text-cyan-600 dark:text-cyan-700 dark:text-cyan-400 uppercase tracking-widest">
+                      <Sparkles className="w-3 h-3 text-cyan-600 dark:text-cyan-400" />
+                      <span className="text-[9px] font-black text-cyan-700 dark:text-cyan-400 uppercase tracking-widest">
                         AI Top Priority
                       </span>
                     </div>
@@ -1896,7 +1896,7 @@ export const TrackerPage: React.FC = () => {
                             setSelectedItem(item);
                           }
                         }}
-                        className="px-2 py-0.5 bg-cyan-500/10 hover:bg-cyan-500/25 border border-cyan-500/20 hover:border-cyan-500/40 text-cyan-600 dark:text-cyan-300 rounded text-[9px] font-bold transition-all cursor-pointer shadow-[0_0_10px_rgba(6,182,212,0.1)] hover:shadow-[0_0_15px_rgba(6,182,212,0.2)]"
+                        className="px-2 py-0.5 bg-cyan-500/10 hover:bg-cyan-500/25 border border-cyan-500/20 hover:border-cyan-500/40 text-cyan-700 dark:text-cyan-300 rounded text-[9px] font-bold transition-all cursor-pointer shadow-[0_0_10px_rgba(6,182,212,0.1)] hover:shadow-[0_0_15px_rgba(6,182,212,0.2)]"
                       >
                         View Details
                       </button>
@@ -1914,10 +1914,10 @@ export const TrackerPage: React.FC = () => {
               {/* Stats Bar */}
               <div className="flex gap-px mx-4 mt-3 flex-shrink-0">
                 <div className="flex-1 p-2.5 bg-bg-card/60 border border-border-subtle rounded-l-xl text-center">
-                  <p className="text-lg font-black text-rose-500 dark:text-rose-700 dark:text-rose-400">
+                  <p className="text-lg font-black text-rose-500 dark:text-rose-400">
                     {activeItems.length}
                   </p>
-                  <p className="text-[8px] font-bold text-gray-600 uppercase tracking-wider">
+                  <p className="text-[8px] font-bold text-slate-400 dark:text-gray-500 uppercase tracking-wider">
                     Active
                   </p>
                 </div>
@@ -1925,7 +1925,7 @@ export const TrackerPage: React.FC = () => {
                   <p className="text-lg font-black text-emerald-700 dark:text-emerald-400">
                     {resolvedItems.length}
                   </p>
-                  <p className="text-[8px] font-bold text-gray-600 uppercase tracking-wider">
+                  <p className="text-[8px] font-bold text-slate-400 dark:text-gray-500 uppercase tracking-wider">
                     Resolved
                   </p>
                 </div>
@@ -1933,7 +1933,7 @@ export const TrackerPage: React.FC = () => {
                   <p className="text-lg font-black text-text-secondary">
                     {items.length}
                   </p>
-                  <p className="text-[8px] font-bold text-gray-600 uppercase tracking-wider">
+                  <p className="text-[8px] font-bold text-slate-400 dark:text-gray-500 uppercase tracking-wider">
                     Total
                   </p>
                 </div>
@@ -2035,10 +2035,10 @@ export const TrackerPage: React.FC = () => {
                     <div className="w-12 h-12 bg-bg-hover/30 rounded-full flex items-center justify-center mb-4 border border-border-strong/30">
                       <CheckCheck className="w-5 h-5 text-emerald-500" />
                     </div>
-                    <h3 className="font-display text-sm font-bold text-white mb-1">
+                    <h3 className="font-display text-sm font-bold text-slate-800 dark:text-white mb-1">
                       No {activeTab === "ACTIVE" ? "Active" : "Resolved"} Risks
                     </h3>
-                    <p className="text-gray-400 text-[10px] max-w-[200px] mx-auto leading-relaxed">
+                    <p className="text-slate-500 dark:text-gray-400 text-[10px] max-w-[200px] mx-auto leading-relaxed">
                       {activeTab === "ACTIVE"
                         ? "All identified risks have been resolved."
                         : "No resolved risks yet."}
@@ -2061,16 +2061,16 @@ export const TrackerPage: React.FC = () => {
                       }
 
                       const borderColor = isSelected
-                        ? "border-cyan-500/50 shadow-cyan-500/5"
+                        ? "border-cyan-500/50 shadow-md shadow-cyan-500/10"
                         : item.status === "RESOLVED"
-                          ? "border-emerald-500/15"
+                          ? "border-emerald-500/30 dark:border-emerald-500/15"
                           : level === "CRITICAL"
-                            ? "border-red-500/25"
+                            ? "border-red-500/30 dark:border-red-500/25"
                             : level === "HIGH"
-                              ? "border-orange-500/20"
+                              ? "border-orange-500/30 dark:border-orange-500/20"
                               : level === "MEDIUM"
-                                ? "border-yellow-500/15"
-                                : "border-white/[0.05]";
+                                ? "border-yellow-500/30 dark:border-yellow-500/15"
+                                : "border-slate-200 dark:border-white/[0.05]";
 
                       const impactText = narratives.business_impact?.immediate || "Unknown Impact";
                       const ownerText = item.dependency_owner || item.owner || (item.risk_category?.includes("CUSTOMER") ? "Customer" : "Internal");
@@ -2082,22 +2082,22 @@ export const TrackerPage: React.FC = () => {
                         <div
                           key={item.id}
                           onClick={() => setSelectedItem(item)}
-                          className={`group rounded-xl border cursor-pointer transition-all duration-200 overflow-hidden ${borderColor} ${isSelected ? "bg-gradient-to-br from-cyan-950/30 to-gray-900/80 shadow-lg" : "bg-gradient-to-br from-gray-900/60 to-gray-950/80 hover:border-gray-600/50 hover:bg-gray-900/80"}`}
+                          className={`group rounded-xl border cursor-pointer transition-all duration-200 overflow-hidden ${borderColor} ${isSelected ? "bg-cyan-50/80 dark:bg-gradient-to-br dark:from-cyan-950/30 dark:to-gray-900/80 shadow-md" : "bg-white hover:bg-slate-50 dark:bg-gradient-to-br dark:from-gray-900/60 dark:to-gray-950/80 dark:hover:border-gray-600/50 dark:hover:bg-gray-900/80 shadow-sm"}`}
                           style={{ animationDelay: `${index * 40}ms` }}
                         >
-                          <div className={`px-4 py-3 border-b ${isSelected ? "border-cyan-500/20" : "border-white/[0.04]"}`}>
+                          <div className={`px-4 py-3 border-b ${isSelected ? "border-cyan-500/20" : "border-slate-100 dark:border-white/[0.04]"}`}>
                             <div className="flex items-start justify-between gap-2 mb-2">
-                              <h3 className={`text-[12px] font-bold leading-snug flex items-center gap-2 transition-colors ${isSelected ? "text-white" : "text-gray-200 group-hover:text-white"}`}>
+                              <h3 className={`text-[12px] font-bold leading-snug flex items-center gap-2 transition-colors ${isSelected ? "text-slate-900 dark:text-white" : "text-slate-700 group-hover:text-slate-950 dark:text-gray-200 dark:group-hover:text-white"}`}>
                                 <span className={`w-2 h-2 rounded-full shrink-0 ${levelStyle.dot}`} />
                                 #{index + 1} {item.title || item.name || `Item #${item.id}`}
                               </h3>
                               {item.status === "RESOLVED" ? (
-                                <span className="text-[9px] font-black px-1.5 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded uppercase">
+                                <span className="text-[9px] font-black px-1.5 py-0.5 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 rounded uppercase">
                                   ✓ Done
                                 </span>
                               ) : (
                                 <div className="flex items-center gap-1.5 shrink-0">
-                                  <span className={`text-[9px] font-mono font-black px-1.5 py-0.5 rounded border ${priorityScore >= 70 ? "bg-rose-500/10 text-rose-400 border-rose-500/20" : priorityScore >= 40 ? "bg-orange-500/10 text-orange-400 border-orange-500/20" : "bg-yellow-500/10 text-yellow-400 border-yellow-500/20"}`}>
+                                  <span className={`text-[9px] font-mono font-black px-1.5 py-0.5 rounded border ${priorityScore >= 70 ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20" : priorityScore >= 40 ? "bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20" : "bg-yellow-500/10 text-amber-700 dark:text-yellow-400 border-yellow-500/20"}`}>
                                     {priorityScore}
                                   </span>
                                 </div>
@@ -2106,23 +2106,23 @@ export const TrackerPage: React.FC = () => {
                             
                             <div className="grid grid-cols-2 gap-y-1.5 gap-x-2 mt-3">
                               <div className="flex items-center gap-1.5">
-                                <span className="text-[9px] text-gray-500 uppercase tracking-widest w-16 shrink-0">Status</span>
-                                <span className={`text-[10px] font-semibold ${item.status === "BLOCKED" ? "text-rose-400" : item.status === "IN_PROGRESS" ? "text-cyan-400" : "text-gray-300"}`}>{item.status.replace(/_/g, " ")}</span>
+                                <span className="text-[9px] text-slate-400 dark:text-gray-500 uppercase tracking-widest w-16 shrink-0">Status</span>
+                                <span className={`text-[10px] font-semibold ${item.status === "BLOCKED" ? "text-rose-600 dark:text-rose-400" : item.status === "IN_PROGRESS" ? "text-cyan-700 dark:text-cyan-400" : "text-slate-700 dark:text-gray-300"}`}>{item.status.replace(/_/g, " ")}</span>
                               </div>
                               <div className="flex items-center gap-1.5">
-                                <span className="text-[9px] text-gray-500 uppercase tracking-widest w-12 shrink-0">Owner</span>
-                                <span className={`text-[10px] font-semibold ${ownerText === "Customer" ? "text-amber-400" : ownerText === "Vendor" ? "text-purple-400" : "text-gray-300"}`}>{ownerText}</span>
+                                <span className="text-[9px] text-slate-400 dark:text-gray-500 uppercase tracking-widest w-12 shrink-0">Owner</span>
+                                <span className={`text-[10px] font-semibold ${ownerText === "Customer" ? "text-amber-700 dark:text-amber-400" : ownerText === "Vendor" ? "text-purple-700 dark:text-purple-400" : "text-slate-700 dark:text-gray-300"}`}>{ownerText}</span>
                               </div>
                               
                               <div className="flex items-center gap-1.5 col-span-2">
-                                <span className="text-[9px] text-gray-500 uppercase tracking-widest w-16 shrink-0">Impact</span>
-                                <span className="text-[10px] text-gray-300 font-medium truncate">{impactText}</span>
+                                <span className="text-[9px] text-slate-400 dark:text-gray-500 uppercase tracking-widest w-16 shrink-0">Impact</span>
+                                <span className="text-[10px] text-slate-700 dark:text-gray-300 font-medium truncate">{impactText}</span>
                               </div>
                               
                               {waitingForText !== "None" && (
                                 <div className="flex items-center gap-1.5 col-span-2">
-                                  <span className="text-[9px] text-gray-500 uppercase tracking-widest w-16 shrink-0">Waiting For</span>
-                                  <span className="text-[10px] text-amber-400/90 font-medium truncate">{waitingForText}</span>
+                                  <span className="text-[9px] text-slate-400 dark:text-gray-500 uppercase tracking-widest w-16 shrink-0">Waiting For</span>
+                                  <span className="text-[10px] text-amber-700 dark:text-amber-400/90 font-medium truncate">{waitingForText}</span>
                                 </div>
                               )}
                             </div>
@@ -2149,7 +2149,7 @@ export const TrackerPage: React.FC = () => {
                         <p className="text-[10px] font-bold text-cyan-600 dark:text-cyan-700 dark:text-cyan-400 uppercase tracking-widest">
                           Full Audit Trail & Details
                         </p>
-                        <p className="text-[9px] text-gray-600">
+                        <p className="text-[9px] text-slate-400 dark:text-gray-600">
                           Risk #{selectedItem.id} · Complete history with
                           timestamps
                         </p>
@@ -2164,7 +2164,7 @@ export const TrackerPage: React.FC = () => {
                             isReactivating ||
                             project?.monitoring_status === "CLOSED"
                           }
-                          className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-900 border border-gray-700 hover:border-gray-600 text-gray-300 hover:text-white rounded-lg text-[10px] font-bold transition-all cursor-pointer active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 border border-slate-300 hover:border-slate-400 text-slate-700 hover:text-slate-900 dark:bg-gray-900 dark:border-gray-700 dark:hover:border-gray-600 dark:text-gray-300 dark:hover:text-white rounded-lg text-[10px] font-bold transition-all cursor-pointer active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           {isReactivating ? (
                             <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -2209,13 +2209,13 @@ export const TrackerPage: React.FC = () => {
               ) : (
                 <div className="flex-1 flex items-center justify-center">
                   <div className="text-center">
-                    <div className="w-16 h-16 bg-bg-card/60 border border-slate-300 dark:border-white/[0.06] rounded-2xl flex items-center justify-center mx-auto mb-4">
-                      <ScrollText className="w-7 h-7 text-gray-600" />
+                    <div className="w-16 h-16 bg-slate-100 border border-slate-200 dark:bg-bg-card/60 dark:border-white/[0.06] rounded-2xl flex items-center justify-center mx-auto mb-4">
+                      <ScrollText className="w-7 h-7 text-slate-400 dark:text-gray-600" />
                     </div>
                     <p className="text-sm font-bold text-text-muted mb-1">
                       Select a Risk
                     </p>
-                    <p className="text-[11px] text-gray-600 max-w-[200px] mx-auto leading-relaxed">
+                    <p className="text-[11px] text-slate-500 dark:text-gray-600 max-w-[200px] mx-auto leading-relaxed">
                       Click any risk item on the left to view full audit trail
                       and details here.
                     </p>
@@ -2267,7 +2267,7 @@ export const TrackerPage: React.FC = () => {
               <button
                 onClick={submitResolve}
                 disabled={!resolutionText.trim() || isResolving}
-                className={`flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-colors cursor-pointer ${!resolutionText.trim() || isResolving ? "bg-emerald-900/30 text-emerald-700 cursor-not-allowed" : "bg-gradient-to-r from-emerald-500 to-green-500 text-text-primary hover:from-emerald-400 hover:to-green-400"}`}
+                className={`flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-colors cursor-pointer ${!resolutionText.trim() || isResolving ? "bg-emerald-900/30 text-emerald-700 cursor-not-allowed" : "bg-gradient-to-r from-emerald-500 to-green-500 text-white hover:from-emerald-400 hover:to-green-400"}`}
               >
                 {isResolving ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -2309,7 +2309,7 @@ export const TrackerPage: React.FC = () => {
               <button
                 onClick={confirmReactivate}
                 disabled={isReactivating}
-                className={`flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-colors cursor-pointer ${isReactivating ? "bg-amber-900/30 text-amber-700 cursor-not-allowed" : "bg-gradient-to-r from-amber-500 to-orange-500 text-text-primary hover:from-amber-400 hover:to-orange-400 shadow-md shadow-amber-500/10"}`}
+                className={`flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-colors cursor-pointer ${isReactivating ? "bg-amber-900/30 text-amber-700 cursor-not-allowed" : "bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:from-amber-400 hover:to-orange-400 shadow-md shadow-amber-500/10"}`}
               >
                 {isReactivating ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -2327,7 +2327,7 @@ export const TrackerPage: React.FC = () => {
           <div className="bg-bg-panel border border-border-strong/60 rounded-2xl p-6 w-full max-w-md shadow-2xl animate-fade-in-up">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-8 h-8 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
-                <Sparkles className="w-4 h-4 text-blue-500 dark:text-blue-700 dark:text-blue-400" />
+                <Sparkles className="w-4 h-4 text-blue-500 dark:text-blue-400" />
               </div>
               <div>
                 <h2 className="text-lg font-bold text-text-primary">
@@ -2396,7 +2396,7 @@ export const TrackerPage: React.FC = () => {
                 disabled={
                   processing || !selectedDocId || eligibleDocs.length === 0
                 }
-                className={`px-4 py-2 rounded-xl font-bold text-sm flex items-center gap-2 cursor-pointer transition-colors ${processing || !selectedDocId || eligibleDocs.length === 0 ? "bg-blue-900/30 text-blue-700 cursor-not-allowed" : "bg-gradient-to-r from-blue-500 to-cyan-500 text-text-primary hover:from-blue-400 hover:to-cyan-400"}`}
+                className={`px-4 py-2 rounded-xl font-bold text-sm flex items-center gap-2 cursor-pointer transition-colors ${processing || !selectedDocId || eligibleDocs.length === 0 ? "bg-blue-900/30 text-blue-700 cursor-not-allowed" : "bg-gradient-to-r from-blue-500 to-cyan-500 text-white hover:from-blue-400 hover:to-cyan-400"}`}
               >
                 {processing ? (
                   <>
