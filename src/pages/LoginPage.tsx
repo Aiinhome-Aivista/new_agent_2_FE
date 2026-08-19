@@ -12,7 +12,8 @@ const personas = [
     password: "password123",
     initial: "EM",
     bg: "hover:bg-teal-500/5 hover:border-teal-500/30",
-    badgeBg: "bg-teal-500/10 text-teal-600 dark:text-teal-300 border-teal-500/20",
+    badgeBg:
+      "bg-teal-500/10 text-teal-600 dark:text-teal-300 border-teal-500/20",
   },
   {
     role: "Project Lead / Delivery Manager",
@@ -28,7 +29,8 @@ const personas = [
     password: "password123",
     initial: "QR",
     bg: "hover:bg-purple-500/5 hover:border-purple-500/30",
-    badgeBg: "bg-purple-500/10 text-purple-600 dark:text-purple-300 border-purple-500/20",
+    badgeBg:
+      "bg-purple-500/10 text-purple-600 dark:text-purple-300 border-purple-500/20",
   },
   {
     role: "Finance / Commercial",
@@ -71,7 +73,10 @@ export const LoginPage: React.FC = () => {
     setError("");
     setIsSubmitting(true);
     try {
-      const res = await apiClient.post(API_ENDPOINTS.AUTH.LOGIN, { email, password });
+      const res = await apiClient.post(API_ENDPOINTS.AUTH.LOGIN, {
+        email,
+        password,
+      });
       if (res.data.success) {
         login(res.data.data.access_token, res.data.data.user);
         navigate(from, { replace: true });
@@ -142,7 +147,7 @@ export const LoginPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 flex items-center pr-4 text-text-muted hover:text-text-primary transition-colors"
+                  className="absolute inset-y-0 right-0 flex items-center pr-4 text-text-muted hover:text-text-primary transition-colors cursor-pointer"
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
@@ -151,7 +156,7 @@ export const LoginPage: React.FC = () => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full py-3 px-4 bg-[#FF7A45] hover:bg-[#F56B2F] disabled:opacity-50 text-white font-bold rounded-xl transition-all duration-300 shadow-lg shadow-[#FF5A14]/20 active:scale-[0.98]"
+              className="w-full py-3 px-4 bg-[#FF7A45] hover:bg-[#F56B2F] disabled:opacity-50 text-white font-bold rounded-xl transition-all duration-300 shadow-lg shadow-[#FF5A14]/20 active:scale-[0.98] cursor-pointer"
             >
               {isSubmitting ? "Signing in..." : "Sign In"}
             </button>
