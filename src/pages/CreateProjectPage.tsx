@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../api/apiClient';
+import { API_ENDPOINTS } from '../api/endpoints';
 
 export const CreateProjectPage: React.FC = () => {
   const [projectName, setProjectName] = useState('');
@@ -13,7 +14,7 @@ export const CreateProjectPage: React.FC = () => {
   useEffect(() => {
     const fetchLeads = async () => {
       try {
-        const res = await apiClient.get('/users/?role=PROJECT_LEAD');
+        const res = await apiClient.get(API_ENDPOINTS.USERS.LIST_BY_ROLE('PROJECT_LEAD'));
         if (res.data.success) {
           setProjectLeads(res.data.data);
         }
@@ -27,7 +28,7 @@ export const CreateProjectPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await apiClient.post('/projects/', {
+      const res = await apiClient.post(API_ENDPOINTS.PROJECTS.CREATE, {
         project_name: projectName,
         client_name: clientName,
         description,
@@ -42,24 +43,24 @@ export const CreateProjectPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-8 flex items-center justify-center">
-      <div className="max-w-md w-full bg-gray-800 p-8 rounded-xl border border-gray-700">
+    <div className="min-h-screen bg-bg-card text-text-primary p-8 flex items-center justify-center">
+      <div className="max-w-md w-full bg-bg-hover p-8 rounded-xl border border-border-strong">
         <h2 className="text-2xl font-bold mb-6">Create New Project</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-gray-400 mb-1">Project Name</label>
-            <input required type="text" value={projectName} onChange={e => setProjectName(e.target.value)} className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2" />
+            <label className="block text-text-muted mb-1">Project Name</label>
+            <input required type="text" value={projectName} onChange={e => setProjectName(e.target.value)} className="w-full bg-bg-hover border border-gray-600 rounded px-3 py-2" />
           </div>
           <div>
-            <label className="block text-gray-400 mb-1">Client Name</label>
-            <input type="text" value={clientName} onChange={e => setClientName(e.target.value)} className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2" />
+            <label className="block text-text-muted mb-1">Client Name</label>
+            <input type="text" value={clientName} onChange={e => setClientName(e.target.value)} className="w-full bg-bg-hover border border-gray-600 rounded px-3 py-2" />
           </div>
           <div>
-            <label className="block text-gray-400 mb-1">Assign Project Lead</label>
+            <label className="block text-text-muted mb-1">Assign Project Lead</label>
             <select 
               value={assignedLeadId} 
               onChange={e => setAssignedLeadId(e.target.value)} 
-              className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-white"
+              className="w-full bg-bg-hover border border-gray-600 rounded px-3 py-2 text-text-primary"
             >
               <option value="">-- Select Project Lead --</option>
               {projectLeads.map((lead) => (
@@ -68,8 +69,8 @@ export const CreateProjectPage: React.FC = () => {
             </select>
           </div>
           <div>
-            <label className="block text-gray-400 mb-1">Description</label>
-            <textarea value={description} onChange={e => setDescription(e.target.value)} className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2" rows={4}></textarea>
+            <label className="block text-text-muted mb-1">Description</label>
+            <textarea value={description} onChange={e => setDescription(e.target.value)} className="w-full bg-bg-hover border border-gray-600 rounded px-3 py-2" rows={4}></textarea>
           </div>
           <button type="submit" className="w-full py-2 bg-blue-600 rounded-md">Create</button>
         </form>

@@ -16,6 +16,7 @@ export interface ApiResponse<T> {
 }
 
 export type MonitoringStatus = 'DRAFT' | 'BASELINE_PENDING_REVIEW' | 'ACTIVE' | 'PAUSED' | 'CLOSED';
+export type HealthRagStatus = 'GREEN' | 'AMBER' | 'RED';
 
 export interface Project {
   id: number;
@@ -26,6 +27,8 @@ export interface Project {
   start_date?: string | null;
   end_date?: string | null;
   created_at?: string;
+  health_score?: number;
+  rag_status?: HealthRagStatus;
 }
 
 export interface ProjectMember {

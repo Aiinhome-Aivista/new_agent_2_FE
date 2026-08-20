@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
-import type { Project } from "../types";
+import type { Project, HealthRagStatus } from "../types";
 import apiClient from "../api/apiClient";
+import { API_ENDPOINTS } from "../api/endpoints";
 import { useAuth } from "../auth/AuthContext";
 import { Link } from "react-router-dom";
 import { Loader } from "../components/Loader";
-import { Sparkles, Loader2 } from "lucide-react";
+import { Sparkles, Loader2, Activity } from "lucide-react";
+import { getHealthConfig } from "../utils/health";
 
 const formatDate = (dateStr: string | null | undefined) => {
   if (!dateStr) return "Not Specified";
@@ -43,6 +45,7 @@ export const ProjectsPage: React.FC = () => {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
+  const [healthFilter, setHealthFilter] = useState<string>("ALL");
 
   const [isCloseModalOpen, setIsCloseModalOpen] = useState(false);
   const [projectToClose, setProjectToClose] = useState<number | null>(null);
@@ -58,9 +61,12 @@ export const ProjectsPage: React.FC = () => {
       }
     }
     try {
-      const res = await apiClient.put(`/projects/${projectId}`, {
-        end_date: editingEndDate || null,
-      });
+      const res = await apiClient.put(
+        API_ENDPOINTS.PROJECTS.DETAIL(projectId),
+        {
+          end_date: editingEndDate || null,
+        },
+      );
       if (res.data.success) {
         setEditingProjectId(null);
         fetchProjects(); // Refresh the list
@@ -78,9 +84,12 @@ export const ProjectsPage: React.FC = () => {
   const confirmCloseProject = async () => {
     if (!projectToClose) return;
     try {
-      const res = await apiClient.put(`/projects/${projectToClose}`, {
-        monitoring_status: "CLOSED",
-      });
+      const res = await apiClient.put(
+        API_ENDPOINTS.PROJECTS.DETAIL(projectToClose),
+        {
+          monitoring_status: "CLOSED",
+        },
+      );
       if (res.data.success) {
         setIsCloseModalOpen(false);
         setProjectToClose(null);
@@ -93,7 +102,7 @@ export const ProjectsPage: React.FC = () => {
 
   const fetchProjects = async () => {
     try {
-      const res = await apiClient.get("/projects/");
+      const res = await apiClient.get(API_ENDPOINTS.PROJECTS.LIST);
       if (res.data.success) {
         const sorted = (res.data.data || []).sort((a: Project, b: Project) => {
           const timeA = a.created_at ? new Date(a.created_at).getTime() : 0;
@@ -111,7 +120,9 @@ export const ProjectsPage: React.FC = () => {
 
   const fetchLeads = async () => {
     try {
-      const res = await apiClient.get("/users/?role=PROJECT_LEAD");
+      const res = await apiClient.get(
+        API_ENDPOINTS.USERS.LIST_BY_ROLE("PROJECT_LEAD"),
+      );
       if (res.data.success) {
         setProjectLeads(res.data.data);
       }
@@ -137,7 +148,7 @@ export const ProjectsPage: React.FC = () => {
     setFormError("");
     setIsGeneratingDesc(true);
     try {
-      const res = await apiClient.post("/projects/generate-description", {
+      const res = await apiClient.post(API_ENDPOINTS.PROJECTS.GENERATE_DESC, {
         project_name: projectName,
         client_name: clientName,
       });
@@ -164,7 +175,7 @@ export const ProjectsPage: React.FC = () => {
     setFormError("");
     setIsCreating(true);
     try {
-      const res = await apiClient.post("/projects/", {
+      const res = await apiClient.post(API_ENDPOINTS.PROJECTS.CREATE, {
         project_name: projectName,
         client_name: clientName,
         description,
@@ -196,7 +207,9 @@ export const ProjectsPage: React.FC = () => {
   }
 
   const filteredProjects = projects.filter((p) => {
-    const matchesSearch = p.project_name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = (p.project_name || "")
+      .toLowerCase()
+      .includes((searchQuery || "").toLowerCase());
     const matchesStatus =
       statusFilter === "ALL"
         ? true
@@ -205,7 +218,17 @@ export const ProjectsPage: React.FC = () => {
           : statusFilter === "CLOSED"
             ? p.monitoring_status === "CLOSED"
             : true;
-    return matchesSearch && matchesStatus;
+
+    const currentHealthConfig = getHealthConfig(
+      p.health_score ?? 100,
+      p.rag_status,
+    );
+    const matchesHealth =
+      healthFilter === "ALL"
+        ? true
+        : currentHealthConfig.status === healthFilter;
+
+    return matchesSearch && matchesStatus && matchesHealth;
   });
 
   return (
@@ -213,10 +236,10 @@ export const ProjectsPage: React.FC = () => {
       <div className="max-w-6xl mx-auto space-y-8">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="font-display text-3xl font-black tracking-tight text-white">
+            <h1 className="font-display text-3xl font-black tracking-tight text-text-primary">
               Projects Directory
             </h1>
-            <p className="text-gray-400 text-sm">
+            <p className="text-text-muted text-sm">
               Select a project to audit deliverables or view contract scope
               baselines.
             </p>
@@ -224,7 +247,7 @@ export const ProjectsPage: React.FC = () => {
           {(user?.role === "ADMIN" || user?.role === "ENGAGEMENT_MANAGER") && (
             <button
               onClick={() => setIsModalOpen(true)}
-              className="px-5 py-2.5 bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-400 hover:to-blue-500 text-white font-semibold rounded-xl text-xs transition-all duration-300 shadow-md shadow-teal-500/10 active:scale-[0.98] cursor-pointer"
+              className="px-5 py-2.5 bg-primary-button hover:bg-primary-hover text-white font-bold rounded-xl text-xs transition-all duration-300 shadow-md shadow-primary-border/20 active:scale-[0.98] cursor-pointer"
             >
               Create Project
             </button>
@@ -232,148 +255,282 @@ export const ProjectsPage: React.FC = () => {
         </div>
 
         {/* Search and Filters */}
-        <div className="flex flex-col md:flex-row gap-4">
-          <input
-            type="text"
-            placeholder="Search projects by name..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="flex-1 bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 text-white placeholder-gray-500 text-sm transition-all"
-          />
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="w-full md:w-48 bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 text-white text-sm transition-all"
-          >
-            <option value="ALL" className="bg-[#0b0e17] text-white">All Projects</option>
-            <option value="ACTIVE" className="bg-[#0b0e17] text-white">Active</option>
-            <option value="CLOSED" className="bg-[#0b0e17] text-white">Closed</option>
-          </select>
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
+            <input
+              type="text"
+              placeholder="Search projects by name..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full lg:flex-1 bg-bg-input border border-border-subtle rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary-border/50 focus:border-primary-border text-text-primary placeholder-text-muted text-sm transition-all"
+            />
+
+            {/* Health Filter Pills (Red, Green, Amber) */}
+            <div className="flex items-center gap-1.5 bg-bg-input border border-border-subtle rounded-xl p-1 w-full lg:w-auto shrink-0 overflow-x-auto">
+              <button
+                onClick={() => setHealthFilter("ALL")}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
+                  healthFilter === "ALL"
+                    ? "bg-primary/20 text-primary border border-primary-border/30"
+                    : "text-text-muted hover:text-text-primary"
+                }`}
+              >
+                All Health
+              </button>
+              <button
+                onClick={() => setHealthFilter("GREEN")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
+                  healthFilter === "GREEN"
+                    ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                    : "text-text-muted hover:text-emerald-400"
+                }`}
+              >
+                <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
+                Healthy
+              </button>
+              <button
+                onClick={() => setHealthFilter("AMBER")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
+                  healthFilter === "AMBER"
+                    ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
+                    : "text-text-muted hover:text-amber-400"
+                }`}
+              >
+                <span className="w-2 h-2 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)]" />
+                At Risk
+              </button>
+              <button
+                onClick={() => setHealthFilter("RED")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
+                  healthFilter === "RED"
+                    ? "bg-rose-500/20 text-rose-400 border border-rose-500/30"
+                    : "text-text-muted hover:text-rose-400"
+                }`}
+              >
+                <span className="w-2 h-2 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.6)]" />
+                Critical
+              </button>
+            </div>
+
+            {/* Monitoring Status Filter */}
+            <div className="flex bg-bg-input border border-border-subtle rounded-xl p-1 w-full lg:w-[320px] shrink-0 h-[46px]">
+              <div className="relative flex w-full">
+                <div
+                  className="absolute top-0 bottom-0 w-1/3 bg-primary/20 border border-primary-border/30 rounded-lg transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] shadow-[0_0_10px_rgba(255,90,20,0.1)]"
+                  style={{
+                    transform: `translateX(${
+                      statusFilter === "ALL"
+                        ? "0%"
+                        : statusFilter === "ACTIVE"
+                          ? "100%"
+                          : "200%"
+                    })`,
+                  }}
+                />
+                {[
+                  { id: "ALL", label: "All Status" },
+                  { id: "ACTIVE", label: "Active" },
+                  { id: "CLOSED", label: "Closed" },
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setStatusFilter(tab.id)}
+                    className={`relative z-10 flex-1 px-3 py-1.5 text-xs font-semibold transition-colors duration-300 rounded-lg cursor-pointer flex items-center justify-center ${
+                      statusFilter === tab.id
+                        ? "text-primary"
+                        : "text-text-muted hover:text-text-primary"
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
 
         {!filteredProjects || filteredProjects.length === 0 ? (
           <div className="p-12 rounded-2xl bg-white/[0.01] border border-white/5 text-center">
-            <p className="text-gray-500 text-sm">
-              No projects found.
-            </p>
+            <p className="text-gray-500 text-sm">No projects found.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {(filteredProjects || []).map((p) => (
-              <div
-                key={p.id}
-                className="group p-6 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-teal-500/30 hover:bg-white/[0.04] transition-all duration-300 hover:shadow-2xl hover:shadow-teal-500/5 hover:-translate-y-1 flex flex-col justify-between"
-              >
-                <div>
-                  <h3 className="font-display text-lg font-bold mb-1 text-white group-hover:text-teal-300 transition-colors duration-300">
-                    {p.project_name}
-                  </h3>
-                  <p className="text-gray-400 text-xs mb-3">
-                    {p.client_name || "No Client Name"}
-                  </p>
+            {(filteredProjects || []).map((p) => {
+              const health = getHealthConfig(
+                p.health_score ?? 100,
+                p.rag_status,
+              );
+              const scoreVal = p.health_score ?? 100;
 
-                  {/* Project Dates */}
-                  <div className="text-gray-400 text-xs mt-3 mb-4 space-y-1.5 border-t border-white/5 pt-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-500 font-medium">
-                        Start Date:
-                      </span>
-                      <span className="text-gray-300 font-semibold">
-                        {formatDate(p.start_date)}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between min-h-[24px]">
-                      <span className="text-gray-500 font-medium">
-                        End Date:
-                      </span>
-                      {editingProjectId === p.id ? (
-                        <div className="flex items-center gap-1">
-                          <input
-                            type="date"
-                            value={editingEndDate}
-                            onChange={(e) => setEditingEndDate(e.target.value)}
-                            className="bg-gray-800 border border-gray-700 rounded px-1.5 py-0.5 text-[11px] text-white focus:outline-none focus:border-teal-500"
-                          />
-                          <button
-                            onClick={() => handleSaveEndDate(p.id)}
-                            className="px-2 py-0.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-[10px] font-bold cursor-pointer"
-                          >
-                            Save
-                          </button>
-                          <button
-                            onClick={() => setEditingProjectId(null)}
-                            className="px-1.5 py-0.5 bg-gray-750 hover:bg-gray-700 text-gray-300 rounded text-[10px] font-bold cursor-pointer"
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-300 font-semibold">
-                            {formatDate(p.end_date)}
-                          </span>
-                          {(user?.role === "ADMIN" ||
-                            user?.role === "ENGAGEMENT_MANAGER") && (
-                            <button
-                              onClick={() => {
-                                setEditingProjectId(p.id);
-                                setEditingEndDate(
-                                  p.end_date ? p.end_date.split("T")[0] : "",
-                                );
-                              }}
-                              className="text-[10px] text-teal-400 hover:text-teal-300 underline font-medium cursor-pointer"
-                            >
-                              Edit
-                            </button>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-                <div className="flex justify-between items-center border-t border-white/5 pt-4 mt-2">
-                  <span
-                    className={`text-[10px] font-semibold px-2.5 py-1 rounded-full uppercase tracking-wider ${
-                      p.monitoring_status === "ACTIVE"
-                        ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/20"
-                        : p.monitoring_status === "CLOSED"
-                          ? "bg-rose-500/15 text-rose-400 border border-rose-500/20"
-                          : p.monitoring_status === "DRAFT"
-                            ? "bg-gray-500/15 text-gray-400 border border-gray-500/20"
-                            : "bg-amber-500/15 text-amber-400 border border-amber-500/20"
-                    }`}
-                  >
-                    {p.monitoring_status}
-                  </span>
-                  <div className="flex items-center gap-3">
-                    {(user?.role === "ADMIN" || user?.role === "ENGAGEMENT_MANAGER") && p.monitoring_status !== "CLOSED" && (
-                      <button
-                        onClick={() => handleCloseProject(p.id)}
-                        className="text-[10px] text-rose-400 hover:text-rose-300 font-semibold cursor-pointer transition-colors uppercase tracking-wider"
+              return (
+                <div
+                  key={p.id}
+                  className="group p-6 rounded-2xl bg-bg-card border border-border-subtle hover:border-primary-border/30 hover:bg-bg-hover transition-all duration-300 hover:shadow-2xl hover:shadow-primary-border/5 hover:-translate-y-1 flex flex-col justify-between"
+                >
+                  <div>
+                    {/* Header with Project Info & Red/Amber/Green Health Score Indicator */}
+                    <div className="flex items-start justify-between gap-2 mb-3">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-display text-lg font-bold text-text-primary group-hover:text-primary transition-colors duration-300 truncate">
+                          {p.project_name}
+                        </h3>
+                        <p className="text-text-muted text-xs truncate">
+                          {p.client_name || "No Client Name"}
+                        </p>
+                      </div>
+
+                      {/* Red / Green / Amber Health Score Indicator Badge */}
+                      <div
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-bold ${health.badgeBg} shrink-0 shadow-sm transition-all`}
+                        title={`Health Score: ${scoreVal}% (${health.label})`}
                       >
-                        Close
-                      </button>
-                    )}
-                    <Link
-                      to={`/projects/${p.id}`}
-                      className="text-xs font-semibold text-teal-400 hover:text-teal-300 flex items-center gap-1 group/btn transition-colors"
+                        <span className="relative flex h-2 w-2">
+                          <span
+                            className={`animate-ping absolute inline-flex h-full w-full rounded-full ${health.pingBg} opacity-75`}
+                          />
+                          <span
+                            className={`relative inline-flex rounded-full h-2 w-2 ${health.dotBg}`}
+                          />
+                        </span>
+                        <span>{health.label}</span>
+                        <span className="font-mono text-[11px] opacity-90 font-black">
+                          {scoreVal}%
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Health Score Mini Progress Bar */}
+                    <div className="my-3 py-2 px-3 rounded-xl bg-bg-input/40 border border-border-subtle/40">
+                      <div className="flex justify-between items-center text-[11px] mb-1.5 font-medium">
+                        <span className="text-text-muted flex items-center gap-1">
+                          <Activity className="w-3.5 h-3.5 text-primary/80" />
+                          Project Health Score
+                        </span>
+                        <span className={`font-black font-mono ${health.text}`}>
+                          {scoreVal}/100
+                        </span>
+                      </div>
+                      <div className="w-full h-1.5 bg-bg-card rounded-full overflow-hidden border border-border-subtle/50">
+                        <div
+                          className={`h-full rounded-full transition-all duration-700 ease-out ${health.barBg}`}
+                          style={{
+                            width: `${Math.min(100, Math.max(0, scoreVal))}%`,
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Project Dates */}
+                    <div className="text-text-muted text-xs mt-3 mb-4 space-y-1.5 border-t border-border-subtle pt-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-text-muted font-medium">
+                          Start Date:
+                        </span>
+                        <span>
+                          {p.start_date
+                            ? p.start_date.split("T")[0]
+                            : "Not set"}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-text-muted font-medium">
+                          End Date:
+                        </span>
+                        {editingProjectId === p.id ? (
+                          <div className="flex items-center gap-1.5">
+                            <input
+                              type="date"
+                              value={editingEndDate}
+                              onChange={(e) =>
+                                setEditingEndDate(e.target.value)
+                              }
+                              className="bg-bg-hover border border-border-strong rounded px-1.5 py-0.5 text-[11px] text-text-primary focus:outline-none focus:border-primary-border"
+                            />
+                            <button
+                              onClick={() => handleSaveEndDate(p.id)}
+                              className="px-2 py-0.5 bg-emerald-600 hover:bg-emerald-500 text-text-primary rounded text-[10px] font-bold cursor-pointer"
+                            >
+                              Save
+                            </button>
+                            <button
+                              onClick={() => setEditingProjectId(null)}
+                              className="text-[10px] text-text-muted hover:text-text-primary cursor-pointer"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-1.5">
+                            <span>
+                              {p.end_date
+                                ? p.end_date.split("T")[0]
+                                : "Not set"}
+                            </span>
+                            {(user?.role === "ADMIN" ||
+                              user?.role === "ENGAGEMENT_MANAGER") && (
+                              <button
+                                onClick={() => {
+                                  setEditingProjectId(p.id);
+                                  setEditingEndDate(
+                                    p.end_date ? p.end_date.split("T")[0] : "",
+                                  );
+                                }}
+                                className="text-[10px] text-primary hover:opacity-80 underline font-medium cursor-pointer"
+                              >
+                                Edit
+                              </button>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex justify-between items-center border-t border-border-subtle pt-4 mt-2">
+                    <span
+                      className={`text-[10px] font-semibold px-2.5 py-1 rounded-full uppercase tracking-wider ${
+                        p.monitoring_status === "ACTIVE"
+                          ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/20"
+                          : p.monitoring_status === "CLOSED"
+                            ? "bg-rose-500/15 text-rose-400 border border-rose-500/20"
+                            : p.monitoring_status === "DRAFT"
+                              ? "bg-gray-500/15 text-gray-400 border border-gray-500/20"
+                              : "bg-amber-500/15 text-amber-400 border border-amber-500/20"
+                      }`}
                     >
-                      Open Dashboard
-                      <span className="group-hover/btn:translate-x-1 transition-transform">
-                        &rarr;
-                      </span>
-                    </Link>
+                      {p.monitoring_status}
+                    </span>
+                    <div className="flex items-center gap-3">
+                      {(user?.role === "ADMIN" ||
+                        user?.role === "ENGAGEMENT_MANAGER") &&
+                        p.monitoring_status !== "CLOSED" && (
+                          <button
+                            onClick={() => handleCloseProject(p.id)}
+                            className="text-[10px] text-rose-400 hover:text-rose-300 font-semibold cursor-pointer transition-colors uppercase tracking-wider"
+                          >
+                            Close
+                          </button>
+                        )}
+                      <Link
+                        to={`/projects/${p.id}`}
+                        className="text-xs font-semibold text-primary hover:text-primary-hover flex items-center gap-1 group/btn transition-colors"
+                      >
+                        Open Dashboard
+                        <span className="group-hover/btn:translate-x-1 transition-transform">
+                          &rarr;
+                        </span>
+                      </Link>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
 
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
-          <div className="max-w-md w-full bg-[#0b0e17] p-8 rounded-2xl border border-white/5 shadow-2xl relative">
+          <div className="max-w-md w-full bg-bg-panel p-8 rounded-2xl border border-border-subtle shadow-2xl relative">
             <button
               onClick={() => {
                 setIsModalOpen(false);
@@ -387,21 +544,21 @@ export const ProjectsPage: React.FC = () => {
                 setIsDescriptionManuallyEdited(false);
                 setIsCreating(false);
               }}
-              className="absolute top-4 right-4 text-gray-400 hover:text-white text-xl transition-colors"
+              className="absolute top-4 right-4 text-text-muted hover:text-text-primary text-xl transition-colors"
             >
               &times;
             </button>
-            <h2 className="font-display text-2xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-teal-300 to-blue-400">
+            <h2 className="font-display text-2xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary-button">
               Create New Project
             </h2>
             {formError && (
-              <div className="mb-4 p-3 bg-rose-950/40 border border-rose-800/30 text-rose-400 rounded-xl text-xs font-semibold">
+              <div className="mb-4 p-3 bg-rose-950/40 border border-rose-800/30 text-rose-500 dark:text-rose-400 rounded-xl text-xs font-semibold">
                 {formError}
               </div>
             )}
             <form onSubmit={handleCreate} className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-gray-400 mb-1.5">
+                <label className="block text-xs font-medium text-text-muted mb-1.5">
                   Project Name
                 </label>
                 <input
@@ -409,63 +566,63 @@ export const ProjectsPage: React.FC = () => {
                   type="text"
                   value={projectName}
                   onChange={(e) => setProjectName(e.target.value)}
-                  className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 text-white placeholder-gray-500 text-sm transition-all"
+                  className="w-full bg-bg-input border border-border-subtle rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary-border/50 focus:border-primary-border text-text-primary placeholder-text-muted text-sm transition-all"
                   placeholder="e.g. Acme Audit 2026"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-400 mb-1.5">
+                <label className="block text-xs font-medium text-text-muted mb-1.5">
                   Client Name
                 </label>
                 <input
                   type="text"
                   value={clientName}
                   onChange={(e) => setClientName(e.target.value)}
-                  className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 text-white placeholder-gray-500 text-sm transition-all"
+                  className="w-full bg-bg-input border border-border-subtle rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary-border/50 focus:border-primary-border text-text-primary placeholder-text-muted text-sm transition-all"
                   placeholder="e.g. Acme Corp"
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-gray-400 mb-1.5">
+                  <label className="block text-xs font-medium text-text-muted mb-1.5">
                     Start Date
                   </label>
                   <input
                     type="date"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
-                    className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 text-white text-xs transition-all"
+                    className="w-full bg-bg-input border border-border-subtle rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary-border/50 focus:border-primary-border text-text-primary text-xs transition-all"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-400 mb-1.5">
+                  <label className="block text-xs font-medium text-text-muted mb-1.5">
                     End Date
                   </label>
                   <input
                     type="date"
                     value={endDate}
                     onChange={(e) => setEndDate(e.target.value)}
-                    className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 text-white text-xs transition-all"
+                    className="w-full bg-bg-input border border-border-subtle rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary-border/50 focus:border-primary-border text-text-primary text-xs transition-all"
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-400 mb-1.5">
+                <label className="block text-xs font-medium text-text-muted mb-1.5">
                   Assign Project Lead
                 </label>
                 <select
                   value={assignedLeadId}
                   onChange={(e) => setAssignedLeadId(e.target.value)}
-                  className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 text-white text-sm transition-all"
+                  className="w-full bg-bg-input border border-border-subtle rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary-border/50 focus:border-primary-border text-text-primary text-sm transition-all"
                 >
-                  <option value="" className="bg-[#0b0e17] text-gray-400">
+                  <option value="" className="bg-bg-panel text-text-muted">
                     -- Select Project Lead --
                   </option>
                   {(projectLeads || []).map((lead) => (
                     <option
                       key={lead.id}
                       value={lead.id}
-                      className="bg-[#0b0e17] text-white"
+                      className="bg-bg-panel text-text-primary"
                     >
                       {lead.name} ({lead.email})
                     </option>
@@ -474,24 +631,24 @@ export const ProjectsPage: React.FC = () => {
               </div>
               <div>
                 <div className="flex justify-between items-center mb-1.5">
-                  <label className="block text-xs font-medium text-gray-400">
+                  <label className="block text-xs font-medium text-text-muted">
                     Description
                   </label>
                   <button
                     type="button"
                     onClick={handleGenerateDescription}
                     disabled={isGeneratingDesc}
-                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-teal-500/10 hover:bg-teal-500/20 border border-teal-500/30 hover:border-teal-500/50 text-[11px] text-teal-400 hover:text-teal-300 font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                    className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-primary/10 hover:bg-primary/20 border border-primary-border/40 text-primary text-xs font-medium transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
                     title="Generate description with AI"
                   >
                     {isGeneratingDesc ? (
                       <>
-                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        <Loader2 className="h-3 w-3 animate-spin" />
                         <span>Generating...</span>
                       </>
                     ) : (
                       <>
-                        <Sparkles className="h-3.5 w-3.5" />
+                        <Sparkles className="h-3 w-3" />
                         <span>AI Suggestion</span>
                       </>
                     )}
@@ -503,7 +660,7 @@ export const ProjectsPage: React.FC = () => {
                     setDescription(e.target.value);
                     setIsDescriptionManuallyEdited(true);
                   }}
-                  className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 text-white placeholder-gray-500 text-sm transition-all"
+                  className="w-full bg-bg-input border border-border-subtle rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary-border/50 focus:border-primary-border text-text-primary placeholder-text-muted text-sm transition-all"
                   placeholder="Summarize project requirements..."
                   rows={4}
                 />
@@ -523,7 +680,7 @@ export const ProjectsPage: React.FC = () => {
                     setIsDescriptionManuallyEdited(false);
                     setIsCreating(false);
                   }}
-                  className="flex-1 py-2.5 bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 rounded-xl text-xs font-semibold transition-all"
+                  className="flex-1 py-2.5 bg-bg-hover hover:bg-white/10 border border-border-subtle hover:border-border-strong rounded-xl text-xs font-semibold transition-all"
                 >
                   Cancel
                 </button>
@@ -537,7 +694,7 @@ export const ProjectsPage: React.FC = () => {
                     isGeneratingDesc ||
                     isCreating
                   }
-                  className="flex-1 py-2.5 bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-400 hover:to-blue-500 text-white font-semibold rounded-xl text-xs transition-all shadow-md shadow-teal-500/10 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="flex-1 py-2.5 bg-primary-button hover:bg-primary-hover text-white font-bold rounded-xl text-xs transition-all shadow-md shadow-primary-border/20 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {isCreating ? "Creating..." : "Create"}
                 </button>
@@ -549,11 +706,11 @@ export const ProjectsPage: React.FC = () => {
 
       {isCloseModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
-          <div className="max-w-md w-full bg-[#0b0e17] p-8 rounded-2xl border border-white/5 shadow-2xl relative">
-            <h2 className="font-display text-2xl font-bold mb-4 text-white">
+          <div className="max-w-md w-full bg-bg-panel p-8 rounded-2xl border border-border-subtle shadow-2xl relative">
+            <h2 className="font-display text-2xl font-bold mb-4 text-text-primary">
               Close Project
             </h2>
-            <p className="text-gray-400 text-sm mb-6">
+            <p className="text-text-muted text-sm mb-6">
               Are you sure you want to close this project?
             </p>
             <div className="flex gap-4">
@@ -562,7 +719,7 @@ export const ProjectsPage: React.FC = () => {
                   setIsCloseModalOpen(false);
                   setProjectToClose(null);
                 }}
-                className="flex-1 py-2.5 bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 rounded-xl text-xs font-semibold transition-all text-white cursor-pointer"
+                className="flex-1 py-2.5 bg-bg-hover hover:bg-bg-hover border border-border-subtle text-text-secondary hover:text-text-primary rounded-xl text-xs font-semibold transition-all cursor-pointer"
               >
                 Cancel
               </button>

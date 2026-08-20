@@ -1,13 +1,81 @@
 @import "tailwindcss";
 
+@variant dark (&:where(.dark, .dark *));
+
 @theme {
   --font-sans: "Plus Jakarta Sans", sans-serif;
   --font-display: "Outfit", sans-serif;
+  --color-bg-base: var(--bg-base);
+  --color-bg-panel: var(--bg-panel);
+  --color-bg-card: var(--bg-card);
+  --color-bg-hover: var(--bg-hover);
+  --color-bg-input: var(--bg-input);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-text-placeholder: var(--text-placeholder);
+  --color-border-subtle: var(--border-subtle);
+  --color-border-strong: var(--border-strong);
+  --color-border-orange: var(--border-orange);
+
+  /* Primary Brand Colors */
+  --color-primary: #FF5A14;
+  --color-primary-button: #FF7A45;
+  --color-primary-hover: #F56B2F;
+  --color-primary-border: #FF8A55;
+
+  --color-sidebar-bg: #4A4A4A;
+}
+
+:root {
+  /* Light Mode */
+  --bg-base: #FFFFFF;
+  --bg-panel: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --bg-hover: #FFF7F2;
+  --bg-input: #FFF7F2;
+
+  --text-primary: #666666;
+  --text-secondary: #888888;
+  --text-muted: #888888;
+  --text-placeholder: #B0B0B0;
+
+  --border-subtle: #D8D8D8;
+  --border-strong: #FF8A55;
+  --border-orange: #FF8A55;
+
+  --brand-primary: #FF5A14;
+  --brand-button: #FF7A45;
+  --brand-hover: #F56B2F;
+  --sidebar-bg: #4A4A4A;
+}
+
+.dark {
+  /* Dark Mode */
+  --bg-base: #1a1a1a;
+  --bg-panel: #242424;
+  --bg-card: #2a2a2a;
+  --bg-hover: #332822;
+  --bg-input: #2e2622;
+
+  --text-primary: #f0f0f0;
+  --text-secondary: #cccccc;
+  --text-muted: #888888;
+  --text-placeholder: #B0B0B0;
+
+  --border-subtle: #444444;
+  --border-strong: #FF8A55;
+  --border-orange: #FF8A55;
+
+  --brand-primary: #FF5A14;
+  --brand-button: #FF7A45;
+  --brand-hover: #F56B2F;
+  --sidebar-bg: #4A4A4A;
 }
 
 @layer base {
   body {
-    @apply bg-[#0c101d] text-gray-100 font-sans antialiased selection:bg-teal-500/30;
+    @apply bg-bg-base text-text-primary font-sans antialiased selection:bg-[#FF5A14]/30 transition-colors duration-300;
   }
 }
 
@@ -54,9 +122,13 @@
 }
 
 .timeline-track-shimmer {
-  background: linear-gradient(90deg, #1e293b 0%, #334155 50%, #1e293b 100%);
+  background: linear-gradient(90deg, #d1d5db 0%, #9ca3af 50%, #d1d5db 100%);
   background-size: 200% 100%;
   animation: shimmer 3s ease-in-out infinite;
+}
+
+.dark .timeline-track-shimmer {
+  background: linear-gradient(90deg, #1e293b 0%, #334155 50%, #1e293b 100%);
 }
 
 .timeline-detail-enter {
