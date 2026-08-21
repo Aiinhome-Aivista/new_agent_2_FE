@@ -70,11 +70,15 @@ export const ProjectDashboardPage: React.FC = () => {
   const [showDriveInbox, setShowDriveInbox] = useState(false);
   const [driveItems, setDriveItems] = useState<any[]>([]);
   const [driveSyncing, setDriveSyncing] = useState(false);
-  const [driveProcessingId, setDriveProcessingId] = useState<number | null>(null);
+  const [driveProcessingId, setDriveProcessingId] = useState<number | null>(
+    null,
+  );
 
   const fetchDriveInbox = async () => {
     try {
-      const res = await apiClient.get(API_ENDPOINTS.DRIVE.INBOX_BY_PROJECT(id!));
+      const res = await apiClient.get(
+        API_ENDPOINTS.DRIVE.INBOX_BY_PROJECT(id!),
+      );
       setDriveItems(res.data?.data || []);
     } catch {
       // silent
@@ -102,14 +106,20 @@ export const ProjectDashboardPage: React.FC = () => {
         project_id: item.matched_project_id || parseInt(id!),
         doc_type: item.doc_type || "MOM",
       });
-      setNotification({ message: `"${item.filename}" uploaded successfully! You can now process it.`, type: "success" });
+      setNotification({
+        message: `"${item.filename}" uploaded successfully! You can now process it.`,
+        type: "success",
+      });
       await fetchDriveInbox();
-      
+
       // Refresh the Execution History section
       const docsRes = await apiClient.get(API_ENDPOINTS.DOCUMENTS.LIST(id!));
       if (docsRes.data.success) setDocuments(docsRes.data.data);
     } catch (err: any) {
-      setNotification({ message: err?.response?.data?.detail || "Processing failed.", type: "error" });
+      setNotification({
+        message: err?.response?.data?.detail || "Processing failed.",
+        type: "error",
+      });
     } finally {
       setDriveProcessingId(null);
     }
@@ -119,22 +129,33 @@ export const ProjectDashboardPage: React.FC = () => {
     try {
       await apiClient.patch(API_ENDPOINTS.DRIVE.SKIP_INBOX(item.id));
       await fetchDriveInbox();
-    } catch { /* silent */ }
+    } catch {
+      /* silent */
+    }
   };
 
   const handleDriveResume = async (item: any) => {
     try {
       await apiClient.patch(API_ENDPOINTS.DRIVE.RESUME_INBOX(item.id));
       await fetchDriveInbox();
-    } catch { /* silent */ }
+    } catch {
+      /* silent */
+    }
   };
 
   const handleDriveDelete = async (item: any) => {
-    if (!confirm(`Are you sure you want to permanently delete "${item.filename}" from the inbox?`)) return;
+    if (
+      !confirm(
+        `Are you sure you want to permanently delete "${item.filename}" from the inbox?`,
+      )
+    )
+      return;
     try {
       await apiClient.delete(API_ENDPOINTS.DRIVE.DELETE_INBOX(item.id));
       await fetchDriveInbox();
-    } catch { /* silent */ }
+    } catch {
+      /* silent */
+    }
   };
 
   const [notification, setNotification] = useState<{
@@ -267,7 +288,9 @@ export const ProjectDashboardPage: React.FC = () => {
           d.id === docId ? { ...d, processing_status: "PROCESSING" } : d,
         ),
       );
-      const res = await apiClient.post(API_ENDPOINTS.DOCUMENTS.PROCESS(id!, docId));
+      const res = await apiClient.post(
+        API_ENDPOINTS.DOCUMENTS.PROCESS(id!, docId),
+      );
       if (res.data.success) {
         const docsRes = await apiClient.get(API_ENDPOINTS.DOCUMENTS.LIST(id!));
         if (docsRes.data.success) setDocuments(docsRes.data.data);
@@ -298,7 +321,8 @@ export const ProjectDashboardPage: React.FC = () => {
     if (!deleteReason.trim()) return;
     try {
       const res = await apiClient.delete(
-        API_ENDPOINTS.DOCUMENTS.DETAIL(id!, deletingDocId) + `?reason=${encodeURIComponent(deleteReason)}`,
+        API_ENDPOINTS.DOCUMENTS.DETAIL(id!, deletingDocId) +
+          `?reason=${encodeURIComponent(deleteReason)}`,
       );
       if (res.data.success) {
         setDeletingDocId(null);
@@ -743,7 +767,7 @@ export const ProjectDashboardPage: React.FC = () => {
                                   <button
                                     onClick={() => setProcessingDocId(doc.id)}
                                     title="Extract and process document"
-                                    className="p-1.5 bg-green-600/20 hover:bg-green-600 border border-green-500/30 text-green-400 hover:text-text-primary rounded-lg transition-all"
+                                    className="p-1.5 bg-green-600/20 hover:bg-green-600 border border-green-500/30 text-green-400 hover:text-text-primary rounded-lg transition-all cursor-pointer"
                                   >
                                     <Play className="h-3 w-3" />
                                   </button>
@@ -756,7 +780,7 @@ export const ProjectDashboardPage: React.FC = () => {
                                   <button
                                     onClick={() => handleDeleteDocument(doc.id)}
                                     title="Delete document"
-                                    className="p-1.5 bg-red-600/20 hover:bg-red-600 border border-red-500/30 text-red-400 hover:text-text-primary rounded-lg transition-all"
+                                    className="p-1.5 bg-red-600/20 hover:bg-red-600 border border-red-500/30 text-red-400 hover:text-text-primary rounded-lg transition-all cursor-pointer"
                                   >
                                     <Trash2 className="h-3 w-3" />
                                   </button>
@@ -972,7 +996,10 @@ export const ProjectDashboardPage: React.FC = () => {
 
                 {/* Google Drive Inbox card */}
                 <div
-                  onClick={() => { setShowDriveInbox(true); fetchDriveInbox(); }}
+                  onClick={() => {
+                    setShowDriveInbox(true);
+                    fetchDriveInbox();
+                  }}
                   className={`p-4 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
                     showDriveInbox
                       ? "bg-[#EFF6FF] dark:bg-[#1e2d40] border-2 border-blue-500 shadow-md shadow-blue-500/10"
@@ -980,17 +1007,30 @@ export const ProjectDashboardPage: React.FC = () => {
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <div className={`p-2.5 rounded-xl ${showDriveInbox ? "bg-blue-500/20 text-blue-500" : "bg-bg-hover text-text-muted"}`}>
+                    <div
+                      className={`p-2.5 rounded-xl ${showDriveInbox ? "bg-blue-500/20 text-blue-500" : "bg-bg-hover text-text-muted"}`}
+                    >
                       <CloudDownload className="w-5 h-5" />
                     </div>
                     <div>
-                      <h3 className="text-sm font-bold text-text-primary">From Google Drive</h3>
-                      <p className="text-xs text-text-muted">Auto-fetched documents</p>
+                      <h3 className="text-sm font-bold text-text-primary">
+                        From Google Drive
+                      </h3>
+                      <p className="text-xs text-text-muted">
+                        Auto-fetched documents
+                      </p>
                     </div>
                   </div>
-                  {driveItems.filter(i => i.status === "PENDING" || i.status === "ASSIGNED").length > 0 && (
+                  {driveItems.filter(
+                    (i) => i.status === "PENDING" || i.status === "ASSIGNED",
+                  ).length > 0 && (
                     <span className="text-[9px] font-black px-2 py-0.5 bg-blue-500 text-white rounded-full">
-                      {driveItems.filter(i => i.status === "PENDING" || i.status === "ASSIGNED").length}
+                      {
+                        driveItems.filter(
+                          (i) =>
+                            i.status === "PENDING" || i.status === "ASSIGNED",
+                        ).length
+                      }
                     </span>
                   )}
                 </div>
@@ -1002,9 +1042,17 @@ export const ProjectDashboardPage: React.FC = () => {
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
                       <CloudDownload className="w-4 h-4 text-blue-400" />
-                      <h3 className="text-sm font-bold text-text-primary">Google Drive Inbox</h3>
+                      <h3 className="text-sm font-bold text-text-primary">
+                        Google Drive Inbox
+                      </h3>
                       <span className="text-[9px] font-bold px-1.5 py-0.5 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-full uppercase">
-                        {driveItems.filter(i => i.status === "PENDING" || i.status === "ASSIGNED").length} pending
+                        {
+                          driveItems.filter(
+                            (i) =>
+                              i.status === "PENDING" || i.status === "ASSIGNED",
+                          ).length
+                        }{" "}
+                        pending
                       </span>
                     </div>
                     <button
@@ -1012,49 +1060,88 @@ export const ProjectDashboardPage: React.FC = () => {
                       disabled={driveSyncing}
                       className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold text-blue-400 border border-blue-500/30 rounded-lg hover:bg-blue-500/10 transition-colors disabled:opacity-50"
                     >
-                      <RefreshCw className={`w-3 h-3 ${driveSyncing ? "animate-spin" : ""}`} />
+                      <RefreshCw
+                        className={`w-3 h-3 ${driveSyncing ? "animate-spin" : ""}`}
+                      />
                       {driveSyncing ? "Syncing..." : "Sync Now"}
                     </button>
                   </div>
                   {driveItems.length === 0 ? (
                     <div className="text-center py-8 text-text-muted text-xs">
-                      No files fetched yet. Click "Sync Now" to poll Google Drive.
+                      No files fetched yet. Click "Sync Now" to poll Google
+                      Drive.
                     </div>
                   ) : (
                     <div className="space-y-2">
                       {driveItems.map((item) => {
-                        const isPending = item.status === "PENDING" || item.status === "ASSIGNED";
+                        const isPending =
+                          item.status === "PENDING" ||
+                          item.status === "ASSIGNED";
                         const isDone = item.status === "DONE";
                         const isSkipped = item.status === "SKIPPED";
                         const isProcessing = driveProcessingId === item.id;
                         return (
-                          <div key={item.id} className={`flex items-center justify-between gap-3 p-3 rounded-xl border ${isDone ? "border-emerald-500/20 bg-emerald-950/10" : isSkipped ? "border-gray-700/40 bg-gray-900/20 opacity-50" : "border-blue-500/20 bg-blue-950/5"}`}>
+                          <div
+                            key={item.id}
+                            className={`flex items-center justify-between gap-3 p-3 rounded-xl border ${isDone ? "border-emerald-500/20 bg-emerald-950/10" : isSkipped ? "border-gray-700/40 bg-gray-900/20 opacity-50" : "border-blue-500/20 bg-blue-950/5"}`}
+                          >
                             <div className="flex items-center gap-2 min-w-0">
-                              <FileText className={`w-4 h-4 shrink-0 ${isDone ? "text-emerald-400" : "text-blue-400"}`} />
+                              <FileText
+                                className={`w-4 h-4 shrink-0 ${isDone ? "text-emerald-400" : "text-blue-400"}`}
+                              />
                               <div className="min-w-0">
-                                <p className="text-[11px] font-semibold text-text-primary truncate">{item.filename}</p>
-                                <p className="text-[9px] text-text-muted">{item.account_label} · {item.doc_type}</p>
+                                <p className="text-[11px] font-semibold text-text-primary truncate">
+                                  {item.filename}
+                                </p>
+                                <p className="text-[9px] text-text-muted">
+                                  {item.account_label} · {item.doc_type}
+                                </p>
                               </div>
                             </div>
                             <div className="flex items-center gap-1.5 shrink-0">
-                              <span className={`text-[8px] font-black px-1.5 py-0.5 rounded uppercase ${isDone ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : isSkipped ? "bg-gray-700/30 text-gray-500 border border-gray-700/30" : "bg-blue-500/10 text-blue-400 border border-blue-500/20"}`}>{item.status}</span>
+                              <span
+                                className={`text-[8px] font-black px-1.5 py-0.5 rounded uppercase ${isDone ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : isSkipped ? "bg-gray-700/30 text-gray-500 border border-gray-700/30" : "bg-blue-500/10 text-blue-400 border border-blue-500/20"}`}
+                              >
+                                {item.status}
+                              </span>
                               {isPending && (
                                 <>
-                                  <button onClick={() => handleDriveProcess(item)} disabled={isProcessing} title="Process this document" className="w-7 h-7 flex items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 transition-colors disabled:opacity-50">
-                                    {isProcessing ? <Loader2 className="w-3 h-3 animate-spin" /> : <Play className="w-3 h-3" />}
+                                  <button
+                                    onClick={() => handleDriveProcess(item)}
+                                    disabled={isProcessing}
+                                    title="Process this document"
+                                    className="w-7 h-7 flex items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 transition-colors disabled:opacity-50"
+                                  >
+                                    {isProcessing ? (
+                                      <Loader2 className="w-3 h-3 animate-spin" />
+                                    ) : (
+                                      <Play className="w-3 h-3" />
+                                    )}
                                   </button>
-                                  <button onClick={() => handleDriveSkip(item)} title="Skip this file" className="w-7 h-7 flex items-center justify-center rounded-lg bg-gray-700/20 text-text-muted border border-gray-700/30 hover:bg-gray-700/40 transition-colors">
+                                  <button
+                                    onClick={() => handleDriveSkip(item)}
+                                    title="Skip this file"
+                                    className="w-7 h-7 flex items-center justify-center rounded-lg bg-gray-700/20 text-text-muted border border-gray-700/30 hover:bg-gray-700/40 transition-colors"
+                                  >
                                     <SkipForward className="w-3 h-3" />
                                   </button>
                                 </>
                               )}
                               {isSkipped && (
-                                <button onClick={() => handleDriveResume(item)} title="Resume this file" className="w-7 h-7 flex items-center justify-center rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20 hover:bg-blue-500/20 transition-colors">
+                                <button
+                                  onClick={() => handleDriveResume(item)}
+                                  title="Resume this file"
+                                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20 hover:bg-blue-500/20 transition-colors"
+                                >
                                   <RotateCcw className="w-3 h-3" />
                                 </button>
                               )}
                               {!isDone && (
-                                <button onClick={() => handleDriveDelete(item)} title="Delete from inbox" className="w-7 h-7 flex items-center justify-center rounded-lg bg-rose-500/10 text-rose-400 border border-rose-500/20 hover:bg-rose-500/20 transition-colors">
+                                <button
+                                  onClick={() => handleDriveDelete(item)}
+                                  title="Delete from inbox"
+                                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-rose-500/10 text-rose-400 border border-rose-500/20 hover:bg-rose-500/20 transition-colors"
+                                >
                                   <Trash2 className="w-3 h-3" />
                                 </button>
                               )}
@@ -1269,7 +1356,7 @@ export const ProjectDashboardPage: React.FC = () => {
                                   <button
                                     onClick={() => setProcessingDocId(doc.id)}
                                     title="Extract and process document"
-                                    className="p-1.5 bg-green-600/20 hover:bg-green-600 border border-green-500/30 text-green-400 hover:text-text-primary rounded-lg transition-all"
+                                    className="p-1.5 bg-green-600/20 hover:bg-green-600 border border-green-500/30 text-green-400 hover:text-text-primary rounded-lg transition-all cursor-pointer"
                                   >
                                     <Play className="h-3 w-3" />
                                   </button>
@@ -1283,7 +1370,7 @@ export const ProjectDashboardPage: React.FC = () => {
                                   <button
                                     onClick={() => handleDeleteDocument(doc.id)}
                                     title="Delete document"
-                                    className="p-1.5 bg-red-600/20 hover:bg-red-600 border border-red-500/30 text-red-400 hover:text-text-primary rounded-lg transition-all"
+                                    className="p-1.5 bg-red-600/20 hover:bg-red-600 border border-red-500/30 text-red-400 hover:text-text-primary rounded-lg transition-all cursor-pointer"
                                   >
                                     <Trash2 className="h-3 w-3" />
                                   </button>

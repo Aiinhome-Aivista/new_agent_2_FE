@@ -544,7 +544,7 @@ export const ProjectsPage: React.FC = () => {
                 setIsDescriptionManuallyEdited(false);
                 setIsCreating(false);
               }}
-              className="absolute top-4 right-4 text-text-muted hover:text-text-primary text-xl transition-colors"
+              className="absolute top-4 right-4 text-text-muted hover:text-text-primary text-xl transition-colors cursor-pointer"
             >
               &times;
             </button>
@@ -613,7 +613,7 @@ export const ProjectsPage: React.FC = () => {
                 <select
                   value={assignedLeadId}
                   onChange={(e) => setAssignedLeadId(e.target.value)}
-                  className="w-full bg-bg-input border border-border-subtle rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary-border/50 focus:border-primary-border text-text-primary text-sm transition-all"
+                  className="w-full bg-bg-input border border-border-subtle rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary-border/50 focus:border-primary-border text-text-primary text-sm transition-all cursor-pointer"
                 >
                   <option value="" className="bg-bg-panel text-text-muted">
                     -- Select Project Lead --
@@ -680,7 +680,7 @@ export const ProjectsPage: React.FC = () => {
                     setIsDescriptionManuallyEdited(false);
                     setIsCreating(false);
                   }}
-                  className="flex-1 py-2.5 bg-bg-hover hover:bg-white/10 border border-border-subtle hover:border-border-strong rounded-xl text-xs font-semibold transition-all"
+                  className="flex-1 py-2.5 bg-bg-hover hover:bg-white/10 border border-border-subtle hover:border-border-strong rounded-xl text-xs font-semibold transition-all cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -694,7 +694,7 @@ export const ProjectsPage: React.FC = () => {
                     isGeneratingDesc ||
                     isCreating
                   }
-                  className="flex-1 py-2.5 bg-primary-button hover:bg-primary-hover text-white font-bold rounded-xl text-xs transition-all shadow-md shadow-primary-border/20 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="flex-1 py-2.5 bg-primary-button hover:bg-primary-hover text-white font-bold rounded-xl text-xs transition-all shadow-md shadow-primary-border/20 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
                 >
                   {isCreating ? "Creating..." : "Create"}
                 </button>
