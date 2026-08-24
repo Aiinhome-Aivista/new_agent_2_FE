@@ -1160,18 +1160,18 @@ export const TrackerPage: React.FC = () => {
                 </span>
               )}
             </div>
-            {/* Score badge — show execution priority and risk severity */}
-            {(() => {
+            {/* Score badge — show execution priority and risk severity for active items only */}
+            {!isResolved && (() => {
               const execScore = item.execution_priority_score || item.risk_score || 0;
               const sevScore = item.risk_score || 0;
-              const displayScore = isResolved ? 0 : execScore;
-              const scoreColor = isResolved ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20" : displayScore >= 70 ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20" : displayScore >= 40 ? "bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20" : displayScore >= 20 ? "bg-yellow-500/10 text-amber-700 dark:text-yellow-400 border-yellow-500/20" : "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20";
+              const displayScore = execScore;
+              const scoreColor = displayScore >= 70 ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20" : displayScore >= 40 ? "bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20" : displayScore >= 20 ? "bg-yellow-500/10 text-amber-700 dark:text-yellow-400 border-yellow-500/20" : "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20";
               return (
                 <div className="flex flex-col items-end gap-0.5 shrink-0">
                   <div className={`text-sm font-black font-mono px-2 py-1 rounded-lg border ${scoreColor}`}>
                     {displayScore}/100
                   </div>
-                  {!isResolved && sevScore !== execScore && sevScore > 0 && (
+                  {sevScore !== execScore && sevScore > 0 && (
                     <span className="text-[8px] text-slate-400 dark:text-gray-500 font-mono">Severity: {sevScore}</span>
                   )}
                 </div>

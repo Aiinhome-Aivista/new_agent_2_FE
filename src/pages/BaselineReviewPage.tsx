@@ -520,11 +520,23 @@ export const BaselineReviewPage: React.FC = () => {
   const handleUpdateCompletionStatus = async (
     itemId: number,
     newStatus: string,
+    options?: {
+      completion_notes?: string;
+      resolve_prerequisite_ids?: number[];
+      resolve_prerequisite_names?: string[];
+      resolve_upstream_scope_item_ids?: number[];
+    },
   ) => {
     try {
+      const payload: any = { completion_status: newStatus };
+      if (options?.completion_notes) payload.completion_notes = options.completion_notes;
+      if (options?.resolve_prerequisite_ids) payload.resolve_prerequisite_ids = options.resolve_prerequisite_ids;
+      if (options?.resolve_prerequisite_names) payload.resolve_prerequisite_names = options.resolve_prerequisite_names;
+      if (options?.resolve_upstream_scope_item_ids) payload.resolve_upstream_scope_item_ids = options.resolve_upstream_scope_item_ids;
+
       const res = await apiClient.patch(
         API_ENDPOINTS.BASELINE.ITEM_COMPLETION(id!, itemId),
-        { completion_status: newStatus },
+        payload,
       );
       if (res.data.success) {
         showNotification(res.data.message, "success");
