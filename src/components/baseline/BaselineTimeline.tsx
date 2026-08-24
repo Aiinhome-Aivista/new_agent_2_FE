@@ -1098,59 +1098,72 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
 
                                       if (!mData) return null;
 
-                                      let milestoneStatus = (
-                                        mData.status || "PENDING"
-                                      ).toUpperCase();
-                                      if (
-                                        (progressPct || 0) > 0 &&
-                                        milestoneStatus === "BLOCKED"
-                                      ) {
-                                        milestoneStatus = "IN_PROGRESS";
-                                      }
-                                      const isCompleted =
-                                        milestoneStatus === "COMPLETED" ||
-                                        milestoneStatus === "CANCELLED";
+                                      const isItemCompleted = (status?: string) => {
+                                         const s = (status || "").toUpperCase();
+                                         return s === "COMPLETED" || s === "CANCELLED";
+                                       };
 
-                                      // Execution state: which predecessors are still incomplete
-                                      const blockedByIds = mData?.blocked_by_ids
-                                        ? mData.blocked_by_ids.split(",")
-                                        : [];
-                                      const blockingIds = mData?.blocking_ids
-                                        ? mData.blocking_ids.split(",")
-                                        : [];
+                                       let milestoneStatus = (
+                                         mData.status || "PENDING"
+                                       ).toUpperCase();
+                                       if (
+                                         (progressPct || 0) > 0 &&
+                                         milestoneStatus === "BLOCKED"
+                                       ) {
+                                         milestoneStatus = "IN_PROGRESS";
+                                       }
+                                       const isCompleted =
+                                         isItemCompleted(milestoneStatus) ||
+                                         isItemCompleted(selectedItem?.completion_status) ||
+                                         isItemCompleted(selectedItem?.latest_progress?.status_code);
 
-                                      const incompletePredecessors =
-                                        blockedByIds
-                                          .map((id: string) =>
-                                            milestoneMap.get(id),
-                                          )
-                                          .filter(
-                                            (
-                                              m: any,
-                                            ): m is NonNullable<typeof m> =>
-                                              !!m &&
-                                              m.status?.toUpperCase() !==
-                                                "COMPLETED" &&
-                                              m.status?.toUpperCase() !==
-                                                "CANCELLED",
-                                          );
+                                       const isPredecessorDone = (m: any) => {
+                                         if (!m) return true;
+                                         if (isItemCompleted(m.status)) return true;
+                                         const matchingTi = (timelineItems || []).find(
+                                           (ti: any) =>
+                                             ti.name?.toLowerCase() === m.name?.toLowerCase() ||
+                                             ti.scope_item_normalized?.toLowerCase() === m.name?.toLowerCase() ||
+                                             ti.milestone_normalized?.toLowerCase() === m.name?.toLowerCase()
+                                         );
+                                         if (matchingTi && (isItemCompleted(matchingTi.completion_status) || isItemCompleted(matchingTi.latest_progress?.status_code))) {
+                                           return true;
+                                         }
+                                         return false;
+                                       };
 
-                                      // Which successors are still waiting (not complete)
-                                      const activelyBlockingSuccessors =
-                                        blockingIds
-                                          .map((id: string) =>
-                                            milestoneMap.get(id),
-                                          )
-                                          .filter(
-                                            (
-                                              m: any,
-                                            ): m is NonNullable<typeof m> =>
-                                              !!m &&
-                                              m.status?.toUpperCase() !==
-                                                "COMPLETED" &&
-                                              m.status?.toUpperCase() !==
-                                                "CANCELLED",
-                                          );
+                                       // Execution state: which predecessors are still incomplete
+                                       const blockedByIds = mData?.blocked_by_ids
+                                         ? mData.blocked_by_ids.split(",")
+                                         : [];
+                                       const blockingIds = mData?.blocking_ids
+                                         ? mData.blocking_ids.split(",")
+                                         : [];
+
+                                       const incompletePredecessors =
+                                         blockedByIds
+                                           .map((id: string) =>
+                                             milestoneMap.get(id),
+                                           )
+                                           .filter(
+                                             (
+                                               m: any,
+                                             ): m is NonNullable<typeof m> =>
+                                               !!m && !isPredecessorDone(m),
+                                           );
+
+                                       // Which successors are still waiting (not complete)
+                                       const activelyBlockingSuccessors =
+                                         blockingIds
+                                           .map((id: string) =>
+                                             milestoneMap.get(id),
+                                           )
+                                           .filter(
+                                             (
+                                               m: any,
+                                             ): m is NonNullable<typeof m> =>
+                                               !!m && !isPredecessorDone(m),
+                                           );
 
                                       return (
                                         <div className="mt-4 space-y-3">
@@ -1185,11 +1198,7 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
                                                     ].find(
                                                       (m) => m.name === p.name,
                                                     );
-                                                    const predDone =
-                                                      predM?.status?.toUpperCase() ===
-                                                        "COMPLETED" ||
-                                                      predM?.status?.toUpperCase() ===
-                                                        "CANCELLED";
+                                                    const predDone = isPredecessorDone(predM);
                                                     return (
                                                       <li
                                                         key={i}
@@ -1244,11 +1253,7 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
                                                     ].find(
                                                       (m) => m.name === s.name,
                                                     );
-                                                    const succDone =
-                                                      succM?.status?.toUpperCase() ===
-                                                        "COMPLETED" ||
-                                                      succM?.status?.toUpperCase() ===
-                                                        "CANCELLED";
+                                                    const succDone = isPredecessorDone(succM);
                                                     const succActive =
                                                       succM &&
                                                       succM.status?.toUpperCase() !==
