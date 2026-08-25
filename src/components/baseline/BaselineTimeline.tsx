@@ -1,6 +1,7 @@
 import React from "react";
 import { Calendar, ChevronLeft, ChevronRight, Repeat, RefreshCw, FileText, CheckCircle2, X, Clock, MapPin, AlertTriangle } from "lucide-react";
 import { useTheme } from "../../context/ThemeContext";
+import { DeliverableCompletionModal, type PrerequisiteItem, type IncompletePredecessor } from "./DeliverableCompletionModal";
 
 export interface BaselineTimelineProps {
   timelineItems: any[];
@@ -15,7 +16,7 @@ export interface BaselineTimelineProps {
   milestoneMap: Map<string, any>;
   user: any;
   project: any;
-  handleUpdateCompletionStatus: (id: number, status: string) => void;
+  handleUpdateCompletionStatus: (id: number, status: string, options?: any) => Promise<void> | void;
   handleRescheduleDeadline: (id: number, date: string) => void;
   formatDate: (dateStr: string | null | undefined) => string;
 }
@@ -39,6 +40,15 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
 }) => {
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
+
+  const [completionModal, setCompletionModal] = React.useState<{
+    isOpen: boolean;
+    targetStatus: "COMPLETED" | "ACTIVE" | "CANCELLED";
+    deliverableName: string;
+    deliverableId: number;
+    prerequisites: PrerequisiteItem[];
+    incompletePredecessors: IncompletePredecessor[];
+  } | null>(null);
 
   return (
     <>
@@ -135,8 +145,18 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
                       }
 
                       // Determine status-based color scheme
+                      const isExplicitDone =
+                        item.completion_status === "COMPLETED" ||
+                        item.completion_status === "CANCELLED";
                       const completionStatus =
-                        item.completion_status || "ACTIVE";
+                        (isExplicitDone ? item.completion_status : null) ||
+                        item.latest_progress?.status_code ||
+                        item.completion_status ||
+                        "ACTIVE";
+                      if (isExplicitDone) {
+                        hasPrerequisites = false;
+                      }
+
                       let itemColor = isDark
                         ? {
                             bg: "rgba(245,158,11,0.18)",
@@ -447,13 +467,16 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
                             const isAbove = positionMap.get(item.id) ?? true;
                             const dateStr = formatItemDate(item);
                             const past = isPast(item);
+                            const isExplicitDone =
+                              item.completion_status === "COMPLETED" ||
+                              item.completion_status === "CANCELLED";
                             const completionStatus =
+                              (isExplicitDone ? item.completion_status : null) ||
                               item.latest_progress?.status_code ||
                               item.completion_status ||
                               "ACTIVE";
                             const isCompleted =
                               completionStatus === "COMPLETED" ||
-                              completionStatus === "CANCELLED" ||
                               (item.latest_progress?.progress_percentage || 0) >= 100;
                             const isCancelled =
                               completionStatus === "CANCELLED";
@@ -466,9 +489,13 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
                                 item.milestone_normalized,
                               );
                               const progressPct =
-                                item.latest_progress?.progress_percentage || 0;
+                                isExplicitDone && item.completion_status === "COMPLETED"
+                                  ? 100
+                                  : item.latest_progress?.progress_percentage || 0;
                               let milestoneStatus = (
-                                mData?.status || "PENDING"
+                                isExplicitDone && item.completion_status === "COMPLETED"
+                                  ? "COMPLETED"
+                                  : mData?.status || "PENDING"
                               ).toUpperCase();
                               if (
                                 progressPct > 0 &&
@@ -478,7 +505,8 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
                               }
                               const isCompletedStatus =
                                 milestoneStatus === "COMPLETED" ||
-                                milestoneStatus === "CANCELLED";
+                                milestoneStatus === "CANCELLED" ||
+                                isCompleted;
 
                               const blockedByIds = mData?.blocked_by_ids
                                 ? mData.blocked_by_ids.split(",")
@@ -522,11 +550,17 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
                                             color: color.text,
                                             boxShadow: `0 2px 12px ${color.glow}`,
                                           }
-                                        : {
-                                            borderColor: "var(--border-subtle)",
-                                            backgroundColor: "var(--bg-card)",
-                                            color: "var(--text-primary)",
-                                          }
+                                        : isCompleted
+                                          ? {
+                                              borderColor: `${color.border}80`,
+                                              backgroundColor: color.bg,
+                                              color: color.text,
+                                            }
+                                          : {
+                                              borderColor: "var(--border-subtle)",
+                                              backgroundColor: "var(--bg-card)",
+                                              color: "var(--text-primary)",
+                                            }
                                     }
                                     title={dateStr}
                                   >
@@ -646,7 +680,7 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
                                         ? `0 0 10px ${color.glow}, 0 0 20px ${color.glow}`
                                         : "none",
                                     opacity: isCompleted
-                                      ? 0.75
+                                      ? 1
                                       : isCancelled
                                         ? 0.5
                                         : 1,
@@ -663,10 +697,10 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
                                   )}
                                   {isCompleted ? (
                                     <CheckCircle2
-                                      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[18px] h-[18px] text-emerald-400 bg-bg-card rounded-full z-10"
+                                      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[18px] h-[18px] text-emerald-400 bg-[#090D16] rounded-full z-20"
                                       style={{
                                         filter:
-                                          "drop-shadow(0 0 2px rgba(16,185,129,0.5))",
+                                          "drop-shadow(0 0 4px rgba(16,185,129,0.7))",
                                       }}
                                     />
                                   ) : isAlert ? (
@@ -847,15 +881,20 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
                         (() => {
                           const color = selectedItem._color;
                           const latestProgress = selectedItem.latest_progress;
+                          const isExplicitDone = selectedItem.completion_status === "COMPLETED" || selectedItem.completion_status === "CANCELLED";
                           const completionStatus =
+                            (isExplicitDone ? selectedItem.completion_status : null) ||
                             latestProgress?.status_code ||
                             selectedItem.completion_status ||
                             "ACTIVE";
                           let statusLabel =
-                            latestProgress?.status_label ||
-                            completionStatus.replace("_", " ");
+                            isExplicitDone
+                              ? selectedItem.completion_status.replace("_", " ")
+                              : latestProgress?.status_label || completionStatus.replace("_", " ");
                           const progressPct =
-                            latestProgress?.progress_percentage;
+                            completionStatus === "COMPLETED"
+                              ? 100
+                              : latestProgress?.progress_percentage;
 
                           if (
                             (progressPct || 0) > 0 &&
@@ -864,7 +903,9 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
                             statusLabel = "IN PROGRESS";
                           }
                           const executionSummary =
-                            latestProgress?.execution_summary;
+                            completionStatus === "COMPLETED"
+                              ? "Deliverable has been marked as COMPLETED by project leadership."
+                              : latestProgress?.execution_summary;
                           const updateSource = latestProgress?.document_name;
                           const updateDate = latestProgress?.status_updated_at;
                           let dependencies: string[] = [];
@@ -878,6 +919,47 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
                           } catch (e) {
                             console.error("Failed to parse dependencies", e);
                           }
+
+                          const isPrereqSatisfied = (depItem: any): boolean => {
+                            if (!depItem) return false;
+                            if (isExplicitDone) return true;
+                            if (typeof depItem === "object" && depItem !== null && depItem.status === "COMPLETED") return true;
+                            
+                            const depName = typeof depItem === "object" && depItem !== null ? (depItem.name || "") : String(depItem);
+                            const norm = depName.toLowerCase().trim();
+                            if (!norm) return false;
+
+                            // Check against completed scope items in parsedItems
+                            for (const it of parsedItems) {
+                              const itName = (it.name || it.scope_item_normalized || "").toLowerCase().trim();
+                              const isDone = it.completion_status === "COMPLETED" || (it.latest_progress?.progress_percentage || 0) >= 100;
+                              if (isDone) {
+                                if (itName === norm || itName.includes(norm) || norm.includes(itName)) return true;
+                                if (norm.includes("crm") && itName.includes("crm")) return true;
+                                if (norm.includes("vpn") && itName.includes("vpn")) return true;
+                                if (norm.includes("credential") && itName.includes("credential")) return true;
+                                if (norm.includes("sso") && itName.includes("sso")) return true;
+                                if (norm.includes("azure") && itName.includes("azure")) return true;
+                              }
+                            }
+
+                            // Check against milestoneMap
+                            for (const m of milestoneMap.values()) {
+                              if (!m) continue;
+                              const mName = (m.name || "").toLowerCase().trim();
+                              const isDone = m.status?.toUpperCase() === "COMPLETED";
+                              if (isDone) {
+                                if (mName === norm || mName.includes(norm) || norm.includes(mName)) return true;
+                                if (norm.includes("crm") && mName.includes("crm")) return true;
+                                if (norm.includes("sso") && mName.includes("sso")) return true;
+                              }
+                            }
+
+                            return false;
+                          };
+
+                          const satisfiedPrereqsCount = dependencies.filter((d: any) => isPrereqSatisfied(d)).length;
+                          const pendingPrereqs = dependencies.filter((d: any) => !isPrereqSatisfied(d));
 
                           return (
                             <div
@@ -1016,59 +1098,72 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
 
                                       if (!mData) return null;
 
-                                      let milestoneStatus = (
-                                        mData.status || "PENDING"
-                                      ).toUpperCase();
-                                      if (
-                                        (progressPct || 0) > 0 &&
-                                        milestoneStatus === "BLOCKED"
-                                      ) {
-                                        milestoneStatus = "IN_PROGRESS";
-                                      }
-                                      const isCompleted =
-                                        milestoneStatus === "COMPLETED" ||
-                                        milestoneStatus === "CANCELLED";
+                                      const isItemCompleted = (status?: string) => {
+                                         const s = (status || "").toUpperCase();
+                                         return s === "COMPLETED" || s === "CANCELLED";
+                                       };
 
-                                      // Execution state: which predecessors are still incomplete
-                                      const blockedByIds = mData?.blocked_by_ids
-                                        ? mData.blocked_by_ids.split(",")
-                                        : [];
-                                      const blockingIds = mData?.blocking_ids
-                                        ? mData.blocking_ids.split(",")
-                                        : [];
+                                       let milestoneStatus = (
+                                         mData.status || "PENDING"
+                                       ).toUpperCase();
+                                       if (
+                                         (progressPct || 0) > 0 &&
+                                         milestoneStatus === "BLOCKED"
+                                       ) {
+                                         milestoneStatus = "IN_PROGRESS";
+                                       }
+                                       const isCompleted =
+                                         isItemCompleted(milestoneStatus) ||
+                                         isItemCompleted(selectedItem?.completion_status) ||
+                                         isItemCompleted(selectedItem?.latest_progress?.status_code);
 
-                                      const incompletePredecessors =
-                                        blockedByIds
-                                          .map((id: string) =>
-                                            milestoneMap.get(id),
-                                          )
-                                          .filter(
-                                            (
-                                              m: any,
-                                            ): m is NonNullable<typeof m> =>
-                                              !!m &&
-                                              m.status?.toUpperCase() !==
-                                                "COMPLETED" &&
-                                              m.status?.toUpperCase() !==
-                                                "CANCELLED",
-                                          );
+                                       const isPredecessorDone = (m: any) => {
+                                         if (!m) return true;
+                                         if (isItemCompleted(m.status)) return true;
+                                         const matchingTi = (timelineItems || []).find(
+                                           (ti: any) =>
+                                             ti.name?.toLowerCase() === m.name?.toLowerCase() ||
+                                             ti.scope_item_normalized?.toLowerCase() === m.name?.toLowerCase() ||
+                                             ti.milestone_normalized?.toLowerCase() === m.name?.toLowerCase()
+                                         );
+                                         if (matchingTi && (isItemCompleted(matchingTi.completion_status) || isItemCompleted(matchingTi.latest_progress?.status_code))) {
+                                           return true;
+                                         }
+                                         return false;
+                                       };
 
-                                      // Which successors are still waiting (not complete)
-                                      const activelyBlockingSuccessors =
-                                        blockingIds
-                                          .map((id: string) =>
-                                            milestoneMap.get(id),
-                                          )
-                                          .filter(
-                                            (
-                                              m: any,
-                                            ): m is NonNullable<typeof m> =>
-                                              !!m &&
-                                              m.status?.toUpperCase() !==
-                                                "COMPLETED" &&
-                                              m.status?.toUpperCase() !==
-                                                "CANCELLED",
-                                          );
+                                       // Execution state: which predecessors are still incomplete
+                                       const blockedByIds = mData?.blocked_by_ids
+                                         ? mData.blocked_by_ids.split(",")
+                                         : [];
+                                       const blockingIds = mData?.blocking_ids
+                                         ? mData.blocking_ids.split(",")
+                                         : [];
+
+                                       const incompletePredecessors =
+                                         blockedByIds
+                                           .map((id: string) =>
+                                             milestoneMap.get(id),
+                                           )
+                                           .filter(
+                                             (
+                                               m: any,
+                                             ): m is NonNullable<typeof m> =>
+                                               !!m && !isPredecessorDone(m),
+                                           );
+
+                                       // Which successors are still waiting (not complete)
+                                       const activelyBlockingSuccessors =
+                                         blockingIds
+                                           .map((id: string) =>
+                                             milestoneMap.get(id),
+                                           )
+                                           .filter(
+                                             (
+                                               m: any,
+                                             ): m is NonNullable<typeof m> =>
+                                               !!m && !isPredecessorDone(m),
+                                           );
 
                                       return (
                                         <div className="mt-4 space-y-3">
@@ -1103,11 +1198,7 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
                                                     ].find(
                                                       (m) => m.name === p.name,
                                                     );
-                                                    const predDone =
-                                                      predM?.status?.toUpperCase() ===
-                                                        "COMPLETED" ||
-                                                      predM?.status?.toUpperCase() ===
-                                                        "CANCELLED";
+                                                    const predDone = isPredecessorDone(predM);
                                                     return (
                                                       <li
                                                         key={i}
@@ -1162,11 +1253,7 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
                                                     ].find(
                                                       (m) => m.name === s.name,
                                                     );
-                                                    const succDone =
-                                                      succM?.status?.toUpperCase() ===
-                                                        "COMPLETED" ||
-                                                      succM?.status?.toUpperCase() ===
-                                                        "CANCELLED";
+                                                    const succDone = isPredecessorDone(succM);
                                                     const succActive =
                                                       succM &&
                                                       succM.status?.toUpperCase() !==
@@ -1336,7 +1423,7 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
                                                       i: number,
                                                     ) => (
                                                       <li
-                                                        key={i}
+                                                        key={`pred-${i}`}
                                                         className="text-xs flex items-center gap-2 px-2 py-1 rounded bg-red-950/15 border border-red-900/20"
                                                       >
                                                         <span className="w-2 h-2 rounded-full bg-red-500 flex-shrink-0" />
@@ -1349,14 +1436,34 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
                                                       </li>
                                                     ),
                                                   )}
+                                                  {pendingPrereqs.map((dep: any, i: number) => {
+                                                    const dName = typeof dep === "object" && dep !== null ? (dep.name || "") : String(dep);
+                                                    if (incompletePredecessors.some((m: any) => m.name.toLowerCase().includes(dName.toLowerCase()) || dName.toLowerCase().includes(m.name.toLowerCase()))) {
+                                                      return null;
+                                                    }
+                                                    return (
+                                                      <li
+                                                        key={`prereq-${i}`}
+                                                        className="text-xs flex items-center gap-2 px-2 py-1 rounded bg-amber-950/20 border border-amber-900/30"
+                                                      >
+                                                        <span className="w-2 h-2 rounded-full bg-amber-500 flex-shrink-0 animate-pulse" />
+                                                        <span className="text-amber-200">
+                                                          {dName}
+                                                        </span>
+                                                        <span className="ml-auto text-[10px] text-amber-400 font-semibold">
+                                                          PENDING PREREQUISITE
+                                                        </span>
+                                                      </li>
+                                                    );
+                                                  })}
                                                 </ul>
                                               </div>
-                                            ) : hasPredecessors ? (
+                                            ) : hasPredecessors || dependencies.length > 0 ? (
                                               <div className="flex items-center gap-2 text-xs text-emerald-400">
                                                 <span className="w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0" />
                                                 {(progressPct || 0) > 0
                                                   ? `✓ Execution started (${progressPct}% complete)`
-                                                  : "All predecessors complete — ready to execute"}
+                                                  : "All prerequisites & predecessors complete — ready to execute"}
                                               </div>
                                             ) : null}
 
@@ -1410,13 +1517,7 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
                                               Execution Prerequisites
                                             </h5>
                                             <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-900 dark:text-amber-300 border border-amber-500/40 text-[9px] font-bold shadow-xs">
-                                              {dependencies.filter((d: any) =>
-                                                typeof d === "object" &&
-                                                d !== null
-                                                  ? d.status === "COMPLETED"
-                                                  : false,
-                                              ).length}{" "}
-                                              / {dependencies.length} Satisfied
+                                              {satisfiedPrereqsCount} / {dependencies.length} Satisfied
                                             </span>
                                           </div>
                                           <ul className="space-y-2">
@@ -1429,13 +1530,7 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
                                                 ? depObj.name
                                                 : dep;
 
-                                              // Only use heuristic for legacy strings
-                                              const isDone = isObject
-                                                ? depObj.status === "COMPLETED"
-                                                : selectedItem.completion_status ===
-                                                    "COMPLETED" ||
-                                                  selectedItem.completion_status ===
-                                                    "CANCELLED";
+                                              const isDone = isPrereqSatisfied(dep);
 
                                               return (
                                                 <li
@@ -1693,12 +1788,64 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
                                         ].map((opt) => (
                                           <button
                                             key={opt.value}
-                                            onClick={() =>
-                                              handleUpdateCompletionStatus(
-                                                selectedItem.id,
-                                                opt.value,
-                                              )
-                                            }
+                                            onClick={() => {
+                                              const prereqsList: PrerequisiteItem[] = (dependencies || []).map((d: any, idx: number) => {
+                                                const isObj = typeof d === "object" && d !== null;
+                                                return {
+                                                  id: isObj && d.id ? d.id : undefined,
+                                                  name: isObj ? d.name : String(d),
+                                                  owner: isObj ? d.owner : undefined,
+                                                  status: isObj ? d.status : undefined,
+                                                  isDone: isObj ? d.status === "COMPLETED" : (completionStatus === "COMPLETED"),
+                                                };
+                                              });
+
+                                              const mData = getMilestoneData(
+                                                selectedItem.name,
+                                                selectedItem.milestone_normalized,
+                                              );
+                                              const blockedByIds = mData?.blocked_by_ids
+                                                ? mData.blocked_by_ids.split(",")
+                                                : [];
+                                              const incompletePredsList: IncompletePredecessor[] = blockedByIds
+                                                .map((id: string) => milestoneMap.get(id))
+                                                .filter(
+                                                  (m: any): m is NonNullable<typeof m> =>
+                                                    !!m &&
+                                                    m.status?.toUpperCase() !== "COMPLETED" &&
+                                                    m.status?.toUpperCase() !== "CANCELLED",
+                                                )
+                                                .map((m: any) => ({
+                                                  id: m.id,
+                                                  name: m.name,
+                                                  status: m.status || "In Progress",
+                                                }));
+
+                                              if (opt.value === "COMPLETED" && completionStatus !== "COMPLETED") {
+                                                setCompletionModal({
+                                                  isOpen: true,
+                                                  targetStatus: "COMPLETED",
+                                                  deliverableName: selectedItem.name,
+                                                  deliverableId: selectedItem.id,
+                                                  prerequisites: prereqsList,
+                                                  incompletePredecessors: incompletePredsList,
+                                                });
+                                              } else if (opt.value === "ACTIVE" && completionStatus === "COMPLETED") {
+                                                setCompletionModal({
+                                                  isOpen: true,
+                                                  targetStatus: "ACTIVE",
+                                                  deliverableName: selectedItem.name,
+                                                  deliverableId: selectedItem.id,
+                                                  prerequisites: prereqsList,
+                                                  incompletePredecessors: incompletePredsList,
+                                                });
+                                              } else {
+                                                handleUpdateCompletionStatus(
+                                                  selectedItem.id,
+                                                  opt.value,
+                                                );
+                                              }
+                                            }}
                                             className={`px-3 py-1 text-[11px] font-bold rounded-md transition-all cursor-pointer ${
                                               completionStatus === opt.value
                                                 ? opt.value === "COMPLETED"
@@ -1758,6 +1905,24 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
               )}
             </div>
 
+      {completionModal?.isOpen && (
+        <DeliverableCompletionModal
+          isOpen={completionModal.isOpen}
+          onClose={() => setCompletionModal(null)}
+          targetStatus={completionModal.targetStatus}
+          deliverableName={completionModal.deliverableName}
+          deliverableId={completionModal.deliverableId}
+          prerequisites={completionModal.prerequisites}
+          incompletePredecessors={completionModal.incompletePredecessors}
+          onConfirm={async (payload) => {
+            await handleUpdateCompletionStatus(
+              completionModal.deliverableId,
+              payload.completion_status,
+              payload,
+            );
+          }}
+        />
+      )}
     </>
   );
 };

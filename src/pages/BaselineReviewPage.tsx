@@ -260,8 +260,7 @@ export const BaselineReviewPage: React.FC = () => {
     const result: any[] = [];
     const allItems: any[] = baseline?.scope_items || [];
     for (const item of allItems) {
-      const isRecurringParent =
-        item.is_recurring && !item.parent_scope_item_id;
+      const isRecurringParent = item.is_recurring && !item.parent_scope_item_id;
       const occurrences: any[] = item.recurring_occurrences || [];
       if (isRecurringParent && occurrences.length > 0) {
         // Push each occurrence as its own timeline node
@@ -521,15 +520,29 @@ export const BaselineReviewPage: React.FC = () => {
   const handleUpdateCompletionStatus = async (
     itemId: number,
     newStatus: string,
+    options?: {
+      completion_notes?: string;
+      resolve_prerequisite_ids?: number[];
+      resolve_prerequisite_names?: string[];
+      resolve_upstream_scope_item_ids?: number[];
+    },
   ) => {
     try {
+      const payload: any = { completion_status: newStatus };
+      if (options?.completion_notes) payload.completion_notes = options.completion_notes;
+      if (options?.resolve_prerequisite_ids) payload.resolve_prerequisite_ids = options.resolve_prerequisite_ids;
+      if (options?.resolve_prerequisite_names) payload.resolve_prerequisite_names = options.resolve_prerequisite_names;
+      if (options?.resolve_upstream_scope_item_ids) payload.resolve_upstream_scope_item_ids = options.resolve_upstream_scope_item_ids;
+
       const res = await apiClient.patch(
         API_ENDPOINTS.BASELINE.ITEM_COMPLETION(id!, itemId),
-        { completion_status: newStatus },
+        payload,
       );
       if (res.data.success) {
         showNotification(res.data.message, "success");
-        const baselineRes = await apiClient.get(API_ENDPOINTS.BASELINE.LIST(id!));
+        const baselineRes = await apiClient.get(
+          API_ENDPOINTS.BASELINE.LIST(id!),
+        );
         if (baselineRes.data.success) {
           setBaseline(baselineRes.data.data);
         }
@@ -554,7 +567,9 @@ export const BaselineReviewPage: React.FC = () => {
       );
       if (res.data.success) {
         showNotification("Deliverable rescheduled successfully", "success");
-        const baselineRes = await apiClient.get(API_ENDPOINTS.BASELINE.LIST(id!));
+        const baselineRes = await apiClient.get(
+          API_ENDPOINTS.BASELINE.LIST(id!),
+        );
         if (baselineRes.data.success) {
           setBaseline(baselineRes.data.data);
         }
@@ -606,10 +621,9 @@ export const BaselineReviewPage: React.FC = () => {
       );
       for (const doc of docsToExtract) {
         setExtractingDocId(doc.id);
-        await apiClient.post(
-          API_ENDPOINTS.BASELINE.EXTRACT(id!, doc.id),
-          { mode: extractionMode },
-        );
+        await apiClient.post(API_ENDPOINTS.BASELINE.EXTRACT(id!, doc.id), {
+          mode: extractionMode,
+        });
         // Start polling immediately in the global context
         startPolling(
           Number(id),
@@ -1136,52 +1150,52 @@ export const BaselineReviewPage: React.FC = () => {
         {isCurrentBaselineExtracting ? (
           renderBaselineProgressTimeline()
         ) : !isBaselineExtracted ? (
-          <div className="text-center py-16 bg-amber-950/10 border border-amber-500/20 rounded-2xl animate-fade-in-up p-8 max-w-2xl mx-auto my-8">
-            <AlertTriangle className="w-12 h-12 text-amber-500 mx-auto mb-4 animate-bounce" />
-            <h3 className="text-lg font-bold text-text-primary mb-2">
-              No document is extracted please extract document for baseline
-              review
-            </h3>
+          <div className="flex flex-col items-center justify-center min-h-[calc(100vh-250px)] w-full">
+            <div className="text-center py-16 px-12 bg-amber-950/10 border border-amber-500/20 rounded-2xl animate-fade-in-up max-w-2xl w-full mx-auto">
+              <AlertTriangle className="w-12 h-12 text-amber-500 mx-auto mb-4 animate-bounce" />
+              <h3 className="text-xl font-bold text-text-primary mb-2">
+                No document is extracted please extract document for baseline review
+              </h3>
+            </div>
           </div>
         ) : (
           <div>
             <div className="mb-8 border-b border-border-subtle"></div>
 
+            <BaselineTimeline
+              timelineItems={timelineItems}
+              recurringGroups={recurringGroups}
+              selectedDeliverableId={selectedDeliverableId}
+              setSelectedDeliverableId={setSelectedDeliverableId}
+              activeIndex={activeIndex}
+              handlePrev={handlePrev}
+              handleNext={handleNext}
+              timelineContainerRef={timelineContainerRef}
+              getMilestoneData={getMilestoneData}
+              milestoneMap={milestoneMap}
+              user={user}
+              project={project}
+              handleUpdateCompletionStatus={handleUpdateCompletionStatus}
+              handleRescheduleDeadline={handleRescheduleDeadline}
+              formatDate={formatDate}
+            />
 
-        <BaselineTimeline
-          timelineItems={timelineItems}
-          recurringGroups={recurringGroups}
-          selectedDeliverableId={selectedDeliverableId}
-          setSelectedDeliverableId={setSelectedDeliverableId}
-          activeIndex={activeIndex}
-          handlePrev={handlePrev}
-          handleNext={handleNext}
-          timelineContainerRef={timelineContainerRef}
-          getMilestoneData={getMilestoneData}
-          milestoneMap={milestoneMap}
-          user={user}
-          project={project}
-          handleUpdateCompletionStatus={handleUpdateCompletionStatus}
-          handleRescheduleDeadline={handleRescheduleDeadline}
-          formatDate={formatDate}
-        />
-
-        <BaselineScopeItems
-          user={user}
-          project={project}
-          baseline={baseline}
-          showExportDropdown={showExportDropdown}
-          setShowExportDropdown={setShowExportDropdown}
-          handleExportWord={handleExportWord}
-          handleExportPDF={handleExportPDF}
-          getItemVersion={getItemVersion}
-          formatDate={formatDate}
-          setShowAddItemModal={setShowAddItemModal}
-          setShowExtractModal={setShowExtractModal}
-          inScopeItems={inScopeItems}
-          outOfScopeItems={outOfScopeItems}
-          setDeletingItemId={setDeletingItemId}
-        />
+            <BaselineScopeItems
+              user={user}
+              project={project}
+              baseline={baseline}
+              showExportDropdown={showExportDropdown}
+              setShowExportDropdown={setShowExportDropdown}
+              handleExportWord={handleExportWord}
+              handleExportPDF={handleExportPDF}
+              getItemVersion={getItemVersion}
+              formatDate={formatDate}
+              setShowAddItemModal={setShowAddItemModal}
+              setShowExtractModal={setShowExtractModal}
+              inScopeItems={inScopeItems}
+              outOfScopeItems={outOfScopeItems}
+              setDeletingItemId={setDeletingItemId}
+            />
             {/* Baseline Version History */}
             {versions && versions.length > 0 && (
               <div className="mt-16">
