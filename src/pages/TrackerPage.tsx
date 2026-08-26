@@ -223,6 +223,159 @@ const formatTimestamp = (
   });
 };
 
+interface ExtractedNarratives {
+  _type?: string;
+  executive_summary?: string;
+  original_contract_sentence?: string;
+  mom_evidence?: string;
+  gap_analysis?: string;
+  why_important?: string;
+  business_impact?: {
+    immediate?: string;
+    future?: string;
+  };
+  ai_interpretation?: string;
+  execution_chain?: (string | { name?: string; title?: string; activity?: string })[];
+  owner?: string;
+  updatesHistory?: Array<{
+    phaseName: string;
+    executive_summary?: string;
+    mom_evidence?: string;
+    gap_analysis?: string;
+    ai_interpretation?: string;
+    business_impact?: {
+      immediate?: string;
+      future?: string;
+    };
+    rawText?: string;
+  }>;
+}
+
+export function extractPmoNarratives(reasoningInput: any): {
+  narratives: ExtractedNarratives;
+  legacyDescription: string;
+} {
+  let narratives: ExtractedNarratives = {};
+  let legacyDescription = "";
+  const collectedNarrativeObjects: any[] = [];
+  const plainTextChunks: string[] = [];
+
+  if (!reasoningInput) {
+    return { narratives, legacyDescription };
+  }
+
+  // Recursive unwrap of stringified JSON
+  const unwrapJson = (val: any, depth = 0): any => {
+    if (depth > 5) return val;
+    if (typeof val !== "string") return val;
+    const trimmed = val.trim();
+    if (
+      (trimmed.startsWith("{") && trimmed.endsWith("}")) ||
+      (trimmed.startsWith("[") && trimmed.endsWith("]"))
+    ) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        return unwrapJson(parsed, depth + 1);
+      } catch {
+        return val;
+      }
+    }
+    return val;
+  };
+
+  const processObject = (obj: any) => {
+    if (!obj || typeof obj !== "object") return;
+
+    const hasPmoFields =
+      obj._type === "pmo_narrative" ||
+      !!obj.executive_summary ||
+      !!obj.gap_analysis ||
+      !!obj.why_important ||
+      !!obj.business_impact ||
+      !!obj.mom_evidence ||
+      !!obj.ai_interpretation;
+
+    if (hasPmoFields) {
+      collectedNarrativeObjects.push(obj);
+      narratives = {
+        ...narratives,
+        ...obj,
+        _type: "pmo_narrative",
+        business_impact: {
+          ...(narratives.business_impact || {}),
+          ...(typeof obj.business_impact === "object" ? obj.business_impact : {}),
+        },
+      };
+    }
+
+    if (typeof obj.text === "string" && obj.text.trim()) {
+      processText(obj.text);
+    }
+  };
+
+  const processText = (textStr: string) => {
+    if (!textStr || typeof textStr !== "string") return;
+
+    // Split on update delimiters
+    const chunks = textStr.split(/(?:\r?\n|^)Update:\s*/i);
+
+    for (const chunk of chunks) {
+      const trimmed = chunk.trim();
+      if (!trimmed) continue;
+
+      const unwrapped = unwrapJson(trimmed);
+      if (typeof unwrapped === "object" && unwrapped !== null) {
+        processObject(unwrapped);
+      } else if (typeof unwrapped === "string") {
+        const cleanStr = unwrapped.trim();
+        if (cleanStr && !cleanStr.startsWith("{") && !cleanStr.startsWith("[")) {
+          plainTextChunks.push(cleanStr);
+        }
+      }
+    }
+  };
+
+  const initialParsed = unwrapJson(reasoningInput);
+  if (typeof initialParsed === "object" && initialParsed !== null) {
+    processObject(initialParsed);
+  } else if (typeof initialParsed === "string") {
+    processText(initialParsed);
+  }
+
+  // Build updatesHistory if multiple narrative snapshots exist
+  if (collectedNarrativeObjects.length > 1) {
+    narratives.updatesHistory = collectedNarrativeObjects.map((item, idx) => ({
+      phaseName: idx === 0 ? "Initial Assessment" : `Update #${idx}`,
+      executive_summary: item.executive_summary,
+      mom_evidence: item.mom_evidence,
+      gap_analysis: item.gap_analysis,
+      ai_interpretation: item.ai_interpretation,
+      business_impact: typeof item.business_impact === "object" ? item.business_impact : undefined,
+    }));
+  }
+
+  // Check legacyDescription
+  if (narratives._type === "pmo_narrative" || narratives.executive_summary) {
+    legacyDescription = "";
+  } else if (plainTextChunks.length > 0) {
+    legacyDescription = Array.from(new Set(plainTextChunks)).join("\n\n");
+  } else if (typeof reasoningInput === "string") {
+    let cleaned = reasoningInput.trim();
+    if (cleaned.startsWith("{") && cleaned.endsWith("}")) {
+      try {
+        const obj = JSON.parse(cleaned);
+        cleaned = obj.text || obj.summary || obj.description || obj.executive_summary || "";
+      } catch {}
+    }
+    cleaned = cleaned.replace(/\\"/g, '"').replace(/^"|"$/g, "");
+    if (!cleaned.startsWith("{")) {
+      legacyDescription = cleaned;
+    }
+  }
+
+  return { narratives, legacyDescription };
+}
+
 // Build audit trail entries from a risk item
 const buildAuditTrail = (item: any) => {
   const entries: {
@@ -558,26 +711,9 @@ export const TrackerPage: React.FC = () => {
                         categoryLabels.GENERAL;
                       const typeLabel =
                         typeLabels[item.item_type] || item.item_type;
-                      const reasoningText = item.reasoning || "";
-                      const hasSplit =
-                        reasoningText.includes("\nReasoning:\n") ||
-                        reasoningText.includes("\nReasoning:\r\n");
-                      let description = reasoningText;
-                      let detailedReasoning = "";
-                      if (hasSplit) {
-                        const parts = reasoningText.split(/\nReasoning:\r?\n/);
-                        description = parts[0]
-                          .replace(/Description:\r?\n/, "")
-                          .trim();
-                        detailedReasoning = parts[1].trim();
-                      } else if (
-                        reasoningText.startsWith("Description:\n") ||
-                        reasoningText.startsWith("Description:\r\n")
-                      ) {
-                        description = reasoningText
-                          .replace(/Description:\r?\n/, "")
-                          .trim();
-                      }
+                      const { narratives: expNarratives, legacyDescription: expLegacy } = extractPmoNarratives(item.reasoning);
+                      const description = expNarratives.executive_summary || expLegacy || item.reasoning || "";
+                      const detailedReasoning = expNarratives.gap_analysis || expNarratives.why_important || "";
                       const auditTrail = buildAuditTrail(item);
                       return `
                 <div class="card">
@@ -1101,21 +1237,7 @@ export const TrackerPage: React.FC = () => {
     const isResolved = item.status === "RESOLVED";
     const typeLabel = typeLabels[item.item_type] || item.item_type;
 
-    let narratives: any = {};
-    let legacyDescription = "";
-    
-    if (item.reasoning) {
-      try {
-        const parsed = JSON.parse(item.reasoning);
-        if (parsed._type === "pmo_narrative") {
-          narratives = parsed;
-        } else {
-          legacyDescription = item.reasoning;
-        }
-      } catch (e) {
-        legacyDescription = item.reasoning;
-      }
-    }
+    const { narratives, legacyDescription } = extractPmoNarratives(item.reasoning);
 
     const auditIconMap: Record<string, React.ReactNode> = {
       created: <Activity className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" />,
@@ -1180,7 +1302,7 @@ export const TrackerPage: React.FC = () => {
           </div>
 
           <h2 className="text-sm font-bold text-text-primary leading-snug mb-3">
-            {item.name || `${typeLabel} #${item.id}`}
+            {item.title || item.name || `${typeLabel} #${item.id}`}
           </h2>
 
           {/* Meta Grid */}
@@ -1257,15 +1379,15 @@ export const TrackerPage: React.FC = () => {
               <div className="space-y-2">
                 <div>
                   <p className="text-[9px] text-slate-400 dark:text-gray-500 uppercase mb-0.5">Commitment</p>
-                  <p className="text-[11px] font-medium text-slate-700 dark:text-gray-200">{item.deliverable}</p>
+                  <p className="text-[11px] font-medium text-slate-700 dark:text-gray-200">{item.deliverable || item.title || item.name || narratives.original_contract_sentence || "Contract Commitment"}</p>
                 </div>
                 <div>
                   <p className="text-[9px] text-slate-400 dark:text-gray-500 uppercase mb-0.5">Planned Finish</p>
-                  <p className="text-[11px] font-medium text-slate-700 dark:text-gray-200">{item.expected_date !== "Unknown" ? item.expected_date : "TBD"}</p>
+                  <p className="text-[11px] font-medium text-slate-700 dark:text-gray-200">{item.expected_date && item.expected_date !== "Unknown" ? item.expected_date : (item.deadline || "TBD")}</p>
                 </div>
                 <div>
                   <p className="text-[9px] text-slate-400 dark:text-gray-500 uppercase mb-0.5">Owner</p>
-                  <p className="text-[11px] font-medium text-slate-700 dark:text-gray-200">{item.dependency_owner || "Internal"}</p>
+                  <p className="text-[11px] font-medium text-slate-700 dark:text-gray-200">{item.dependency_owner || item.owner || narratives.owner || "Internal"}</p>
                 </div>
               </div>
             </div>
@@ -1278,12 +1400,18 @@ export const TrackerPage: React.FC = () => {
               <div className="space-y-2">
                 <div>
                   <p className="text-[9px] text-slate-400 dark:text-gray-500 uppercase mb-0.5">Current Status</p>
-                  <p className="text-[11px] font-medium text-slate-700 dark:text-gray-200">{item.progress !== null && item.progress !== undefined ? `${item.progress}% Complete` : (item.current_status || "UNKNOWN").replace(/_/g, " ")}</p>
+                  <p className="text-[11px] font-medium text-slate-700 dark:text-gray-200">
+                    {item.progress !== null && item.progress !== undefined ? `${item.progress}% Complete` : (item.execution_status || item.current_status || item.status || "UNKNOWN").replace(/_/g, " ")}
+                  </p>
                 </div>
-                {item.blockers && item.blockers.length > 0 && (
+                {(narratives.mom_evidence || (item.blockers && item.blockers.length > 0)) && (
                   <div>
-                    <p className="text-[9px] text-slate-400 dark:text-gray-500 uppercase mb-0.5">Blockers</p>
-                    <p className="text-[11px] text-rose-600 dark:text-rose-400">{item.blockers.join(", ")}</p>
+                    <p className="text-[9px] text-slate-400 dark:text-gray-500 uppercase mb-0.5">
+                      {item.blockers && item.blockers.length > 0 ? "Blockers" : "Latest Evidence"}
+                    </p>
+                    <p className="text-[11px] font-medium text-slate-700 dark:text-gray-300 italic">
+                      {item.blockers && item.blockers.length > 0 ? item.blockers.join(", ") : `"${narratives.mom_evidence}"`}
+                    </p>
                   </div>
                 )}
               </div>
@@ -1291,7 +1419,7 @@ export const TrackerPage: React.FC = () => {
           </div>
           
           {/* Commitment Assessment */}
-          <div className={`p-3 rounded-xl border ${item.delay_days > 0 || item.current_status === "BLOCKED" ? 'bg-orange-500/5 border-orange-500/30 dark:bg-orange-500/[0.04] dark:border-orange-500/20' : 'bg-emerald-500/5 border-emerald-500/30 dark:bg-emerald-500/[0.04] dark:border-emerald-500/20'}`}>
+          <div className={`p-3 rounded-xl border ${item.delay_days > 0 || item.current_status === "BLOCKED" || item.execution_status === "WAITING_ON_CUSTOMER" ? 'bg-orange-500/5 border-orange-500/30 dark:bg-orange-500/[0.04] dark:border-orange-500/20' : 'bg-emerald-500/5 border-emerald-500/30 dark:bg-emerald-500/[0.04] dark:border-emerald-500/20'}`}>
             <p className="text-[9px] font-bold text-slate-500 dark:text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
               <CheckCircle2 className="w-3 h-3" /> Commitment Assessment
             </p>
@@ -1305,7 +1433,7 @@ export const TrackerPage: React.FC = () => {
               <div>
                 <p className="text-[9px] text-slate-400 dark:text-gray-500 uppercase mb-0.5">Reason</p>
                 <p className="text-[11px] text-slate-700 dark:text-gray-300 leading-relaxed mt-0.5">
-                  {(item.delay_days > 0 || item.current_status === "BLOCKED") ? (legacyDescription || "Commitment is currently obstructed by active execution blockers.") : "Executing to plan."}
+                  {(item.delay_days > 0 || item.current_status === "BLOCKED" || item.execution_status === "WAITING_ON_CUSTOMER") ? (narratives.gap_analysis || narratives.executive_summary || legacyDescription || "Commitment is currently obstructed by active execution blockers.") : (narratives.executive_summary || narratives.gap_analysis || "Executing to plan.")}
                 </p>
               </div>
             </div>
@@ -1322,7 +1450,7 @@ export const TrackerPage: React.FC = () => {
             </div>
           )}
 
-          {!isResolved && narratives.original_contract_sentence && (
+          {!isResolved && (narratives.original_contract_sentence || narratives.mom_evidence) && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 dark:bg-white/[0.02] dark:border-white/[0.06]">
                 <p className="text-[9px] font-bold text-slate-500 dark:text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
@@ -1331,11 +1459,11 @@ export const TrackerPage: React.FC = () => {
                 <div className="space-y-2">
                   <div>
                     <span className="text-[9px] text-slate-400 dark:text-gray-500 uppercase">Deliverable</span>
-                    <p className="text-[11px] font-medium text-slate-700 dark:text-gray-300">{item.title || item.name}</p>
+                    <p className="text-[11px] font-medium text-slate-700 dark:text-gray-300">{item.title || item.name || item.deliverable}</p>
                   </div>
                   <div>
                     <span className="text-[9px] text-slate-400 dark:text-gray-500 uppercase">Commitment</span>
-                    <p className="text-[11px] text-slate-700 dark:text-gray-300 italic">"{narratives.original_contract_sentence}"</p>
+                    <p className="text-[11px] text-slate-700 dark:text-gray-300 italic">"{narratives.original_contract_sentence || item.title || item.name}"</p>
                   </div>
                 </div>
               </div>
@@ -1347,7 +1475,7 @@ export const TrackerPage: React.FC = () => {
                 <div className="space-y-2">
                   <div>
                     <span className="text-[9px] text-slate-400 dark:text-gray-500 uppercase">Status</span>
-                    <p className="text-[11px] font-medium text-slate-700 dark:text-gray-300">{item.status.replace("_", " ")} {item.progress ? `(${item.progress}%)` : ""}</p>
+                    <p className="text-[11px] font-medium text-slate-700 dark:text-gray-300">{item.status.replace(/_/g, " ")} {item.progress ? `(${item.progress}%)` : ""}</p>
                   </div>
                   {narratives.mom_evidence && (
                     <div>
@@ -1448,8 +1576,36 @@ export const TrackerPage: React.FC = () => {
             </div>
           )}
 
+          {/* Assessment History Progression (if multiple snapshots exist) */}
+          {!isResolved && narratives.updatesHistory && narratives.updatesHistory.length > 1 && (
+            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 dark:bg-white/[0.02] dark:border-white/[0.06]">
+              <p className="text-[9px] font-bold text-slate-500 dark:text-gray-400 uppercase tracking-widest mb-2.5 flex items-center gap-1.5">
+                <Clock className="w-3 h-3 text-cyan-600 dark:text-cyan-400" /> Assessment History & Evidence Progression
+              </p>
+              <div className="space-y-2">
+                {narratives.updatesHistory.map((hist, hIdx) => (
+                  <div key={hIdx} className="p-2.5 rounded-lg bg-white dark:bg-gray-900/40 border border-slate-200/60 dark:border-white/[0.04]">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-[10px] font-bold text-cyan-700 dark:text-cyan-400">{hist.phaseName}</span>
+                    </div>
+                    {hist.executive_summary && (
+                      <p className="text-[11px] text-slate-700 dark:text-gray-300 leading-relaxed font-medium mb-1">
+                        {hist.executive_summary}
+                      </p>
+                    )}
+                    {hist.mom_evidence && (
+                      <p className="text-[10px] text-slate-500 dark:text-gray-400 italic">
+                        Evidence: "{hist.mom_evidence}"
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Legacy Rendering if missing narratives */}
-          {!isResolved && !narratives._type && legacyDescription && (
+          {!isResolved && !narratives._type && !narratives.executive_summary && legacyDescription && (
             <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 dark:bg-white/[0.02] dark:border-white/[0.06]">
               <p className="text-[9px] font-bold text-slate-500 dark:text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                 <Info className="w-3 h-3" /> Why is this a risk?
@@ -2083,13 +2239,7 @@ export const TrackerPage: React.FC = () => {
                         riskLevelConfig[level] || riskLevelConfig.LOW;
                       const isSelected = selectedItem?.id === item.id;
                       
-                      let narratives: any = {};
-                      if (item.reasoning) {
-                        try {
-                          const parsed = JSON.parse(item.reasoning);
-                          if (parsed._type === "pmo_narrative") narratives = parsed;
-                        } catch (e) {}
-                      }
+                      const { narratives } = extractPmoNarratives(item.reasoning);
 
                       const borderColor = isSelected
                         ? "border-cyan-500/50 shadow-md shadow-cyan-500/10"
@@ -2103,8 +2253,17 @@ export const TrackerPage: React.FC = () => {
                                 ? "border-yellow-500/30 dark:border-yellow-500/15"
                                 : "border-slate-200 dark:border-white/[0.05]";
 
-                      const impactText = narratives.business_impact?.immediate || "Unknown Impact";
-                      const ownerText = item.dependency_owner || item.owner || (item.risk_category?.includes("CUSTOMER") ? "Customer" : "Internal");
+                      const impactText =
+                        narratives.business_impact?.immediate ||
+                        narratives.why_important ||
+                        narratives.gap_analysis ||
+                        item.impact ||
+                        "Unknown Impact";
+                      const ownerText =
+                        item.dependency_owner ||
+                        item.owner ||
+                        narratives.owner ||
+                        (item.risk_category?.includes("CUSTOMER") ? "Customer" : "Internal");
                       const waitingForText = item.dependency_names || "None";
                       const priorityScore = item.execution_priority_score || item.risk_score || 0;
                       const severityScore = item.risk_score || 0;
