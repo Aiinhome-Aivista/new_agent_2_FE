@@ -16,6 +16,8 @@ export const API_ENDPOINTS = {
     DETAIL: (id: string | number) => `/projects/${id}`,
     STAKEHOLDERS: (id: string | number) => `/projects/${id}/stakeholders/`,
     STAKEHOLDER_DETAIL: (projectId: string | number, userId: string | number) => `/projects/${projectId}/stakeholders/${userId}`,
+    TEMPLATE: (id: string | number) => `/projects/${id}/stakeholders/template`,
+    BULK_UPLOAD: (id: string | number) => `/projects/${id}/stakeholders/bulk-upload`,
     MEMBERS: (id: string | number) => `/projects/${id}/members/`, // Assuming this exists or similar
   },
   DOCUMENTS: {

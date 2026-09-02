@@ -20,6 +20,8 @@ import {
   Check,
   ShieldAlert,
   User as UserIcon,
+  Upload,
+  Download,
 } from 'lucide-react';
 
 interface ProjectMembersSectionProps {
@@ -55,6 +57,11 @@ export const ProjectMembersSection: React.FC<ProjectMembersSectionProps> = ({ pr
   // Delete Modal State
   const [deletingMember, setDeletingMember] = useState<ProjectMember | null>(null);
   const [deleting, setDeleting] = useState(false);
+  
+  // Bulk Upload State
+  const [isBulkUploadModalOpen, setIsBulkUploadModalOpen] = useState(false);
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   // Toast Notification
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
@@ -199,6 +206,55 @@ export const ProjectMembersSection: React.FC<ProjectMembersSectionProps> = ({ pr
     }
   };
 
+  const handleDownloadTemplate = async () => {
+    try {
+      const response = await apiClient.get(API_ENDPOINTS.PROJECTS.TEMPLATE(projectId), {
+        responseType: 'blob',
+      });
+      const blob = new Blob([response.data], { type: 'text/csv' });
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.setAttribute('download', 'project_members_template.csv');
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode?.removeChild(link);
+      window.URL.revokeObjectURL(downloadUrl);
+    } catch (err) {
+      console.error('Failed to download template', err);
+      showNotification('Failed to download template', 'error');
+    }
+  };
+
+  const handleBulkUpload = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!uploadFile) return;
+
+    setIsUploading(true);
+    const formData = new FormData();
+    formData.append('file', uploadFile);
+
+    try {
+      const res = await apiClient.post(API_ENDPOINTS.PROJECTS.BULK_UPLOAD(projectId), formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      if (res.data.success) {
+        showNotification(res.data.message);
+        setIsBulkUploadModalOpen(false);
+        setUploadFile(null);
+        fetchMembers();
+      }
+    } catch (err: any) {
+      console.error('Failed to upload project members', err);
+      const errMsg = err.response?.data?.detail || 'Failed to upload project members';
+      showNotification(errMsg, 'error');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   // Filtered members list
   const filteredMembers = members.filter((m) => {
     const matchesSearch =
@@ -285,13 +341,22 @@ export const ProjectMembersSection: React.FC<ProjectMembersSectionProps> = ({ pr
         </div>
 
         {isManagerOrAdmin && (
-          <button
-            onClick={openAddModal}
-            className="flex items-center justify-center gap-2 px-5 py-2.5 bg-[#FF7A45] hover:bg-[#F56B2F] text-white font-bold rounded-xl text-xs transition-all duration-300 shadow-md shadow-[#FF5A14]/20 active:scale-[0.98] cursor-pointer"
-          >
-            <UserPlus className="w-4 h-4" />
-            Add Member
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => { setIsBulkUploadModalOpen(true); setUploadFile(null); }}
+              className="flex items-center justify-center gap-2 px-5 py-2.5 bg-[#FFF7F2] hover:bg-white dark:bg-[#2a2a2a] dark:hover:bg-[#333333] border border-[#D8D8D8] dark:border-[#444444] text-[#666666] dark:text-gray-200 font-bold rounded-xl text-xs transition-all duration-300 shadow-sm active:scale-[0.98] cursor-pointer"
+            >
+              <Upload className="w-4 h-4" />
+              Bulk Upload
+            </button>
+            <button
+              onClick={openAddModal}
+              className="flex items-center justify-center gap-2 px-5 py-2.5 bg-[#FF7A45] hover:bg-[#F56B2F] text-white font-bold rounded-xl text-xs transition-all duration-300 shadow-md shadow-[#FF5A14]/20 active:scale-[0.98] cursor-pointer"
+            >
+              <UserPlus className="w-4 h-4" />
+              Add Member
+            </button>
+          </div>
         )}
       </div>
 
@@ -641,6 +706,92 @@ export const ProjectMembersSection: React.FC<ProjectMembersSectionProps> = ({ pr
                 {deleting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Confirm Delete'}
               </button>
             </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* BULK UPLOAD MODAL */}
+      {isBulkUploadModalOpen && createPortal(
+        <div className="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center z-[9999] p-4 overflow-y-auto animate-fadeIn">
+          <div className="bg-bg-panel border border-border-strong/80 rounded-2xl max-w-lg w-full p-6 md:p-8 shadow-2xl relative my-auto">
+            <button
+              onClick={() => { setIsBulkUploadModalOpen(false); setUploadFile(null); }}
+              className="absolute top-4 right-4 text-text-muted hover:text-text-primary p-1"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <h3 className="text-xl font-bold text-text-primary mb-1 flex items-center gap-2">
+              <Upload className="w-5 h-5 text-[#FF5A14]" />
+              Bulk Upload Members
+            </h3>
+            <p className="text-xs text-text-muted mb-6">
+              Upload a CSV file to add multiple project members at once.
+            </p>
+
+            <div className="bg-[#FFF7F2] dark:bg-[#2a2a2a] border border-[#D8D8D8] dark:border-[#444444] rounded-xl p-4 mb-6">
+              <div className="flex items-start justify-between">
+                <div>
+                  <h4 className="text-sm font-semibold text-text-primary mb-1">Step 1: Download Template</h4>
+                  <p className="text-xs text-text-muted">Use our standard CSV template to ensure your data is formatted correctly.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleDownloadTemplate}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-[#333] border border-[#D8D8D8] dark:border-[#555] rounded-lg text-xs font-medium hover:bg-gray-50 dark:hover:bg-[#444] transition-colors whitespace-nowrap text-text-primary"
+                >
+                  <Download className="w-3.5 h-3.5" /> Template
+                </button>
+              </div>
+            </div>
+
+            <form onSubmit={handleBulkUpload}>
+              <div className="mb-6">
+                <h4 className="text-sm font-semibold text-text-primary mb-2">Step 2: Upload CSV File</h4>
+                <div className="relative">
+                  <input
+                    type="file"
+                    accept=".csv"
+                    onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
+                    className="block w-full text-sm text-text-muted
+                      file:mr-4 file:py-2.5 file:px-4
+                      file:rounded-xl file:border-0
+                      file:text-xs file:font-semibold
+                      file:bg-[#FF5A14]/10 file:text-[#FF5A14]
+                      hover:file:bg-[#FF5A14]/20 cursor-pointer
+                      border border-dashed border-[#D8D8D8] dark:border-[#444] rounded-xl p-3 bg-transparent"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-4 border-t border-border-subtle">
+                <button
+                  type="button"
+                  onClick={() => { setIsBulkUploadModalOpen(false); setUploadFile(null); }}
+                  disabled={isUploading}
+                  className="flex-1 py-2.5 bg-[#FFF7F2] hover:bg-white dark:bg-[#2a2a2a] dark:hover:bg-[#333333] border border-[#D8D8D8] dark:border-[#444444] text-[#666666] dark:text-gray-200 rounded-xl text-xs font-semibold transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isUploading || !uploadFile}
+                  className="flex-1 py-2.5 bg-[#FF7A45] hover:bg-[#F56B2F] text-white font-bold rounded-xl text-xs transition-all shadow-md shadow-[#FF5A14]/20 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {isUploading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" /> Uploading...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="w-4 h-4" /> Upload File
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
         </div>,
         document.body
