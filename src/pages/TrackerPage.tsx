@@ -41,92 +41,168 @@ interface TrackerStep {
 
 const steps: TrackerStep[] = [
   {
-    key: "Loading Project Baseline",
-    name: "Loading Project Baseline",
-    desc: "Loading Engagement Letter / IFA baseline.",
+    key: "Document Ingestion",
+    name: "Document Ingestion",
+    desc: "Reading and parsing project status report / MoM updates.",
   },
   {
-    key: "Reading Uploaded Document",
-    name: "Reading Uploaded Document",
-    desc: "Parsing uploaded Status Report / MoM.",
-  },
-  {
-    key: "Extracting Activities",
-    name: "Extracting Activities",
-    desc: "Extracting activities, action items, blockers and decisions.",
-  },
-  {
-    key: "Running In-Scope Evaluation Agent",
-    name: "Running In-Scope Evaluation Agent",
-    desc: "Comparing extracted activities against approved scope.",
+    key: "Scope & Deliverables Verification",
+    name: "Scope & Deliverables Verification",
+    desc: "Verifying active commitments and progress against project baseline.",
     metricKey: "matched_activities",
   },
   {
-    key: "Running Out-of-Scope Detection Agent",
-    name: "Running Out-of-Scope Detection Agent",
-    desc: "Detecting possible scope creep.",
-    metricKey: "oos_activities",
+    key: "Dependency & Blocker Analysis",
+    name: "Dependency & Blocker Analysis",
+    desc: "Identifying execution prerequisites, blockers, and dependencies.",
   },
   {
-    key: "Running Deliverable Evaluation Agent",
-    name: "Running Deliverable Evaluation Agent",
-    desc: "Evaluating deliverables, milestones, blockers and delays.",
+    key: "Risk & Timeline Evaluation",
+    name: "Risk & Timeline Evaluation",
+    desc: "Evaluating critical path impact, risk scores, and timeline variances.",
     metricKey: "delayed_deliverables",
   },
   {
-    key: "Calculating Risk Score",
-    name: "Calculating Risk Score",
-    desc: "Combining all evaluation results.",
-  },
-  {
-    key: "Generating AI Summary",
-    name: "Generating AI Summary",
-    desc: "Generating overall project risk explanation.",
-  },
-  {
-    key: "Saving Results",
-    name: "Saving Results",
-    desc: "Updating Risk History and Scope Tracker.",
-  },
-  {
-    key: "Completed",
-    name: "Completed",
-    desc: "Risk Evaluation Complete. Automatically loading dashboard.",
+    key: "Finalizing Insights",
+    name: "Finalizing Executive Insights",
+    desc: "Generating executive summary, recommendations, and updating risk tracker.",
   },
 ];
 
 const baselineSteps: TrackerStep[] = [
   {
-    key: "Detecting Scope Sections",
-    name: "Detect Sections",
-    desc: "Identifying contract scope and deliverables sections.",
+    key: "Detect Scope Sections",
+    name: "Detect Scope Sections",
+    desc: "Scanning contract scope sections, deliverables, and clauses.",
   },
   {
-    key: "Extracting Scope Candidates",
-    name: "Extract Candidates",
-    desc: "Extracting candidate sentences and clauses.",
+    key: "Extract Deliverables",
+    name: "Extract Deliverables & Scope Items",
+    desc: "Extracting candidate deliverables and contract obligations.",
   },
   {
-    key: "Classifying Scope Items",
-    name: "Classify Items",
-    desc: "Classifying items into IN_SCOPE/OUT_OF_SCOPE using LLM.",
+    key: "Classify Scope Items",
+    name: "Classify In-Scope & Out-of-Scope",
+    desc: "Classifying deliverables into in-scope and out-of-scope boundaries.",
   },
   {
-    key: "Deduplicating Candidates",
-    name: "Deduplicate",
-    desc: "Merging similar items and resolving overlaps.",
+    key: "Extract Milestones & Dates",
+    name: "Extract Milestones & Deadlines",
+    desc: "Detecting target milestone dates, delivery deadlines, and dependencies.",
   },
   {
-    key: "Extracting Milestones & Deadlines",
-    name: "Enrich Dates",
-    desc: "Extracting milestone tags and deadline dates.",
-  },
-  {
-    key: "Saving Baseline Draft",
-    name: "Save Draft",
-    desc: "Saving draft baseline and performing smart diff checks.",
+    key: "Finalize Baseline Draft",
+    name: "Finalize Baseline Draft",
+    desc: "Generating structured baseline version ready for management review.",
   },
 ];
+
+export const mapStageToRiskStepIndex = (stage: string, progress?: number): number => {
+  if (!stage) return 0;
+  const s = stage.toLowerCase();
+  if (
+    s.includes("saving") ||
+    s.includes("finaliz") ||
+    s.includes("complete") ||
+    s.includes("history")
+  ) {
+    return 4;
+  }
+  if (
+    s.includes("calculating risk") ||
+    s.includes("risk score") ||
+    s.includes("timeline") ||
+    s.includes("scoring") ||
+    s.includes("summary") ||
+    s.includes("generating ai summary")
+  ) {
+    return 3;
+  }
+  if (
+    s.includes("prerequisite") ||
+    s.includes("dependenc") ||
+    s.includes("blocker") ||
+    s.includes("execution priorit") ||
+    s.includes("priority")
+  ) {
+    return 2;
+  }
+  if (
+    s.includes("in-scope") ||
+    s.includes("out-of-scope") ||
+    s.includes("deliverable") ||
+    s.includes("verif") ||
+    s.includes("scope") ||
+    s.includes("activity") ||
+    s.includes("activities")
+  ) {
+    return 1;
+  }
+
+  // Safety progress fallbacks
+  if (progress !== undefined && progress >= 85) return 4;
+  if (progress !== undefined && progress >= 70) return 3;
+  if (progress !== undefined && progress >= 50) return 2;
+  if (progress !== undefined && progress >= 25) return 1;
+
+  return 0;
+};
+
+export const mapStageToBaselineStepIndex = (stage: string, progress?: number): number => {
+  if (!stage) return 0;
+  const s = stage.toLowerCase();
+  if (
+    s.includes("save") ||
+    s.includes("saving") ||
+    s.includes("draft") ||
+    s.includes("finalize") ||
+    s.includes("complete") ||
+    s.includes("recurring") ||
+    s.includes("building") ||
+    s.includes("commitments")
+  ) {
+    return 4;
+  }
+  if (
+    s.includes("milestone") ||
+    s.includes("deadline") ||
+    s.includes("date") ||
+    s.includes("enrich") ||
+    s.includes("dependenc")
+  ) {
+    return 3;
+  }
+  if (
+    s.includes("classif") ||
+    s.includes("deduplicat") ||
+    s.includes("merge")
+  ) {
+    return 2;
+  }
+  if (
+    s.includes("extract") ||
+    s.includes("candidate") ||
+    s.includes("deliverable") ||
+    s.includes("clause")
+  ) {
+    return 1;
+  }
+  if (
+    s.includes("detect") ||
+    s.includes("section") ||
+    s.includes("scan")
+  ) {
+    return 0;
+  }
+
+  // Safety progress fallbacks
+  if (progress !== undefined && progress >= 85) return 4;
+  if (progress !== undefined && progress >= 65) return 3;
+  if (progress !== undefined && progress >= 45) return 2;
+  if (progress !== undefined && progress >= 20) return 1;
+
+  return 0;
+};
 
 const categoryLabels: Record<string, string> = {
   SCOPE_CREEP: "Scope Creep",
@@ -1034,6 +1110,13 @@ export const TrackerPage: React.FC = () => {
             doc.document_type !== "IFA" &&
             doc.processing_status === "COMPLETED",
         );
+        // Sort so the latest uploaded MoM/Status Report is first
+        docs.sort((a: any, b: any) => {
+          const dateA = new Date(a.created_at || a.uploaded_at || 0).getTime();
+          const dateB = new Date(b.created_at || b.uploaded_at || 0).getTime();
+          if (dateB !== dateA) return dateB - dateA;
+          return Number(b.id) - Number(a.id);
+        });
         setEligibleDocs(docs);
         if (docs.length > 0) setSelectedDocId(String(docs[0].id));
         else setSelectedDocId("");
@@ -1096,28 +1179,34 @@ export const TrackerPage: React.FC = () => {
         "Deduplicating Candidates",
         "Extracting Milestones & Deadlines",
         "Saving Baseline Draft",
+        "Building Milestone Dependencies",
+        "Detecting Recurring Commitments",
+        "Detect Scope Sections",
+        "Extract Deliverables",
+        "Classify Scope Items",
+        "Extract Milestones & Dates",
+        "Finalize Baseline Draft",
       ].includes(evaluationProgress?.currentStage || ""));
   const currentSteps = isBaselineExtraction ? baselineSteps : steps;
 
   const getStepState = (index: number) => {
     if (!evaluationProgress) return index === 0 ? "running" : "pending";
     const status = evaluationProgress.status;
-    const currentStage = evaluationProgress.currentStage;
-    const activeIndex = currentSteps.findIndex(
-      (s) =>
-        s.name === currentStage ||
-        s.key === currentStage ||
-        (currentStage &&
-          currentStage
-            .toLowerCase()
-            .includes(s.name.toLowerCase().split(" ")[0])),
-    );
+    const currentStage = evaluationProgress.currentStage || "";
+    const rawProgress = evaluationProgress.progress || 0;
+
     if (status === "completed") return "completed";
+
+    const activeIndex = isBaselineExtraction
+      ? mapStageToBaselineStepIndex(currentStage, rawProgress)
+      : mapStageToRiskStepIndex(currentStage, rawProgress);
+
     if (status === "failed") {
       if (index < activeIndex) return "completed";
       if (index === activeIndex) return "failed";
       return "pending";
     }
+
     if (index < activeIndex) return "completed";
     if (index === activeIndex) return "running";
     return "pending";
@@ -1125,9 +1214,23 @@ export const TrackerPage: React.FC = () => {
 
   const renderProgressTimeline = () => {
     if (!evaluationProgress) return null;
-    const overallProgress = evaluationProgress.progress || 0;
-    const isFailed = evaluationProgress.status === "failed";
+    const status = evaluationProgress.status;
+    const isFailed = status === "failed";
+    const isCompleted = status === "completed";
     const errorText = evaluationProgress.error;
+
+    // Monotonic step-based progress calculation (steady forward progression)
+    const rawProgress = evaluationProgress.progress || 0;
+    const activeStepIdx = isBaselineExtraction
+      ? mapStageToBaselineStepIndex(evaluationProgress.currentStage || "", rawProgress)
+      : mapStageToRiskStepIndex(evaluationProgress.currentStage || "", rawProgress);
+
+    const stepMinProgress = [18, 40, 64, 86, 96][activeStepIdx] ?? 12;
+    const overallProgress = isCompleted
+      ? 100
+      : isFailed
+        ? rawProgress
+        : Math.min(99, Math.max(stepMinProgress, rawProgress));
 
     return (
       <div className="w-full bg-white/80 dark:bg-[#0b0e17]/80 border border-border-subtle rounded-3xl p-8 backdrop-blur-md shadow-2xl relative overflow-hidden max-w-4xl mx-auto my-8 animate-fade-in-up">
@@ -1312,6 +1415,14 @@ export const TrackerPage: React.FC = () => {
               </div>
             );
           })}
+        </div>
+
+        {/* Processing Duration Notice */}
+        <div className="mt-8 pt-4 border-t border-border-subtle/50 flex items-start gap-2.5 text-text-muted text-xs leading-relaxed bg-bg-card/40 p-3.5 rounded-2xl border border-border-subtle/30">
+          <Info className="w-4 h-4 text-cyan-600 dark:text-cyan-700 dark:text-cyan-400 shrink-0 mt-0.5" />
+          <span>
+            <strong className="text-text-primary">Note:</strong> Evaluation processing time typically takes from a few seconds to a few minutes depending on document size, token density, internet speed, and LLM model response speed.
+          </span>
         </div>
       </div>
     );
@@ -2050,14 +2161,28 @@ export const TrackerPage: React.FC = () => {
                   processing ||
                   isCurrentProjectEvaluating ||
                   project?.monitoring_status !== "ACTIVE"
-                    ? "bg-bg-hover/40 border-border-subtle text-text-muted cursor-not-allowed"
+                    ? "bg-bg-hover/40 border-border-subtle text-text-muted opacity-60 cursor-not-allowed shadow-none"
                     : "bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white border-blue-500/20 shadow-cyan-500/10 cursor-pointer"
                 }`}
+                title={
+                  processing || isCurrentProjectEvaluating
+                    ? "Evaluation is currently in progress..."
+                    : project?.monitoring_status !== "ACTIVE"
+                      ? "Project must be ACTIVE to evaluate documents"
+                      : "Analyze Status Document"
+                }
               >
-                <Sparkles className="w-3.5 h-3.5" />
-                {processing || isCurrentProjectEvaluating
-                  ? "Processing..."
-                  : "Analyze Status Document"}
+                {processing || isCurrentProjectEvaluating ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-cyan-300" />
+                    <span>Evaluating in Progress...</span>
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>Analyze Status Document</span>
+                  </>
+                )}
               </button>
 
               {/* Export Dropdown */}
@@ -2777,6 +2902,14 @@ export const TrackerPage: React.FC = () => {
                 </select>
               </div>
             )}
+
+            {/* Processing Duration Notice */}
+            <div className="mt-5 p-3 bg-cyan-950/20 border border-cyan-500/20 rounded-xl text-text-muted text-[11px] leading-relaxed flex items-start gap-2.5">
+              <Info className="w-4 h-4 text-cyan-600 dark:text-cyan-400 shrink-0 mt-0.5" />
+              <span>
+                Evaluation duration may take from a few seconds to a few minutes depending on document size, token volume, internet speed, and LLM model response latency.
+              </span>
+            </div>
 
             <div className="flex justify-end gap-3 mt-6">
               <button

@@ -154,13 +154,17 @@ export const DocumentProgressProvider: React.FC<{ children: React.ReactNode }> =
             stopPolling();
             stopTimer();
           } else {
-            setEvaluationProgress({
-              currentStage: step || 'Processing',
-              progress: progress || 0,
-              status: 'running',
-              document_name: documentName,
-              document_id: docId,
-              document_type: currentDocType
+            setEvaluationProgress((prev) => {
+              const prevProgress = prev?.progress || 0;
+              const newProgress = Math.max(prevProgress, progress || 0);
+              return {
+                currentStage: step || prev?.currentStage || 'Processing',
+                progress: newProgress,
+                status: 'running',
+                document_name: documentName,
+                document_id: docId,
+                document_type: currentDocType || prev?.document_type
+              };
             });
           }
         }
@@ -183,7 +187,7 @@ export const DocumentProgressProvider: React.FC<{ children: React.ReactNode }> =
     startTimer();
 
     setEvaluationProgress({
-      currentStage: 'Loading Project Baseline',
+      currentStage: 'Document Ingestion',
       progress: 5,
       status: 'running',
       document_name: documentName,
@@ -231,13 +235,17 @@ export const DocumentProgressProvider: React.FC<{ children: React.ReactNode }> =
           stopSSEStream();
           stopTimer();
         } else {
-          setEvaluationProgress({
-            currentStage: step,
-            progress: progress,
-            status: 'running',
-            document_name: documentName,
-            document_id: docId,
-            document_type: 'STATUS_REPORT'
+          setEvaluationProgress((prev) => {
+            const prevProgress = prev?.progress || 0;
+            const newProgress = Math.max(prevProgress, progress || 0);
+            return {
+              currentStage: step || prev?.currentStage || 'Processing',
+              progress: newProgress,
+              status: 'running',
+              document_name: documentName,
+              document_id: docId,
+              document_type: prev?.document_type || 'STATUS_REPORT'
+            };
           });
         }
       } catch (e) {

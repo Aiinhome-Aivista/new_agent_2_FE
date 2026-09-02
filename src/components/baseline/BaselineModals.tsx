@@ -8,6 +8,7 @@ import {
   Trash2,
   Zap,
   ScanSearch,
+  Info,
 } from "lucide-react";
 
 export interface BaselineModalsProps {
@@ -202,6 +203,14 @@ export const BaselineModals: React.FC<BaselineModalsProps> = ({
                   </div>
                 );
               })}
+            </div>
+
+            {/* Processing Duration Disclaimer */}
+            <div className="mb-6 p-3 bg-cyan-950/20 border border-cyan-500/20 rounded-xl text-text-muted text-[11px] leading-relaxed flex items-start gap-2.5">
+              <Info className="w-4 h-4 text-[#00e5ff] shrink-0 mt-0.5" />
+              <span>
+                <strong className="text-text-primary">Note:</strong> Processing may take from a few minutes up to an hour depending on contract size, token density, internet speed, and LLM model response latency.
+              </span>
             </div>
 
             <div className="flex justify-end gap-3">
