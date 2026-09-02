@@ -45,40 +45,92 @@ import {
   RefreshCw,
   Zap,
   ScanSearch,
+  Info,
 } from "lucide-react";
 
 const baselineSteps = [
   {
-    key: "Detecting Scope Sections",
-    name: "Detect Sections",
-    desc: "Identifying contract scope and deliverables sections.",
+    key: "Detect Scope Sections",
+    name: "Detect Scope Sections",
+    desc: "Scanning contract scope sections, deliverables, and clauses.",
   },
   {
-    key: "Extracting Scope Candidates",
-    name: "Extract Candidates",
-    desc: "Extracting candidate sentences and clauses.",
+    key: "Extract Deliverables",
+    name: "Extract Deliverables & Scope Items",
+    desc: "Extracting candidate deliverables and contract obligations.",
   },
   {
-    key: "Classifying Scope Items",
-    name: "Classify Items",
-    desc: "Classifying items into IN_SCOPE/OUT_OF_SCOPE using LLM.",
+    key: "Classify Scope Items",
+    name: "Classify In-Scope & Out-of-Scope",
+    desc: "Classifying deliverables into in-scope and out-of-scope boundaries.",
   },
   {
-    key: "Deduplicating Candidates",
-    name: "Deduplicate",
-    desc: "Merging similar items and resolving overlaps.",
+    key: "Extract Milestones & Dates",
+    name: "Extract Milestones & Deadlines",
+    desc: "Detecting target milestone dates, delivery deadlines, and dependencies.",
   },
   {
-    key: "Extracting Milestones & Deadlines",
-    name: "Enrich Dates",
-    desc: "Extracting milestone tags and deadline dates.",
-  },
-  {
-    key: "Saving Baseline Draft",
-    name: "Save Draft",
-    desc: "Saving draft baseline and performing smart diff checks.",
+    key: "Finalize Baseline Draft",
+    name: "Finalize Baseline Draft",
+    desc: "Generating structured baseline version ready for management review.",
   },
 ];
+
+const mapStageToBaselineStepIndex = (stage: string, progress?: number): number => {
+  if (!stage) return 0;
+  const s = stage.toLowerCase();
+  if (
+    s.includes("save") ||
+    s.includes("saving") ||
+    s.includes("draft") ||
+    s.includes("finalize") ||
+    s.includes("complete") ||
+    s.includes("recurring") ||
+    s.includes("building") ||
+    s.includes("commitments")
+  ) {
+    return 4;
+  }
+  if (
+    s.includes("milestone") ||
+    s.includes("deadline") ||
+    s.includes("date") ||
+    s.includes("enrich") ||
+    s.includes("dependenc")
+  ) {
+    return 3;
+  }
+  if (
+    s.includes("classif") ||
+    s.includes("deduplicat") ||
+    s.includes("merge")
+  ) {
+    return 2;
+  }
+  if (
+    s.includes("extract") ||
+    s.includes("candidate") ||
+    s.includes("deliverable") ||
+    s.includes("clause")
+  ) {
+    return 1;
+  }
+  if (
+    s.includes("detect") ||
+    s.includes("section") ||
+    s.includes("scan")
+  ) {
+    return 0;
+  }
+
+  // Safety progress fallbacks so later stages never revert back to 0
+  if (progress !== undefined && progress >= 85) return 4;
+  if (progress !== undefined && progress >= 65) return 3;
+  if (progress !== undefined && progress >= 45) return 2;
+  if (progress !== undefined && progress >= 20) return 1;
+
+  return 0;
+};
 
 export const BaselineReviewPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -123,6 +175,13 @@ export const BaselineReviewPage: React.FC = () => {
         "Deduplicating Candidates",
         "Extracting Milestones & Deadlines",
         "Saving Baseline Draft",
+        "Building Milestone Dependencies",
+        "Detecting Recurring Commitments",
+        "Detect Scope Sections",
+        "Extract Deliverables",
+        "Classify Scope Items",
+        "Extract Milestones & Dates",
+        "Finalize Baseline Draft",
       ].includes(evaluationProgress?.currentStage || ""));
 
   useEffect(() => {
@@ -594,6 +653,14 @@ export const BaselineReviewPage: React.FC = () => {
             (doc.document_type === "EL" || doc.document_type === "IFA"),
         );
 
+        // Sort so the latest uploaded contract is first
+        contracts.sort((a: any, b: any) => {
+          const dateA = new Date(a.created_at || a.uploaded_at || 0).getTime();
+          const dateB = new Date(b.created_at || b.uploaded_at || 0).getTime();
+          if (dateB !== dateA) return dateB - dateA;
+          return Number(b.id) - Number(a.id);
+        });
+
         if (contracts.length === 0) {
           showNotification(
             "Please upload and process an Engagement Letter (EL) or Inter-Firm Approval (IFA) first.",
@@ -899,23 +966,22 @@ export const BaselineReviewPage: React.FC = () => {
   const renderBaselineProgressTimeline = () => {
     if (!evaluationProgress) return null;
 
-    const overallProgress = evaluationProgress.progress || 0;
-    const isFailed = evaluationProgress.status === "failed";
+    const status = evaluationProgress.status;
+    const isFailed = status === "failed";
+    const isCompleted = status === "completed";
     const errorText = evaluationProgress.error;
 
-    const getStepState = (index: number) => {
-      const status = evaluationProgress.status;
-      const currentStage = evaluationProgress.currentStage;
-      const activeIndex = baselineSteps.findIndex(
-        (s) =>
-          s.name === currentStage ||
-          s.key === currentStage ||
-          (currentStage &&
-            currentStage
-              .toLowerCase()
-              .includes(s.name.toLowerCase().split(" ")[0])),
-      );
+    // Monotonic step-based progress calculation (steady forward progression)
+    const rawProgress = evaluationProgress.progress || 0;
+    const activeIndex = mapStageToBaselineStepIndex(evaluationProgress.currentStage || "", rawProgress);
+    const stepMinProgress = [18, 40, 64, 86, 96][activeIndex] ?? 12;
+    const overallProgress = isCompleted
+      ? 100
+      : isFailed
+        ? rawProgress
+        : Math.min(99, Math.max(stepMinProgress, rawProgress));
 
+    const getStepState = (index: number) => {
       if (status === "completed") return "completed";
       if (status === "failed") {
         if (index < activeIndex) return "completed";
@@ -1076,6 +1142,14 @@ export const BaselineReviewPage: React.FC = () => {
             );
           })}
         </div>
+
+        {/* Processing Duration Notice */}
+        <div className="mt-8 pt-4 border-t border-border-subtle/50 flex items-start gap-2.5 text-text-muted text-xs leading-relaxed bg-bg-card/40 p-3.5 rounded-2xl border border-border-subtle/30">
+          <Info className="w-4 h-4 text-cyan-600 dark:text-cyan-400 shrink-0 mt-0.5" />
+          <span>
+            <strong className="text-text-primary">Note:</strong> Processing time may take from a few seconds to a few minutes depending on document size, token volume, internet speed, and LLM model response latency.
+          </span>
+        </div>
       </div>
     );
   };
@@ -1105,12 +1179,29 @@ export const BaselineReviewPage: React.FC = () => {
               project?.monitoring_status !== "CLOSED" && (
                 <button
                   onClick={handleExtractClick}
-                  className="group relative inline-flex items-center justify-center gap-2 px-6 py-2.5 font-semibold text-white transition-all duration-300 rounded-lg bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-400 hover:via-purple-400 hover:to-pink-400 shadow-[0_0_15px_rgba(168,85,247,0.4)] hover:shadow-[0_0_25px_rgba(236,72,153,0.6)] hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
+                  disabled={isCurrentBaselineExtracting || extracting}
+                  className={`group relative inline-flex items-center justify-center gap-2 px-6 py-2.5 font-semibold text-white transition-all duration-300 rounded-lg ${
+                    isCurrentBaselineExtracting || extracting
+                      ? "bg-gray-700/60 text-gray-400 opacity-60 cursor-not-allowed shadow-none"
+                      : "bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-400 hover:via-purple-400 hover:to-pink-400 shadow-[0_0_15px_rgba(168,85,247,0.4)] hover:shadow-[0_0_25px_rgba(236,72,153,0.6)] hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
+                  }`}
+                  title={isCurrentBaselineExtracting || extracting ? "Extraction in progress..." : "Extract Baseline"}
                 >
-                  <Sparkles className="w-4 h-4 text-pink-100 group-hover:animate-pulse" />
-                  <span className="tracking-wide text-sm">
-                    Extract Baseline
-                  </span>
+                  {isCurrentBaselineExtracting || extracting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin text-pink-300" />
+                      <span className="tracking-wide text-sm">
+                        Extracting...
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4 text-pink-100 group-hover:animate-pulse" />
+                      <span className="tracking-wide text-sm">
+                        Extract Baseline
+                      </span>
+                    </>
+                  )}
                   <div className="absolute inset-0 rounded-lg ring-1 ring-inset ring-white/20 pointer-events-none"></div>
                 </button>
               )}
@@ -1520,157 +1611,6 @@ export const BaselineReviewPage: React.FC = () => {
                 </div>
               </div>
             )}
-          </div>
-        )}
-
-        {showExtractModal && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-[#111827] border border-border-strong rounded-2xl p-6 w-full max-w-md shadow-2xl">
-              <h2 className="text-xl font-bold mb-2 text-text-primary">
-                Select Contract for Baseline
-              </h2>
-              <p className="text-text-muted text-sm mb-6">
-                Choose a processed contract to extract scope items or budget
-                details into your baseline.
-              </p>
-
-              {/* Extraction mode selector */}
-              <div className="mb-6">
-                <label className="block text-xs font-semibold uppercase tracking-wide text-text-muted mb-2">
-                  Extraction Mode
-                </label>
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setExtractionMode("QUICK")}
-                    disabled={extracting}
-                    className={`flex flex-col items-start gap-1 p-3 rounded-lg border text-left transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer ${
-                      extractionMode === "QUICK"
-                        ? "border-[#00e5ff] bg-[#00e5ff]/10 ring-1 ring-[#00e5ff]"
-                        : "border-border-strong bg-bg-hover hover:border-cyan-700"
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <Zap
-                        className={`h-4 w-4 ${
-                          extractionMode === "QUICK"
-                            ? "text-[#00e5ff]"
-                            : "text-text-muted"
-                        }`}
-                      />
-                      <span className="text-sm font-semibold text-text-primary">
-                        Quick Extract
-                      </span>
-                    </div>
-                    <span className="text-[11px] leading-snug text-text-muted">
-                      Fast &amp; token-efficient. Best for standard contracts.
-                    </span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setExtractionMode("DEEP_SCAN")}
-                    disabled={extracting}
-                    className={`flex flex-col items-start gap-1 p-3 rounded-lg border text-left transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer ${
-                      extractionMode === "DEEP_SCAN"
-                        ? "border-[#00e5ff] bg-[#00e5ff]/10 ring-1 ring-[#00e5ff]"
-                        : "border-border-strong bg-bg-hover hover:border-cyan-700"
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <ScanSearch
-                        className={`h-4 w-4 ${
-                          extractionMode === "DEEP_SCAN"
-                            ? "text-[#00e5ff]"
-                            : "text-text-muted"
-                        }`}
-                      />
-                      <span className="text-sm font-semibold text-text-primary">
-                        Deep Scan
-                      </span>
-                    </div>
-                    <span className="text-[11px] leading-snug text-text-muted">
-                      Thorough Map-Reduce sweep. Best for dense or complex docs.
-                    </span>
-                  </button>
-                </div>
-              </div>
-
-              <div className="space-y-3 mb-6 max-h-60 overflow-y-auto">
-                {eligibleDocs.map((doc) => {
-                  const isExtractingThis = extractingDocId === doc.id;
-                  const isCompletedThis = completedDocIds.includes(doc.id);
-                  const isChecked = selectedDocIds.includes(doc.id);
-                  return (
-                    <div
-                      key={doc.id}
-                      className="flex justify-between items-center bg-bg-hover p-3 rounded-lg border border-border-strong gap-4"
-                    >
-                      <div className="flex items-center gap-3 min-w-0">
-                        <input
-                          type="radio"
-                          name="contract_selection"
-                          checked={isChecked}
-                          onChange={() => toggleDocSelection(doc.id)}
-                          disabled={extracting}
-                          className="w-4 h-4 rounded-full border-gray-600 text-[#00e5ff] focus:ring-[#00e5ff] bg-bg-hover cursor-pointer"
-                        />
-                        <div className="flex flex-col min-w-0">
-                          <span className="text-sm font-medium text-text-primary break-words">
-                            {doc.document_name}
-                          </span>
-                          <span className="text-[10px] text-cyan-600 dark:text-cyan-400 font-semibold uppercase">
-                            {doc.document_type}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        {isExtractingThis ? (
-                          <div className="flex items-center gap-1 text-cyan-600 dark:text-cyan-400 text-xs font-semibold">
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                            <span>Extracting...</span>
-                          </div>
-                        ) : isCompletedThis ? (
-                          <div className="flex items-center gap-1 text-green-400 text-xs font-semibold">
-                            <CheckCircle2 className="h-4 w-4" />
-                            <span>Completed</span>
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-1 text-text-muted text-xs font-semibold">
-                            <Clock className="h-4 w-4" />
-                            <span>Pending</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              <div className="flex justify-end gap-3">
-                <button
-                  onClick={() => setShowExtractModal(false)}
-                  className="px-4 py-2 rounded-lg font-medium text-text-secondary hover:bg-bg-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                  disabled={extracting}
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={confirmExtractAll}
-                  disabled={extracting || selectedDocIds.length === 0}
-                  className="flex items-center gap-2 px-4 py-2 bg-[#00e5ff] hover:bg-[#00cce5] disabled:bg-cyan-900/50 text-black disabled:text-cyan-700 font-semibold rounded-lg transition-colors cursor-pointer disabled:cursor-not-allowed"
-                >
-                  {extracting ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin text-black" />
-                      Extracting...
-                    </>
-                  ) : (
-                    "Extract Baseline"
-                  )}
-                </button>
-              </div>
-            </div>
           </div>
         )}
 
