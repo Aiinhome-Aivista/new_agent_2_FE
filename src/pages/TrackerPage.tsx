@@ -223,6 +223,13 @@ const formatTimestamp = (
   });
 };
 
+export interface PendingSuggestion {
+  reason?: string;
+  evidence?: string;
+  source?: string;
+  document_id?: number;
+}
+
 interface ExtractedNarratives {
   _type?: string;
   executive_summary?: string;
@@ -237,6 +244,7 @@ interface ExtractedNarratives {
   ai_interpretation?: string;
   execution_chain?: (string | { name?: string; title?: string; activity?: string })[];
   owner?: string;
+  pending_suggestion?: PendingSuggestion;
   updatesHistory?: Array<{
     phaseName: string;
     executive_summary?: string;
@@ -285,6 +293,10 @@ export function extractPmoNarratives(reasoningInput: any): {
 
   const processObject = (obj: any) => {
     if (!obj || typeof obj !== "object") return;
+
+    if (obj.pending_suggestion && typeof obj.pending_suggestion === "object") {
+      narratives.pending_suggestion = obj.pending_suggestion;
+    }
 
     const hasPmoFields =
       obj._type === "pmo_narrative" ||
@@ -385,7 +397,7 @@ const buildAuditTrail = (item: any) => {
     email?: string;
     timestamp: string | null;
     note?: string;
-    type: "created" | "resolved" | "reactivated" | "updated";
+    type: "created" | "resolved" | "reactivated" | "updated" | "suggested" | "confirmed" | "dismissed";
     document?: string;
     documentId?: number;
   }[] = [];
@@ -428,7 +440,7 @@ const buildAuditTrail = (item: any) => {
       }
 
       let actionLabel = entry.action || "Updated";
-      let type: "created" | "resolved" | "reactivated" | "updated" = "updated";
+      let type: "created" | "resolved" | "reactivated" | "updated" | "suggested" | "confirmed" | "dismissed" = "updated";
       let note = "";
 
       if (entry.action === "RESOLVE_TRACKER_ITEM") {
@@ -439,6 +451,21 @@ const buildAuditTrail = (item: any) => {
         actionLabel = "Reactivated";
         type = "reactivated";
         note = entry.details?.reason || "";
+      } else if (entry.action === "SUGGESTED_RESOLUTION") {
+        actionLabel = "Resolution Suggested";
+        type = "suggested";
+        const d = typeof entry.details === "object" && entry.details ? entry.details : {};
+        note = d.reason ? `${d.reason}${d.evidence ? ` (Evidence: "${d.evidence}")` : ""}` : "Resolution suggested by AI analysis";
+      } else if (entry.action === "CONFIRMED_RESOLUTION") {
+        actionLabel = "Resolution Confirmed by PM";
+        type = "confirmed";
+        const d = typeof entry.details === "object" && entry.details ? entry.details : {};
+        note = d.confirmed_by ? `Confirmed by ${d.confirmed_by}` : "Resolution confirmed by PM";
+      } else if (entry.action === "DISMISSED_SUGGESTION") {
+        actionLabel = "Suggestion Dismissed";
+        type = "dismissed";
+        const d = typeof entry.details === "object" && entry.details ? entry.details : {};
+        note = d.dismissed_by ? `Dismissed by ${d.dismissed_by}` : "Suggestion dismissed by PM";
       } else {
         note =
           typeof entry.details === "object"
@@ -868,6 +895,7 @@ export const TrackerPage: React.FC = () => {
             ...selectedItem,
             ...updatedItem,
             status: "OPEN",
+            risk_status: "OPEN",
             resolution: null,
             resolved_by_name: null,
             resolved_at: null,
@@ -879,6 +907,59 @@ export const TrackerPage: React.FC = () => {
       alert("Failed to reactivate item");
     } finally {
       setIsReactivating(false);
+    }
+  };
+
+  const [isConfirmingSuggestion, setIsConfirmingSuggestion] = useState(false);
+  const [isDismissingSuggestion, setIsDismissingSuggestion] = useState(false);
+
+  const handleConfirmSuggestion = async (itemId: number) => {
+    setIsConfirmingSuggestion(true);
+    try {
+      const res = await apiClient.post(
+        API_ENDPOINTS.TRACKER.CONFIRM_RESOLUTION(id!, itemId.toString()),
+      );
+      if (res.data.success) {
+        const updatedItem = res.data.data;
+        fetchTrackerAndProject();
+        if (selectedItem?.id === itemId) {
+          setSelectedItem({
+            ...selectedItem,
+            ...updatedItem,
+            status: "RESOLVED",
+            risk_status: "RESOLVED",
+            resolution: "Confirmed by PM",
+          });
+        }
+      }
+    } catch (error) {
+      alert("Failed to confirm resolution suggestion");
+    } finally {
+      setIsConfirmingSuggestion(false);
+    }
+  };
+
+  const handleDismissSuggestion = async (itemId: number) => {
+    setIsDismissingSuggestion(true);
+    try {
+      const res = await apiClient.post(
+        API_ENDPOINTS.TRACKER.DISMISS_SUGGESTION(id!, itemId.toString()),
+      );
+      if (res.data.success) {
+        const updatedItem = res.data.data;
+        fetchTrackerAndProject();
+        if (selectedItem?.id === itemId) {
+          setSelectedItem({
+            ...selectedItem,
+            ...updatedItem,
+            risk_status: "OPEN",
+          });
+        }
+      }
+    } catch (error) {
+      alert("Failed to dismiss resolution suggestion");
+    } finally {
+      setIsDismissingSuggestion(false);
     }
   };
 
@@ -1244,6 +1325,9 @@ export const TrackerPage: React.FC = () => {
       resolved: <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />,
       reactivated: <RotateCcw className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />,
       updated: <TrendingUp className="w-3.5 h-3.5 text-purple-500 dark:text-purple-400" />,
+      suggested: <Sparkles className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />,
+      confirmed: <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />,
+      dismissed: <X className="w-3.5 h-3.5 text-slate-500 dark:text-gray-400" />,
     };
 
     const auditColorMap: Record<string, string> = {
@@ -1251,6 +1335,9 @@ export const TrackerPage: React.FC = () => {
       resolved: "border-emerald-500/30 bg-emerald-500/5",
       reactivated: "border-amber-500/30 bg-amber-500/5",
       updated: "border-purple-500/30 bg-purple-500/5",
+      suggested: "border-amber-500/40 bg-amber-500/10 dark:border-amber-500/30 dark:bg-amber-500/5",
+      confirmed: "border-emerald-500/30 bg-emerald-500/5",
+      dismissed: "border-slate-300 dark:border-gray-700 bg-slate-50 dark:bg-gray-800/30",
     };
 
     const auditDotMap: Record<string, string> = {
@@ -1258,6 +1345,9 @@ export const TrackerPage: React.FC = () => {
       resolved: "bg-emerald-400",
       reactivated: "bg-amber-400",
       updated: "bg-purple-400",
+      suggested: "bg-amber-500 animate-pulse",
+      confirmed: "bg-emerald-500",
+      dismissed: "bg-slate-400 dark:bg-gray-600",
     };
     return (
       <div className="h-full flex flex-col overflow-hidden">
@@ -1279,6 +1369,11 @@ export const TrackerPage: React.FC = () => {
               {item.status === "RESOLVED" && (
                 <span className="text-[9px] font-black px-1.5 py-0.5 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 rounded uppercase tracking-wide">
                   ✓ Resolved
+                </span>
+              )}
+              {item.status !== "RESOLVED" && (item.risk_status === "PENDING_CONFIRMATION" || narratives.pending_suggestion) && (
+                <span className="text-[9px] font-black px-2 py-0.5 bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/40 rounded uppercase tracking-wide flex items-center gap-1 animate-pulse">
+                  <Sparkles className="w-2.5 h-2.5" /> Pending Confirmation
                 </span>
               )}
             </div>
@@ -1369,6 +1464,70 @@ export const TrackerPage: React.FC = () => {
         {/* Scrollable body */}
         <div className="flex-1 overflow-y-auto custom-scrollbar px-5 py-4 space-y-4">
           
+          {/* Pending Confirmation Suggestion Banner */}
+          {!isResolved && (item.risk_status === "PENDING_CONFIRMATION" || narratives.pending_suggestion) && (
+            <div className="p-4 rounded-xl bg-amber-500/10 border-2 border-amber-500/40 dark:bg-amber-500/[0.08] dark:border-amber-500/30 shadow-lg shadow-amber-500/5">
+              <div className="flex items-start justify-between gap-3 mb-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-lg bg-amber-500/20 border border-amber-500/30 flex items-center justify-center shrink-0">
+                    <Sparkles className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-amber-800 dark:text-amber-300 uppercase tracking-wider flex items-center gap-1.5">
+                      Resolution Suggested by AI
+                      <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/30 uppercase">
+                        Pending Confirmation
+                      </span>
+                    </p>
+                    <p className="text-[10px] text-slate-500 dark:text-gray-400">
+                      Source: <span className="font-semibold">{narratives.pending_suggestion?.source || "RiskReconciliation"}</span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-1.5 my-3 pl-1">
+                {narratives.pending_suggestion?.reason && (
+                  <p className="text-[11px] text-slate-700 dark:text-gray-200 leading-relaxed font-medium">
+                    <span className="font-bold text-slate-900 dark:text-gray-100">Reason:</span> {narratives.pending_suggestion.reason}
+                  </p>
+                )}
+                {narratives.pending_suggestion?.evidence && (
+                  <p className="text-[11px] text-slate-600 dark:text-gray-300 italic leading-relaxed">
+                    <span className="font-bold text-slate-900 dark:text-gray-100 not-italic">Evidence:</span> "{narratives.pending_suggestion.evidence}"
+                  </p>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2.5 pt-2.5 border-t border-amber-500/20">
+                <button
+                  onClick={() => handleConfirmSuggestion(item.id)}
+                  disabled={isConfirmingSuggestion || isDismissingSuggestion}
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white rounded-lg text-xs font-bold transition-all cursor-pointer shadow-md shadow-emerald-500/10 active:scale-[0.98] disabled:opacity-50"
+                >
+                  {isConfirmingSuggestion ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                  )}
+                  Confirm Resolution
+                </button>
+                <button
+                  onClick={() => handleDismissSuggestion(item.id)}
+                  disabled={isConfirmingSuggestion || isDismissingSuggestion}
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 bg-slate-200 hover:bg-slate-300 dark:bg-gray-800 dark:hover:bg-gray-700 text-slate-700 dark:text-gray-200 rounded-lg text-xs font-bold transition-all cursor-pointer active:scale-[0.98] disabled:opacity-50"
+                >
+                  {isDismissingSuggestion ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <X className="w-3.5 h-3.5" />
+                  )}
+                  Dismiss Suggestion
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* EL Comparison Feature */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Commitment (from EL) */}
@@ -2285,6 +2444,15 @@ export const TrackerPage: React.FC = () => {
                                 <span className="text-[9px] font-black px-1.5 py-0.5 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 rounded uppercase">
                                   ✓ Done
                                 </span>
+                              ) : (item.risk_status === "PENDING_CONFIRMATION" || narratives.pending_suggestion) ? (
+                                <div className="flex items-center gap-1.5 shrink-0">
+                                  <span className="text-[8.5px] font-black px-1.5 py-0.5 bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/40 rounded uppercase flex items-center gap-1">
+                                    <Sparkles className="w-2.5 h-2.5" /> Suggestion
+                                  </span>
+                                  <span className={`text-[9px] font-mono font-black px-1.5 py-0.5 rounded border ${priorityScore >= 70 ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20" : priorityScore >= 40 ? "bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20" : "bg-yellow-500/10 text-amber-700 dark:text-yellow-400 border-yellow-500/20"}`}>
+                                    {priorityScore}
+                                  </span>
+                                </div>
                               ) : (
                                 <div className="flex items-center gap-1.5 shrink-0">
                                   <span className={`text-[9px] font-mono font-black px-1.5 py-0.5 rounded border ${priorityScore >= 70 ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20" : priorityScore >= 40 ? "bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20" : "bg-yellow-500/10 text-amber-700 dark:text-yellow-400 border-yellow-500/20"}`}>
@@ -2363,6 +2531,33 @@ export const TrackerPage: React.FC = () => {
                           )}
                           Reactivate
                         </button>
+                      ) : (selectedItem.risk_status === "PENDING_CONFIRMATION" || extractPmoNarratives(selectedItem.reasoning).narratives.pending_suggestion) ? (
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            onClick={() => handleConfirmSuggestion(selectedItem.id)}
+                            disabled={isConfirmingSuggestion || isDismissingSuggestion || project?.monitoring_status === "CLOSED"}
+                            className="flex items-center gap-1 px-2.5 py-1.5 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white rounded-lg text-[10px] font-bold transition-all cursor-pointer shadow-md shadow-emerald-500/10 active:scale-[0.98] disabled:opacity-50"
+                          >
+                            {isConfirmingSuggestion ? (
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                            ) : (
+                              <CheckCircle2 className="w-3 h-3" />
+                            )}
+                            Confirm
+                          </button>
+                          <button
+                            onClick={() => handleDismissSuggestion(selectedItem.id)}
+                            disabled={isConfirmingSuggestion || isDismissingSuggestion || project?.monitoring_status === "CLOSED"}
+                            className="flex items-center gap-1 px-2.5 py-1.5 bg-slate-200 hover:bg-slate-300 dark:bg-gray-800 dark:hover:bg-gray-700 text-slate-700 dark:text-gray-200 rounded-lg text-[10px] font-bold transition-all cursor-pointer active:scale-[0.98] disabled:opacity-50"
+                          >
+                            {isDismissingSuggestion ? (
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                            ) : (
+                              <X className="w-3 h-3" />
+                            )}
+                            Dismiss
+                          </button>
+                        </div>
                       ) : (
                         <button
                           onClick={() => openResolveModal(selectedItem.id)}

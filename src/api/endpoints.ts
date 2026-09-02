@@ -41,6 +41,8 @@ export const API_ENDPOINTS = {
     ITEM: (projectId: string | number, itemId: string | number) => `/projects/${projectId}/tracker/${itemId}`,
     RESOLVE: (projectId: string | number, itemId: string | number) => `/projects/${projectId}/tracker/${itemId}/resolve`,
     REACTIVATE: (projectId: string | number, itemId: string | number) => `/projects/${projectId}/tracker/${itemId}/reactivate`,
+    CONFIRM_RESOLUTION: (projectId: string | number, itemId: string | number) => `/projects/${projectId}/tracker/${itemId}/confirm-resolution`,
+    DISMISS_SUGGESTION: (projectId: string | number, itemId: string | number) => `/projects/${projectId}/tracker/${itemId}/dismiss-suggestion`,
   },
   MONITORING: {
     PROGRESS: (projectId: string | number) => `/projects/${projectId}/monitoring/progress`,
