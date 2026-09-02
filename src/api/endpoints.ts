@@ -61,6 +61,18 @@ export const API_ENDPOINTS = {
     ASSIGN_INBOX: (inboxId: string | number) => `/drive/inbox/${inboxId}/assign`,
     DELETE_INBOX: (inboxId: string | number) => `/drive/inbox/${inboxId}`,
   },
+  ONEDRIVE: {
+    ACCOUNTS: '/onedrive/accounts',
+    ACCOUNT_DETAIL: (id: string | number) => `/onedrive/accounts/${id}`,
+    INBOX: '/onedrive/inbox',
+    INBOX_BY_PROJECT: (projectId: string | number) => `/onedrive/inbox?project_id=${projectId}`,
+    SYNC: '/onedrive/sync',
+    PROCESS_INBOX: (inboxId: string | number) => `/onedrive/inbox/${inboxId}/process`,
+    SKIP_INBOX: (inboxId: string | number) => `/onedrive/inbox/${inboxId}/skip`,
+    RESUME_INBOX: (inboxId: string | number) => `/onedrive/inbox/${inboxId}/resume`,
+    ASSIGN_INBOX: (inboxId: string | number) => `/onedrive/inbox/${inboxId}/assign`,
+    DELETE_INBOX: (inboxId: string | number) => `/onedrive/inbox/${inboxId}`,
+  },
   RAG: {
     SESSIONS: (projectId: string | number) => `/projects/${projectId}/rag/sessions`,
     SESSION_DETAIL: (projectId: string | number, sessionId: string | number) => `/projects/${projectId}/rag/sessions/${sessionId}`,
