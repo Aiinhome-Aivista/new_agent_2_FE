@@ -223,6 +223,171 @@ const formatTimestamp = (
   });
 };
 
+export interface PendingSuggestion {
+  reason?: string;
+  evidence?: string;
+  source?: string;
+  document_id?: number;
+}
+
+interface ExtractedNarratives {
+  _type?: string;
+  executive_summary?: string;
+  original_contract_sentence?: string;
+  mom_evidence?: string;
+  gap_analysis?: string;
+  why_important?: string;
+  business_impact?: {
+    immediate?: string;
+    future?: string;
+  };
+  ai_interpretation?: string;
+  execution_chain?: (string | { name?: string; title?: string; activity?: string })[];
+  owner?: string;
+  pending_suggestion?: PendingSuggestion;
+  updatesHistory?: Array<{
+    phaseName: string;
+    executive_summary?: string;
+    mom_evidence?: string;
+    gap_analysis?: string;
+    ai_interpretation?: string;
+    business_impact?: {
+      immediate?: string;
+      future?: string;
+    };
+    rawText?: string;
+  }>;
+}
+
+export function extractPmoNarratives(reasoningInput: any): {
+  narratives: ExtractedNarratives;
+  legacyDescription: string;
+} {
+  let narratives: ExtractedNarratives = {};
+  let legacyDescription = "";
+  const collectedNarrativeObjects: any[] = [];
+  const plainTextChunks: string[] = [];
+
+  if (!reasoningInput) {
+    return { narratives, legacyDescription };
+  }
+
+  // Recursive unwrap of stringified JSON
+  const unwrapJson = (val: any, depth = 0): any => {
+    if (depth > 5) return val;
+    if (typeof val !== "string") return val;
+    const trimmed = val.trim();
+    if (
+      (trimmed.startsWith("{") && trimmed.endsWith("}")) ||
+      (trimmed.startsWith("[") && trimmed.endsWith("]"))
+    ) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        return unwrapJson(parsed, depth + 1);
+      } catch {
+        return val;
+      }
+    }
+    return val;
+  };
+
+  const processObject = (obj: any) => {
+    if (!obj || typeof obj !== "object") return;
+
+    if (obj.pending_suggestion && typeof obj.pending_suggestion === "object") {
+      narratives.pending_suggestion = obj.pending_suggestion;
+    }
+
+    const hasPmoFields =
+      obj._type === "pmo_narrative" ||
+      !!obj.executive_summary ||
+      !!obj.gap_analysis ||
+      !!obj.why_important ||
+      !!obj.business_impact ||
+      !!obj.mom_evidence ||
+      !!obj.ai_interpretation;
+
+    if (hasPmoFields) {
+      collectedNarrativeObjects.push(obj);
+      narratives = {
+        ...narratives,
+        ...obj,
+        _type: "pmo_narrative",
+        business_impact: {
+          ...(narratives.business_impact || {}),
+          ...(typeof obj.business_impact === "object" ? obj.business_impact : {}),
+        },
+      };
+    }
+
+    if (typeof obj.text === "string" && obj.text.trim()) {
+      processText(obj.text);
+    }
+  };
+
+  const processText = (textStr: string) => {
+    if (!textStr || typeof textStr !== "string") return;
+
+    // Split on update delimiters
+    const chunks = textStr.split(/(?:\r?\n|^)Update:\s*/i);
+
+    for (const chunk of chunks) {
+      const trimmed = chunk.trim();
+      if (!trimmed) continue;
+
+      const unwrapped = unwrapJson(trimmed);
+      if (typeof unwrapped === "object" && unwrapped !== null) {
+        processObject(unwrapped);
+      } else if (typeof unwrapped === "string") {
+        const cleanStr = unwrapped.trim();
+        if (cleanStr && !cleanStr.startsWith("{") && !cleanStr.startsWith("[")) {
+          plainTextChunks.push(cleanStr);
+        }
+      }
+    }
+  };
+
+  const initialParsed = unwrapJson(reasoningInput);
+  if (typeof initialParsed === "object" && initialParsed !== null) {
+    processObject(initialParsed);
+  } else if (typeof initialParsed === "string") {
+    processText(initialParsed);
+  }
+
+  // Build updatesHistory if multiple narrative snapshots exist
+  if (collectedNarrativeObjects.length > 1) {
+    narratives.updatesHistory = collectedNarrativeObjects.map((item, idx) => ({
+      phaseName: idx === 0 ? "Initial Assessment" : `Update #${idx}`,
+      executive_summary: item.executive_summary,
+      mom_evidence: item.mom_evidence,
+      gap_analysis: item.gap_analysis,
+      ai_interpretation: item.ai_interpretation,
+      business_impact: typeof item.business_impact === "object" ? item.business_impact : undefined,
+    }));
+  }
+
+  // Check legacyDescription
+  if (narratives._type === "pmo_narrative" || narratives.executive_summary) {
+    legacyDescription = "";
+  } else if (plainTextChunks.length > 0) {
+    legacyDescription = Array.from(new Set(plainTextChunks)).join("\n\n");
+  } else if (typeof reasoningInput === "string") {
+    let cleaned = reasoningInput.trim();
+    if (cleaned.startsWith("{") && cleaned.endsWith("}")) {
+      try {
+        const obj = JSON.parse(cleaned);
+        cleaned = obj.text || obj.summary || obj.description || obj.executive_summary || "";
+      } catch {}
+    }
+    cleaned = cleaned.replace(/\\"/g, '"').replace(/^"|"$/g, "");
+    if (!cleaned.startsWith("{")) {
+      legacyDescription = cleaned;
+    }
+  }
+
+  return { narratives, legacyDescription };
+}
+
 // Build audit trail entries from a risk item
 const buildAuditTrail = (item: any) => {
   const entries: {
@@ -232,7 +397,7 @@ const buildAuditTrail = (item: any) => {
     email?: string;
     timestamp: string | null;
     note?: string;
-    type: "created" | "resolved" | "reactivated" | "updated";
+    type: "created" | "resolved" | "reactivated" | "updated" | "suggested" | "confirmed" | "dismissed";
     document?: string;
     documentId?: number;
   }[] = [];
@@ -275,7 +440,7 @@ const buildAuditTrail = (item: any) => {
       }
 
       let actionLabel = entry.action || "Updated";
-      let type: "created" | "resolved" | "reactivated" | "updated" = "updated";
+      let type: "created" | "resolved" | "reactivated" | "updated" | "suggested" | "confirmed" | "dismissed" = "updated";
       let note = "";
 
       if (entry.action === "RESOLVE_TRACKER_ITEM") {
@@ -286,6 +451,21 @@ const buildAuditTrail = (item: any) => {
         actionLabel = "Reactivated";
         type = "reactivated";
         note = entry.details?.reason || "";
+      } else if (entry.action === "SUGGESTED_RESOLUTION") {
+        actionLabel = "Resolution Suggested";
+        type = "suggested";
+        const d = typeof entry.details === "object" && entry.details ? entry.details : {};
+        note = d.reason ? `${d.reason}${d.evidence ? ` (Evidence: "${d.evidence}")` : ""}` : "Resolution suggested by AI analysis";
+      } else if (entry.action === "CONFIRMED_RESOLUTION") {
+        actionLabel = "Resolution Confirmed by PM";
+        type = "confirmed";
+        const d = typeof entry.details === "object" && entry.details ? entry.details : {};
+        note = d.confirmed_by ? `Confirmed by ${d.confirmed_by}` : "Resolution confirmed by PM";
+      } else if (entry.action === "DISMISSED_SUGGESTION") {
+        actionLabel = "Suggestion Dismissed";
+        type = "dismissed";
+        const d = typeof entry.details === "object" && entry.details ? entry.details : {};
+        note = d.dismissed_by ? `Dismissed by ${d.dismissed_by}` : "Suggestion dismissed by PM";
       } else {
         note =
           typeof entry.details === "object"
@@ -558,26 +738,9 @@ export const TrackerPage: React.FC = () => {
                         categoryLabels.GENERAL;
                       const typeLabel =
                         typeLabels[item.item_type] || item.item_type;
-                      const reasoningText = item.reasoning || "";
-                      const hasSplit =
-                        reasoningText.includes("\nReasoning:\n") ||
-                        reasoningText.includes("\nReasoning:\r\n");
-                      let description = reasoningText;
-                      let detailedReasoning = "";
-                      if (hasSplit) {
-                        const parts = reasoningText.split(/\nReasoning:\r?\n/);
-                        description = parts[0]
-                          .replace(/Description:\r?\n/, "")
-                          .trim();
-                        detailedReasoning = parts[1].trim();
-                      } else if (
-                        reasoningText.startsWith("Description:\n") ||
-                        reasoningText.startsWith("Description:\r\n")
-                      ) {
-                        description = reasoningText
-                          .replace(/Description:\r?\n/, "")
-                          .trim();
-                      }
+                      const { narratives: expNarratives, legacyDescription: expLegacy } = extractPmoNarratives(item.reasoning);
+                      const description = expNarratives.executive_summary || expLegacy || item.reasoning || "";
+                      const detailedReasoning = expNarratives.gap_analysis || expNarratives.why_important || "";
                       const auditTrail = buildAuditTrail(item);
                       return `
                 <div class="card">
@@ -732,6 +895,7 @@ export const TrackerPage: React.FC = () => {
             ...selectedItem,
             ...updatedItem,
             status: "OPEN",
+            risk_status: "OPEN",
             resolution: null,
             resolved_by_name: null,
             resolved_at: null,
@@ -743,6 +907,59 @@ export const TrackerPage: React.FC = () => {
       alert("Failed to reactivate item");
     } finally {
       setIsReactivating(false);
+    }
+  };
+
+  const [isConfirmingSuggestion, setIsConfirmingSuggestion] = useState(false);
+  const [isDismissingSuggestion, setIsDismissingSuggestion] = useState(false);
+
+  const handleConfirmSuggestion = async (itemId: number) => {
+    setIsConfirmingSuggestion(true);
+    try {
+      const res = await apiClient.post(
+        API_ENDPOINTS.TRACKER.CONFIRM_RESOLUTION(id!, itemId.toString()),
+      );
+      if (res.data.success) {
+        const updatedItem = res.data.data;
+        fetchTrackerAndProject();
+        if (selectedItem?.id === itemId) {
+          setSelectedItem({
+            ...selectedItem,
+            ...updatedItem,
+            status: "RESOLVED",
+            risk_status: "RESOLVED",
+            resolution: "Confirmed by PM",
+          });
+        }
+      }
+    } catch (error) {
+      alert("Failed to confirm resolution suggestion");
+    } finally {
+      setIsConfirmingSuggestion(false);
+    }
+  };
+
+  const handleDismissSuggestion = async (itemId: number) => {
+    setIsDismissingSuggestion(true);
+    try {
+      const res = await apiClient.post(
+        API_ENDPOINTS.TRACKER.DISMISS_SUGGESTION(id!, itemId.toString()),
+      );
+      if (res.data.success) {
+        const updatedItem = res.data.data;
+        fetchTrackerAndProject();
+        if (selectedItem?.id === itemId) {
+          setSelectedItem({
+            ...selectedItem,
+            ...updatedItem,
+            risk_status: "OPEN",
+          });
+        }
+      }
+    } catch (error) {
+      alert("Failed to dismiss resolution suggestion");
+    } finally {
+      setIsDismissingSuggestion(false);
     }
   };
 
@@ -1101,27 +1318,16 @@ export const TrackerPage: React.FC = () => {
     const isResolved = item.status === "RESOLVED";
     const typeLabel = typeLabels[item.item_type] || item.item_type;
 
-    let narratives: any = {};
-    let legacyDescription = "";
-    
-    if (item.reasoning) {
-      try {
-        const parsed = JSON.parse(item.reasoning);
-        if (parsed._type === "pmo_narrative") {
-          narratives = parsed;
-        } else {
-          legacyDescription = item.reasoning;
-        }
-      } catch (e) {
-        legacyDescription = item.reasoning;
-      }
-    }
+    const { narratives, legacyDescription } = extractPmoNarratives(item.reasoning);
 
     const auditIconMap: Record<string, React.ReactNode> = {
       created: <Activity className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" />,
       resolved: <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />,
       reactivated: <RotateCcw className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />,
       updated: <TrendingUp className="w-3.5 h-3.5 text-purple-500 dark:text-purple-400" />,
+      suggested: <Sparkles className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />,
+      confirmed: <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />,
+      dismissed: <X className="w-3.5 h-3.5 text-slate-500 dark:text-gray-400" />,
     };
 
     const auditColorMap: Record<string, string> = {
@@ -1129,6 +1335,9 @@ export const TrackerPage: React.FC = () => {
       resolved: "border-emerald-500/30 bg-emerald-500/5",
       reactivated: "border-amber-500/30 bg-amber-500/5",
       updated: "border-purple-500/30 bg-purple-500/5",
+      suggested: "border-amber-500/40 bg-amber-500/10 dark:border-amber-500/30 dark:bg-amber-500/5",
+      confirmed: "border-emerald-500/30 bg-emerald-500/5",
+      dismissed: "border-slate-300 dark:border-gray-700 bg-slate-50 dark:bg-gray-800/30",
     };
 
     const auditDotMap: Record<string, string> = {
@@ -1136,6 +1345,9 @@ export const TrackerPage: React.FC = () => {
       resolved: "bg-emerald-400",
       reactivated: "bg-amber-400",
       updated: "bg-purple-400",
+      suggested: "bg-amber-500 animate-pulse",
+      confirmed: "bg-emerald-500",
+      dismissed: "bg-slate-400 dark:bg-gray-600",
     };
     return (
       <div className="h-full flex flex-col overflow-hidden">
@@ -1159,6 +1371,11 @@ export const TrackerPage: React.FC = () => {
                   ✓ Resolved
                 </span>
               )}
+              {item.status !== "RESOLVED" && (item.risk_status === "PENDING_CONFIRMATION" || narratives.pending_suggestion) && (
+                <span className="text-[9px] font-black px-2 py-0.5 bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/40 rounded uppercase tracking-wide flex items-center gap-1 animate-pulse">
+                  <Sparkles className="w-2.5 h-2.5" /> Pending Confirmation
+                </span>
+              )}
             </div>
             {/* Score badge — show execution priority and risk severity for active items only */}
             {!isResolved && (() => {
@@ -1180,7 +1397,7 @@ export const TrackerPage: React.FC = () => {
           </div>
 
           <h2 className="text-sm font-bold text-text-primary leading-snug mb-3">
-            {item.name || `${typeLabel} #${item.id}`}
+            {item.title || item.name || `${typeLabel} #${item.id}`}
           </h2>
 
           {/* Meta Grid */}
@@ -1247,6 +1464,70 @@ export const TrackerPage: React.FC = () => {
         {/* Scrollable body */}
         <div className="flex-1 overflow-y-auto custom-scrollbar px-5 py-4 space-y-4">
           
+          {/* Pending Confirmation Suggestion Banner */}
+          {!isResolved && (item.risk_status === "PENDING_CONFIRMATION" || narratives.pending_suggestion) && (
+            <div className="p-4 rounded-xl bg-amber-500/10 border-2 border-amber-500/40 dark:bg-amber-500/[0.08] dark:border-amber-500/30 shadow-lg shadow-amber-500/5">
+              <div className="flex items-start justify-between gap-3 mb-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-lg bg-amber-500/20 border border-amber-500/30 flex items-center justify-center shrink-0">
+                    <Sparkles className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-amber-800 dark:text-amber-300 uppercase tracking-wider flex items-center gap-1.5">
+                      Resolution Suggested by AI
+                      <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/30 uppercase">
+                        Pending Confirmation
+                      </span>
+                    </p>
+                    <p className="text-[10px] text-slate-500 dark:text-gray-400">
+                      Source: <span className="font-semibold">{narratives.pending_suggestion?.source || "RiskReconciliation"}</span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-1.5 my-3 pl-1">
+                {narratives.pending_suggestion?.reason && (
+                  <p className="text-[11px] text-slate-700 dark:text-gray-200 leading-relaxed font-medium">
+                    <span className="font-bold text-slate-900 dark:text-gray-100">Reason:</span> {narratives.pending_suggestion.reason}
+                  </p>
+                )}
+                {narratives.pending_suggestion?.evidence && (
+                  <p className="text-[11px] text-slate-600 dark:text-gray-300 italic leading-relaxed">
+                    <span className="font-bold text-slate-900 dark:text-gray-100 not-italic">Evidence:</span> "{narratives.pending_suggestion.evidence}"
+                  </p>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2.5 pt-2.5 border-t border-amber-500/20">
+                <button
+                  onClick={() => handleConfirmSuggestion(item.id)}
+                  disabled={isConfirmingSuggestion || isDismissingSuggestion}
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white rounded-lg text-xs font-bold transition-all cursor-pointer shadow-md shadow-emerald-500/10 active:scale-[0.98] disabled:opacity-50"
+                >
+                  {isConfirmingSuggestion ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                  )}
+                  Confirm Resolution
+                </button>
+                <button
+                  onClick={() => handleDismissSuggestion(item.id)}
+                  disabled={isConfirmingSuggestion || isDismissingSuggestion}
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 bg-slate-200 hover:bg-slate-300 dark:bg-gray-800 dark:hover:bg-gray-700 text-slate-700 dark:text-gray-200 rounded-lg text-xs font-bold transition-all cursor-pointer active:scale-[0.98] disabled:opacity-50"
+                >
+                  {isDismissingSuggestion ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <X className="w-3.5 h-3.5" />
+                  )}
+                  Dismiss Suggestion
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* EL Comparison Feature */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Commitment (from EL) */}
@@ -1257,15 +1538,15 @@ export const TrackerPage: React.FC = () => {
               <div className="space-y-2">
                 <div>
                   <p className="text-[9px] text-slate-400 dark:text-gray-500 uppercase mb-0.5">Commitment</p>
-                  <p className="text-[11px] font-medium text-slate-700 dark:text-gray-200">{item.deliverable}</p>
+                  <p className="text-[11px] font-medium text-slate-700 dark:text-gray-200">{item.deliverable || item.title || item.name || narratives.original_contract_sentence || "Contract Commitment"}</p>
                 </div>
                 <div>
                   <p className="text-[9px] text-slate-400 dark:text-gray-500 uppercase mb-0.5">Planned Finish</p>
-                  <p className="text-[11px] font-medium text-slate-700 dark:text-gray-200">{item.expected_date !== "Unknown" ? item.expected_date : "TBD"}</p>
+                  <p className="text-[11px] font-medium text-slate-700 dark:text-gray-200">{item.expected_date && item.expected_date !== "Unknown" ? item.expected_date : (item.deadline || "TBD")}</p>
                 </div>
                 <div>
                   <p className="text-[9px] text-slate-400 dark:text-gray-500 uppercase mb-0.5">Owner</p>
-                  <p className="text-[11px] font-medium text-slate-700 dark:text-gray-200">{item.dependency_owner || "Internal"}</p>
+                  <p className="text-[11px] font-medium text-slate-700 dark:text-gray-200">{item.dependency_owner || item.owner || narratives.owner || "Internal"}</p>
                 </div>
               </div>
             </div>
@@ -1278,12 +1559,18 @@ export const TrackerPage: React.FC = () => {
               <div className="space-y-2">
                 <div>
                   <p className="text-[9px] text-slate-400 dark:text-gray-500 uppercase mb-0.5">Current Status</p>
-                  <p className="text-[11px] font-medium text-slate-700 dark:text-gray-200">{item.progress !== null && item.progress !== undefined ? `${item.progress}% Complete` : (item.current_status || "UNKNOWN").replace(/_/g, " ")}</p>
+                  <p className="text-[11px] font-medium text-slate-700 dark:text-gray-200">
+                    {item.progress !== null && item.progress !== undefined ? `${item.progress}% Complete` : (item.execution_status || item.current_status || item.status || "UNKNOWN").replace(/_/g, " ")}
+                  </p>
                 </div>
-                {item.blockers && item.blockers.length > 0 && (
+                {(narratives.mom_evidence || (item.blockers && item.blockers.length > 0)) && (
                   <div>
-                    <p className="text-[9px] text-slate-400 dark:text-gray-500 uppercase mb-0.5">Blockers</p>
-                    <p className="text-[11px] text-rose-600 dark:text-rose-400">{item.blockers.join(", ")}</p>
+                    <p className="text-[9px] text-slate-400 dark:text-gray-500 uppercase mb-0.5">
+                      {item.blockers && item.blockers.length > 0 ? "Blockers" : "Latest Evidence"}
+                    </p>
+                    <p className="text-[11px] font-medium text-slate-700 dark:text-gray-300 italic">
+                      {item.blockers && item.blockers.length > 0 ? item.blockers.join(", ") : `"${narratives.mom_evidence}"`}
+                    </p>
                   </div>
                 )}
               </div>
@@ -1291,7 +1578,7 @@ export const TrackerPage: React.FC = () => {
           </div>
           
           {/* Commitment Assessment */}
-          <div className={`p-3 rounded-xl border ${item.delay_days > 0 || item.current_status === "BLOCKED" ? 'bg-orange-500/5 border-orange-500/30 dark:bg-orange-500/[0.04] dark:border-orange-500/20' : 'bg-emerald-500/5 border-emerald-500/30 dark:bg-emerald-500/[0.04] dark:border-emerald-500/20'}`}>
+          <div className={`p-3 rounded-xl border ${item.delay_days > 0 || item.current_status === "BLOCKED" || item.execution_status === "WAITING_ON_CUSTOMER" ? 'bg-orange-500/5 border-orange-500/30 dark:bg-orange-500/[0.04] dark:border-orange-500/20' : 'bg-emerald-500/5 border-emerald-500/30 dark:bg-emerald-500/[0.04] dark:border-emerald-500/20'}`}>
             <p className="text-[9px] font-bold text-slate-500 dark:text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
               <CheckCircle2 className="w-3 h-3" /> Commitment Assessment
             </p>
@@ -1305,7 +1592,7 @@ export const TrackerPage: React.FC = () => {
               <div>
                 <p className="text-[9px] text-slate-400 dark:text-gray-500 uppercase mb-0.5">Reason</p>
                 <p className="text-[11px] text-slate-700 dark:text-gray-300 leading-relaxed mt-0.5">
-                  {(item.delay_days > 0 || item.current_status === "BLOCKED") ? (legacyDescription || "Commitment is currently obstructed by active execution blockers.") : "Executing to plan."}
+                  {(item.delay_days > 0 || item.current_status === "BLOCKED" || item.execution_status === "WAITING_ON_CUSTOMER") ? (narratives.gap_analysis || narratives.executive_summary || legacyDescription || "Commitment is currently obstructed by active execution blockers.") : (narratives.executive_summary || narratives.gap_analysis || "Executing to plan.")}
                 </p>
               </div>
             </div>
@@ -1322,7 +1609,7 @@ export const TrackerPage: React.FC = () => {
             </div>
           )}
 
-          {!isResolved && narratives.original_contract_sentence && (
+          {!isResolved && (narratives.original_contract_sentence || narratives.mom_evidence) && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 dark:bg-white/[0.02] dark:border-white/[0.06]">
                 <p className="text-[9px] font-bold text-slate-500 dark:text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
@@ -1331,11 +1618,11 @@ export const TrackerPage: React.FC = () => {
                 <div className="space-y-2">
                   <div>
                     <span className="text-[9px] text-slate-400 dark:text-gray-500 uppercase">Deliverable</span>
-                    <p className="text-[11px] font-medium text-slate-700 dark:text-gray-300">{item.title || item.name}</p>
+                    <p className="text-[11px] font-medium text-slate-700 dark:text-gray-300">{item.title || item.name || item.deliverable}</p>
                   </div>
                   <div>
                     <span className="text-[9px] text-slate-400 dark:text-gray-500 uppercase">Commitment</span>
-                    <p className="text-[11px] text-slate-700 dark:text-gray-300 italic">"{narratives.original_contract_sentence}"</p>
+                    <p className="text-[11px] text-slate-700 dark:text-gray-300 italic">"{narratives.original_contract_sentence || item.title || item.name}"</p>
                   </div>
                 </div>
               </div>
@@ -1347,7 +1634,7 @@ export const TrackerPage: React.FC = () => {
                 <div className="space-y-2">
                   <div>
                     <span className="text-[9px] text-slate-400 dark:text-gray-500 uppercase">Status</span>
-                    <p className="text-[11px] font-medium text-slate-700 dark:text-gray-300">{item.status.replace("_", " ")} {item.progress ? `(${item.progress}%)` : ""}</p>
+                    <p className="text-[11px] font-medium text-slate-700 dark:text-gray-300">{item.status.replace(/_/g, " ")} {item.progress ? `(${item.progress}%)` : ""}</p>
                   </div>
                   {narratives.mom_evidence && (
                     <div>
@@ -1448,8 +1735,36 @@ export const TrackerPage: React.FC = () => {
             </div>
           )}
 
+          {/* Assessment History Progression (if multiple snapshots exist) */}
+          {!isResolved && narratives.updatesHistory && narratives.updatesHistory.length > 1 && (
+            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 dark:bg-white/[0.02] dark:border-white/[0.06]">
+              <p className="text-[9px] font-bold text-slate-500 dark:text-gray-400 uppercase tracking-widest mb-2.5 flex items-center gap-1.5">
+                <Clock className="w-3 h-3 text-cyan-600 dark:text-cyan-400" /> Assessment History & Evidence Progression
+              </p>
+              <div className="space-y-2">
+                {narratives.updatesHistory.map((hist, hIdx) => (
+                  <div key={hIdx} className="p-2.5 rounded-lg bg-white dark:bg-gray-900/40 border border-slate-200/60 dark:border-white/[0.04]">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-[10px] font-bold text-cyan-700 dark:text-cyan-400">{hist.phaseName}</span>
+                    </div>
+                    {hist.executive_summary && (
+                      <p className="text-[11px] text-slate-700 dark:text-gray-300 leading-relaxed font-medium mb-1">
+                        {hist.executive_summary}
+                      </p>
+                    )}
+                    {hist.mom_evidence && (
+                      <p className="text-[10px] text-slate-500 dark:text-gray-400 italic">
+                        Evidence: "{hist.mom_evidence}"
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Legacy Rendering if missing narratives */}
-          {!isResolved && !narratives._type && legacyDescription && (
+          {!isResolved && !narratives._type && !narratives.executive_summary && legacyDescription && (
             <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 dark:bg-white/[0.02] dark:border-white/[0.06]">
               <p className="text-[9px] font-bold text-slate-500 dark:text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                 <Info className="w-3 h-3" /> Why is this a risk?
@@ -2083,13 +2398,7 @@ export const TrackerPage: React.FC = () => {
                         riskLevelConfig[level] || riskLevelConfig.LOW;
                       const isSelected = selectedItem?.id === item.id;
                       
-                      let narratives: any = {};
-                      if (item.reasoning) {
-                        try {
-                          const parsed = JSON.parse(item.reasoning);
-                          if (parsed._type === "pmo_narrative") narratives = parsed;
-                        } catch (e) {}
-                      }
+                      const { narratives } = extractPmoNarratives(item.reasoning);
 
                       const borderColor = isSelected
                         ? "border-cyan-500/50 shadow-md shadow-cyan-500/10"
@@ -2103,8 +2412,17 @@ export const TrackerPage: React.FC = () => {
                                 ? "border-yellow-500/30 dark:border-yellow-500/15"
                                 : "border-slate-200 dark:border-white/[0.05]";
 
-                      const impactText = narratives.business_impact?.immediate || "Unknown Impact";
-                      const ownerText = item.dependency_owner || item.owner || (item.risk_category?.includes("CUSTOMER") ? "Customer" : "Internal");
+                      const impactText =
+                        narratives.business_impact?.immediate ||
+                        narratives.why_important ||
+                        narratives.gap_analysis ||
+                        item.impact ||
+                        "Unknown Impact";
+                      const ownerText =
+                        item.dependency_owner ||
+                        item.owner ||
+                        narratives.owner ||
+                        (item.risk_category?.includes("CUSTOMER") ? "Customer" : "Internal");
                       const waitingForText = item.dependency_names || "None";
                       const priorityScore = item.execution_priority_score || item.risk_score || 0;
                       const severityScore = item.risk_score || 0;
@@ -2126,6 +2444,15 @@ export const TrackerPage: React.FC = () => {
                                 <span className="text-[9px] font-black px-1.5 py-0.5 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 rounded uppercase">
                                   ✓ Done
                                 </span>
+                              ) : (item.risk_status === "PENDING_CONFIRMATION" || narratives.pending_suggestion) ? (
+                                <div className="flex items-center gap-1.5 shrink-0">
+                                  <span className="text-[8.5px] font-black px-1.5 py-0.5 bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/40 rounded uppercase flex items-center gap-1">
+                                    <Sparkles className="w-2.5 h-2.5" /> Suggestion
+                                  </span>
+                                  <span className={`text-[9px] font-mono font-black px-1.5 py-0.5 rounded border ${priorityScore >= 70 ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20" : priorityScore >= 40 ? "bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20" : "bg-yellow-500/10 text-amber-700 dark:text-yellow-400 border-yellow-500/20"}`}>
+                                    {priorityScore}
+                                  </span>
+                                </div>
                               ) : (
                                 <div className="flex items-center gap-1.5 shrink-0">
                                   <span className={`text-[9px] font-mono font-black px-1.5 py-0.5 rounded border ${priorityScore >= 70 ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20" : priorityScore >= 40 ? "bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20" : "bg-yellow-500/10 text-amber-700 dark:text-yellow-400 border-yellow-500/20"}`}>
@@ -2204,6 +2531,33 @@ export const TrackerPage: React.FC = () => {
                           )}
                           Reactivate
                         </button>
+                      ) : (selectedItem.risk_status === "PENDING_CONFIRMATION" || extractPmoNarratives(selectedItem.reasoning).narratives.pending_suggestion) ? (
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            onClick={() => handleConfirmSuggestion(selectedItem.id)}
+                            disabled={isConfirmingSuggestion || isDismissingSuggestion || project?.monitoring_status === "CLOSED"}
+                            className="flex items-center gap-1 px-2.5 py-1.5 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white rounded-lg text-[10px] font-bold transition-all cursor-pointer shadow-md shadow-emerald-500/10 active:scale-[0.98] disabled:opacity-50"
+                          >
+                            {isConfirmingSuggestion ? (
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                            ) : (
+                              <CheckCircle2 className="w-3 h-3" />
+                            )}
+                            Confirm
+                          </button>
+                          <button
+                            onClick={() => handleDismissSuggestion(selectedItem.id)}
+                            disabled={isConfirmingSuggestion || isDismissingSuggestion || project?.monitoring_status === "CLOSED"}
+                            className="flex items-center gap-1 px-2.5 py-1.5 bg-slate-200 hover:bg-slate-300 dark:bg-gray-800 dark:hover:bg-gray-700 text-slate-700 dark:text-gray-200 rounded-lg text-[10px] font-bold transition-all cursor-pointer active:scale-[0.98] disabled:opacity-50"
+                          >
+                            {isDismissingSuggestion ? (
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                            ) : (
+                              <X className="w-3 h-3" />
+                            )}
+                            Dismiss
+                          </button>
+                        </div>
                       ) : (
                         <button
                           onClick={() => openResolveModal(selectedItem.id)}
