@@ -105,7 +105,7 @@ export const BaselineReviewPage: React.FC = () => {
     (isEvaluating ||
       evaluationProgress?.status === "running" ||
       evaluationProgress?.status === "pending") &&
-    (!activeProjectId || Number(activeProjectId) === Number(id)) &&
+    Number(activeProjectId) === Number(id) &&
     (evaluationProgress?.document_type === "EL" ||
       evaluationProgress?.document_type === "IFA" ||
       evaluationProgress?.document_type?.toUpperCase() === "EL" ||
@@ -154,7 +154,7 @@ export const BaselineReviewPage: React.FC = () => {
           "Extracting Milestones & Deadlines",
           "Saving Baseline Draft",
         ].includes(evaluationProgress.currentStage || "")) &&
-      (!activeProjectId || activeProjectId === Number(id))
+      Number(activeProjectId) === Number(id)
     ) {
       const refreshBaseline = async () => {
         try {
