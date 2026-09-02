@@ -583,6 +583,7 @@ export const TrackerPage: React.FC = () => {
     startSSEStream,
     checkActiveProgress,
     resetProgress,
+    activeProjectId,
   } = useDocumentProgress();
 
   useEffect(() => {
@@ -592,10 +593,13 @@ export const TrackerPage: React.FC = () => {
   }, [id]);
 
   useEffect(() => {
-    if (evaluationProgress?.status === "completed") {
+    if (
+      evaluationProgress?.status === "completed" &&
+      Number(activeProjectId) === Number(id)
+    ) {
       fetchTrackerAndProject();
     }
-  }, [evaluationProgress?.status]);
+  }, [evaluationProgress?.status, activeProjectId, id]);
 
   // When activeTab changes, select the first element of the new tab
   useEffect(() => {
@@ -1065,25 +1069,34 @@ export const TrackerPage: React.FC = () => {
     }
   };
 
+  const isCurrentProjectEvaluating =
+    Boolean(
+      isEvaluating ||
+        evaluationProgress?.status === "running" ||
+        evaluationProgress?.status === "pending" ||
+        (evaluationProgress && evaluationProgress.status === "failed")
+    ) && Number(activeProjectId) === Number(id);
+
   const isBaselineExtraction =
-    evaluationProgress?.document_type === "EL" ||
-    evaluationProgress?.document_type === "IFA" ||
-    evaluationProgress?.document_type?.toUpperCase() === "EL" ||
-    evaluationProgress?.document_type?.toUpperCase() === "IFA" ||
-    [
-      "Detect Sections",
-      "Extract Candidates",
-      "Classify Items",
-      "Deduplicate",
-      "Enrich Dates",
-      "Save Draft",
-      "Detecting Scope Sections",
-      "Extracting Scope Candidates",
-      "Classifying Scope Items",
-      "Deduplicating Candidates",
-      "Extracting Milestones & Deadlines",
-      "Saving Baseline Draft",
-    ].includes(evaluationProgress?.currentStage || "");
+    isCurrentProjectEvaluating &&
+    (evaluationProgress?.document_type === "EL" ||
+      evaluationProgress?.document_type === "IFA" ||
+      evaluationProgress?.document_type?.toUpperCase() === "EL" ||
+      evaluationProgress?.document_type?.toUpperCase() === "IFA" ||
+      [
+        "Detect Sections",
+        "Extract Candidates",
+        "Classify Items",
+        "Deduplicate",
+        "Enrich Dates",
+        "Save Draft",
+        "Detecting Scope Sections",
+        "Extracting Scope Candidates",
+        "Classifying Scope Items",
+        "Deduplicating Candidates",
+        "Extracting Milestones & Deadlines",
+        "Saving Baseline Draft",
+      ].includes(evaluationProgress?.currentStage || ""));
   const currentSteps = isBaselineExtraction ? baselineSteps : steps;
 
   const getStepState = (index: number) => {
@@ -2030,19 +2043,19 @@ export const TrackerPage: React.FC = () => {
                 onClick={handleOpenProcessModal}
                 disabled={
                   processing ||
-                  isEvaluating ||
+                  isCurrentProjectEvaluating ||
                   project?.monitoring_status !== "ACTIVE"
                 }
                 className={`px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 active:scale-[0.98] shadow-lg flex items-center gap-2 border ${
                   processing ||
-                  isEvaluating ||
+                  isCurrentProjectEvaluating ||
                   project?.monitoring_status !== "ACTIVE"
                     ? "bg-bg-hover/40 border-border-subtle text-text-muted cursor-not-allowed"
                     : "bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white border-blue-500/20 shadow-cyan-500/10 cursor-pointer"
                 }`}
               >
                 <Sparkles className="w-3.5 h-3.5" />
-                {processing || isEvaluating
+                {processing || isCurrentProjectEvaluating
                   ? "Processing..."
                   : "Analyze Status Document"}
               </button>
@@ -2195,7 +2208,7 @@ export const TrackerPage: React.FC = () => {
               </Link>
             </div>
           </div>
-        ) : isEvaluating || evaluationProgress ? (
+        ) : isCurrentProjectEvaluating ? (
           <div className="flex-1 p-6 md:p-10">{renderProgressTimeline()}</div>
         ) : items.length === 0 ? (
           <div className="flex-1 flex items-center justify-center p-8">
