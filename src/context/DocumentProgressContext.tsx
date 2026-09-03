@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
 import apiClient from '../api/apiClient';
+import { API_ENDPOINTS } from '../api/endpoints';
 
 interface EvaluationProgress {
   currentStage: string;
@@ -22,6 +23,7 @@ interface DocumentProgressContextType {
   startPolling: (projectId: number, docId: number, documentName: string, initialElapsedSeconds?: number, documentType?: string) => void;
   checkActiveProgress: (projectId: number) => Promise<void>;
   resetProgress: () => void;
+  cancelProgress: (projectId?: number, docId?: number) => Promise<void>;
 }
 
 const DocumentProgressContext = createContext<DocumentProgressContextType | undefined>(undefined);
@@ -94,6 +96,21 @@ export const DocumentProgressProvider: React.FC<{ children: React.ReactNode }> =
     setElapsedTime(0);
     setActiveDocId(null);
     setActiveProjectId(null);
+  };
+
+  const cancelProgress = async (projectId?: number, docId?: number) => {
+    const pId = projectId || activeProjectId;
+    const dId = docId || activeDocId;
+    if (pId) {
+      try {
+        await apiClient.post(API_ENDPOINTS.MONITORING.CANCEL(pId), {
+          document_id: dId || undefined,
+        });
+      } catch (e) {
+        console.error('Failed to cancel progress on backend:', e);
+      }
+    }
+    resetProgress();
   };
 
   // Start polling progress from DB status
@@ -295,7 +312,8 @@ export const DocumentProgressProvider: React.FC<{ children: React.ReactNode }> =
       startSSEStream,
       startPolling,
       checkActiveProgress,
-      resetProgress
+      resetProgress,
+      cancelProgress
     }}>
       {children}
     </DocumentProgressContext.Provider>

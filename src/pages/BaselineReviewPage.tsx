@@ -46,6 +46,7 @@ import {
   Zap,
   ScanSearch,
   Info,
+  Square,
 } from "lucide-react";
 
 const baselineSteps = [
@@ -142,6 +143,8 @@ export const BaselineReviewPage: React.FC = () => {
     activeProjectId,
     checkActiveProgress,
     resetProgress,
+    cancelProgress,
+    activeDocId,
   } = useDocumentProgress();
   const [baseline, setBaseline] = useState<any>(null);
   const [project, setProject] = useState<any>(null);
@@ -1026,7 +1029,7 @@ export const BaselineReviewPage: React.FC = () => {
               and deliverables.
             </p>
           </div>
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4 md:gap-6">
             <div className="text-right">
               <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest">
                 Elapsed Time
@@ -1044,6 +1047,29 @@ export const BaselineReviewPage: React.FC = () => {
                 {overallProgress}%
               </p>
             </div>
+            {!isCompleted && !isFailed && (
+              <button
+                onClick={async () => {
+                  await cancelProgress(Number(id), activeDocId || evaluationProgress?.document_id);
+                  // Refresh baseline and versions
+                  try {
+                    const [baselineRes, versionsRes] = await Promise.all([
+                      apiClient.get(API_ENDPOINTS.BASELINE.LIST(id!)),
+                      apiClient.get(API_ENDPOINTS.BASELINE.VERSIONS(id!)),
+                    ]);
+                    if (baselineRes.data.success) setBaseline(baselineRes.data.data);
+                    if (versionsRes.data.success) setVersions(versionsRes.data.data);
+                  } catch (e) {
+                    console.error("Failed to refresh baseline after cancel:", e);
+                  }
+                }}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 text-xs font-bold transition-all shadow-sm cursor-pointer ml-1"
+                title="Stop extraction process and clean up draft data"
+              >
+                <Square className="w-3.5 h-3.5 fill-rose-500/30" />
+                <span>Stop Extraction</span>
+              </button>
+            )}
           </div>
         </div>
 

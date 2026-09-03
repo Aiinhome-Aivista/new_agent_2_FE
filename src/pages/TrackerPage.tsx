@@ -29,6 +29,7 @@ import {
   Tag,
   Hash,
   ListOrdered,
+  Square,
 } from "lucide-react";
 import { useAuth } from "../auth/AuthContext";
 
@@ -659,6 +660,8 @@ export const TrackerPage: React.FC = () => {
     startSSEStream,
     checkActiveProgress,
     resetProgress,
+    cancelProgress,
+    activeDocId,
     activeProjectId,
   } = useDocumentProgress();
 
@@ -1267,7 +1270,7 @@ export const TrackerPage: React.FC = () => {
                   : "AI agents are running automated checks against your project baseline."}
             </p>
           </div>
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4 md:gap-6">
             <div className="text-right">
               <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest">
                 Elapsed Time
@@ -1284,6 +1287,19 @@ export const TrackerPage: React.FC = () => {
                 {overallProgress}%
               </p>
             </div>
+            {!isCompleted && !isFailed && (
+              <button
+                onClick={async () => {
+                  await cancelProgress(Number(id), activeDocId || evaluationProgress?.document_id);
+                  await fetchTrackerAndProject();
+                }}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 text-xs font-bold transition-all shadow-sm cursor-pointer ml-1"
+                title="Stop running process and clean up temporary data"
+              >
+                <Square className="w-3.5 h-3.5 fill-rose-500/30" />
+                <span>Stop Process</span>
+              </button>
+            )}
           </div>
         </div>
 

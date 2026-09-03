@@ -48,6 +48,7 @@ export const API_ENDPOINTS = {
   },
   MONITORING: {
     PROGRESS: (projectId: string | number) => `/projects/${projectId}/monitoring/progress`,
+    CANCEL: (projectId: string | number) => `/projects/${projectId}/monitoring/cancel`,
   },
   DRIVE: {
     ACCOUNTS: '/drive/accounts',

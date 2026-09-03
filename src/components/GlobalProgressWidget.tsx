@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useDocumentProgress } from '../context/DocumentProgressContext';
-import { Loader2, X, AlertCircle, CheckCircle2, ChevronDown, ChevronUp, ExternalLink } from 'lucide-react';
+import { Loader2, X, AlertCircle, CheckCircle2, ChevronDown, ChevronUp, ExternalLink, Square } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 export const GlobalProgressWidget: React.FC = () => {
-  const { isEvaluating, evaluationProgress, elapsedTime, resetProgress, activeProjectId } = useDocumentProgress();
+  const { isEvaluating, evaluationProgress, elapsedTime, resetProgress, cancelProgress, activeProjectId } = useDocumentProgress();
   const [isMinimized, setIsMinimized] = useState(false);
   const [shouldRender, setShouldRender] = useState(false);
   const navigate = useNavigate();
@@ -56,6 +56,10 @@ export const GlobalProgressWidget: React.FC = () => {
         window.location.reload();
       }
     }
+  };
+
+  const handleStopProcess = async () => {
+    await cancelProgress(activeProjectId || undefined, evaluationProgress?.document_id);
   };
 
   // If minimized, show a compact floating pill
@@ -121,6 +125,16 @@ export const GlobalProgressWidget: React.FC = () => {
           </span>
         </div>
         <div className="flex items-center gap-2">
+          {!isCompleted && !isFailed && (
+            <button 
+              onClick={handleStopProcess}
+              className="p-1 text-rose-400 hover:text-rose-300 hover:bg-rose-950/40 rounded transition-all cursor-pointer flex items-center gap-1 text-[10px] font-semibold px-2 border border-rose-500/30"
+              title="Stop process & clean up"
+            >
+              <Square className="w-3 h-3 fill-rose-500/30" />
+              <span>Stop</span>
+            </button>
+          )}
           <button 
             onClick={() => setIsMinimized(true)}
             className="p-1 text-text-muted hover:text-text-primary hover:bg-bg-hover/40 rounded transition-all cursor-pointer"
@@ -129,9 +143,9 @@ export const GlobalProgressWidget: React.FC = () => {
             <ChevronDown className="w-4 h-4" />
           </button>
           <button 
-            onClick={resetProgress}
+            onClick={isFailed || isCompleted ? resetProgress : handleStopProcess}
             className="p-1 text-text-muted hover:text-text-primary hover:bg-bg-hover/40 rounded transition-all cursor-pointer"
-            title="Dismiss"
+            title={isFailed || isCompleted ? "Dismiss" : "Cancel & Dismiss"}
           >
             <X className="w-4 h-4" />
           </button>
