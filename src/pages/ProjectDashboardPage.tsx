@@ -76,10 +76,25 @@ export const ProjectDashboardPage: React.FC = () => {
 
   const fetchDriveInbox = async () => {
     try {
-      const res = await apiClient.get(
-        API_ENDPOINTS.DRIVE.INBOX_BY_PROJECT(id!),
-      );
-      setDriveItems(res.data?.data || []);
+      const [gRes, odRes] = await Promise.allSettled([
+        apiClient.get(API_ENDPOINTS.DRIVE.INBOX_BY_PROJECT(id!)),
+        apiClient.get(API_ENDPOINTS.ONEDRIVE.INBOX_BY_PROJECT(id!)),
+      ]);
+      const gItems =
+        gRes.status === "fulfilled"
+          ? (gRes.value.data?.data || []).map((i: any) => ({
+              ...i,
+              cloudSource: "GDRIVE",
+            }))
+          : [];
+      const odItems =
+        odRes.status === "fulfilled"
+          ? (odRes.value.data?.data || []).map((i: any) => ({
+              ...i,
+              cloudSource: "ONEDRIVE",
+            }))
+          : [];
+      setDriveItems([...gItems, ...odItems]);
     } catch {
       // silent
     }
@@ -88,11 +103,14 @@ export const ProjectDashboardPage: React.FC = () => {
   const handleDriveSync = async () => {
     setDriveSyncing(true);
     try {
-      await apiClient.post(API_ENDPOINTS.DRIVE.SYNC);
+      await Promise.allSettled([
+        apiClient.post(API_ENDPOINTS.DRIVE.SYNC),
+        apiClient.post(API_ENDPOINTS.ONEDRIVE.SYNC),
+      ]);
       await fetchDriveInbox();
-      setNotification({ message: "Drive sync complete.", type: "success" });
+      setNotification({ message: "Cloud sync complete.", type: "success" });
     } catch {
-      setNotification({ message: "Drive sync failed.", type: "error" });
+      setNotification({ message: "Cloud sync failed.", type: "error" });
     } finally {
       setDriveSyncing(false);
     }
@@ -102,7 +120,12 @@ export const ProjectDashboardPage: React.FC = () => {
     if (!item.matched_project_id && !id) return;
     setDriveProcessingId(item.id);
     try {
-      await apiClient.post(API_ENDPOINTS.DRIVE.PROCESS_INBOX(item.id), {
+      const endpoint =
+        item.cloudSource === "ONEDRIVE"
+          ? API_ENDPOINTS.ONEDRIVE.PROCESS_INBOX(item.id)
+          : API_ENDPOINTS.DRIVE.PROCESS_INBOX(item.id);
+
+      await apiClient.post(endpoint, {
         project_id: item.matched_project_id || parseInt(id!),
         doc_type: item.doc_type || "MOM",
       });
@@ -127,7 +150,11 @@ export const ProjectDashboardPage: React.FC = () => {
 
   const handleDriveSkip = async (item: any) => {
     try {
-      await apiClient.patch(API_ENDPOINTS.DRIVE.SKIP_INBOX(item.id));
+      const endpoint =
+        item.cloudSource === "ONEDRIVE"
+          ? API_ENDPOINTS.ONEDRIVE.SKIP_INBOX(item.id)
+          : API_ENDPOINTS.DRIVE.SKIP_INBOX(item.id);
+      await apiClient.patch(endpoint);
       await fetchDriveInbox();
     } catch {
       /* silent */
@@ -136,7 +163,11 @@ export const ProjectDashboardPage: React.FC = () => {
 
   const handleDriveResume = async (item: any) => {
     try {
-      await apiClient.patch(API_ENDPOINTS.DRIVE.RESUME_INBOX(item.id));
+      const endpoint =
+        item.cloudSource === "ONEDRIVE"
+          ? API_ENDPOINTS.ONEDRIVE.RESUME_INBOX(item.id)
+          : API_ENDPOINTS.DRIVE.RESUME_INBOX(item.id);
+      await apiClient.patch(endpoint);
       await fetchDriveInbox();
     } catch {
       /* silent */
@@ -151,7 +182,11 @@ export const ProjectDashboardPage: React.FC = () => {
     )
       return;
     try {
-      await apiClient.delete(API_ENDPOINTS.DRIVE.DELETE_INBOX(item.id));
+      const endpoint =
+        item.cloudSource === "ONEDRIVE"
+          ? API_ENDPOINTS.ONEDRIVE.DELETE_INBOX(item.id)
+          : API_ENDPOINTS.DRIVE.DELETE_INBOX(item.id);
+      await apiClient.delete(endpoint);
       await fetchDriveInbox();
     } catch {
       /* silent */
@@ -1014,10 +1049,10 @@ export const ProjectDashboardPage: React.FC = () => {
                     </div>
                     <div>
                       <h3 className="text-sm font-bold text-text-primary">
-                        From Google Drive
+                        Cloud Inboxes
                       </h3>
                       <p className="text-xs text-text-muted">
-                        Auto-fetched documents
+                        Google Drive & OneDrive
                       </p>
                     </div>
                   </div>
@@ -1036,14 +1071,14 @@ export const ProjectDashboardPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* ── Drive Inbox Panel ─────────────────────────────────────── */}
+              {/* ── Drive & OneDrive Inbox Panel ───────────────────────────── */}
               {showDriveInbox && (
                 <div className="rounded-xl border border-blue-500/30 bg-blue-950/10 p-4 mb-4 animate-fadeIn">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
                       <CloudDownload className="w-4 h-4 text-blue-400" />
                       <h3 className="text-sm font-bold text-text-primary">
-                        Google Drive Inbox
+                        Cloud Documents Inbox
                       </h3>
                       <span className="text-[9px] font-bold px-1.5 py-0.5 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-full uppercase">
                         {
@@ -1063,13 +1098,13 @@ export const ProjectDashboardPage: React.FC = () => {
                       <RefreshCw
                         className={`w-3 h-3 ${driveSyncing ? "animate-spin" : ""}`}
                       />
-                      {driveSyncing ? "Syncing..." : "Sync Now"}
+                      {driveSyncing ? "Syncing..." : "Sync Cloud Now"}
                     </button>
                   </div>
                   {driveItems.length === 0 ? (
                     <div className="text-center py-8 text-text-muted text-xs">
-                      No files fetched yet. Click "Sync Now" to poll Google
-                      Drive.
+                      No files fetched yet. Click "Sync Cloud Now" to poll Google
+                      Drive & OneDrive.
                     </div>
                   ) : (
                     <div className="space-y-2">
@@ -1082,17 +1117,22 @@ export const ProjectDashboardPage: React.FC = () => {
                         const isProcessing = driveProcessingId === item.id;
                         return (
                           <div
-                            key={item.id}
+                            key={`${item.cloudSource || 'GDRIVE'}_${item.id}`}
                             className={`flex items-center justify-between gap-3 p-3 rounded-xl border ${isDone ? "border-emerald-500/20 bg-emerald-950/10" : isSkipped ? "border-gray-700/40 bg-gray-900/20 opacity-50" : "border-blue-500/20 bg-blue-950/5"}`}
                           >
                             <div className="flex items-center gap-2 min-w-0">
                               <FileText
-                                className={`w-4 h-4 shrink-0 ${isDone ? "text-emerald-400" : "text-blue-400"}`}
+                                className={`w-4 h-4 shrink-0 ${isDone ? "text-emerald-400" : item.cloudSource === "ONEDRIVE" ? "text-sky-400" : "text-blue-400"}`}
                               />
                               <div className="min-w-0">
-                                <p className="text-[11px] font-semibold text-text-primary truncate">
-                                  {item.filename}
-                                </p>
+                                <div className="flex items-center gap-1.5">
+                                  <p className="text-[11px] font-semibold text-text-primary truncate">
+                                    {item.filename}
+                                  </p>
+                                  <span className={`text-[8px] font-bold px-1 rounded ${item.cloudSource === "ONEDRIVE" ? "bg-sky-500/10 text-sky-400 border border-sky-500/20" : "bg-blue-500/10 text-blue-400 border border-blue-500/20"}`}>
+                                    {item.cloudSource === "ONEDRIVE" ? "OneDrive" : "Google Drive"}
+                                  </span>
+                                </div>
                                 <p className="text-[9px] text-text-muted">
                                   {item.account_label} · {item.doc_type}
                                 </p>

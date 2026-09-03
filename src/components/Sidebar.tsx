@@ -62,11 +62,11 @@ export const Sidebar: React.FC = () => {
     },
   ];
 
-  // Only show Drive Inbox if user is ADMIN or ENGAGEMENT_MANAGER
+  // Only show Cloud Inboxes if user is ADMIN or ENGAGEMENT_MANAGER
   if (user?.role === "ADMIN" || user?.role === "ENGAGEMENT_MANAGER") {
     navLinks.push({
       to: "/drive",
-      label: "Drive Inbox",
+      label: "Cloud Inboxes",
       icon: <CloudDownload className="w-5 h-5" />,
     });
   }
