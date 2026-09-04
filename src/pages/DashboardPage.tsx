@@ -26,7 +26,13 @@ export const DashboardPage: React.FC = () => {
     contract_baselines: { total: 0, approved: 0 },
     scope_creep_risks: { total: 0, high_severity: 0 },
     system_alerts: 0,
-    recent_activities: [] as any[]
+    recent_activities: [] as any[],
+    audit_status: {
+      audit_events: 0,
+      last_audit_at: null as string | null,
+      open_risks: 0,
+      baseline_approval_percent: 0
+    }
   });
 
   useEffect(() => {
@@ -57,6 +63,11 @@ export const DashboardPage: React.FC = () => {
     if (type.includes('SUCCESS') || type.includes('APPROVE')) return <CheckCircle className="w-4 h-4 text-[#FF5A14]" />;
     return <Info className="w-4 h-4 text-[#666666] dark:text-[#9ca3af]" />;
   };
+
+  const auditStatus = data.audit_status;
+  const lastAuditLabel = auditStatus.last_audit_at
+    ? new Date(auditStatus.last_audit_at).toLocaleString()
+    : 'No audit activity yet';
 
   return (
     <div className="flex-1 bg-bg-base text-text-primary p-6 md:p-10 relative overflow-hidden">
@@ -180,29 +191,36 @@ export const DashboardPage: React.FC = () => {
               <div className="p-4 rounded-xl bg-bg-base border border-border-subtle space-y-4">
                 <div>
                   <div className="flex justify-between text-xs mb-1">
-                    <span className="text-text-muted">RAG Vector Index Status</span>
-                    <span className="text-teal-500 dark:text-teal-400 font-semibold">Ready</span>
+                    <span className="text-text-muted">Audit Log Activity</span>
+                    <span className="text-teal-500 dark:text-teal-400 font-semibold">
+                      {loading ? '...' : `${auditStatus.audit_events} events`}
+                    </span>
                   </div>
                   <div className="w-full bg-bg-hover h-1.5 rounded-full overflow-hidden">
-                    <div className="bg-teal-400 h-full w-[100%]" />
+                    <div className="bg-teal-400 h-full" style={{ width: auditStatus.audit_events > 0 ? '100%' : '0%' }} />
+                  </div>
+                  <p className="text-[10px] text-text-muted mt-1">Last event: {loading ? '...' : lastAuditLabel}</p>
+                </div>
+                <div>
+                  <div className="flex justify-between text-xs mb-1">
+                    <span className="text-text-muted">Baseline Approval</span>
+                    <span className="text-text-secondary">
+                      {loading ? '...' : `${auditStatus.baseline_approval_percent}% approved`}
+                    </span>
+                  </div>
+                  <div className="w-full bg-bg-hover h-1.5 rounded-full overflow-hidden">
+                    <div className="bg-blue-500 h-full" style={{ width: `${auditStatus.baseline_approval_percent}%` }} />
                   </div>
                 </div>
                 <div>
                   <div className="flex justify-between text-xs mb-1">
-                    <span className="text-text-muted">LLM Endpoint Timeout</span>
-                    <span className="text-text-secondary">300s (OK)</span>
+                    <span className="text-text-muted">Risk Review Queue</span>
+                    <span className={`font-semibold ${auditStatus.open_risks > 0 ? 'text-amber-500 dark:text-amber-400' : 'text-teal-500 dark:text-teal-400'}`}>
+                      {loading ? '...' : auditStatus.open_risks > 0 ? `${auditStatus.open_risks} open` : 'Clear'}
+                    </span>
                   </div>
                   <div className="w-full bg-bg-hover h-1.5 rounded-full overflow-hidden">
-                    <div className="bg-blue-500 h-full w-[100%]" />
-                  </div>
-                </div>
-                <div>
-                  <div className="flex justify-between text-xs mb-1">
-                    <span className="text-text-muted">SMTP Server Delivery</span>
-                    <span className="text-teal-500 dark:text-teal-400 font-semibold">Active</span>
-                  </div>
-                  <div className="w-full bg-bg-hover h-1.5 rounded-full overflow-hidden">
-                    <div className="bg-teal-400 h-full w-[100%]" />
+                    <div className={`${auditStatus.open_risks > 0 ? 'bg-amber-400' : 'bg-teal-400'} h-full`} style={{ width: auditStatus.open_risks > 0 ? '100%' : '0%' }} />
                   </div>
                 </div>
               </div>
