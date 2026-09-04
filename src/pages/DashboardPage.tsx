@@ -40,7 +40,15 @@ export const DashboardPage: React.FC = () => {
       try {
         const response = await apiClient.get(API_ENDPOINTS.DASHBOARD.STATS);
         if (response.data.success) {
-          setData(response.data.data);
+          const dashboardData = response.data.data || {};
+          setData((currentData) => ({
+            ...currentData,
+            ...dashboardData,
+            audit_status: {
+              ...currentData.audit_status,
+              ...(dashboardData.audit_status || {})
+            }
+          }));
         }
       } catch (err) {
         console.error("Failed to fetch dashboard stats", err);
