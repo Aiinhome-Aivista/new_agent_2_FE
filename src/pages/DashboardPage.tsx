@@ -3,11 +3,11 @@ import { useAuth } from '../auth/AuthContext';
 import { Link } from 'react-router-dom';
 import apiClient from '../api/apiClient';
 import { API_ENDPOINTS } from '../api/endpoints';
-import { 
-  Briefcase, 
-  ScrollText, 
-  AlertTriangle, 
-  Bell, 
+import {
+  Briefcase,
+  ScrollText,
+  AlertTriangle,
+  Bell,
   ArrowRight,
   TrendingUp,
   ShieldAlert,
@@ -18,7 +18,7 @@ import {
 
 export const DashboardPage: React.FC = () => {
   const { user } = useAuth();
-  
+
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState({
     unresolved_risks: 0,
@@ -73,9 +73,9 @@ export const DashboardPage: React.FC = () => {
     <div className="flex-1 bg-bg-base text-text-primary p-6 md:p-10 relative overflow-hidden">
       {/* Visual background lights */}
       <div className="absolute top-[-30%] right-[-10%] w-[500px] h-[500px] rounded-full bg-[#FF5A14]/10 blur-[120px] pointer-events-none" />
-      
+
       <div className="max-w-6xl mx-auto space-y-8 relative z-10">
-        
+
         {/* Header Block */}
         <div>
           <h1 className="font-display text-3xl font-black tracking-tight mb-1 text-text-primary">
@@ -97,8 +97,8 @@ export const DashboardPage: React.FC = () => {
               The AI autonomous systems are currently monitoring contract scope parameters across all active pipelines. There are currently <span className="text-[#FF5A14] dark:text-[#FF7A45] font-bold">{loading ? '...' : data.unresolved_risks} unresolved risk warnings</span> that require evaluation review.
             </p>
             <div className="flex flex-wrap gap-4">
-              <Link 
-                to="/projects" 
+              <Link
+                to="/projects"
                 className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#FF7A45] hover:bg-[#F56B2F] text-white rounded-xl text-xs font-bold transition-all duration-300 shadow-md shadow-[#FF5A14]/20 cursor-pointer"
               >
                 Launch Projects List
@@ -111,8 +111,8 @@ export const DashboardPage: React.FC = () => {
         {/* Statistics Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {stats.map((stat, i) => (
-            <div 
-              key={i} 
+            <div
+              key={i}
               className={`p-6 rounded-2xl bg-gradient-to-br ${stat.bg} border border-border-subtle backdrop-blur-sm flex flex-col justify-between hover:border-[#FF8A55]/50 transition-all`}
             >
               <div className="flex justify-between items-start mb-4">
@@ -172,8 +172,8 @@ export const DashboardPage: React.FC = () => {
                 )}
               </div>
             </div>
-            <Link 
-              to="/projects" 
+            <Link
+              to="/projects"
               className="text-xs text-teal-500 dark:text-teal-400 hover:text-teal-600 dark:text-teal-300 font-semibold inline-flex items-center gap-1 mt-6"
             >
               Audit Detailed Project Lifecycles
@@ -225,7 +225,7 @@ export const DashboardPage: React.FC = () => {
                 </div>
               </div>
             </div>
-            
+
             <div className="mt-8 text-xs text-text-muted leading-relaxed bg-bg-base p-3.5 rounded-xl border border-border-subtle">
               <span className="font-semibold text-text-muted block mb-1">Assigned Role: {user?.role}</span>
               You have access to verify project deliverables, ingest report summaries, and execute baseline RAG matching checks.
