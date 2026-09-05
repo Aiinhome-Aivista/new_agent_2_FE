@@ -144,19 +144,84 @@
   overflow: hidden;
 }
 
-/* Custom Scrollbar Styles */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
+/* ── Universal Slim Theme-Based Scrollbar System ── */
+
+/* 1. Global standard for Firefox and modern browsers */
+html, body, * {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.4) transparent;
 }
-.custom-scrollbar::-webkit-scrollbar-track {
+
+.dark, .dark * {
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+/* 2. WebKit / Chromium (Chrome, Edge, Opera, Brave, Safari) */
+::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track,
+*::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-corner,
+*::-webkit-scrollbar-corner {
   background: transparent;
 }
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: #374151; /* gray-700 */
-  border-radius: 20px;
+
+::-webkit-scrollbar-thumb,
+*::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.45); /* Light mode subtle gray */
+  border-radius: 9999px;
+  border: 1px solid transparent;
+  background-clip: padding-box;
+  transition: background-color 0.2s ease;
 }
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background-color: #4b5563; /* gray-600 */
+
+::-webkit-scrollbar-thumb:hover,
+*::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 90, 20, 0.75); /* Brand orange hover */
+}
+
+::-webkit-scrollbar-thumb:active,
+*::-webkit-scrollbar-thumb:active {
+  background-color: #FF5A14; /* Solid brand orange on active drag */
+}
+
+/* Dark Mode Scrollbars */
+.dark ::-webkit-scrollbar-thumb,
+.dark *::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.2); /* Dark mode sleek translucent */
+}
+
+.dark ::-webkit-scrollbar-thumb:hover,
+.dark *::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 122, 69, 0.85); /* Brand radiant orange hover */
+}
+
+.dark ::-webkit-scrollbar-thumb:active,
+.dark *::-webkit-scrollbar-thumb:active {
+  background-color: #FF7A45;
+}
+
+/* 3. Utility classes for fine-tuned elements */
+.custom-scrollbar {
+  scrollbar-width: thin;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+.custom-scrollbar-slim::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
 }
 
 /* Hide scrollbars completely styling */
@@ -167,4 +232,5 @@
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
 }
+
 

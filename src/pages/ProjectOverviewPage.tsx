@@ -87,7 +87,7 @@ function getRagColor(score: number, monitoringStatus?: string) {
 
 function computeHealthScore(
   monitoringStatus: string,
-  hasBothDocs: boolean,
+  hasBaselineDoc: boolean,
   baselineApproved: boolean,
   openRisks: number,
   totalRisks: number,
@@ -98,7 +98,7 @@ function computeHealthScore(
     monitoringStatus === "BASELINE_PENDING_REVIEW"
   ) {
     let score = 0;
-    if (hasBothDocs) score += 60;
+    if (hasBaselineDoc) score += 60;
     if (baselineApproved) score += 40;
     else if (monitoringStatus === "BASELINE_PENDING_REVIEW") score += 20;
     return score;
@@ -207,7 +207,7 @@ export const ProjectOverviewPage: React.FC = () => {
   const hasStatusReport = documents.some(
     (d) => d.document_type === "STATUS_REPORT",
   );
-  const hasBothInitDocs = hasEL && hasIFA;
+  const hasBaselineDoc = hasEL || hasIFA;
 
   const baselineApproved = baseline?.status === "APPROVED";
   const inScopeItems: any[] =
@@ -234,7 +234,7 @@ export const ProjectOverviewPage: React.FC = () => {
   const daysRemaining = getDaysRemaining(project.end_date);
   const healthScore = computeHealthScore(
     project.monitoring_status,
-    hasBothInitDocs,
+    hasBaselineDoc,
     baselineApproved,
     openRisks.length,
     risks.length,
@@ -407,7 +407,7 @@ export const ProjectOverviewPage: React.FC = () => {
                       <ul className="list-disc pl-4 space-y-0.5 text-text-muted font-medium">
                         <li>
                           <strong className="text-text-primary">60 pts</strong>:
-                          Initial Documents (EL & IFA) processed.
+                          Initial Contract Document (EL or IFA) processed.
                         </li>
                         <li>
                           <strong className="text-text-primary">40 pts</strong>:
@@ -464,10 +464,10 @@ export const ProjectOverviewPage: React.FC = () => {
                 const rows = isSetup
                   ? [
                       {
-                        label: "Documents",
-                        status: hasBothInitDocs ? "OK" : "Pending",
-                        points: hasBothInitDocs ? "+60" : "-60",
-                        ok: hasBothInitDocs,
+                        label: "Baseline Document",
+                        status: hasBaselineDoc ? "OK" : "Pending",
+                        points: hasBaselineDoc ? "+60" : "-60",
+                        ok: hasBaselineDoc,
                         locked: false,
                       },
                       {
@@ -864,12 +864,12 @@ export const ProjectOverviewPage: React.FC = () => {
 
         {/* ── SECOND ROW: 3-column grid ─────────────────────────────────── */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-          {/* DOCUMENT CHECKLIST */}
+          {/* DOCUMENT CHECKLIST - ONLY SHOW UPLOADED TYPES WITH GREEN TICK */}
           <div className="bg-bg-card/50 border border-border-subtle rounded-2xl p-5 backdrop-blur-md flex flex-col justify-between h-full">
             <div>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-bold text-text-primary flex items-center gap-2">
-                  <FileCheck2 className="w-4 h-4 text-blue-500 dark:text-blue-400" />
+                  <FileCheck2 className="w-4 h-4 text-[#FF5A14]" />
                   Document Checklist
                 </h3>
                 <Link
@@ -880,8 +880,8 @@ export const ProjectOverviewPage: React.FC = () => {
                 </Link>
               </div>
 
-              <div className="space-y-2">
-                {[
+              {(() => {
+                const standardTypes = [
                   {
                     label: "Engagement Letter (EL)",
                     type: "EL",
@@ -906,70 +906,74 @@ export const ProjectOverviewPage: React.FC = () => {
                     present: hasStatusReport,
                     section: "Execution",
                   },
-                ].map((item) => (
-                  <div
-                    key={item.type}
-                    className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${
-                      item.present
-                        ? "bg-emerald-950/20 border-emerald-500/20"
-                        : "bg-bg-hover/50 border-border-strong/50"
-                    }`}
-                  >
-                    {item.present ? (
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                    ) : (
-                      <Circle className="w-4 h-4 text-[#4A4A4A] dark:text-gray-600 flex-shrink-0" />
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <p
-                        className={`text-xs font-semibold truncate ${item.present ? "text-text-primary" : "text-[#4A4A4A] dark:text-text-muted"}`}
-                      >
-                        {item.label}
-                      </p>
-                      <p className="text-[10px] text-[#4A4A4A] dark:text-gray-400 font-medium">
-                        {item.section}
-                      </p>
-                    </div>
-                    {item.present && (
-                      <span className="text-[10px] text-emerald-400 font-bold">
-                        ✓
-                      </span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
+                ].filter((item) => item.present);
 
-            {documents.length > 0 && (
-              <div className="mt-4 pt-3 border-t border-border-subtle">
-                <p className="text-[10px] text-[#4A4A4A] dark:text-text-muted font-bold mb-2">
-                  All Uploaded Files ({documents.length})
-                </p>
-                <div className="space-y-1 max-h-[100px] overflow-y-auto pr-1 custom-scrollbar">
-                  {documents.slice(0, 6).map((doc) => (
-                    <div
-                      key={doc.id}
-                      className="flex items-center justify-between text-[10px]"
-                    >
-                      <span className="text-[#4A4A4A] dark:text-text-muted truncate max-w-[150px] font-medium">
-                        {doc.document_name}
-                      </span>
-                      <span
-                        className={`font-semibold px-1 rounded ${
-                          doc.processing_status === "COMPLETED"
-                            ? "text-emerald-400"
-                            : doc.processing_status === "PROCESSING"
-                              ? "text-amber-500 dark:text-amber-400 animate-pulse"
-                              : "text-[#4A4A4A] dark:text-text-muted"
-                        }`}
+                const knownTypeKeys = new Set(["EL", "IFA", "MOM", "STATUS_REPORT"]);
+                const customTypes = documents
+                  .filter((d) => !knownTypeKeys.has(d.document_type))
+                  .reduce((acc: any[], doc) => {
+                    if (!acc.some((x) => x.type === doc.document_type)) {
+                      acc.push({
+                        label: doc.document_type,
+                        type: doc.document_type,
+                        present: true,
+                        section: "Custom",
+                      });
+                    }
+                    return acc;
+                  }, []);
+
+                const activeCards = [...standardTypes, ...customTypes];
+
+                if (activeCards.length === 0) {
+                  return (
+                    <div className="p-6 text-center rounded-xl bg-bg-hover/40 border border-dashed border-border-subtle flex flex-col items-center justify-center my-2">
+                      <FileCheck2 className="w-8 h-8 text-text-muted mb-2 opacity-60" />
+                      <p className="text-xs font-bold text-text-primary mb-1">
+                        No documents uploaded yet
+                      </p>
+                      <p className="text-[11px] text-text-muted max-w-[220px] mb-3">
+                        Upload an Engagement Letter (EL), IFA, or Status Report.
+                      </p>
+                      <Link
+                        to={`/projects/${id}/cockpit`}
+                        className="px-3 py-1.5 bg-[#FF5A14] hover:bg-[#F56B2F] text-white text-xs font-bold rounded-lg shadow-sm transition-all"
                       >
-                        {doc.processing_status}
-                      </span>
+                        Upload Document
+                      </Link>
                     </div>
-                  ))}
-                </div>
-              </div>
-            )}
+                  );
+                }
+
+                return (
+                  <div className="space-y-2.5 max-h-[300px] overflow-y-auto pr-1 custom-scrollbar">
+                    {activeCards.map((item) => {
+                      const count = documents.filter((d) => d.document_type === item.type).length;
+                      return (
+                        <div
+                          key={item.type}
+                          className="flex items-center gap-3 p-3 rounded-xl border bg-emerald-500/10 dark:bg-emerald-950/20 border-emerald-500/25 dark:border-emerald-500/20 transition-all"
+                        >
+                          <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-semibold text-text-primary truncate">
+                              {item.label}
+                            </p>
+                            <p className="text-[10px] text-emerald-700 dark:text-emerald-400/80 font-medium">
+                              {item.section}
+                              {count > 1 ? ` • ${count} files` : ""}
+                            </p>
+                          </div>
+                          <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold">
+                            ✓
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
+            </div>
           </div>
 
           {/* SCOPE BASELINE */}
@@ -988,20 +992,34 @@ export const ProjectOverviewPage: React.FC = () => {
                 </Link>
               </div>
 
-              {!baseline ? (
-                <div className="py-8 text-center">
-                  <ScrollText className="w-8 h-8 text-gray-700 mx-auto mb-2" />
-                  <p className="text-xs text-text-muted">
-                    No baseline extracted yet.
+              {!baseline || totalItems === 0 ? (
+                <div className="p-6 text-center rounded-xl bg-bg-hover/40 border border-dashed border-border-subtle flex flex-col items-center justify-center my-2">
+                  <ScrollText className="w-8 h-8 text-text-muted mb-2 opacity-60" />
+                  <p className="text-xs font-bold text-text-primary mb-1">
+                    {!hasBaselineDoc
+                      ? "Awaiting Contract Document"
+                      : "No Scope Items Extracted"}
                   </p>
-                  {isEM && (
-                    <Link
-                      to={`/projects/${id}/baseline`}
-                      className="text-[11px] text-purple-500 dark:text-purple-400 hover:text-purple-600 dark:text-purple-300 font-semibold mt-2 inline-flex items-center gap-1"
-                    >
-                      Extract Baseline <ArrowRight className="w-3 h-3" />
-                    </Link>
-                  )}
+                  <p className="text-[11px] text-text-muted max-w-[220px] mb-3">
+                    {!hasBaselineDoc
+                      ? "Upload an Engagement Letter (EL) or IFA in Cockpit before extracting baseline."
+                      : "Extract scope deliverables and milestones from your uploaded contract documents."}
+                  </p>
+                  <Link
+                    to={
+                      !hasBaselineDoc
+                        ? `/projects/${id}/cockpit`
+                        : `/projects/${id}/baseline`
+                    }
+                    className={`px-3 py-1.5 ${
+                      !hasBaselineDoc
+                        ? "bg-[#FF5A14] hover:bg-[#F56B2F]"
+                        : "bg-purple-600 hover:bg-purple-700"
+                    } text-white text-xs font-bold rounded-lg shadow-sm transition-all inline-flex items-center gap-1.5`}
+                  >
+                    {!hasBaselineDoc ? "Upload Document" : "Extract Baseline"}{" "}
+                    <ArrowRight className="w-3 h-3" />
+                  </Link>
                 </div>
               ) : (
                 <>
@@ -1013,69 +1031,67 @@ export const ProjectOverviewPage: React.FC = () => {
                           : "bg-amber-500/15 text-amber-500 dark:text-amber-400 border border-amber-500/30"
                       }`}
                     >
-                      {baseline.status}
+                      {baseline?.status || "DRAFT"}
                     </span>
                     <span className="text-[10px] text-text-muted">
-                      {totalItems} scope items
+                      {totalItems} scope item{totalItems > 1 ? "s" : ""}
                     </span>
                   </div>
 
                   {/* Stacked bar */}
-                  {totalItems > 0 && (
-                    <div className="mb-4">
-                      <div className="flex h-3 rounded-full overflow-hidden gap-0.5 mb-2">
-                        {inScopeItems.length > 0 && (
-                          <div
-                            className="bg-emerald-500 transition-all"
-                            style={{
-                              width: `${(inScopeItems.length / totalItems) * 100}%`,
-                            }}
-                          />
-                        )}
-                        {outOfScopeItems.length > 0 && (
-                          <div
-                            className="bg-rose-500 transition-all"
-                            style={{
-                              width: `${(outOfScopeItems.length / totalItems) * 100}%`,
-                            }}
-                          />
-                        )}
-                        {uncertainItems.length > 0 && (
-                          <div
-                            className="bg-amber-500 transition-all"
-                            style={{
-                              width: `${(uncertainItems.length / totalItems) * 100}%`,
-                            }}
-                          />
-                        )}
-                      </div>
-                      <div className="flex justify-between text-[10px]">
-                        <span className="text-emerald-400 font-semibold">
-                          In Scope: {inScopeItems.length}
-                        </span>
-                        <span className="text-rose-500 dark:text-rose-400 font-semibold">
-                          Out: {outOfScopeItems.length}
-                        </span>
-                        <span className="text-amber-500 dark:text-amber-400 font-semibold">
-                          Uncertain: {uncertainItems.length}
-                        </span>
-                      </div>
+                  <div className="mb-4">
+                    <div className="flex h-3 rounded-full overflow-hidden gap-0.5 mb-2 bg-bg-hover">
+                      {inScopeItems.length > 0 && (
+                        <div
+                          className="bg-emerald-500 transition-all"
+                          style={{
+                            width: `${(inScopeItems.length / totalItems) * 100}%`,
+                          }}
+                        />
+                      )}
+                      {outOfScopeItems.length > 0 && (
+                        <div
+                          className="bg-rose-500 transition-all"
+                          style={{
+                            width: `${(outOfScopeItems.length / totalItems) * 100}%`,
+                          }}
+                        />
+                      )}
+                      {uncertainItems.length > 0 && (
+                        <div
+                          className="bg-amber-500 transition-all"
+                          style={{
+                            width: `${(uncertainItems.length / totalItems) * 100}%`,
+                          }}
+                        />
+                      )}
                     </div>
-                  )}
+                    <div className="flex justify-between text-[10px]">
+                      <span className="text-emerald-400 font-semibold">
+                        In Scope: {inScopeItems.length}
+                      </span>
+                      <span className="text-rose-500 dark:text-rose-400 font-semibold">
+                        Out: {outOfScopeItems.length}
+                      </span>
+                      <span className="text-amber-500 dark:text-amber-400 font-semibold">
+                        Uncertain: {uncertainItems.length}
+                      </span>
+                    </div>
+                  </div>
 
                   {/* Top scope items preview */}
                   <div className="space-y-2 max-h-[250px] overflow-y-auto pr-1 custom-scrollbar">
                     {(showAllScopeItems
-                      ? inScopeItems
-                      : inScopeItems.slice(0, 3)
+                      ? inScopeItems.length > 0 ? inScopeItems : baseline?.scope_items || []
+                      : (inScopeItems.length > 0 ? inScopeItems : baseline?.scope_items || []).slice(0, 3)
                     ).map((item: any) => (
                       <div
                         key={item.id}
                         className="flex items-start gap-2 p-2 bg-bg-hover/50 rounded-lg border border-border-strong/30"
                       >
                         <CheckCheck className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0 mt-0.5" />
-                        <div>
-                          <p className="text-[11px] font-semibold text-text-primary leading-tight">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[11px] font-semibold text-text-primary leading-tight truncate">
                             {item.name}
                           </p>
                           {item.description && (
@@ -1086,14 +1102,14 @@ export const ProjectOverviewPage: React.FC = () => {
                         </div>
                       </div>
                     ))}
-                    {inScopeItems.length > 3 && (
+                    {((inScopeItems.length || baseline?.scope_items?.length || 0) > 3) && (
                       <button
                         onClick={() => setShowAllScopeItems(!showAllScopeItems)}
                         className="w-full text-[10px] text-purple-500 dark:text-purple-400 text-center font-semibold mt-1 hover:text-purple-600 dark:text-purple-300 transition-colors cursor-pointer focus:outline-none block"
                       >
                         {showAllScopeItems
                           ? "Show less"
-                          : `+${inScopeItems.length - 3} more in scope items`}
+                          : `+${(inScopeItems.length || baseline?.scope_items?.length || 0) - 3} more items`}
                       </button>
                     )}
                   </div>
@@ -1119,11 +1135,20 @@ export const ProjectOverviewPage: React.FC = () => {
               </div>
 
               {risks.length === 0 ? (
-                <div className="py-8 text-center">
-                  <Shield className="w-8 h-8 text-gray-700 mx-auto mb-2" />
-                  <p className="text-xs text-text-muted">
-                    No risk findings recorded yet.
+                <div className="p-6 text-center rounded-xl bg-bg-hover/40 border border-dashed border-border-subtle flex flex-col items-center justify-center my-2">
+                  <Shield className="w-8 h-8 text-text-muted mb-2 opacity-60" />
+                  <p className="text-xs font-bold text-text-primary mb-1">
+                    No Risk Findings Yet
                   </p>
+                  <p className="text-[11px] text-text-muted max-w-[220px] mb-3">
+                    Risks will be tracked automatically as documents and monitoring progress.
+                  </p>
+                  <Link
+                    to={`/projects/${id}/tracker`}
+                    className="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-lg shadow-sm transition-all inline-flex items-center gap-1.5"
+                  >
+                    Open Tracker <ArrowRight className="w-3 h-3" />
+                  </Link>
                 </div>
               ) : (
                 <>
@@ -1296,27 +1321,17 @@ export const ProjectOverviewPage: React.FC = () => {
             <div className="space-y-2">
               {[
                 {
-                  show: !hasEL,
+                  show: !hasBaselineDoc,
                   level: "critical",
-                  title: "Missing Engagement Letter",
-                  desc: "Upload the EL document to begin initiation.",
+                  title: "Missing Baseline Document",
+                  desc: "Upload an Engagement Letter (EL) or IFA document to begin initiation.",
                   action: {
                     label: "Upload Now",
                     to: `/projects/${id}/cockpit`,
                   },
                 },
                 {
-                  show: !hasIFA,
-                  level: "critical",
-                  title: "Missing IFA Document",
-                  desc: "Independence & Financial Assessment not uploaded.",
-                  action: {
-                    label: "Upload Now",
-                    to: `/projects/${id}/cockpit`,
-                  },
-                },
-                {
-                  show: !baseline,
+                  show: hasBaselineDoc && (!baseline || totalItems === 0),
                   level: "high",
                   title: "No Scope Baseline",
                   desc: "Extract baseline from uploaded contract documents.",
@@ -1454,8 +1469,7 @@ export const ProjectOverviewPage: React.FC = () => {
 
               {/* All clear */}
               {[
-                !hasEL,
-                !hasIFA,
+                !hasBaselineDoc,
                 !baseline,
                 baseline && !baselineApproved,
                 criticalRisks.length > 0,

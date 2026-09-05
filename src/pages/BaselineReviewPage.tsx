@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { createPortal } from "react-dom";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import apiClient from "../api/apiClient";
 import { API_ENDPOINTS } from "../api/endpoints";
 import { useAuth } from "../auth/AuthContext";
@@ -47,6 +47,7 @@ import {
   ScanSearch,
   Info,
   Square,
+  UploadCloud,
 } from "lucide-react";
 
 const baselineSteps = [
@@ -148,6 +149,7 @@ export const BaselineReviewPage: React.FC = () => {
   } = useDocumentProgress();
   const [baseline, setBaseline] = useState<any>(null);
   const [project, setProject] = useState<any>(null);
+  const [documents, setDocuments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -155,6 +157,10 @@ export const BaselineReviewPage: React.FC = () => {
   const [expandedVersions, setExpandedVersions] = useState<
     Record<number, boolean>
   >({});
+
+  const hasAnyBaselineDocUploaded = documents.some(
+    (d) => d.document_type === "EL" || d.document_type === "IFA",
+  );
 
   const isCurrentBaselineExtracting =
     (isEvaluating ||
@@ -220,15 +226,19 @@ export const BaselineReviewPage: React.FC = () => {
     ) {
       const refreshBaseline = async () => {
         try {
-          const [baselineRes, versionsRes] = await Promise.all([
-            apiClient.get(API_ENDPOINTS.BASELINE.LIST(id!)),
-            apiClient.get(API_ENDPOINTS.BASELINE.VERSIONS(id!)),
+          const [baselineRes, versionsRes, docsRes] = await Promise.all([
+            apiClient.get(API_ENDPOINTS.BASELINE.LIST(id!)).catch(() => ({ data: { success: false } })),
+            apiClient.get(API_ENDPOINTS.BASELINE.VERSIONS(id!)).catch(() => ({ data: { success: false } })),
+            apiClient.get(API_ENDPOINTS.DOCUMENTS.LIST(id!)).catch(() => ({ data: { success: false } })),
           ]);
           if (baselineRes.data.success) {
             setBaseline(baselineRes.data.data);
           }
           if (versionsRes.data.success) {
             setVersions(versionsRes.data.data);
+          }
+          if (docsRes.data.success) {
+            setDocuments(docsRes.data.data || []);
           }
           showNotification("Baseline data updated!", "success");
         } catch (err) {
@@ -242,10 +252,11 @@ export const BaselineReviewPage: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [baselineRes, projectRes, versionsRes] = await Promise.all([
-          apiClient.get(API_ENDPOINTS.BASELINE.LIST(id!)),
-          apiClient.get(API_ENDPOINTS.PROJECTS.DETAIL(id!)),
-          apiClient.get(API_ENDPOINTS.BASELINE.VERSIONS(id!)),
+        const [baselineRes, projectRes, versionsRes, docsRes] = await Promise.all([
+          apiClient.get(API_ENDPOINTS.BASELINE.LIST(id!)).catch(() => ({ data: { success: false } })),
+          apiClient.get(API_ENDPOINTS.PROJECTS.DETAIL(id!)).catch(() => ({ data: { success: false } })),
+          apiClient.get(API_ENDPOINTS.BASELINE.VERSIONS(id!)).catch(() => ({ data: { success: false } })),
+          apiClient.get(API_ENDPOINTS.DOCUMENTS.LIST(id!)).catch(() => ({ data: { success: false } })),
         ]);
         if (baselineRes.data.success) {
           setBaseline(baselineRes.data.data);
@@ -255,6 +266,9 @@ export const BaselineReviewPage: React.FC = () => {
         }
         if (versionsRes.data.success) {
           setVersions(versionsRes.data.data);
+        }
+        if (docsRes.data.success) {
+          setDocuments(docsRes.data.data || []);
         }
       } catch (error) {
         console.error(
@@ -1202,7 +1216,8 @@ export const BaselineReviewPage: React.FC = () => {
             )}
 
             {user?.role !== "PROJECT_LEAD" &&
-              project?.monitoring_status !== "CLOSED" && (
+              project?.monitoring_status !== "CLOSED" &&
+              hasAnyBaselineDocUploaded && (
                 <button
                   onClick={handleExtractClick}
                   disabled={isCurrentBaselineExtracting || extracting}
@@ -1239,7 +1254,7 @@ export const BaselineReviewPage: React.FC = () => {
                   type="button"
                   onClick={handleApprove}
                   disabled={isApproving}
-                  className="group relative inline-flex items-center justify-center gap-2 px-6 py-2.5 font-semibold text-text-primary transition-all duration-300 rounded-lg bg-gradient-to-r from-emerald-500 via-teal-500 to-green-600 hover:from-emerald-400 hover:via-teal-400 hover:to-green-500 shadow-[0_0_15px_rgba(16,185,129,0.4)] hover:shadow-[0_0_25px_rgba(20,184,166,0.6)] hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none cursor-pointer"
+                  className="group relative inline-flex items-center justify-center gap-2 px-6 py-2.5 font-semibold text-text-primary transition-all duration-300 rounded-lg bg-gradient-to-r from-emerald-500 via-teal-500 to-green-600 hover:from-emerald-400 hover:via-teal-400 hover:to-green-500 shadow-[0_0_15px_rgba(160,185,129,0.4)] hover:shadow-[0_0_25px_rgba(20,184,166,0.6)] hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none cursor-pointer"
                 >
                   {isApproving ? (
                     <>
@@ -1263,17 +1278,52 @@ export const BaselineReviewPage: React.FC = () => {
         </div>
 
         {/* Status display section */}
-        {/* Status display section */}
         {isCurrentBaselineExtracting ? (
           renderBaselineProgressTimeline()
         ) : !isBaselineExtracted ? (
           <div className="flex flex-col items-center justify-center min-h-[calc(100vh-250px)] w-full">
-            <div className="text-center py-16 px-12 bg-amber-950/10 border border-amber-500/20 rounded-2xl animate-fade-in-up max-w-2xl w-full mx-auto">
-              <AlertTriangle className="w-12 h-12 text-amber-500 mx-auto mb-4 animate-bounce" />
-              <h3 className="text-xl font-bold text-text-primary mb-2">
-                No document is extracted please extract document for baseline review
-              </h3>
-            </div>
+            {!hasAnyBaselineDocUploaded ? (
+              <div className="text-center py-16 px-12 bg-bg-card/40 border border-border-subtle rounded-2xl animate-fade-in-up max-w-2xl w-full mx-auto backdrop-blur-md">
+                <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mx-auto mb-4">
+                  <AlertTriangle className="w-7 h-7 text-amber-500" />
+                </div>
+                <h3 className="text-xl font-bold text-text-primary mb-2">
+                  No Contract Documents Uploaded
+                </h3>
+                <p className="text-xs text-text-muted max-w-md mx-auto mb-6">
+                  Please upload an Engagement Letter (EL) or Inter-Firm Approval (IFA) in the Document Cockpit first to extract the scope baseline.
+                </p>
+                <Link
+                  to={`/projects/${id}/cockpit`}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#FF5A14] hover:bg-[#F56B2F] text-white text-xs font-bold rounded-lg shadow-sm transition-all"
+                >
+                  <UploadCloud className="w-4 h-4" />
+                  Upload Document
+                </Link>
+              </div>
+            ) : (
+              <div className="text-center py-16 px-12 bg-bg-card/40 border border-border-subtle rounded-2xl animate-fade-in-up max-w-2xl w-full mx-auto backdrop-blur-md">
+                <div className="w-14 h-14 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center mx-auto mb-4">
+                  <Sparkles className="w-7 h-7 text-purple-400" />
+                </div>
+                <h3 className="text-xl font-bold text-text-primary mb-2">
+                  Baseline Scope Not Extracted Yet
+                </h3>
+                <p className="text-xs text-text-muted max-w-md mx-auto mb-6">
+                  Contract documents are ready. Click Extract Baseline to detect deliverables, milestones, and scope boundaries.
+                </p>
+                {user?.role !== "PROJECT_LEAD" && project?.monitoring_status !== "CLOSED" && (
+                  <button
+                    onClick={handleExtractClick}
+                    disabled={isCurrentBaselineExtracting || extracting}
+                    className="inline-flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-400 hover:via-purple-400 hover:to-pink-400 text-white text-xs font-bold rounded-lg shadow-md transition-all cursor-pointer"
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    Extract Baseline
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         ) : (
           <div>

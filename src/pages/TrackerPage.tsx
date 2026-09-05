@@ -30,6 +30,7 @@ import {
   Hash,
   ListOrdered,
   Square,
+  UploadCloud,
 } from "lucide-react";
 import { useAuth } from "../auth/AuthContext";
 
@@ -604,7 +605,9 @@ export const TrackerPage: React.FC = () => {
 
   const [items, setItems] = useState<any[]>([]);
   const [project, setProject] = useState<any>(null);
+  const [documents, setDocuments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showScoringRules, setShowScoringRules] = useState(false);
   const [activeTab, setActiveTab] = useState<"ACTIVE" | "RESOLVED">("ACTIVE");
   const [selectedItemIds, setSelectedItemIds] = useState<number[]>([]);
   const [selectedItem, setSelectedItem] = useState<any | null>(null);
@@ -612,6 +615,10 @@ export const TrackerPage: React.FC = () => {
 
   const activeItems = items.filter((item: any) => item.status !== "RESOLVED");
   const resolvedItems = items.filter((item: any) => item.status === "RESOLVED");
+
+  const hasBaselineDoc = documents.some(
+    (d) => d.document_type === "EL" || d.document_type === "IFA",
+  );
 
   const currentTabItems = useMemo(() => {
     let base = activeTab === "ACTIVE" ? activeItems : resolvedItems;
@@ -631,9 +638,10 @@ export const TrackerPage: React.FC = () => {
 
   const fetchTrackerAndProject = async () => {
     try {
-      const [trackerRes, projectRes] = await Promise.all([
-        apiClient.get(API_ENDPOINTS.TRACKER.LIST(id!)),
-        apiClient.get(API_ENDPOINTS.PROJECTS.DETAIL(id!)),
+      const [trackerRes, projectRes, docsRes] = await Promise.all([
+        apiClient.get(API_ENDPOINTS.TRACKER.LIST(id!)).catch(() => ({ data: { success: false, data: [] } })),
+        apiClient.get(API_ENDPOINTS.PROJECTS.DETAIL(id!)).catch(() => ({ data: { success: false } })),
+        apiClient.get(API_ENDPOINTS.DOCUMENTS.LIST(id!)).catch(() => ({ data: { success: false, data: [] } })),
       ]);
       if (trackerRes.data?.success) {
         setItems(trackerRes.data.data || []);
@@ -641,7 +649,8 @@ export const TrackerPage: React.FC = () => {
           setSelectedItem(trackerRes.data.data[0]);
         }
       }
-      if (projectRes.data.success) setProject(projectRes.data.data);
+      if (projectRes.data?.success) setProject(projectRes.data.data);
+      if (docsRes.data?.success) setDocuments(docsRes.data.data || []);
     } catch (error) {
       console.error("Failed to fetch tracker items or project details:", error);
     } finally {
@@ -2075,7 +2084,7 @@ export const TrackerPage: React.FC = () => {
 
       <div className="relative z-10 flex flex-col h-full min-h-screen">
         {/* ── Top Header Bar ── */}
-        <div className="px-6 md:px-8 pt-6 md:pt-8 pb-5 border-b border-border-subtle bg-slate-50/80 dark:bg-[#080b14]/80 backdrop-blur-sm flex-shrink-0">
+        <div className="relative z-50 px-6 md:px-8 pt-6 md:pt-8 pb-5 border-b border-border-subtle bg-slate-50/80 dark:bg-[#080b14]/80 backdrop-blur-sm flex-shrink-0">
           <div className="max-w-[1600px] mx-auto flex flex-col lg:flex-row justify-between items-start lg:items-center gap-5">
             {/* Breadcrumb + Title */}
             <div>
@@ -2110,57 +2119,95 @@ export const TrackerPage: React.FC = () => {
 
             {/* Header Actions */}
             <div className="flex flex-wrap gap-2.5 items-center">
-              {/* Scoring Rules Tooltip */}
-              <div className="relative group">
-                <button className="flex items-center gap-1.5 px-3 py-2 bg-bg-card border border-border-subtle hover:border-border-strong text-text-muted hover:text-cyan-600 dark:text-cyan-700 dark:text-cyan-400 rounded-xl text-xs font-bold transition-all cursor-help shadow-lg">
+              {/* Scoring Rules Popover with smooth Hover & Click support */}
+              <div
+                className="relative group z-50"
+                onMouseEnter={() => setShowScoringRules(true)}
+                onMouseLeave={() => setShowScoringRules(false)}
+              >
+                <button
+                  type="button"
+                  onClick={() => setShowScoringRules(!showScoringRules)}
+                  className="flex items-center gap-1.5 px-3 py-2 bg-bg-card border border-border-subtle hover:border-border-strong text-text-muted hover:text-cyan-600 dark:text-cyan-400 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-sm active:scale-[0.98]"
+                >
                   <Info className="w-3.5 h-3.5 shrink-0" /> Scoring Rules
                 </button>
-                <div className="absolute right-0 lg:right-1/2 lg:translate-x-1/2 top-full mt-3 w-80 p-5 bg-bg-base border border-border-subtle rounded-2xl shadow-2xl backdrop-blur-md opacity-0 translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 z-50 text-left">
-                  <h4 className="font-bold text-sm text-[#00e5ff] mb-3 border-b border-border-subtle pb-2">
-                    Item Risk Scoring Rules
-                  </h4>
-                  <div className="space-y-4 text-xs text-text-secondary">
-                    <p className="text-text-muted leading-relaxed font-medium">
-                      Individual item scores (out of 100) are determined by
-                      these rules:
-                    </p>
-                    <div>
-                      <span className="font-bold text-text-primary block mb-1">
-                        Scope Creep (OutOfScope Agent)
-                      </span>
-                      <ul className="list-disc pl-4 space-y-1 text-text-muted font-medium">
-                        <li>
-                          <strong className="text-text-primary">80/100</strong>{" "}
-                          for direct baseline violations.
-                        </li>
-                        <li>
-                          <strong className="text-text-primary">50/100</strong>{" "}
-                          for warnings or borderline items.
-                        </li>
-                      </ul>
+
+                {/* Click-outside backdrop when toggled open */}
+                {showScoringRules && (
+                  <div
+                    className="fixed inset-0 z-40 pointer-events-auto"
+                    onClick={() => setShowScoringRules(false)}
+                  />
+                )}
+
+                {/* Tooltip Content on Hover / Toggle */}
+                <div
+                  className={`absolute right-0 top-full pt-2 w-80 sm:w-88 z-50 text-left transition-all duration-200 ${
+                    showScoringRules
+                      ? "opacity-100 translate-y-0 pointer-events-auto"
+                      : "opacity-0 translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto"
+                  }`}
+                >
+                  <div className="p-5 bg-bg-panel/98 border border-border-strong/40 rounded-2xl shadow-2xl backdrop-blur-2xl ring-1 ring-black/5 dark:ring-white/10">
+                    <div className="flex justify-between items-center mb-3 border-b border-border-subtle pb-2">
+                      <h4 className="font-bold text-sm text-cyan-600 dark:text-cyan-400 flex items-center gap-1.5">
+                        <Info className="w-4 h-4 shrink-0" /> Item Risk Scoring Rules
+                      </h4>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowScoringRules(false);
+                        }}
+                        className="text-text-muted hover:text-text-primary p-1 rounded-lg hover:bg-bg-hover transition-colors cursor-pointer"
+                        title="Close"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
                     </div>
-                    <div>
-                      <span className="font-bold text-text-primary block mb-1">
-                        Timeline Delays & Risks
-                      </span>
-                      <ul className="list-disc pl-4 space-y-1 text-text-muted font-medium">
-                        <li>
-                          <strong className="text-text-primary">85/100</strong>{" "}
-                          for critical delays or active blockers.
-                        </li>
-                        <li>
-                          <strong className="text-text-primary">65/100</strong>{" "}
-                          for high timeline risk deliverables.
-                        </li>
-                        <li>
-                          <strong className="text-text-primary">45/100</strong>{" "}
-                          for medium timeline risk.
-                        </li>
-                        <li>
-                          <strong className="text-text-primary">15/100</strong>{" "}
-                          for low timeline risk.
-                        </li>
-                      </ul>
+                    <div className="space-y-4 text-xs text-text-secondary max-h-[70vh] overflow-y-auto pr-1">
+                      <p className="text-text-muted leading-relaxed font-medium">
+                        Individual item scores (out of 100) are determined by these rules:
+                      </p>
+                      <div>
+                        <span className="font-bold text-text-primary block mb-1">
+                          Scope Creep (OutOfScope Agent)
+                        </span>
+                        <ul className="list-disc pl-4 space-y-1 text-text-muted font-medium">
+                          <li>
+                            <strong className="text-text-primary">80/100</strong>{" "}
+                            for direct baseline violations.
+                          </li>
+                          <li>
+                            <strong className="text-text-primary">50/100</strong>{" "}
+                            for warnings or borderline items.
+                          </li>
+                        </ul>
+                      </div>
+                      <div>
+                        <span className="font-bold text-text-primary block mb-1">
+                          Timeline Delays & Risks
+                        </span>
+                        <ul className="list-disc pl-4 space-y-1 text-text-muted font-medium">
+                          <li>
+                            <strong className="text-text-primary">85/100</strong>{" "}
+                            for critical delays or active blockers.
+                          </li>
+                          <li>
+                            <strong className="text-text-primary">65/100</strong>{" "}
+                            for high timeline risk deliverables.
+                          </li>
+                          <li>
+                            <strong className="text-text-primary">45/100</strong>{" "}
+                            for medium timeline risk.
+                          </li>
+                          <li>
+                            <strong className="text-text-primary">15/100</strong>{" "}
+                            for low timeline risk.
+                          </li>
+                        </ul>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -2328,31 +2375,66 @@ export const TrackerPage: React.FC = () => {
 
         {/* ── Main Content ── */}
         {project?.monitoring_status !== "ACTIVE" ? (
-          <div className="flex-1 flex items-center justify-center p-8">
+          <div className="flex-1 flex items-center justify-center p-8 relative z-10">
             <div className="text-center py-20 bg-gradient-to-br from-bg-card to-bg-base border border-border-subtle rounded-3xl p-10 max-w-2xl w-full shadow-2xl backdrop-blur-md relative overflow-hidden animate-fade-in-up">
               <div className="absolute top-0 right-0 w-[150px] h-[150px] bg-amber-500/5 blur-[50px] pointer-events-none" />
-              <AlertTriangle className="w-14 h-14 text-amber-500 mx-auto mb-5 animate-bounce" />
-              <h3 className="font-display text-xl font-extrabold text-text-primary mb-3">
-                {project?.monitoring_status === "DRAFT"
-                  ? "Extract Project Baseline First"
-                  : "Baseline Awaiting Approval"}
-              </h3>
-              <p className="text-text-muted text-sm leading-relaxed mb-8 max-w-md mx-auto">
-                Before AI agents can analyze status updates for risks, a
-                contract baseline must be extracted and approved.
-              </p>
-              <Link
-                to={`/projects/${id}/baseline`}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-text-primary text-xs font-black rounded-xl transition-all shadow-lg shadow-amber-500/10 active:scale-[0.98]"
-              >
-                Go to Baseline Review <ChevronRight className="w-3.5 h-3.5" />
-              </Link>
+              
+              {!hasBaselineDoc ? (
+                <>
+                  <UploadCloud className="w-14 h-14 text-amber-500 mx-auto mb-5 animate-bounce" />
+                  <h3 className="font-display text-xl font-extrabold text-text-primary mb-3">
+                    Upload Contract Document First
+                  </h3>
+                  <p className="text-text-muted text-sm leading-relaxed mb-8 max-w-md mx-auto">
+                    Before AI agents can evaluate project risks, please upload an Engagement Letter (EL) or IFA in the Document Cockpit.
+                  </p>
+                  <Link
+                    to={`/projects/${id}/cockpit`}
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-[#FF5A14] hover:bg-[#F56B2F] text-white text-xs font-bold rounded-xl transition-all shadow-lg shadow-orange-500/20 active:scale-[0.98]"
+                  >
+                    <UploadCloud className="w-4 h-4" />
+                    Upload Document <ChevronRight className="w-3.5 h-3.5" />
+                  </Link>
+                </>
+              ) : project?.monitoring_status === "DRAFT" ? (
+                <>
+                  <AlertTriangle className="w-14 h-14 text-amber-500 mx-auto mb-5 animate-bounce" />
+                  <h3 className="font-display text-xl font-extrabold text-text-primary mb-3">
+                    Extract Project Baseline First
+                  </h3>
+                  <p className="text-text-muted text-sm leading-relaxed mb-8 max-w-md mx-auto">
+                    Contract documents are uploaded. Please extract and approve the baseline before AI agents can analyze status updates for risks.
+                  </p>
+                  <Link
+                    to={`/projects/${id}/baseline`}
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-white text-xs font-bold rounded-xl transition-all shadow-lg shadow-amber-500/20 active:scale-[0.98]"
+                  >
+                    Go to Baseline Review <ChevronRight className="w-3.5 h-3.5" />
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <ScrollText className="w-14 h-14 text-purple-400 mx-auto mb-5 animate-pulse" />
+                  <h3 className="font-display text-xl font-extrabold text-text-primary mb-3">
+                    Baseline Awaiting Approval
+                  </h3>
+                  <p className="text-text-muted text-sm leading-relaxed mb-8 max-w-md mx-auto">
+                    The draft scope baseline has been extracted. Approve the baseline in Baseline Review to activate risk tracking.
+                  </p>
+                  <Link
+                    to={`/projects/${id}/baseline`}
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-400 hover:to-indigo-500 text-white text-xs font-bold rounded-xl transition-all shadow-lg shadow-purple-500/20 active:scale-[0.98]"
+                  >
+                    Review & Approve Baseline <ChevronRight className="w-3.5 h-3.5" />
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         ) : isCurrentProjectEvaluating ? (
-          <div className="flex-1 p-6 md:p-10">{renderProgressTimeline()}</div>
+          <div className="flex-1 p-6 md:p-10 relative z-10">{renderProgressTimeline()}</div>
         ) : items.length === 0 ? (
-          <div className="flex-1 flex items-center justify-center p-8">
+          <div className="flex-1 flex items-center justify-center p-8 relative z-10">
             <div className="text-center py-24 bg-gradient-to-br from-bg-card to-bg-base border border-border-subtle rounded-3xl shadow-2xl backdrop-blur-md max-w-xl w-full animate-fade-in-up">
               <div className="w-16 h-16 bg-bg-hover/40 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-border-strong/30 shadow-inner">
                 <ShieldAlert className="w-8 h-8 text-text-muted" />
