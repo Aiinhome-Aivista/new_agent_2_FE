@@ -213,7 +213,7 @@ export const Sidebar: React.FC = () => {
             onClick={() =>
               setTheme(resolvedTheme === "dark" ? "light" : "dark")
             }
-            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-[#4A4A4A] hover:bg-white/10 border border-white/10 rounded-xl text-sm font-medium transition-all duration-200 active:scale-[0.98] text-gray-200 hover:text-white"
+            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-[#4A4A4A] hover:bg-white/10 border border-white/10 rounded-xl text-sm font-medium transition-all duration-200 active:scale-[0.98] text-gray-200 hover:text-white cursor-pointer"
           >
             {resolvedTheme === "dark" ? (
               <Sun className="w-4 h-4" />
@@ -225,7 +225,7 @@ export const Sidebar: React.FC = () => {
         </div>
         <button
           onClick={handleLogout}
-          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/30 text-rose-300 rounded-xl text-sm font-medium transition-all duration-200 active:scale-[0.98]"
+          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/30 text-rose-300 rounded-xl text-sm font-medium transition-all duration-200 active:scale-[0.98] cursor-pointer"
         >
           <LogOut className="w-4 h-4" />
           Sign Out
