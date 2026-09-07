@@ -38,6 +38,10 @@ export interface BaselineModalsProps {
   setNewItemDescription: (desc: string) => void;
   newItemEvidence: string;
   setNewItemEvidence: (ev: string) => void;
+  newItemMilestone: string;
+  setNewItemMilestone: (m: string) => void;
+  newItemDeadline: string;
+  setNewItemDeadline: (d: string) => void;
   addingItem: boolean;
 
   // Delete Item Modal Props
@@ -45,6 +49,20 @@ export interface BaselineModalsProps {
   setDeletingItemId: (id: number | null) => void;
   handleDeleteItem: (id: number) => void;
   deletingItem: boolean;
+
+  // Schedule Deliverable / Milestone Modal Props
+  showScheduleModal?: boolean;
+  setShowScheduleModal?: (show: boolean) => void;
+  schedulingItem?: any | null;
+  scheduleMilestone?: string;
+  setScheduleMilestone?: (m: string) => void;
+  scheduleDeadline?: string;
+  setScheduleDeadline?: (d: string) => void;
+  scheduleDependencies?: string[];
+  setScheduleDependencies?: React.Dispatch<React.SetStateAction<string[]>>;
+  availablePredecessors?: any[];
+  handleConfirmSchedule?: (e: React.FormEvent) => void;
+  savingSchedule?: boolean;
 }
 
 export const BaselineModals: React.FC<BaselineModalsProps> = ({
@@ -72,12 +90,29 @@ export const BaselineModals: React.FC<BaselineModalsProps> = ({
   setNewItemDescription,
   newItemEvidence,
   setNewItemEvidence,
+  newItemMilestone,
+  setNewItemMilestone,
+  newItemDeadline,
+  setNewItemDeadline,
   addingItem,
 
   deletingItemId,
   setDeletingItemId,
   handleDeleteItem,
   deletingItem,
+
+  showScheduleModal = false,
+  setShowScheduleModal = () => {},
+  schedulingItem = null,
+  scheduleMilestone = "",
+  setScheduleMilestone = () => {},
+  scheduleDeadline = "",
+  setScheduleDeadline = () => {},
+  scheduleDependencies = [],
+  setScheduleDependencies = () => {},
+  availablePredecessors = [],
+  handleConfirmSchedule = () => {},
+  savingSchedule = false,
 }) => {
   return (
     <>
@@ -331,6 +366,43 @@ export const BaselineModals: React.FC<BaselineModalsProps> = ({
                   />
                 </div>
 
+                {newItemScopeType === "IN_SCOPE" && (
+                  <div className="p-3.5 bg-emerald-500/5 dark:bg-emerald-950/20 border border-emerald-500/20 rounded-xl space-y-3">
+                    <div className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400 font-bold text-xs">
+                      <Clock className="w-3.5 h-3.5" />
+                      Timeline &amp; Milestone Planning (Optional)
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-medium text-text-muted mb-1">
+                          Milestone / Phase Name (Optional)
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="e.g. Phase 1 - Discovery"
+                          value={newItemMilestone}
+                          onChange={(e) => setNewItemMilestone(e.target.value)}
+                          className="w-full bg-bg-card border border-border-strong rounded-xl px-3 py-2 text-xs text-text-primary placeholder-gray-500 focus:outline-none focus:border-teal-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-medium text-text-muted mb-1">
+                          Target Completion Date (Optional)
+                        </label>
+                        <input
+                          type="date"
+                          value={newItemDeadline}
+                          onChange={(e) => setNewItemDeadline(e.target.value)}
+                          className="w-full bg-bg-card border border-border-strong rounded-xl px-3 py-2 text-xs text-text-primary placeholder-gray-500 focus:outline-none focus:border-teal-500"
+                        />
+                      </div>
+                    </div>
+                    <p className="text-[10px] text-text-muted leading-relaxed">
+                      Leave blank if the delivery timeline is not yet determined. You can schedule it or link dependencies later directly from the scope list or when MoM updates arrive.
+                    </p>
+                  </div>
+                )}
+
                 <div className="flex gap-3 pt-4 border-t border-border-subtle">
                   <button
                     type="button"
@@ -349,6 +421,138 @@ export const BaselineModals: React.FC<BaselineModalsProps> = ({
                       <Loader2 className="w-4 h-4 animate-spin" />
                     ) : (
                       "Save Scope Item"
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>,
+          document.body,
+        )}
+
+      {/* SCHEDULE MILESTONE / ADD TO TIMELINE CONFIRMATION MODAL */}
+      {showScheduleModal && schedulingItem &&
+        createPortal(
+          <div className="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center z-[9999] p-4 overflow-y-auto animate-fadeIn">
+            <div className="bg-bg-panel border border-border-strong/80 rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 md:p-8 shadow-2xl relative my-auto">
+              <button
+                onClick={() => setShowScheduleModal(false)}
+                className="absolute top-4 right-4 text-text-muted hover:text-text-primary p-1 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 border border-cyan-500/30 flex items-center justify-center text-cyan-600 dark:text-cyan-400 shrink-0">
+                  <Clock className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-text-primary">
+                    Schedule on Deliverables Timeline
+                  </h3>
+                  <p className="text-xs text-text-muted">
+                    Assign a target completion date &amp; milestone to add this deliverable to the interactive timeline.
+                  </p>
+                </div>
+              </div>
+
+              {/* Selected Item Summary */}
+              <div className="my-4 p-3 bg-bg-card/70 border border-border-subtle rounded-xl">
+                <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider block mb-1">
+                  In-Scope Deliverable
+                </span>
+                <p className="text-xs font-semibold text-text-primary">
+                  {schedulingItem.scope_item_normalized || schedulingItem.name}
+                </p>
+                {schedulingItem.description && (
+                  <p className="text-[11px] text-text-muted mt-1 line-clamp-2">
+                    {schedulingItem.description}
+                  </p>
+                )}
+              </div>
+
+              <form onSubmit={handleConfirmSchedule} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-medium text-text-muted mb-1.5">
+                    Milestone / Phase Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Sprint 3 Deliverable, Phase 1 - Discovery"
+                    value={scheduleMilestone}
+                    onChange={(e) => setScheduleMilestone(e.target.value)}
+                    className="w-full bg-bg-card border border-border-strong rounded-xl px-4 py-2.5 text-xs text-text-primary placeholder-gray-500 focus:outline-none focus:border-cyan-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-text-muted mb-1.5">
+                    Target Completion Date (Deadline) *
+                  </label>
+                  <input
+                    type="date"
+                    required
+                    value={scheduleDeadline}
+                    onChange={(e) => setScheduleDeadline(e.target.value)}
+                    className="w-full bg-bg-card border border-border-strong rounded-xl px-4 py-2.5 text-xs text-text-primary placeholder-gray-500 focus:outline-none focus:border-cyan-500"
+                  />
+                </div>
+
+                {availablePredecessors && availablePredecessors.length > 0 && (
+                  <div>
+                    <label className="block text-xs font-medium text-text-muted mb-1.5">
+                      Execution Prerequisites / Dependencies (Optional)
+                    </label>
+                    <div className="max-h-36 overflow-y-auto space-y-1.5 p-2 bg-bg-card/50 border border-border-subtle rounded-xl">
+                      {availablePredecessors
+                        .filter((p: any) => p.id !== schedulingItem.id)
+                        .map((pred: any) => {
+                          const val = pred.name || pred.scope_item_normalized;
+                          const isChecked = scheduleDependencies.includes(val);
+                          return (
+                            <label
+                              key={pred.id}
+                              className="flex items-center gap-2 p-1.5 hover:bg-bg-hover rounded-lg text-xs cursor-pointer text-text-secondary hover:text-text-primary transition-colors"
+                            >
+                              <input
+                                type="checkbox"
+                                checked={isChecked}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    setScheduleDependencies((prev) => [...prev, val]);
+                                  } else {
+                                    setScheduleDependencies((prev) => prev.filter((x) => x !== val));
+                                  }
+                                }}
+                                className="rounded border-border-strong text-cyan-600 focus:ring-cyan-500"
+                              />
+                              <span className="truncate">{val}</span>
+                            </label>
+                          );
+                        })}
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex gap-3 pt-4 border-t border-border-subtle">
+                  <button
+                    type="button"
+                    onClick={() => setShowScheduleModal(false)}
+                    disabled={savingSchedule}
+                    className="flex-1 py-2.5 bg-bg-hover hover:bg-bg-hover text-text-secondary rounded-xl text-xs font-semibold transition-all cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={savingSchedule || !scheduleDeadline || !scheduleMilestone.trim()}
+                    className="flex-1 py-2.5 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white rounded-xl text-xs font-semibold transition-all shadow-md shadow-cyan-500/20 disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    {savingSchedule ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      "Confirm & Add to Timeline"
                     )}
                   </button>
                 </div>

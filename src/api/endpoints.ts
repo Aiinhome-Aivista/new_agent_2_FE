@@ -35,6 +35,7 @@ export const API_ENDPOINTS = {
     ITEMS: (projectId: string | number) => `/projects/${projectId}/baseline/items`,
     ITEM_DETAIL: (projectId: string | number, itemId: string | number) => `/projects/${projectId}/baseline/items/${itemId}`,
     ITEM_COMPLETION: (projectId: string | number, itemId: string | number) => `/projects/${projectId}/baseline/items/${itemId}/completion`,
+    ITEM_SCHEDULE: (projectId: string | number, itemId: string | number) => `/projects/${projectId}/baseline/items/${itemId}/schedule`,
     EXTRACT: (projectId: string | number, docId: string | number) => `/projects/${projectId}/baseline/extract?document_id=${docId}`,
   },
 

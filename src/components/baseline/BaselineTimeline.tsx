@@ -92,16 +92,33 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
 
                   const parsedItems = timelineItems.map(
                     (item: any, idx: number) => {
-                      const raw = item.deadline || item.deadline_text || null;
+                      const raw =
+                        item.deadline_normalized ||
+                        item.deadline ||
+                        item.deadline_text ||
+                        null;
                       let dateMs: number | null = null;
                       if (raw) {
-                        let d = new Date(raw);
-                        if (isNaN(d.getTime()) && typeof raw === "string") {
-                          d = new Date(raw.replace(" ", "T"));
-                        }
-                        if (!isNaN(d.getTime())) {
+                        if (
+                          typeof raw === "string" &&
+                          /^\d{4}-\d{2}-\d{2}/.test(raw)
+                        ) {
+                          const parts = raw.substring(0, 10).split("-");
+                          const year = parseInt(parts[0], 10);
+                          const month = parseInt(parts[1], 10) - 1;
+                          const day = parseInt(parts[2], 10);
+                          const d = new Date(year, month, day);
                           d.setHours(0, 0, 0, 0);
                           dateMs = d.getTime();
+                        } else {
+                          let d = new Date(raw);
+                          if (isNaN(d.getTime()) && typeof raw === "string") {
+                            d = new Date(raw.replace(" ", "T"));
+                          }
+                          if (!isNaN(d.getTime())) {
+                            d.setHours(0, 0, 0, 0);
+                            dateMs = d.getTime();
+                          }
                         }
                       }
 
@@ -288,9 +305,27 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
                   };
 
                   const formatItemDate = (item: any) => {
-                    const raw = item.deadline_text || item.deadline;
+                    const raw =
+                      item.deadline_normalized ||
+                      item.deadline ||
+                      item.deadline_text;
                     if (!raw) return item.milestone || `Item ${item._idx + 1}`;
                     try {
+                      if (
+                        typeof raw === "string" &&
+                        /^\d{4}-\d{2}-\d{2}/.test(raw)
+                      ) {
+                        const parts = raw.substring(0, 10).split("-");
+                        const year = parseInt(parts[0], 10);
+                        const month = parseInt(parts[1], 10) - 1;
+                        const day = parseInt(parts[2], 10);
+                        const d = new Date(year, month, day);
+                        return d.toLocaleDateString(undefined, {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        });
+                      }
                       let d = new Date(raw);
                       if (isNaN(d.getTime()) && typeof raw === "string") {
                         d = new Date(raw.replace(" ", "T"));

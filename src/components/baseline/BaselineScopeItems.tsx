@@ -17,6 +17,7 @@ export interface BaselineScopeItemsProps {
   formatDate: (dateStr: string | null | undefined) => string;
   outOfScopeItems: any[];
   setDeletingItemId: (id: number | null) => void;
+  onOpenScheduleModal?: (item: any) => void;
 }
 
 export const BaselineScopeItems: React.FC<BaselineScopeItemsProps> = ({
@@ -35,6 +36,7 @@ export const BaselineScopeItems: React.FC<BaselineScopeItemsProps> = ({
   formatDate,
   outOfScopeItems,
   setDeletingItemId,
+  onOpenScheduleModal = () => {},
 }) => {
   return (
     <>
@@ -249,6 +251,25 @@ export const BaselineScopeItems: React.FC<BaselineScopeItemsProps> = ({
                                 <Clock className="w-3.5 h-3.5 text-purple-500 dark:text-purple-400" />
                                 {item.deadline_text}
                               </span>
+                            )}
+                            {item.milestone || item.deadline ? (
+                              <button
+                                type="button"
+                                onClick={() => onOpenScheduleModal(item)}
+                                title="Edit milestone & target date"
+                                className="p-1 hover:bg-bg-hover text-text-muted hover:text-cyan-600 dark:hover:text-cyan-400 rounded-md transition-colors cursor-pointer"
+                              >
+                                <Edit className="w-3 h-3" />
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => onOpenScheduleModal(item)}
+                                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold bg-cyan-50 dark:bg-cyan-950/40 text-cyan-700 dark:text-cyan-300 hover:bg-cyan-100 dark:hover:bg-cyan-900/50 border border-cyan-200 dark:border-cyan-800/30 transition-all shadow-xs cursor-pointer"
+                                title="Schedule deliverable onto the interactive timeline"
+                              >
+                                <Plus className="w-3 h-3 text-cyan-500" /> Add to Timeline
+                              </button>
                             )}
                             {item.extraction_method && (
                               <span className="text-text-muted font-medium text-[10px] bg-bg-hover px-1.5 py-0.5 rounded ml-auto border border-border-subtle/50">

@@ -13,6 +13,14 @@ import { BaselineScopeItems } from "../components/baseline/BaselineScopeItems";
 const formatDate = (dateStr: string | null | undefined) => {
   if (!dateStr) return "N/A";
   try {
+    if (typeof dateStr === "string" && /^\d{4}-\d{2}-\d{2}/.test(dateStr)) {
+      const parts = dateStr.substring(0, 10).split("-");
+      const year = parseInt(parts[0], 10);
+      const month = parseInt(parts[1], 10) - 1;
+      const day = parseInt(parts[2], 10);
+      const d = new Date(year, month, day);
+      return d.toLocaleDateString(undefined, { dateStyle: "medium" });
+    }
     const cleanStr =
       typeof dateStr === "string" ? dateStr.replace(" ", "T") : dateStr;
     const d = new Date(cleanStr);
@@ -510,7 +518,17 @@ export const BaselineReviewPage: React.FC = () => {
     "IN_SCOPE" | "OUT_OF_SCOPE"
   >("IN_SCOPE");
   const [newItemEvidence, setNewItemEvidence] = useState("");
+  const [newItemMilestone, setNewItemMilestone] = useState("");
+  const [newItemDeadline, setNewItemDeadline] = useState("");
   const [addingItem, setAddingItem] = useState(false);
+
+  // Deliverable Scheduling / Timeline Management States
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [schedulingItem, setSchedulingItem] = useState<any | null>(null);
+  const [scheduleMilestone, setScheduleMilestone] = useState("");
+  const [scheduleDeadline, setScheduleDeadline] = useState("");
+  const [scheduleDependencies, setScheduleDependencies] = useState<string[]>([]);
+  const [savingSchedule, setSavingSchedule] = useState(false);
 
   const [deletingItemId, setDeletingItemId] = useState<number | null>(null);
   const [deletingItem, setDeletingItem] = useState(false);
@@ -520,13 +538,24 @@ export const BaselineReviewPage: React.FC = () => {
     if (!newItemName.trim()) return;
     setAddingItem(true);
     try {
-      const payload = {
+      const payload: any = {
         name: newItemName.trim(),
         description: newItemDescription.trim(),
         scope_type: newItemScopeType,
         evidence_text: newItemEvidence.trim() || "Manually added scope item",
         confidence: 1.0,
       };
+
+      if (newItemScopeType === "IN_SCOPE") {
+        if (newItemMilestone.trim()) {
+          payload.milestone = newItemMilestone.trim();
+        }
+        if (newItemDeadline) {
+          payload.deadline = newItemDeadline;
+          payload.deadline_text = newItemDeadline;
+        }
+      }
+
       const res = await apiClient.post(
         API_ENDPOINTS.BASELINE.ITEMS(id!),
         payload,
@@ -538,6 +567,8 @@ export const BaselineReviewPage: React.FC = () => {
         setNewItemDescription("");
         setNewItemScopeType("IN_SCOPE");
         setNewItemEvidence("");
+        setNewItemMilestone("");
+        setNewItemDeadline("");
 
         const [baselineRes, versionsRes] = await Promise.all([
           apiClient.get(API_ENDPOINTS.BASELINE.LIST(id!)),
@@ -558,6 +589,82 @@ export const BaselineReviewPage: React.FC = () => {
       );
     } finally {
       setAddingItem(false);
+    }
+  };
+
+  const handleOpenScheduleModal = (item: any) => {
+    setSchedulingItem(item);
+    setScheduleMilestone(item.milestone || item.name || "");
+    setScheduleDeadline(item.deadline_normalized || item.deadline || "");
+
+    try {
+      const rawDeps =
+        item.latest_progress?.dependencies ||
+        item.dependencies ||
+        item.prerequisites;
+      if (rawDeps) {
+        const parsed =
+          typeof rawDeps === "string" ? JSON.parse(rawDeps) : rawDeps;
+        if (Array.isArray(parsed)) {
+          setScheduleDependencies(parsed);
+        } else {
+          setScheduleDependencies([]);
+        }
+      } else {
+        setScheduleDependencies([]);
+      }
+    } catch {
+      setScheduleDependencies([]);
+    }
+
+    setShowScheduleModal(true);
+  };
+
+  const handleConfirmSchedule = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!schedulingItem || !scheduleDeadline) return;
+    setSavingSchedule(true);
+    try {
+      const payload = {
+        milestone: scheduleMilestone.trim() || schedulingItem.name,
+        deadline: scheduleDeadline,
+        deadline_text: scheduleDeadline,
+        dependencies: scheduleDependencies,
+      };
+      const res = await apiClient.patch(
+        API_ENDPOINTS.BASELINE.ITEM_SCHEDULE(id!, schedulingItem.id),
+        payload,
+      );
+      if (res.data.success) {
+        showNotification(
+          "Deliverable scheduled on timeline successfully!",
+          "success",
+        );
+        setShowScheduleModal(false);
+        setSchedulingItem(null);
+        setScheduleMilestone("");
+        setScheduleDeadline("");
+        setScheduleDependencies([]);
+
+        const [baselineRes, versionsRes] = await Promise.all([
+          apiClient.get(API_ENDPOINTS.BASELINE.LIST(id!)),
+          apiClient.get(API_ENDPOINTS.BASELINE.VERSIONS(id!)),
+        ]);
+        if (baselineRes.data.success) {
+          setBaseline(baselineRes.data.data);
+        }
+        if (versionsRes.data.success) {
+          setVersions(versionsRes.data.data);
+        }
+      }
+    } catch (error: any) {
+      showNotification(
+        "Failed to schedule deliverable: " +
+          (error.response?.data?.detail || "Server error"),
+        "error",
+      );
+    } finally {
+      setSavingSchedule(false);
     }
   };
 
@@ -1362,6 +1469,7 @@ export const BaselineReviewPage: React.FC = () => {
               inScopeItems={inScopeItems}
               outOfScopeItems={outOfScopeItems}
               setDeletingItemId={setDeletingItemId}
+              onOpenScheduleModal={handleOpenScheduleModal}
             />
             {/* Baseline Version History */}
             {versions && versions.length > 0 && (
@@ -1714,11 +1822,27 @@ export const BaselineReviewPage: React.FC = () => {
           setNewItemDescription={setNewItemDescription}
           newItemEvidence={newItemEvidence}
           setNewItemEvidence={setNewItemEvidence}
+          newItemMilestone={newItemMilestone}
+          setNewItemMilestone={setNewItemMilestone}
+          newItemDeadline={newItemDeadline}
+          setNewItemDeadline={setNewItemDeadline}
           addingItem={addingItem}
           deletingItemId={deletingItemId}
           setDeletingItemId={setDeletingItemId}
           handleDeleteItem={handleDeleteItem}
           deletingItem={deletingItem}
+          showScheduleModal={showScheduleModal}
+          setShowScheduleModal={setShowScheduleModal}
+          schedulingItem={schedulingItem}
+          scheduleMilestone={scheduleMilestone}
+          setScheduleMilestone={setScheduleMilestone}
+          scheduleDeadline={scheduleDeadline}
+          setScheduleDeadline={setScheduleDeadline}
+          scheduleDependencies={scheduleDependencies}
+          setScheduleDependencies={setScheduleDependencies}
+          availablePredecessors={inScopeItems}
+          handleConfirmSchedule={handleConfirmSchedule}
+          savingSchedule={savingSchedule}
         />
 
         {notification && (
