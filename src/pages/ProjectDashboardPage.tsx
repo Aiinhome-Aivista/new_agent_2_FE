@@ -454,12 +454,23 @@ export const ProjectDashboardPage: React.FC = () => {
 
   if (!project) return <Loader message="Loading project cockpit details..." />;
 
-  const initiationDocs = documents.filter(
-    (d) => d.document_type === "EL" || d.document_type === "IFA",
-  );
-  const trackerDocs = documents.filter(
-    (d) => d.document_type !== "EL" && d.document_type !== "IFA",
-  );
+  const initiationDocs = documents
+    .filter((d) => d.document_type === "EL" || d.document_type === "IFA")
+    .sort((a, b) => {
+      const dateA = new Date(a.created_at || a.uploaded_at || 0).getTime();
+      const dateB = new Date(b.created_at || b.uploaded_at || 0).getTime();
+      if (dateB !== dateA) return dateB - dateA;
+      return Number(b.id) - Number(a.id);
+    });
+
+  const trackerDocs = documents
+    .filter((d) => d.document_type !== "EL" && d.document_type !== "IFA")
+    .sort((a, b) => {
+      const dateA = new Date(a.created_at || a.uploaded_at || 0).getTime();
+      const dateB = new Date(b.created_at || b.uploaded_at || 0).getTime();
+      if (dateB !== dateA) return dateB - dateA;
+      return Number(b.id) - Number(a.id);
+    });
 
   const getDocTypeLabel = (typeName: string) => {
     switch (typeName) {

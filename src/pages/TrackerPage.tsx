@@ -616,6 +616,73 @@ export const TrackerPage: React.FC = () => {
   const activeItems = items.filter((item: any) => item.status !== "RESOLVED");
   const resolvedItems = items.filter((item: any) => item.status === "RESOLVED");
 
+  const activeTopPriority = useMemo(() => {
+    if (activeItems.length === 0) return null;
+
+    // Sort active items by execution priority
+    const sortedActive = [...activeItems].sort((a, b) => {
+      const aPriority = a.execution_priority_score || a.risk_score || 0;
+      const bPriority = b.execution_priority_score || b.risk_score || 0;
+      if (bPriority !== aPriority) return bPriority - aPriority;
+      const aOrder = a.priority_order ?? 999;
+      const bOrder = b.priority_order ?? 999;
+      if (aOrder !== bOrder) return aOrder - bOrder;
+      return (b.risk_score || 0) - (a.risk_score || 0);
+    });
+
+    const topActive = sortedActive[0];
+
+    // If project.highestActionPriority is present and matches an ACTIVE item, use it
+    if (project?.highestActionPriority?.activity) {
+      const actName = project.highestActionPriority.activity.toLowerCase().trim();
+      const isResolved = resolvedItems.some((r) => {
+        const rName = (r.name || r.deliverable || r.title || "").toLowerCase().trim();
+        return rName === actName || (rName && (actName.includes(rName) || rName.includes(actName)));
+      });
+
+      if (!isResolved) {
+        const activeMatch = sortedActive.find((a) => {
+          const aName = (a.name || a.deliverable || a.title || "").toLowerCase().trim();
+          return aName === actName || (aName && (actName.includes(aName) || aName.includes(actName)));
+        });
+
+        if (activeMatch) {
+          return {
+            id: activeMatch.id,
+            activity: project.highestActionPriority.activity,
+            reason: project.highestActionPriority.reason || activeMatch.recommended_action || "Highest priority active deliverable requiring immediate execution.",
+            item: activeMatch,
+          };
+        }
+      }
+    }
+
+    // Fall back to the top item in the active execution queue
+    if (!topActive) return null;
+
+    let reasonText = "";
+    if (typeof topActive.reasoning === "string") {
+      try {
+        const parsed = JSON.parse(topActive.reasoning);
+        reasonText = parsed.executive_summary || parsed.business_impact?.immediate || parsed.why_important || "";
+      } catch {
+        reasonText = topActive.reasoning;
+      }
+    } else if (topActive.reasoning && typeof topActive.reasoning === "object") {
+      reasonText = topActive.reasoning.executive_summary || topActive.reasoning.business_impact?.immediate || topActive.reasoning.why_important || "";
+    }
+    if (!reasonText) {
+      reasonText = topActive.recommended_action || "Prerequisites satisfied. Unblocked and ready for execution.";
+    }
+
+    return {
+      id: topActive.id,
+      activity: topActive.name || topActive.deliverable || topActive.title,
+      reason: reasonText,
+      item: topActive,
+    };
+  }, [project?.highestActionPriority, activeItems, resolvedItems]);
+
   const hasBaselineDoc = documents.some(
     (d) => d.document_type === "EL" || d.document_type === "IFA",
   );
@@ -2457,7 +2524,7 @@ export const TrackerPage: React.FC = () => {
             {/* ════ LEFT PANEL: Risk List + Tabs ════ */}
             <div className="flex flex-col border-b lg:border-b-0 lg:border-r border-border-subtle overflow-hidden w-full lg:w-[420px] lg:min-w-[340px] lg:max-w-[480px] h-[50vh] lg:h-auto shrink-0">
               {/* AI Priority Banner */}
-              {project?.highestActionPriority && (
+              {activeTopPriority && (
                 <div className="mx-4 mt-4 p-3 bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-950/50 dark:to-blue-900/30 border border-cyan-200 dark:border-cyan-500/25 rounded-xl flex-shrink-0 relative overflow-hidden group">
                   <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/0 via-cyan-500/5 to-cyan-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
                   <div className="flex items-center justify-between mb-1.5 relative z-10">
@@ -2467,16 +2534,11 @@ export const TrackerPage: React.FC = () => {
                         AI Top Priority
                       </span>
                     </div>
-                    {project.highestActionPriority.id && (
+                    {activeTopPriority.item && (
                       <button
                         onClick={() => {
-                          const item = activeItems.find(
-                            (i) => i.id === project.highestActionPriority.id,
-                          );
-                          if (item) {
-                            setActiveTab("ACTIVE");
-                            setSelectedItem(item);
-                          }
+                          setActiveTab("ACTIVE");
+                          setSelectedItem(activeTopPriority.item);
                         }}
                         className="px-2 py-0.5 bg-cyan-500/10 hover:bg-cyan-500/25 border border-cyan-500/20 hover:border-cyan-500/40 text-cyan-700 dark:text-cyan-300 rounded text-[9px] font-bold transition-all cursor-pointer shadow-[0_0_10px_rgba(6,182,212,0.1)] hover:shadow-[0_0_15px_rgba(6,182,212,0.2)]"
                       >
@@ -2485,10 +2547,10 @@ export const TrackerPage: React.FC = () => {
                     )}
                   </div>
                   <p className="text-[11px] font-semibold text-text-primary truncate relative z-10">
-                    {project.highestActionPriority.activity}
+                    {activeTopPriority.activity}
                   </p>
                   <p className="text-[10px] text-text-muted mt-0.5 line-clamp-2 leading-relaxed relative z-10">
-                    {project.highestActionPriority.reason}
+                    {activeTopPriority.reason}
                   </p>
                 </div>
               )}
