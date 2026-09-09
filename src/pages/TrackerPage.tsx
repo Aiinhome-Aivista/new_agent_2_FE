@@ -1566,7 +1566,7 @@ export const TrackerPage: React.FC = () => {
       dismissed: "bg-slate-400 dark:bg-gray-600",
     };
     return (
-      <div className="h-full flex flex-col overflow-hidden">
+      <div className="h-full flex flex-col overflow-hidden min-h-0">
         {/* ── Risk Detail Header ── */}
         <div className="px-5 pt-5 pb-4 border-b border-slate-200 dark:border-white/[0.06] flex-shrink-0">
           <div className="flex items-start justify-between gap-3 mb-3">
@@ -1678,7 +1678,7 @@ export const TrackerPage: React.FC = () => {
         </div>
 
         {/* Scrollable body */}
-        <div className="flex-1 overflow-y-auto custom-scrollbar px-5 py-4 space-y-4">
+        <div className="flex-1 overflow-y-auto custom-scrollbar px-5 pr-4 py-4 space-y-4 min-h-0">
           
           {/* Pending Confirmation Suggestion Banner */}
           {!isResolved && (item.risk_status === "PENDING_CONFIRMATION" || narratives.pending_suggestion) && (
@@ -2518,11 +2518,10 @@ export const TrackerPage: React.FC = () => {
         ) : (
           /* ── SPLIT LAYOUT ── */
           <div
-            className="flex-1 flex flex-col lg:flex-row overflow-hidden"
-            style={{ minHeight: "calc(100vh - 140px)" }}
+            className="flex-1 flex flex-col lg:flex-row overflow-hidden min-h-0 lg:h-[calc(100vh-140px)] lg:max-h-[calc(100vh-140px)]"
           >
             {/* ════ LEFT PANEL: Risk List + Tabs ════ */}
-            <div className="flex flex-col border-b lg:border-b-0 lg:border-r border-border-subtle overflow-hidden w-full lg:w-[420px] lg:min-w-[340px] lg:max-w-[480px] h-[50vh] lg:h-auto shrink-0">
+            <div className="flex flex-col border-b lg:border-b-0 lg:border-r border-border-subtle overflow-hidden w-full lg:w-[420px] lg:min-w-[340px] lg:max-w-[480px] h-[480px] lg:h-full max-h-[60vh] lg:max-h-full shrink-0 min-h-0">
               {/* AI Priority Banner */}
               {activeTopPriority && (
                 <div className="mx-4 mt-4 p-3 bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-950/50 dark:to-blue-900/30 border border-cyan-200 dark:border-cyan-500/25 rounded-xl flex-shrink-0 relative overflow-hidden group">
@@ -2673,7 +2672,7 @@ export const TrackerPage: React.FC = () => {
               </div>
 
               {/* Risk Cards List */}
-              <div className="flex-1 overflow-y-auto custom-scrollbar px-4 pb-4 space-y-2">
+              <div className="flex-1 overflow-y-auto custom-scrollbar px-4 pr-3 pb-4 space-y-2 min-h-0">
                 {currentTabItems.length === 0 ? (
                   <div className="text-center py-16 flex flex-col items-center">
                     <div className="w-12 h-12 bg-bg-hover/30 rounded-full flex items-center justify-center mb-4 border border-border-strong/30">
@@ -2792,9 +2791,9 @@ export const TrackerPage: React.FC = () => {
             </div>
 
             {/* ════ RIGHT PANEL: Audit Trail & Full Detail ════ */}
-            <div className="flex-1 overflow-hidden flex flex-col">
+            <div className="flex-1 overflow-hidden flex flex-col min-h-0 h-full">
               {selectedItem ? (
-                <div className="h-full flex flex-col">
+                <div className="h-full flex flex-col min-h-0">
                   {/* Right Panel Header */}
                   <div className="px-5 py-3.5 border-b border-border-subtle bg-bg-base flex-shrink-0 flex items-center justify-between gap-3 flex-wrap">
                     <div className="flex items-center gap-2">
