@@ -23,9 +23,9 @@ ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
 RUN npm run build
 
 
-# ============================================
+# =============================================
 # Stage 2: Production Nginx server
-# ============================================
+# =============================================
 FROM nginx:alpine AS runner
 
 # Remove default Nginx content/config
