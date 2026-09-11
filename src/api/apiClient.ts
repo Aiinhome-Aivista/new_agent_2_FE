@@ -1,6 +1,25 @@
 import axios from 'axios';
 
-const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://187.127.163.17:3012/api' || 'http://127.0.0.1:8000/api';
+// Dynamically determine backend API base URL
+// Priority:
+// 1. Environment variable (VITE_API_BASE_URL from .env or Docker build arg)
+// 2. Dynamic browser location (/api relative to current origin, or localhost:8080 during local dev)
+export const getBaseURL = (): string => {
+  if (import.meta.env.VITE_API_BASE_URL) {
+    return import.meta.env.VITE_API_BASE_URL;
+  }
+  if (typeof window !== 'undefined' && window.location.hostname) {
+    const hostname = window.location.hostname;
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      return 'http://127.0.0.1:8080/api';
+    }
+    // For production/VPS deployment behind reverse proxy or served on the same host
+    return `${window.location.origin}/api`;
+  }
+  return '/api';
+};
+
+export const baseURL = getBaseURL();
 
 const apiClient = axios.create({
   baseURL,

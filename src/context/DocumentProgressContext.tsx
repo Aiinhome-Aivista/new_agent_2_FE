@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
-import apiClient from '../api/apiClient';
+import apiClient, { baseURL, getBaseURL } from '../api/apiClient';
 import { API_ENDPOINTS } from '../api/endpoints';
 
 interface EvaluationProgress {
@@ -218,7 +218,8 @@ export const DocumentProgressProvider: React.FC<{ children: React.ReactNode }> =
       return;
     }
 
-    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8080/api';
+    const rawApiBaseUrl = apiClient.defaults.baseURL || baseURL || getBaseURL() || import.meta.env.VITE_API_BASE_URL || '/api';
+    const apiBaseUrl = rawApiBaseUrl.replace(/\/+$/, '');
     const url = `${apiBaseUrl}/projects/${projectId}/monitoring/stream?document_id=${docId}&token=${encodeURIComponent(token)}`;
     const es = new EventSource(url);
     eventSourceRef.current = es;
