@@ -12,12 +12,12 @@ WORKDIR /app
 COPY package.json ./
 RUN npm install
 
-# Copy application source
-COPY . .
-
-# API URL available during Vite build
+# API URL available during Vite build (defaults to VPS backend, or overridden by .env / build-arg)
 ARG VITE_API_BASE_URL=http://187.127.163.17:3012/api
 ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
+
+# Copy application source (including .env if present on host)
+COPY . .
 
 # Build production application
 RUN npm run build
