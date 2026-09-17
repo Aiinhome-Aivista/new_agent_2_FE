@@ -27,6 +27,8 @@ export const API_ENDPOINTS = {
     DETAIL: (projectId: string | number, docId: string | number) => `/projects/${projectId}/documents/${docId}`,
     CONFIRM_UPLOAD: (projectId: string | number) => `/projects/${projectId}/documents/confirm-upload`,
     DOWNLOAD: (projectId: string | number, docId: string | number) => `/projects/${projectId}/documents/${docId}/download`,
+    MARKDOWN: (projectId: string | number, docId: string | number) => `/projects/${projectId}/documents/${docId}/markdown`,
+    DOWNLOAD_MARKDOWN: (projectId: string | number, docId: string | number) => `/projects/${projectId}/documents/${docId}/download-markdown`,
   },
   BASELINE: {
     LIST: (projectId: string | number) => `/projects/${projectId}/baseline/`,
