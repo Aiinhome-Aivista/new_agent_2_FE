@@ -16,9 +16,11 @@ import {
   ExternalLink,
   Layers,
 } from "lucide-react";
+import { useToast } from "../hooks";
 
 export const DriveInboxPage: React.FC = () => {
   const { user } = useAuth();
+  const toast = useToast();
 
   // Active Tab: "gdrive" | "onedrive"
   const [activeTab, setActiveTab] = useState<"gdrive" | "onedrive">("gdrive");
@@ -140,9 +142,9 @@ export const DriveInboxPage: React.FC = () => {
     try {
       await apiClient.post(API_ENDPOINTS.DRIVE.SYNC);
       fetchGDriveData();
-      alert("Google Drive sync completed.");
+      toast.success("Google Drive sync completed.");
     } catch (err) {
-      alert("Google Drive sync failed.");
+      toast.error("Google Drive sync failed.");
     }
   };
 
@@ -154,8 +156,9 @@ export const DriveInboxPage: React.FC = () => {
         doc_type: "MOM",
       });
       fetchGDriveData();
+      toast.success("Project assigned successfully.");
     } catch (err) {
-      alert("Failed to assign project.");
+      toast.error("Failed to assign project.");
     }
   };
 
@@ -185,8 +188,10 @@ export const DriveInboxPage: React.FC = () => {
       setOdTargetDriveId("");
       setOdFolderId("root");
       fetchOneDriveData();
+      toast.success("OneDrive account connected.");
     } catch (err: any) {
       setOdError(err?.response?.data?.detail || "Failed to add OneDrive account");
+      toast.error("Failed to add OneDrive account.");
     } finally {
       setOdAdding(false);
     }
@@ -197,8 +202,10 @@ export const DriveInboxPage: React.FC = () => {
     try {
       await apiClient.delete(API_ENDPOINTS.ONEDRIVE.ACCOUNT_DETAIL(id));
       fetchOneDriveData();
+      toast.success("OneDrive account removed.");
     } catch (err) {
       console.error(err);
+      toast.error("Failed to remove OneDrive account.");
     }
   };
 
@@ -207,9 +214,9 @@ export const DriveInboxPage: React.FC = () => {
     try {
       await apiClient.post(API_ENDPOINTS.ONEDRIVE.SYNC);
       await fetchOneDriveData();
-      alert("Microsoft OneDrive sync completed.");
+      toast.success("Microsoft OneDrive sync completed.");
     } catch (err) {
-      alert("Microsoft OneDrive sync failed.");
+      toast.error("Microsoft OneDrive sync failed.");
     } finally {
       setSyncingOneDrive(false);
     }
@@ -223,8 +230,9 @@ export const DriveInboxPage: React.FC = () => {
         doc_type: "MOM",
       });
       fetchOneDriveData();
+      toast.success("OneDrive document assigned successfully.");
     } catch (err) {
-      alert("Failed to assign project.");
+      toast.error("Failed to assign project.");
     }
   };
 

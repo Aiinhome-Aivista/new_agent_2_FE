@@ -1,28 +1,42 @@
 import React from 'react';
+import { PulseDotLoader } from './common/PulseDotLoader';
 
-interface LoaderProps {
+export interface LoaderProps {
   fullScreen?: boolean;
   message?: string;
+  size?: number | string;
+  color?: string;
+  speed?: string;
 }
 
-export const Loader: React.FC<LoaderProps> = ({ fullScreen = true, message = 'Loading...' }) => {
+export const Loader: React.FC<LoaderProps> = ({ 
+  fullScreen = true, 
+  message = 'Loading...',
+  size = 44,
+  color,
+  speed = '0.9s',
+}) => {
   const containerClass = fullScreen 
-    ? "min-h-screen w-full bg-bg-base flex flex-col items-center justify-center text-text-primary relative z-50"
+    ? "min-h-screen w-full bg-bg-base flex flex-col items-center justify-center text-text-primary relative z-50 transition-colors duration-200"
     : "w-full py-16 flex flex-col items-center justify-center text-text-primary bg-transparent";
 
   return (
     <div className={containerClass}>
-      <div className="relative flex items-center justify-center">
-        {/* Glowing background ring */}
-        <div className="w-12 h-12 rounded-full border-4 border-[#fd5108]/10 animate-pulse absolute" />
-        {/* Animated spinner ring */}
-        <div className="w-12 h-12 rounded-full border-4 border-transparent border-t-[#fd5108] border-r-[#fd5108]/60 border-b-[#7d7d7d]/40 animate-spin" />
+      <div className="relative flex flex-col items-center justify-center">
+        {/* Ambient subtle glow ring */}
+        <div className="absolute -inset-6 bg-[#FF5A14]/10 dark:bg-[#FF7A45]/15 rounded-full blur-2xl animate-pulse pointer-events-none" />
+
+        {/* 8-dot circular pulse loader */}
+        <PulseDotLoader size={size} color={color} speed={speed} />
+
+        {message && (
+          <p className="mt-6 text-xs font-semibold tracking-widest text-[#FF5A14] dark:text-[#FF7A45] animate-pulse uppercase select-none">
+            {message}
+          </p>
+        )}
       </div>
-      {message && (
-        <p className="mt-5 text-xs font-semibold tracking-widest text-[#fd5108] animate-pulse uppercase">
-          {message}
-        </p>
-      )}
     </div>
   );
 };
+
+export default Loader;

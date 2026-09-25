@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Download, Copy, Check, FileText, Code, Eye, Loader2, FileCode } from 'lucide-react';
 import apiClient from '../api/apiClient';
 import { API_ENDPOINTS } from '../api/endpoints';
+import { PulseDotLoader } from './common/PulseDotLoader';
 
 interface MarkdownViewerModalProps {
   isOpen: boolean;
@@ -346,7 +347,7 @@ export const MarkdownViewerModal: React.FC<MarkdownViewerModalProps> = ({
         <div className="flex-1 overflow-y-auto p-4 md:p-6 custom-scrollbar bg-bg-base/60">
           {loading ? (
             <div className="flex flex-col items-center justify-center h-full min-h-[300px] text-center">
-              <Loader2 className="w-8 h-8 animate-spin text-[#FF5A14] mb-3" />
+              <PulseDotLoader size={40} className="mb-4" />
               <p className="text-xs font-bold text-text-primary">Loading & Converting to Markdown...</p>
               <p className="text-[11px] text-text-muted mt-1">Generating clean Markdown with Microsoft MarkItDown</p>
             </div>

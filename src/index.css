@@ -260,4 +260,146 @@ html, body, * {
   scrollbar-width: none;  /* Firefox */
 }
 
+/* ==========================================================================
+   UIB Dot Pulse Circular Loader
+   ========================================================================== */
+.uib-container,
+.uib-loader .container,
+.container:has(> .dot) {
+  --uib-size: 40px;
+  --uib-color: var(--color-primary, #FF5A14);
+  --uib-speed: .9s;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  height: var(--uib-size);
+  width: var(--uib-size);
+}
+
+.uib-dot,
+.uib-loader .dot,
+.container:has(> .dot) > .dot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  height: 100%;
+  width: 100%;
+}
+
+.uib-dot::before,
+.uib-loader .dot::before,
+.container:has(> .dot) > .dot::before {
+  content: '';
+  height: 20%;
+  width: 20%;
+  border-radius: 50%;
+  background-color: var(--uib-color);
+  transform: scale(0);
+  opacity: 0.5;
+  animation: uib-dot-pulse calc(var(--uib-speed) * 1.111) ease-in-out infinite;
+  transition: background-color 0.3s ease;
+}
+
+.uib-dot:nth-child(2),
+.uib-loader .dot:nth-child(2),
+.container:has(> .dot) > .dot:nth-child(2) {
+  transform: rotate(45deg);
+}
+
+.uib-dot:nth-child(2)::before,
+.uib-loader .dot:nth-child(2)::before,
+.container:has(> .dot) > .dot:nth-child(2)::before {
+  animation-delay: calc(var(--uib-speed) * -0.875);
+}
+
+.uib-dot:nth-child(3),
+.uib-loader .dot:nth-child(3),
+.container:has(> .dot) > .dot:nth-child(3) {
+  transform: rotate(90deg);
+}
+
+.uib-dot:nth-child(3)::before,
+.uib-loader .dot:nth-child(3)::before,
+.container:has(> .dot) > .dot:nth-child(3)::before {
+  animation-delay: calc(var(--uib-speed) * -0.75);
+}
+
+.uib-dot:nth-child(4),
+.uib-loader .dot:nth-child(4),
+.container:has(> .dot) > .dot:nth-child(4) {
+  transform: rotate(135deg);
+}
+
+.uib-dot:nth-child(4)::before,
+.uib-loader .dot:nth-child(4)::before,
+.container:has(> .dot) > .dot:nth-child(4)::before {
+  animation-delay: calc(var(--uib-speed) * -0.625);
+}
+
+.uib-dot:nth-child(5),
+.uib-loader .dot:nth-child(5),
+.container:has(> .dot) > .dot:nth-child(5) {
+  transform: rotate(180deg);
+}
+
+.uib-dot:nth-child(5)::before,
+.uib-loader .dot:nth-child(5)::before,
+.container:has(> .dot) > .dot:nth-child(5)::before {
+  animation-delay: calc(var(--uib-speed) * -0.5);
+}
+
+.uib-dot:nth-child(6),
+.uib-loader .dot:nth-child(6),
+.container:has(> .dot) > .dot:nth-child(6) {
+  transform: rotate(225deg);
+}
+
+.uib-dot:nth-child(6)::before,
+.uib-loader .dot:nth-child(6)::before,
+.container:has(> .dot) > .dot:nth-child(6)::before {
+  animation-delay: calc(var(--uib-speed) * -0.375);
+}
+
+.uib-dot:nth-child(7),
+.uib-loader .dot:nth-child(7),
+.container:has(> .dot) > .dot:nth-child(7) {
+  transform: rotate(270deg);
+}
+
+.uib-dot:nth-child(7)::before,
+.uib-loader .dot:nth-child(7)::before,
+.container:has(> .dot) > .dot:nth-child(7)::before {
+  animation-delay: calc(var(--uib-speed) * -0.25);
+}
+
+.uib-dot:nth-child(8),
+.uib-loader .dot:nth-child(8),
+.container:has(> .dot) > .dot:nth-child(8) {
+  transform: rotate(315deg);
+}
+
+.uib-dot:nth-child(8)::before,
+.uib-loader .dot:nth-child(8)::before,
+.container:has(> .dot) > .dot:nth-child(8)::before {
+  animation-delay: calc(var(--uib-speed) * -0.125);
+}
+
+@keyframes uib-dot-pulse {
+  0%,
+  100% {
+    transform: scale(0);
+    opacity: 0.5;
+  }
+
+  50% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+
 

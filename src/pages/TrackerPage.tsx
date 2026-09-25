@@ -4,6 +4,8 @@ import apiClient from "../api/apiClient";
 import { API_ENDPOINTS } from "../api/endpoints";
 import { Loader } from "../components/Loader";
 import { useDocumentProgress } from "../context/DocumentProgressContext";
+import { useToast } from "../hooks";
+import { formatDate, formatDateTime } from "../utils";
 import {
   Loader2,
   Info,
@@ -602,6 +604,7 @@ export const TrackerPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const toast = useToast();
 
   const [items, setItems] = useState<any[]>([]);
   const [project, setProject] = useState<any>(null);
@@ -936,7 +939,7 @@ export const TrackerPage: React.FC = () => {
     if (format === "pdf") {
       const printWindow = window.open("", "_blank");
       if (!printWindow) {
-        alert("Pop-up blocked!");
+        toast.warning("Pop-up blocked! Please allow pop-ups for this site.");
         return;
       }
       const scriptToAdd = `<script>window.onload=function(){window.print();setTimeout(function(){window.close();},500);};<\/script>`;
@@ -965,14 +968,14 @@ export const TrackerPage: React.FC = () => {
     reportTitle: string,
   ) => {
     if (itemsToExport.length === 0) {
-      alert("No items selected to export.");
+      toast.warning("No items selected to export.");
       return;
     }
     const htmlContent = generateExportHtml(itemsToExport, reportTitle);
     if (format === "pdf") {
       const printWindow = window.open("", "_blank");
       if (!printWindow) {
-        alert("Pop-up blocked!");
+        toast.warning("Pop-up blocked! Please allow pop-ups for this site.");
         return;
       }
       const scriptToAdd = `<script>window.onload=function(){window.print();setTimeout(function(){window.close();},500);};<\/script>`;
@@ -1027,9 +1030,10 @@ export const TrackerPage: React.FC = () => {
           setSelectedItem({ ...selectedItem, ...updatedItem });
         }
         setResolveModalState({ isOpen: false, itemId: null });
+        toast.success("Tracker item resolved successfully.");
       }
     } catch (error) {
-      alert("Failed to resolve item");
+      toast.error("Failed to resolve item.");
     } finally {
       setIsResolving(false);
     }
@@ -1061,9 +1065,10 @@ export const TrackerPage: React.FC = () => {
           });
         }
         setReactivateModalState({ isOpen: false, itemId: null });
+        toast.success("Tracker item reactivated.");
       }
     } catch (error) {
-      alert("Failed to reactivate item");
+      toast.error("Failed to reactivate item.");
     } finally {
       setIsReactivating(false);
     }
@@ -1090,9 +1095,10 @@ export const TrackerPage: React.FC = () => {
             resolution: "Confirmed by PM",
           });
         }
+        toast.success("Resolution suggestion confirmed.");
       }
     } catch (error) {
-      alert("Failed to confirm resolution suggestion");
+      toast.error("Failed to confirm resolution suggestion.");
     } finally {
       setIsConfirmingSuggestion(false);
     }
@@ -1114,9 +1120,10 @@ export const TrackerPage: React.FC = () => {
             risk_status: "OPEN",
           });
         }
+        toast.info("Resolution suggestion dismissed.");
       }
     } catch (error) {
-      alert("Failed to dismiss resolution suggestion");
+      toast.error("Failed to dismiss resolution suggestion.");
     } finally {
       setIsDismissingSuggestion(false);
     }
@@ -1145,7 +1152,7 @@ export const TrackerPage: React.FC = () => {
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Failed to download document:", error);
-      alert("Failed to download document");
+      toast.error("Failed to download document.");
     }
   };
 

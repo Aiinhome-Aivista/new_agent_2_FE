@@ -3,8 +3,10 @@ import { useParams } from 'react-router-dom';
 import apiClient from '../api/apiClient';
 import { API_ENDPOINTS } from '../api/endpoints';
 import { Loader } from '../components/Loader';
+import { PulseDotLoader } from '../components/common/PulseDotLoader';
 import { Loader2, Send, MessageSquare, Plus, Trash2, Calendar, FileText, Download, User, Bot, CornerDownLeft } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
+import { useToast } from '../hooks';
 
 interface ChatSession {
   id: number;
@@ -34,6 +36,7 @@ export const AIAssistantPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === 'dark';
+  const toast = useToast();
 
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [currentSessionIdState, setCurrentSessionIdState] = useState<number | null>(null);
@@ -275,7 +278,7 @@ export const AIAssistantPage: React.FC = () => {
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Failed to download document:", error);
-      alert("Failed to download document");
+      toast.error("Failed to download document");
     }
   };
 
@@ -461,7 +464,7 @@ export const AIAssistantPage: React.FC = () => {
             <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
               {loadingMessages ? (
                 <div className="flex justify-center items-center h-40">
-                  <Loader2 className="w-6 h-6 animate-spin text-teal-600 dark:text-teal-400" />
+                  <PulseDotLoader size={36} color="var(--color-primary, #FF5A14)" />
                 </div>
               ) : messages.length === 0 ? (
                 <div className="text-center py-20 flex flex-col items-center justify-center space-y-4">

@@ -4,6 +4,7 @@ import type { ProjectMember, User } from '../types';
 import apiClient from '../api/apiClient';
 import { API_ENDPOINTS } from '../api/endpoints';
 import { useAuth } from '../auth/AuthContext';
+import { PulseDotLoader } from './common/PulseDotLoader';
 import {
   Users,
   UserPlus,
@@ -406,8 +407,8 @@ export const ProjectMembersSection: React.FC<ProjectMembersSectionProps> = ({ pr
       {/* Member Content Grid */}
       {loading ? (
         <div className="flex flex-col items-center justify-center py-12 text-text-muted">
-          <Loader2 className="w-8 h-8 animate-spin text-[#FF5A14] mb-2" />
-          <p className="text-xs">Loading project members...</p>
+          <PulseDotLoader size={36} className="mb-4" />
+          <p className="text-xs font-medium text-text-secondary tracking-wide">Loading project members...</p>
         </div>
       ) : filteredMembers.length === 0 ? (
         <div className="text-center py-12 bg-bg-card/40 rounded-xl border border-dashed border-[#D8D8D8]">

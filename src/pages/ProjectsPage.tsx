@@ -6,23 +6,14 @@ import { useAuth } from "../auth/AuthContext";
 import { Link } from "react-router-dom";
 import { Loader } from "../components/Loader";
 import { Sparkles, Loader2, Activity } from "lucide-react";
-import { getHealthConfig } from "../utils/health";
-
-const formatDate = (dateStr: string | null | undefined) => {
-  if (!dateStr) return "Not Specified";
-  try {
-    const d = new Date(dateStr);
-    if (isNaN(d.getTime())) return "Not Specified";
-    return d.toLocaleDateString(undefined, { dateStyle: "medium" });
-  } catch (e) {
-    return "Not Specified";
-  }
-};
+import { getHealthConfig, formatDate } from "../utils";
+import { useToast } from "../hooks";
 
 export const ProjectsPage: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
+  const toast = useToast();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [projectName, setProjectName] = useState("");
@@ -56,7 +47,7 @@ export const ProjectsPage: React.FC = () => {
       const startStr = proj.start_date.split("T")[0];
       const endStr = editingEndDate.split("T")[0];
       if (startStr > endStr) {
-        alert("Validation Error: End date cannot be before start date.");
+        toast.error("Validation Error: End date cannot be before start date.");
         return;
       }
     }
@@ -69,10 +60,12 @@ export const ProjectsPage: React.FC = () => {
       );
       if (res.data.success) {
         setEditingProjectId(null);
+        toast.success("Project end date updated successfully.");
         fetchProjects(); // Refresh the list
       }
     } catch (error) {
       console.error("Failed to update end date", error);
+      toast.error("Failed to update end date.");
     }
   };
 
@@ -93,10 +86,12 @@ export const ProjectsPage: React.FC = () => {
       if (res.data.success) {
         setIsCloseModalOpen(false);
         setProjectToClose(null);
+        toast.success("Project marked as closed.");
         fetchProjects(); // Refresh the list
       }
     } catch (error) {
       console.error("Failed to close project", error);
+      toast.error("Failed to close project.");
     }
   };
 
