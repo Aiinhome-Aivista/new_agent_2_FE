@@ -244,6 +244,27 @@ export const ProjectDashboardPage: React.FC = () => {
     fetchProject();
   }, [id]);
 
+  // Auto-poll documents when any document is in PROCESSING or PARSING status
+  useEffect(() => {
+    const hasProcessing = documents.some(
+      (d) => d.processing_status === "PROCESSING" || d.processing_status === "PARSING"
+    );
+    if (!hasProcessing || !id) return;
+
+    const interval = setInterval(async () => {
+      try {
+        const docsRes = await apiClient.get(API_ENDPOINTS.DOCUMENTS.LIST(id!));
+        if (docsRes.data.success) {
+          setDocuments(docsRes.data.data);
+        }
+      } catch (err) {
+        console.error("Failed to poll documents status:", err);
+      }
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [documents, id]);
+
   const handleAddCustomType = async () => {
     if (!customName.trim()) return;
     setAddingCustomType(true);
@@ -326,16 +347,19 @@ export const ProjectDashboardPage: React.FC = () => {
           d.id === docId ? { ...d, processing_status: "PROCESSING" } : d,
         ),
       );
+      showNotification("Document parsing and indexing started...", "info");
       const res = await apiClient.post(
         API_ENDPOINTS.DOCUMENTS.PROCESS(id!, docId),
+        null,
+        { timeout: 180000 }
       );
       if (res.data.success) {
         const docsRes = await apiClient.get(API_ENDPOINTS.DOCUMENTS.LIST(id!));
         if (docsRes.data.success) setDocuments(docsRes.data.data);
-        showNotification("Document analysis has started!", "success");
+        showNotification("Document indexed successfully!", "success");
       }
     } catch (error) {
-      showNotification("Failed to start processing the document", "error");
+      // Auto-polling will continue to track and update the status once the backend finishes
       const docsRes = await apiClient.get(API_ENDPOINTS.DOCUMENTS.LIST(id!));
       if (docsRes.data.success) setDocuments(docsRes.data.data);
     }
