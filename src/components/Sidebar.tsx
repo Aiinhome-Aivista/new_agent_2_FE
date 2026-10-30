@@ -179,18 +179,6 @@ export const Sidebar: React.FC = () => {
               <Activity className="w-5 h-5" />
               Risk Tracker
             </Link>
-
-            <Link
-              to={`/projects/${projectId}/assistant`}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
-                isProjectActive("assistant")
-                  ? "bg-[#FF7A45] border border-[#FF8A55] text-white font-bold shadow-md shadow-[#FF5A14]/20"
-                  : "hover:bg-white/10 text-gray-200 hover:text-white border border-transparent"
-              }`}
-            >
-              <MessageSquare className="w-5 h-5" />
-              AI Assistant
-            </Link>
           </div>
         )}
       </div>
