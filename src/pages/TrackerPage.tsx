@@ -35,6 +35,7 @@ import {
   UploadCloud,
 } from "lucide-react";
 import { useAuth } from "../auth/AuthContext";
+import { RiskLifecycleView } from "../components/tracker/RiskLifecycleView";
 
 interface TrackerStep {
   key: string;
@@ -611,6 +612,7 @@ export const TrackerPage: React.FC = () => {
   const [documents, setDocuments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showScoringRules, setShowScoringRules] = useState(false);
+  const [trackerMainView, setTrackerMainView] = useState<"QUEUE" | "LIFECYCLE">("QUEUE");
   const [activeTab, setActiveTab] = useState<"ACTIVE" | "RESOLVED">("ACTIVE");
   const [selectedItemIds, setSelectedItemIds] = useState<number[]>([]);
   const [selectedItem, setSelectedItem] = useState<any | null>(null);
@@ -2287,6 +2289,30 @@ export const TrackerPage: React.FC = () => {
                 </div>
               </div>
 
+              {/* View Switcher: Risk Queue vs Lifecycle & History */}
+              <div className="flex items-center gap-1 bg-surface/60 p-1 rounded-xl border border-border-subtle">
+                <button
+                  onClick={() => setTrackerMainView("QUEUE")}
+                  className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
+                    trackerMainView === "QUEUE"
+                      ? "bg-accent text-white shadow-sm"
+                      : "text-text-muted hover:text-text-primary"
+                  }`}
+                >
+                  Risk Queue
+                </button>
+                <button
+                  onClick={() => setTrackerMainView("LIFECYCLE")}
+                  className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
+                    trackerMainView === "LIFECYCLE"
+                      ? "bg-accent text-white shadow-sm"
+                      : "text-text-muted hover:text-text-primary"
+                  }`}
+                >
+                  Lifecycle & History
+                </button>
+              </div>
+
               <button
                 onClick={handleOpenProcessModal}
                 disabled={
@@ -2448,7 +2474,11 @@ export const TrackerPage: React.FC = () => {
         </div>
 
         {/* ── Main Content ── */}
-        {project?.monitoring_status !== "ACTIVE" ? (
+        {trackerMainView === "LIFECYCLE" ? (
+          <div className="flex-1 p-6 overflow-y-auto">
+            <RiskLifecycleView projectId={id!} />
+          </div>
+        ) : project?.monitoring_status !== "ACTIVE" ? (
           <div className="flex-1 flex items-center justify-center p-8 relative z-10">
             <div className="text-center py-20 bg-gradient-to-br from-bg-card to-bg-base border border-border-subtle rounded-3xl p-10 max-w-2xl w-full shadow-2xl backdrop-blur-md relative overflow-hidden animate-fade-in-up">
               <div className="absolute top-0 right-0 w-[150px] h-[150px] bg-amber-500/5 blur-[50px] pointer-events-none" />

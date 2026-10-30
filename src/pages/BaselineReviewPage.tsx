@@ -9,6 +9,7 @@ import { useDocumentProgress } from "../context/DocumentProgressContext";
 import { BaselineModals } from "../components/baseline/BaselineModals";
 import { BaselineTimeline } from "../components/baseline/BaselineTimeline";
 import { BaselineScopeItems } from "../components/baseline/BaselineScopeItems";
+import { Step10AnalysisView } from "../components/baseline/Step10AnalysisView";
 
 const formatDate = (dateStr: string | null | undefined) => {
   if (!dateStr) return "N/A";
@@ -31,6 +32,7 @@ const formatDate = (dateStr: string | null | undefined) => {
   }
 };
 import {
+  Layers,
   Loader2,
   CheckCircle2,
   CheckCheck,
@@ -156,6 +158,7 @@ export const BaselineReviewPage: React.FC = () => {
     activeDocId,
   } = useDocumentProgress();
   const [baseline, setBaseline] = useState<any>(null);
+  const [finalArtifact, setFinalArtifact] = useState<any>(null);
   const [project, setProject] = useState<any>(null);
   const [documents, setDocuments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -234,19 +237,23 @@ export const BaselineReviewPage: React.FC = () => {
     ) {
       const refreshBaseline = async () => {
         try {
-          const [baselineRes, versionsRes, docsRes] = await Promise.all([
+          const [baselineRes, versionsRes, docsRes, finalRes] = await Promise.all([
             apiClient.get(API_ENDPOINTS.BASELINE.LIST(id!)).catch(() => ({ data: { success: false } })),
             apiClient.get(API_ENDPOINTS.BASELINE.VERSIONS(id!)).catch(() => ({ data: { success: false } })),
             apiClient.get(API_ENDPOINTS.DOCUMENTS.LIST(id!)).catch(() => ({ data: { success: false } })),
+            apiClient.get(API_ENDPOINTS.BASELINE.FINAL_BASELINE(id!)).catch(() => ({ data: { success: false } })),
           ]);
-          if (baselineRes.data.success) {
+          if (baselineRes.data?.success) {
             setBaseline(baselineRes.data.data);
           }
-          if (versionsRes.data.success) {
+          if (versionsRes.data?.success) {
             setVersions(versionsRes.data.data);
           }
-          if (docsRes.data.success) {
+          if (docsRes.data?.success) {
             setDocuments(docsRes.data.data || []);
+          }
+          if (finalRes.data?.success && finalRes.data?.data) {
+            setFinalArtifact(finalRes.data.data);
           }
           showNotification("Baseline data updated!", "success");
         } catch (err) {
@@ -260,23 +267,34 @@ export const BaselineReviewPage: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [baselineRes, projectRes, versionsRes, docsRes] = await Promise.all([
+        const [baselineRes, projectRes, versionsRes, docsRes, finalRes] = await Promise.all([
           apiClient.get(API_ENDPOINTS.BASELINE.LIST(id!)).catch(() => ({ data: { success: false } })),
           apiClient.get(API_ENDPOINTS.PROJECTS.DETAIL(id!)).catch(() => ({ data: { success: false } })),
           apiClient.get(API_ENDPOINTS.BASELINE.VERSIONS(id!)).catch(() => ({ data: { success: false } })),
           apiClient.get(API_ENDPOINTS.DOCUMENTS.LIST(id!)).catch(() => ({ data: { success: false } })),
+          apiClient.get(API_ENDPOINTS.BASELINE.FINAL_BASELINE(id!)).catch(() => ({ data: { success: false } })),
         ]);
-        if (baselineRes.data.success) {
+        if (baselineRes.data?.success) {
           setBaseline(baselineRes.data.data);
         }
-        if (projectRes.data.success) {
+        if (projectRes.data?.success) {
           setProject(projectRes.data.data);
         }
-        if (versionsRes.data.success) {
+        if (versionsRes.data?.success) {
           setVersions(versionsRes.data.data);
         }
-        if (docsRes.data.success) {
+        if (docsRes.data?.success) {
           setDocuments(docsRes.data.data || []);
+        }
+        if (finalRes.data?.success && finalRes.data?.data) {
+          setFinalArtifact(finalRes.data.data);
+          const hasDbItems = baselineRes.data?.data && (
+            (baselineRes.data.data.scope_items && baselineRes.data.data.scope_items.length > 0) ||
+            (baselineRes.data.data.deliverables && baselineRes.data.data.deliverables.length > 0)
+          );
+          if (!hasDbItems) {
+            setBaselineMainView("STEP10_ANALYSIS");
+          }
         }
       } catch (error) {
         console.error(
@@ -312,6 +330,7 @@ export const BaselineReviewPage: React.FC = () => {
     setNotification({ message, type });
   };
 
+  const [baselineMainView, setBaselineMainView] = useState<"SCOPE_TIMELINE" | "STEP10_ANALYSIS">("SCOPE_TIMELINE");
   const [selectedDeliverableId, setSelectedDeliverableId] = useState<
     number | null
   >(null);
@@ -814,6 +833,7 @@ export const BaselineReviewPage: React.FC = () => {
         setExtractingDocId(doc.id);
         await apiClient.post(API_ENDPOINTS.BASELINE.EXTRACT(id!, doc.id), {
           mode: extractionMode,
+          execution_mode: "PERSIST_DRAFT",
         });
         // Start polling immediately in the global context
         startPolling(
@@ -1080,12 +1100,21 @@ export const BaselineReviewPage: React.FC = () => {
 
   // timelineItems is now computed via useMemo above the handlers
 
-  const isBaselineExtracted = !!(
+  const hasDbBaseline = !!(
     baseline &&
     (inScopeItems.length > 0 ||
       outOfScopeItems.length > 0 ||
       (baseline.deliverables && baseline.deliverables.length > 0))
   );
+
+  const hasArtifactBaseline = !!(
+    finalArtifact &&
+    (finalArtifact.artifact_status === "READY" ||
+      (finalArtifact.work_breakdown && (finalArtifact.work_breakdown.total_eligible_items > 0 || finalArtifact.work_breakdown.total_in_scope_candidates > 0)) ||
+      (finalArtifact.summary && finalArtifact.summary.total_canonical_candidates > 0))
+  );
+
+  const isBaselineExtracted = hasDbBaseline || hasArtifactBaseline;
 
   const renderBaselineProgressTimeline = () => {
     if (!evaluationProgress) return null;
@@ -1434,9 +1463,50 @@ export const BaselineReviewPage: React.FC = () => {
           </div>
         ) : (
           <div>
-            <div className="mb-8 border-b border-border-subtle"></div>
+            {/* View Switcher Tabs: Scope & Timeline vs Step 10 Analysis */}
+            <div className="flex items-center gap-3 mb-6">
+              <button
+                onClick={() => setBaselineMainView("SCOPE_TIMELINE")}
+                className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl transition-all ${
+                  baselineMainView === "SCOPE_TIMELINE"
+                    ? "bg-accent text-white shadow-sm"
+                    : "bg-surface/60 hover:bg-surface text-text-muted hover:text-text-primary border border-border-subtle"
+                }`}
+              >
+                <Layers className="w-3.5 h-3.5" />
+                Baseline Scope & Timeline
+              </button>
+              <button
+                onClick={() => setBaselineMainView("STEP10_ANALYSIS")}
+                className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl transition-all ${
+                  baselineMainView === "STEP10_ANALYSIS"
+                    ? "bg-accent text-white shadow-sm"
+                    : "bg-surface/60 hover:bg-surface text-text-muted hover:text-text-primary border border-border-subtle"
+                }`}
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                Step 10 Analysis & Readiness
+              </button>
+            </div>
 
-            <BaselineTimeline
+            {baselineMainView === "STEP10_ANALYSIS" ? (
+              <Step10AnalysisView
+                projectId={id!}
+                documentId={activeDocId || (documents && (documents.find((d: any) => d.document_type === 'EL')?.id || documents[0]?.id))}
+                onPersistSuccess={() => {
+                  apiClient.get(API_ENDPOINTS.BASELINE.LIST(id!)).then((res) => {
+                    if (res.data?.success) setBaseline(res.data.data);
+                  });
+                  apiClient.get(API_ENDPOINTS.BASELINE.VERSIONS(id!)).then((res) => {
+                    if (res.data?.success) setVersions(res.data.data);
+                  });
+                }}
+              />
+            ) : (
+              <>
+                <div className="mb-8 border-b border-border-subtle"></div>
+
+                <BaselineTimeline
               timelineItems={timelineItems}
               recurringGroups={recurringGroups}
               selectedDeliverableId={selectedDeliverableId}
@@ -1794,6 +1864,8 @@ export const BaselineReviewPage: React.FC = () => {
                   })}
                 </div>
               </div>
+            )}
+              </>
             )}
           </div>
         )}

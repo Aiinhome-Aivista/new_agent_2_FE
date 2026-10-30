@@ -39,6 +39,9 @@ export const API_ENDPOINTS = {
     ITEM_COMPLETION: (projectId: string | number, itemId: string | number) => `/projects/${projectId}/baseline/items/${itemId}/completion`,
     ITEM_SCHEDULE: (projectId: string | number, itemId: string | number) => `/projects/${projectId}/baseline/items/${itemId}/schedule`,
     EXTRACT: (projectId: string | number, docId: string | number) => `/projects/${projectId}/baseline/extract?document_id=${docId}`,
+    STEP10_ANALYSIS: (projectId: string | number) => `/projects/${projectId}/baseline/step10-analysis`,
+    FINAL_BASELINE: (projectId: string | number, docId?: string | number) => docId ? `/projects/${projectId}/documents/${docId}/baseline/final` : `/projects/${projectId}/baseline/final`,
+    PERSIST_DRAFT: (projectId: string | number, docId?: string | number) => docId ? `/projects/${projectId}/baseline/persist-draft?document_id=${docId}` : `/projects/${projectId}/baseline/persist-draft`,
   },
 
   TRACKER: {
@@ -48,6 +51,9 @@ export const API_ENDPOINTS = {
     REACTIVATE: (projectId: string | number, itemId: string | number) => `/projects/${projectId}/tracker/${itemId}/reactivate`,
     CONFIRM_RESOLUTION: (projectId: string | number, itemId: string | number) => `/projects/${projectId}/tracker/${itemId}/confirm-resolution`,
     DISMISS_SUGGESTION: (projectId: string | number, itemId: string | number) => `/projects/${projectId}/tracker/${itemId}/dismiss-suggestion`,
+    LIFECYCLE: (projectId: string | number) => `/projects/${projectId}/tracker/lifecycle`,
+    SNAPSHOTS: (projectId: string | number) => `/projects/${projectId}/tracker/snapshots`,
+    COMPLETE_PROJECT: (projectId: string | number) => `/projects/${projectId}/tracker/complete-project`,
   },
   MONITORING: {
     PROGRESS: (projectId: string | number) => `/projects/${projectId}/monitoring/progress`,

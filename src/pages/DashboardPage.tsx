@@ -36,10 +36,11 @@ export const DashboardPage: React.FC = () => {
   });
 
   useEffect(() => {
+    let isMounted = true;
     const fetchStats = async () => {
       try {
         const response = await apiClient.get(API_ENDPOINTS.DASHBOARD.STATS);
-        if (response.data.success) {
+        if (isMounted && (response.data?.success || response.data?.status === 'success')) {
           const dashboardData = response.data.data || {};
           setData((currentData) => ({
             ...currentData,
@@ -50,13 +51,20 @@ export const DashboardPage: React.FC = () => {
             }
           }));
         }
-      } catch (err) {
-        console.error("Failed to fetch dashboard stats", err);
+      } catch (err: any) {
+        if (isMounted) {
+          console.error('Failed to fetch dashboard stats', err);
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
     fetchStats();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const stats = [

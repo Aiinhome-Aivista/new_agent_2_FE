@@ -5,6 +5,7 @@ import { API_ENDPOINTS } from "../api/endpoints";
 import type { Project } from "../types";
 import { Loader } from "../components/Loader";
 import { useAuth } from "../auth/AuthContext";
+import { useProject } from "../context/ProjectContext";
 import {
   UploadCloud,
   X,
@@ -33,7 +34,36 @@ export const ProjectDashboardPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [project, setProject] = useState<Project | null>(null);
+  const { project: contextProject } = useProject();
+  const [project, setProject] = useState<Project | null>(() => {
+    if (contextProject && String(contextProject.id) === String(id)) {
+      return contextProject as unknown as Project;
+    }
+    try {
+      const cached = sessionStorage.getItem(`project_cache_${id}`);
+      if (cached) return JSON.parse(cached) as Project;
+    } catch {
+      // ignore
+    }
+    return null;
+  });
+  const [loading, setLoading] = useState<boolean>(() => {
+    if (contextProject && String(contextProject.id) === String(id)) return false;
+    try {
+      if (sessionStorage.getItem(`project_cache_${id}`)) return false;
+    } catch {
+      // ignore
+    }
+    return true;
+  });
+
+  useEffect(() => {
+    if (contextProject && String(contextProject.id) === String(id)) {
+      setProject(contextProject as unknown as Project);
+      setLoading(false);
+    }
+  }, [contextProject, id]);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const [documents, setDocuments] = useState<any[]>([]);
   const [baselineFile, setBaselineFile] = useState<File | null>(null);
   const [monitoringFile, setMonitoringFile] = useState<File | null>(null);
@@ -226,32 +256,70 @@ export const ProjectDashboardPage: React.FC = () => {
     setNotification({ message, type });
   };
 
-  useEffect(() => {
-    const fetchProject = async () => {
-      try {
-        const [projRes, docsRes, typesRes] = await Promise.all([
-          apiClient.get(API_ENDPOINTS.PROJECTS.DETAIL(id!)),
-          apiClient.get(API_ENDPOINTS.DOCUMENTS.LIST(id!)),
-          apiClient.get(API_ENDPOINTS.DOCUMENTS.TYPES(id!)),
-        ]);
-        if (projRes.data.success) setProject(projRes.data.data);
-        if (docsRes.data.success) setDocuments(docsRes.data.data);
-        if (typesRes.data.success) setDocumentTypes(typesRes.data.data);
-      } catch (error) {
-        console.error("Failed to fetch project data");
+  const fetchProjectData = async () => {
+    if (!id) return;
+    setFetchError(null);
+    try {
+      const [projRes, docsRes] = await Promise.allSettled([
+        apiClient.get(API_ENDPOINTS.PROJECTS.DETAIL(id)),
+        apiClient.get(API_ENDPOINTS.DOCUMENTS.LIST(id)),
+      ]);
+
+      if (projRes.status === "fulfilled" && projRes.value?.data?.success) {
+        setProject(projRes.value.data.data);
+        try {
+          sessionStorage.setItem(`project_cache_${id}`, JSON.stringify(projRes.value.data.data));
+        } catch {
+          // ignore
+        }
+      } else if (projRes.status === "fulfilled" && !projRes.value?.data?.success) {
+        setFetchError(projRes.value?.data?.message || projRes.value?.data?.detail || "Failed to load project details");
+      } else if (projRes.status === "rejected") {
+        const detail =
+          projRes.reason?.response?.data?.detail ||
+          projRes.reason?.message ||
+          "Failed to load project details";
+        setFetchError(detail);
       }
-    };
-    fetchProject();
+
+      if (docsRes.status === "fulfilled" && docsRes.value?.data?.success) {
+        setDocuments(docsRes.value.data.data || []);
+      }
+
+      // Background non-blocking fetch for document types
+      apiClient
+        .get(API_ENDPOINTS.DOCUMENTS.TYPES(id))
+        .then((res) => {
+          if (res.data?.success) setDocumentTypes(res.data.data);
+        })
+        .catch(() => {});
+    } catch (error: any) {
+      console.error("Failed to fetch project data", error);
+      setFetchError(error?.message || "Failed to load project data");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProjectData();
   }, [id]);
 
-  // Auto-poll documents when any document is in PROCESSING or PARSING status
+  // Auto-poll documents when any document is in PROCESSING or PARSING status (with 2-minute safety cap)
   useEffect(() => {
     const hasProcessing = documents.some(
       (d) => d.processing_status === "PROCESSING" || d.processing_status === "PARSING"
     );
     if (!hasProcessing || !id) return;
 
+    let pollCount = 0;
+    const maxPolls = 40; // 2 minutes maximum polling
     const interval = setInterval(async () => {
+      pollCount++;
+      if (pollCount > maxPolls) {
+        clearInterval(interval);
+        return;
+      }
       try {
         const docsRes = await apiClient.get(API_ENDPOINTS.DOCUMENTS.LIST(id!));
         if (docsRes.data.success) {
@@ -479,7 +547,55 @@ export const ProjectDashboardPage: React.FC = () => {
   };
   */
 
-  if (!project) return <Loader message="Loading project cockpit details..." />;
+  if (loading && !project) {
+    return <Loader message="Loading project cockpit details..." />;
+  }
+
+  if (fetchError && !project) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center p-8 text-center min-h-[400px]">
+        <div className="p-6 bg-rose-500/10 border border-rose-500/20 rounded-2xl max-w-md w-full">
+          <AlertTriangle className="w-10 h-10 text-rose-500 mx-auto mb-3" />
+          <h3 className="text-lg font-semibold text-text-primary">Failed to Load Project Cockpit</h3>
+          <p className="text-sm text-text-muted mt-2">{fetchError}</p>
+          <div className="mt-6 flex justify-center gap-3">
+            <button
+              onClick={() => fetchProjectData()}
+              className="px-4 py-2 bg-accent hover:bg-accent/90 text-white rounded-lg text-sm font-medium transition-colors"
+            >
+              Retry
+            </button>
+            <Link
+              to="/projects"
+              className="px-4 py-2 bg-surface hover:bg-surface-hover text-text-primary rounded-lg text-sm font-medium border border-border-base transition-colors"
+            >
+              Back to Projects
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!project) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center p-8 text-center min-h-[400px]">
+        <div className="p-6 bg-surface border border-border-base rounded-2xl max-w-md w-full">
+          <FileText className="w-10 h-10 text-text-muted mx-auto mb-3" />
+          <h3 className="text-lg font-semibold text-text-primary">Project Not Found</h3>
+          <p className="text-sm text-text-muted mt-2">The requested project could not be found or you do not have permission to access it.</p>
+          <div className="mt-6">
+            <Link
+              to="/projects"
+              className="px-4 py-2 bg-accent hover:bg-accent/90 text-white rounded-lg text-sm font-medium transition-colors inline-block"
+            >
+              Back to Projects
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const initiationDocs = documents
     .filter((d) => d.document_type === "EL" || d.document_type === "IFA")
@@ -843,8 +959,7 @@ export const ProjectDashboardPage: React.FC = () => {
                               </button>
                               {user?.role === "ENGAGEMENT_MANAGER" &&
                                 project.monitoring_status !== "CLOSED" &&
-                                (doc.processing_status === "UPLOADED" ||
-                                  doc.processing_status === "FAILED") && (
+                                doc.processing_status !== "COMPLETED" && (
                                   <button
                                     onClick={() => setProcessingDocId(doc.id)}
                                     title="Extract and process document"
@@ -856,8 +971,7 @@ export const ProjectDashboardPage: React.FC = () => {
 
                               {user?.role === "ENGAGEMENT_MANAGER" &&
                                 project.monitoring_status !== "CLOSED" &&
-                                (doc.processing_status === "UPLOADED" ||
-                                  doc.processing_status === "FAILED") && (
+                                doc.processing_status !== "COMPLETED" && (
                                   <button
                                     onClick={() => handleDeleteDocument(doc.id)}
                                     title="Delete document"
@@ -1445,8 +1559,7 @@ export const ProjectDashboardPage: React.FC = () => {
                               {(user?.role === "PROJECT_LEAD" ||
                                 user?.role === "ENGAGEMENT_MANAGER" ||
                                 user?.role === "ADMIN") &&
-                                (doc.processing_status === "UPLOADED" ||
-                                  doc.processing_status === "FAILED") && (
+                                doc.processing_status !== "COMPLETED" && (
                                   <button
                                     onClick={() => setProcessingDocId(doc.id)}
                                     title="Extract and process document"
@@ -1459,8 +1572,7 @@ export const ProjectDashboardPage: React.FC = () => {
                               {(user?.role === "PROJECT_LEAD" ||
                                 user?.role === "ENGAGEMENT_MANAGER" ||
                                 user?.role === "ADMIN") &&
-                                (doc.processing_status === "UPLOADED" ||
-                                  doc.processing_status === "FAILED") && (
+                                doc.processing_status !== "COMPLETED" && (
                                   <button
                                     onClick={() => handleDeleteDocument(doc.id)}
                                     title="Delete document"
