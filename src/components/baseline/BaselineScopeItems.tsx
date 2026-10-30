@@ -16,6 +16,9 @@ export interface BaselineScopeItemsProps {
   getItemVersion: (itemId: number) => any;
   formatDate: (dateStr: string | null | undefined) => string;
   outOfScopeItems: any[];
+  pendingReviewItems?: any[];
+  contextualRecords?: any[];
+  governanceObligations?: any[];
   setDeletingItemId: (id: number | null) => void;
   onOpenScheduleModal?: (item: any) => void;
 }
@@ -35,9 +38,13 @@ export const BaselineScopeItems: React.FC<BaselineScopeItemsProps> = ({
   getItemVersion,
   formatDate,
   outOfScopeItems,
+  pendingReviewItems = [],
+  contextualRecords = [],
+  governanceObligations = [],
   setDeletingItemId,
   onOpenScheduleModal = () => {},
 }) => {
+  const [showContextualSection, setShowContextualSection] = React.useState(false);
   return (
     <>
             <div className="mb-12 border-b border-border-subtle"></div>
@@ -99,6 +106,143 @@ export const BaselineScopeItems: React.FC<BaselineScopeItemsProps> = ({
                 )}
               </div>
             </div>
+
+            {/* Pending Review Gate Section (if any uncertain items) */}
+            {pendingReviewItems && pendingReviewItems.length > 0 && (
+              <div className="mb-10 bg-amber-500/10 border border-amber-500/30 rounded-2xl p-6 shadow-xl backdrop-blur-md">
+                <div className="flex items-center justify-between pb-4 mb-5 border-b border-amber-500/20">
+                  <div className="flex items-center gap-3">
+                    <span className="p-2 rounded-lg bg-amber-500/20 border border-amber-500/30 text-amber-400">
+                      <AlertTriangle className="w-5 h-5" />
+                    </span>
+                    <div>
+                      <h3 className="text-lg font-bold text-amber-400 tracking-tight flex items-center gap-2">
+                        Pending Review Gate
+                        <span className="text-xs px-2.5 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/30 font-semibold">
+                          Approval Blocker
+                        </span>
+                      </h3>
+                      <p className="text-xs text-text-muted mt-0.5">
+                        These items require Engagement Manager / Legal review and sign-off before baseline lock.
+                      </p>
+                    </div>
+                  </div>
+                  <span className="px-3 py-1 text-xs font-semibold bg-amber-500/20 text-amber-300 rounded-full border border-amber-500/40">
+                    {pendingReviewItems.length} Pending
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {pendingReviewItems.map((item: any, idx: number) => (
+                    <div
+                      key={item.candidate_id || item.id || idx}
+                      className="p-4 bg-bg-card/70 border border-amber-500/30 rounded-xl flex flex-col justify-between shadow-sm"
+                    >
+                      <div>
+                        <div className="flex items-center justify-between gap-2 mb-2">
+                          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                            {item.candidate_id || `item_${idx}`}
+                          </span>
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-400">
+                            PENDING_REVIEW
+                          </span>
+                        </div>
+                        <h4 className="font-bold text-sm text-text-primary mb-2">
+                          {item.name || item.scope_item_normalized}
+                        </h4>
+                        <div className="p-2.5 bg-amber-500/5 border border-amber-500/20 rounded-lg text-xs text-amber-200/90 mb-3 italic">
+                          <span className="font-bold not-italic text-[10px] block uppercase text-amber-400 mb-0.5">Review Reason</span>
+                          {item.review_reason || item.description || "Contractual ambiguity requires EM/Legal clarification"}
+                        </div>
+                        {item.source_quotation && (
+                          <p className="text-[11px] text-text-muted italic line-clamp-2">
+                            "{item.source_quotation}"
+                          </p>
+                        )}
+                      </div>
+                      <div className="mt-3 pt-2 border-t border-border-subtle/50 text-[10px] text-text-muted flex justify-between">
+                        <span>Locator: {item.source_locator || "N/A"}</span>
+                        <span>Scope: UNCERTAIN</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Contextual Contract Records & Governance Obligations Collapsible Section */}
+            {(contextualRecords.length > 0 || governanceObligations.length > 0) && (
+              <div className="mb-10 bg-bg-card/20 border border-border-subtle rounded-2xl p-6 shadow-lg backdrop-blur-md">
+                <div 
+                  className="flex items-center justify-between cursor-pointer select-none"
+                  onClick={() => setShowContextualSection(!showContextualSection)}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="p-2 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-400">
+                      <FileText className="w-5 h-5" />
+                    </span>
+                    <div>
+                      <h3 className="text-lg font-bold text-text-primary tracking-tight">
+                        Governance Obligations & Contextual Contract Records
+                      </h3>
+                      <p className="text-xs text-text-muted mt-0.5">
+                        Steering committee cadences, member rosters, and non-capacity contractual clauses.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="px-3 py-1 text-xs font-semibold bg-blue-500/10 text-blue-400 rounded-full border border-blue-500/20">
+                      {governanceObligations.length} Governance + {contextualRecords.length} Contextual
+                    </span>
+                    <button className="text-xs text-text-muted hover:text-text-primary p-1">
+                      {showContextualSection ? "Collapse ▲" : "Expand ▼"}
+                    </button>
+                  </div>
+                </div>
+
+                {showContextualSection && (
+                  <div className="mt-6 pt-6 border-t border-border-subtle grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Governance Column */}
+                    <div>
+                      <h4 className="font-bold text-sm text-text-primary mb-3 flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
+                        Governance Obligations ({governanceObligations.length})
+                      </h4>
+                      <div className="space-y-2.5 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                        {governanceObligations.map((g: any, idx: number) => (
+                          <div key={idx} className="p-3 bg-bg-hover/60 border border-border-subtle rounded-xl text-xs">
+                            <div className="flex justify-between items-start mb-1">
+                              <span className="font-bold text-text-primary">{g.name}</span>
+                              <span className="text-[10px] text-text-muted font-mono">{g.candidate_id}</span>
+                            </div>
+                            <p className="text-text-muted text-[11px] line-clamp-2">{g.description || g.source_quotation}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Contextual Column */}
+                    <div>
+                      <h4 className="font-bold text-sm text-text-primary mb-3 flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-cyan-500"></span>
+                        Contextual Contract Clauses ({contextualRecords.length})
+                      </h4>
+                      <div className="space-y-2.5 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                        {contextualRecords.map((c: any, idx: number) => (
+                          <div key={idx} className="p-3 bg-bg-hover/60 border border-border-subtle rounded-xl text-xs">
+                            <div className="flex justify-between items-start mb-1">
+                              <span className="font-bold text-text-primary">{c.name}</span>
+                              <span className="text-[10px] text-text-muted font-mono">{c.candidate_id}</span>
+                            </div>
+                            <p className="text-text-muted text-[11px] line-clamp-2">{c.description || c.source_quotation}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
               {/* Left Column - In Scope */}
               <div className="flex flex-col bg-bg-card/30 backdrop-blur-md rounded-2xl p-6 border border-border-subtle/80 shadow-2xl">
@@ -109,12 +253,11 @@ export const BaselineScopeItems: React.FC<BaselineScopeItemsProps> = ({
                       <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500"></span>
                     </span>
                     <h3 className="text-lg font-bold text-text-primary tracking-tight">
-                      In Scope
+                      In-Scope Work Items
                     </h3>
                   </div>
                   <span className="px-3 py-1 text-xs font-semibold bg-emerald-100 dark:bg-emerald-500/10 text-emerald-800 dark:text-emerald-400 rounded-full border border-emerald-300 dark:border-emerald-500/20 shadow-sm">
-                    {inScopeItems.length}{" "}
-                    {inScopeItems.length === 1 ? "item" : "items"}
+                    {inScopeItems.length} work {inScopeItems.length === 1 ? "item" : "items"}
                   </span>
                 </div>
 
@@ -301,12 +444,11 @@ export const BaselineScopeItems: React.FC<BaselineScopeItemsProps> = ({
                       <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-rose-500"></span>
                     </span>
                     <h3 className="text-lg font-bold text-text-primary tracking-tight">
-                      Out of Scope
+                      Out-of-Scope Exclusions
                     </h3>
                   </div>
                   <span className="px-3 py-1 text-xs font-semibold bg-rose-100 dark:bg-rose-500/10 text-rose-800 dark:text-rose-400 rounded-full border border-rose-300 dark:border-rose-500/20 shadow-sm">
-                    {outOfScopeItems.length}{" "}
-                    {outOfScopeItems.length === 1 ? "item" : "items"}
+                    {outOfScopeItems.length} {outOfScopeItems.length === 1 ? "clause" : "clauses"}
                   </span>
                 </div>
 
@@ -471,6 +613,143 @@ export const BaselineScopeItems: React.FC<BaselineScopeItemsProps> = ({
                 )}
               </div>
             </div>
+
+            {/* Pending Review Gate Section (if any uncertain items) */}
+            {pendingReviewItems && pendingReviewItems.length > 0 && (
+              <div className="mb-10 bg-amber-500/10 border border-amber-500/30 rounded-2xl p-6 shadow-xl backdrop-blur-md">
+                <div className="flex items-center justify-between pb-4 mb-5 border-b border-amber-500/20">
+                  <div className="flex items-center gap-3">
+                    <span className="p-2 rounded-lg bg-amber-500/20 border border-amber-500/30 text-amber-400">
+                      <AlertTriangle className="w-5 h-5" />
+                    </span>
+                    <div>
+                      <h3 className="text-lg font-bold text-amber-400 tracking-tight flex items-center gap-2">
+                        Pending Review Gate
+                        <span className="text-xs px-2.5 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/30 font-semibold">
+                          Approval Blocker
+                        </span>
+                      </h3>
+                      <p className="text-xs text-text-muted mt-0.5">
+                        These items require Engagement Manager / Legal review and sign-off before baseline lock.
+                      </p>
+                    </div>
+                  </div>
+                  <span className="px-3 py-1 text-xs font-semibold bg-amber-500/20 text-amber-300 rounded-full border border-amber-500/40">
+                    {pendingReviewItems.length} Pending
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {pendingReviewItems.map((item: any, idx: number) => (
+                    <div
+                      key={item.candidate_id || item.id || idx}
+                      className="p-4 bg-bg-card/70 border border-amber-500/30 rounded-xl flex flex-col justify-between shadow-sm"
+                    >
+                      <div>
+                        <div className="flex items-center justify-between gap-2 mb-2">
+                          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                            {item.candidate_id || `item_${idx}`}
+                          </span>
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-400">
+                            PENDING_REVIEW
+                          </span>
+                        </div>
+                        <h4 className="font-bold text-sm text-text-primary mb-2">
+                          {item.name || item.scope_item_normalized}
+                        </h4>
+                        <div className="p-2.5 bg-amber-500/5 border border-amber-500/20 rounded-lg text-xs text-amber-200/90 mb-3 italic">
+                          <span className="font-bold not-italic text-[10px] block uppercase text-amber-400 mb-0.5">Review Reason</span>
+                          {item.review_reason || item.description || "Contractual ambiguity requires EM/Legal clarification"}
+                        </div>
+                        {item.source_quotation && (
+                          <p className="text-[11px] text-text-muted italic line-clamp-2">
+                            "{item.source_quotation}"
+                          </p>
+                        )}
+                      </div>
+                      <div className="mt-3 pt-2 border-t border-border-subtle/50 text-[10px] text-text-muted flex justify-between">
+                        <span>Locator: {item.source_locator || "N/A"}</span>
+                        <span>Scope: UNCERTAIN</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Contextual Contract Records & Governance Obligations Collapsible Section */}
+            {(contextualRecords.length > 0 || governanceObligations.length > 0) && (
+              <div className="mb-10 bg-bg-card/20 border border-border-subtle rounded-2xl p-6 shadow-lg backdrop-blur-md">
+                <div 
+                  className="flex items-center justify-between cursor-pointer select-none"
+                  onClick={() => setShowContextualSection(!showContextualSection)}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="p-2 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-400">
+                      <FileText className="w-5 h-5" />
+                    </span>
+                    <div>
+                      <h3 className="text-lg font-bold text-text-primary tracking-tight">
+                        Governance Obligations & Contextual Contract Records
+                      </h3>
+                      <p className="text-xs text-text-muted mt-0.5">
+                        Steering committee cadences, member rosters, and non-capacity contractual clauses.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="px-3 py-1 text-xs font-semibold bg-blue-500/10 text-blue-400 rounded-full border border-blue-500/20">
+                      {governanceObligations.length} Governance + {contextualRecords.length} Contextual
+                    </span>
+                    <button className="text-xs text-text-muted hover:text-text-primary p-1">
+                      {showContextualSection ? "Collapse ▲" : "Expand ▼"}
+                    </button>
+                  </div>
+                </div>
+
+                {showContextualSection && (
+                  <div className="mt-6 pt-6 border-t border-border-subtle grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Governance Column */}
+                    <div>
+                      <h4 className="font-bold text-sm text-text-primary mb-3 flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
+                        Governance Obligations ({governanceObligations.length})
+                      </h4>
+                      <div className="space-y-2.5 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                        {governanceObligations.map((g: any, idx: number) => (
+                          <div key={idx} className="p-3 bg-bg-hover/60 border border-border-subtle rounded-xl text-xs">
+                            <div className="flex justify-between items-start mb-1">
+                              <span className="font-bold text-text-primary">{g.name}</span>
+                              <span className="text-[10px] text-text-muted font-mono">{g.candidate_id}</span>
+                            </div>
+                            <p className="text-text-muted text-[11px] line-clamp-2">{g.description || g.source_quotation}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Contextual Column */}
+                    <div>
+                      <h4 className="font-bold text-sm text-text-primary mb-3 flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-cyan-500"></span>
+                        Contextual Contract Clauses ({contextualRecords.length})
+                      </h4>
+                      <div className="space-y-2.5 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                        {contextualRecords.map((c: any, idx: number) => (
+                          <div key={idx} className="p-3 bg-bg-hover/60 border border-border-subtle rounded-xl text-xs">
+                            <div className="flex justify-between items-start mb-1">
+                              <span className="font-bold text-text-primary">{c.name}</span>
+                              <span className="text-[10px] text-text-muted font-mono">{c.candidate_id}</span>
+                            </div>
+                            <p className="text-text-muted text-[11px] line-clamp-2">{c.description || c.source_quotation}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
 
     </>
   );

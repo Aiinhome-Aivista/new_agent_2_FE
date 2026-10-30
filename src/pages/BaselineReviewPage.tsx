@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import apiClient from "../api/apiClient";
@@ -356,32 +356,106 @@ export const BaselineReviewPage: React.FC = () => {
     return null;
   };
 
+  // Reconciled register classification: work items (70), out of scope (55), pending review (3)
+  const workItems = useMemo(() => {
+    if (baseline?.work_items && baseline.work_items.length > 0) {
+      return baseline.work_items;
+    }
+    if (finalArtifact?.work_items && finalArtifact.work_items.length > 0) {
+      return finalArtifact.work_items;
+    }
+    return (baseline?.scope_items || []).filter(
+      (item: any) =>
+        item.scope_type === "IN_SCOPE" &&
+        item.category !== "MILESTONE" &&
+        item.category !== "GOVERNANCE" &&
+        (item.estimated_deadline != null || item.deadline != null || item.work_item_eligible === true || item.parsed_plan_assumptions?.work_item_eligible === true)
+    );
+  }, [baseline, finalArtifact]);
+
+  const inScopeItems = workItems;
+
+  const outOfScopeItems = useMemo(() => {
+    if (baseline?.out_of_scope_records && baseline.out_of_scope_records.length > 0) {
+      return baseline.out_of_scope_records;
+    }
+    if (finalArtifact?.out_of_scope_records && finalArtifact.out_of_scope_records.length > 0) {
+      return finalArtifact.out_of_scope_records;
+    }
+    return (baseline?.scope_items || []).filter(
+      (item: any) => item.scope_type === "OUT_OF_SCOPE"
+    );
+  }, [baseline, finalArtifact]);
+
+  const pendingReviewItems = useMemo(() => {
+    if (baseline?.pending_review_records && baseline.pending_review_records.length > 0) {
+      return baseline.pending_review_records;
+    }
+    if (finalArtifact?.pending_review_records && finalArtifact.pending_review_records.length > 0) {
+      return finalArtifact.pending_review_records;
+    }
+    return (baseline?.scope_items || []).filter(
+      (item: any) => item.scope_type === "UNCERTAIN"
+    );
+  }, [baseline, finalArtifact]);
+
+  const contextualRecords = useMemo(() => {
+    return baseline?.contextual_records || finalArtifact?.contextual_records || [];
+  }, [baseline, finalArtifact]);
+
+  const governanceObligations = useMemo(() => {
+    return baseline?.governance_obligations || finalArtifact?.governance_obligations || [];
+  }, [baseline, finalArtifact]);
+
+  const hasDbBaseline = !!(
+    baseline &&
+    (workItems.length > 0 ||
+      outOfScopeItems.length > 0 ||
+      pendingReviewItems.length > 0 ||
+      (baseline.milestones && baseline.milestones.length > 0) ||
+      (baseline.scope_items && baseline.scope_items.length > 0) ||
+      (baseline.all_records && baseline.all_records.length > 0))
+  );
+
+  const hasArtifactBaseline = !!(
+    finalArtifact &&
+    (finalArtifact.artifact_status === "READY" ||
+      (finalArtifact.summary && (finalArtifact.summary.canonical_candidates > 0 || finalArtifact.summary.total_canonical_candidates > 0)) ||
+      (finalArtifact.work_items && finalArtifact.work_items.length > 0) ||
+      (finalArtifact.scope_items && finalArtifact.scope_items.length > 0))
+  );
+
+  const isBaselineExtracted = hasDbBaseline || hasArtifactBaseline;
+
   // Compute timelineItems early so handlers can reference it
   // Recurring parent items expand their occurrences; each occurrence becomes
   // its own timeline node tagged with _is_occurrence=true and _parent_item.
   const timelineItems = React.useMemo(() => {
     const result: any[] = [];
-    const allItems: any[] = baseline?.scope_items || [];
+    const allItems: any[] = (baseline?.work_items && baseline.work_items.length > 0)
+      ? baseline.work_items
+      : (finalArtifact?.work_items && finalArtifact.work_items.length > 0)
+        ? finalArtifact.work_items
+        : (baseline?.scope_items || []);
     for (const item of allItems) {
       const isRecurringParent = item.is_recurring && !item.parent_scope_item_id;
       const occurrences: any[] = item.recurring_occurrences || [];
+      const itemDeadline = item.deadline || item.estimated_deadline || item.predicted_deadline;
       if (isRecurringParent && occurrences.length > 0) {
         // Push each occurrence as its own timeline node
         for (const occ of occurrences) {
           result.push({
             ...occ,
+            deadline: occ.deadline || occ.estimated_deadline || itemDeadline,
             _is_occurrence: true,
             _parent_item: item,
           });
         }
-        // Also add the parent itself (without deadline filtering) so the
-        // group header is selectable, but only if it has its own deadline
-        // (e.g. the LLM gave it one). If not, skip it — occurrences cover it.
-        if (item.deadline || item.milestone) {
-          result.push({ ...item, _is_occurrence: false, _parent_item: null });
+        if (itemDeadline || item.milestone) {
+          result.push({ ...item, deadline: itemDeadline, _is_occurrence: false, _parent_item: null });
         }
-      } else if (item.deadline || item.milestone) {
-        result.push({ ...item, _is_occurrence: false, _parent_item: null });
+      } else if (itemDeadline || item.milestone) {
+        result.push({ ...item, deadline: itemDeadline, _is_occurrence: false, _parent_item: null });
       }
     }
     return result.sort((a: any, b: any) => {
@@ -1087,35 +1161,6 @@ export const BaselineReviewPage: React.FC = () => {
 
   if (loading) return <Loader message="Loading contract scope baseline..." />;
 
-  const inScopeItems =
-    baseline?.scope_items?.filter(
-      (item: any) =>
-        item.scope_type === "IN_SCOPE" && item.category !== "MILESTONE",
-    ) || [];
-  const outOfScopeItems =
-    baseline?.scope_items?.filter(
-      (item: any) =>
-        item.scope_type !== "IN_SCOPE" && item.category !== "MILESTONE",
-    ) || [];
-
-  // timelineItems is now computed via useMemo above the handlers
-
-  const hasDbBaseline = !!(
-    baseline &&
-    (inScopeItems.length > 0 ||
-      outOfScopeItems.length > 0 ||
-      (baseline.deliverables && baseline.deliverables.length > 0))
-  );
-
-  const hasArtifactBaseline = !!(
-    finalArtifact &&
-    (finalArtifact.artifact_status === "READY" ||
-      (finalArtifact.work_breakdown && (finalArtifact.work_breakdown.total_eligible_items > 0 || finalArtifact.work_breakdown.total_in_scope_candidates > 0)) ||
-      (finalArtifact.summary && finalArtifact.summary.total_canonical_candidates > 0))
-  );
-
-  const isBaselineExtracted = hasDbBaseline || hasArtifactBaseline;
-
   const renderBaselineProgressTimeline = () => {
     if (!evaluationProgress) return null;
 
@@ -1386,29 +1431,42 @@ export const BaselineReviewPage: React.FC = () => {
               baseline.status === "DRAFT" &&
               (user?.role === "ENGAGEMENT_MANAGER" || user?.role === "ADMIN") &&
               project?.monitoring_status !== "CLOSED" && (
-                <button
-                  type="button"
-                  onClick={handleApprove}
-                  disabled={isApproving}
-                  className="group relative inline-flex items-center justify-center gap-2 px-6 py-2.5 font-semibold text-text-primary transition-all duration-300 rounded-lg bg-gradient-to-r from-emerald-500 via-teal-500 to-green-600 hover:from-emerald-400 hover:via-teal-400 hover:to-green-500 shadow-[0_0_15px_rgba(160,185,129,0.4)] hover:shadow-[0_0_25px_rgba(20,184,166,0.6)] hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none cursor-pointer"
-                >
-                  {isApproving ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin text-emerald-100" />
-                      <span className="tracking-wide text-sm">
-                        Approving...
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle2 className="w-4 h-4 text-emerald-100 group-hover:scale-110 transition-transform" />
-                      <span className="tracking-wide text-sm">
-                        Approve Baseline
-                      </span>
-                    </>
+                <div className="flex items-center gap-2">
+                  {pendingReviewItems.length > 0 && (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-500/15 border border-amber-500/40 text-amber-400" title="Approval is blocked until pending review items are resolved or audited override is provided">
+                      <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
+                      {pendingReviewItems.length} Review Gate(s) Pending
+                    </span>
                   )}
-                  <div className="absolute inset-0 rounded-lg ring-1 ring-inset ring-white/20 pointer-events-none"></div>
-                </button>
+                  <button
+                    type="button"
+                    onClick={handleApprove}
+                    disabled={isApproving || pendingReviewItems.length > 0}
+                    title={pendingReviewItems.length > 0 ? "Approval blocked: 3 scope items remain in PENDING_REVIEW status" : "Approve Baseline"}
+                    className={`group relative inline-flex items-center justify-center gap-2 px-6 py-2.5 font-semibold text-white transition-all duration-300 rounded-lg ${
+                      pendingReviewItems.length > 0
+                        ? "bg-gray-700/60 text-gray-400 opacity-60 cursor-not-allowed shadow-none border border-gray-600/30"
+                        : "bg-gradient-to-r from-emerald-500 via-teal-500 to-green-600 hover:from-emerald-400 hover:via-teal-400 hover:to-green-500 shadow-[0_0_15px_rgba(16,185,129,0.4)] hover:shadow-[0_0_25px_rgba(20,184,166,0.6)] hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
+                    }`}
+                  >
+                    {isApproving ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin text-emerald-100" />
+                        <span className="tracking-wide text-sm">
+                          Approving...
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle2 className="w-4 h-4 text-emerald-100 group-hover:scale-110 transition-transform" />
+                        <span className="tracking-wide text-sm">
+                          Approve Baseline
+                        </span>
+                      </>
+                    )}
+                    <div className="absolute inset-0 rounded-lg ring-1 ring-inset ring-white/20 pointer-events-none"></div>
+                  </button>
+                </div>
               )}
           </div>
         </div>
@@ -1485,7 +1543,7 @@ export const BaselineReviewPage: React.FC = () => {
                 }`}
               >
                 <Sparkles className="w-3.5 h-3.5" />
-                Step 10 Analysis & Readiness
+                Analysis & Readiness
               </button>
             </div>
 
@@ -1538,6 +1596,9 @@ export const BaselineReviewPage: React.FC = () => {
               setShowExtractModal={setShowExtractModal}
               inScopeItems={inScopeItems}
               outOfScopeItems={outOfScopeItems}
+              pendingReviewItems={pendingReviewItems}
+              contextualRecords={contextualRecords}
+              governanceObligations={governanceObligations}
               setDeletingItemId={setDeletingItemId}
               onOpenScheduleModal={handleOpenScheduleModal}
             />
