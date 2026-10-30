@@ -66,7 +66,7 @@ export const GlobalProgressWidget: React.FC = () => {
   if (isMinimized) {
     return (
       <div 
-        className="fixed bottom-6 right-6 z-[9999] flex items-center gap-3 px-4 py-3 bg-[#0b0e17]/95 border border-border-subtle rounded-full shadow-2xl backdrop-blur-md cursor-pointer hover:border-border-strong transition-all duration-300 animate-fade-in-up"
+        className="fixed bottom-24 right-6 z-[9999] flex items-center gap-3 px-4 py-3 bg-[#0b0e17]/95 border border-border-subtle rounded-full shadow-2xl backdrop-blur-md cursor-pointer hover:border-border-strong transition-all duration-300 animate-fade-in-up"
         onClick={() => setIsMinimized(false)}
       >
         <div className="relative flex items-center justify-center">
@@ -97,7 +97,7 @@ export const GlobalProgressWidget: React.FC = () => {
   }
 
   return (
-    <div className="fixed bottom-6 right-6 z-[9999] w-80 md:w-96 bg-[#0b0e17]/95 border border-border-subtle rounded-2xl shadow-2xl backdrop-blur-md overflow-hidden text-left transition-all duration-300 animate-fade-in-up">
+    <div className="fixed bottom-24 right-6 z-[9999] w-80 md:w-96 bg-[#0b0e17]/95 border border-border-subtle rounded-2xl shadow-2xl backdrop-blur-md overflow-hidden text-left transition-all duration-300 animate-fade-in-up">
       {/* Glow effects */}
       <div className="absolute -top-16 -right-16 w-32 h-32 rounded-full bg-cyan-500/5 blur-[40px] pointer-events-none" />
       <div className="absolute -bottom-16 -left-16 w-32 h-32 rounded-full bg-blue-500/5 blur-[40px] pointer-events-none" />

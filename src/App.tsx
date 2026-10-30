@@ -1,11 +1,12 @@
 import React, { Suspense } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { AuthProvider } from './auth/AuthContext';
 import { DocumentProgressProvider } from './context/DocumentProgressContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { ToastProvider } from './context/ToastContext';
 import { ProjectProvider } from './context/ProjectContext';
 import { GlobalProgressWidget } from './components/GlobalProgressWidget';
+import { AIChatWidget } from './components/AIChatWidget';
 import { ProtectedRoute } from './routes/ProtectedRoute';
 import { Sidebar } from './components/Sidebar';
 import { LoadingFallback } from './components/LoadingFallback';
@@ -21,9 +22,14 @@ const ProjectOverviewPage = React.lazy(() => import('./pages/ProjectOverviewPage
 const ProjectDashboardPage = React.lazy(() => import('./pages/ProjectDashboardPage').then(m => ({ default: m.ProjectDashboardPage })));
 const BaselineReviewPage = React.lazy(() => import('./pages/BaselineReviewPage').then(m => ({ default: m.BaselineReviewPage })));
 const TrackerPage = React.lazy(() => import('./pages/TrackerPage').then(m => ({ default: m.TrackerPage })));
-const AIAssistantPage = React.lazy(() => import('./pages/AIAssistantPage').then(m => ({ default: m.AIAssistantPage })));
 const ProjectMembersPage = React.lazy(() => import('./pages/ProjectMembersPage').then(m => ({ default: m.ProjectMembersPage })));
 const DriveInboxPage = React.lazy(() => import('./pages/DriveInboxPage').then(m => ({ default: m.DriveInboxPage })));
+
+// Redirect helper for old assistant links to project overview with chat opened
+const AssistantRedirect: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+  return <Navigate to={`/projects/${id}?chat=open`} replace />;
+};
 
 const ProtectedLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
@@ -33,6 +39,7 @@ const ProtectedLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
         {children}
       </div>
       <GlobalProgressWidget />
+      <AIChatWidget />
     </div>
   );
 };
@@ -87,7 +94,7 @@ const App: React.FC = () => {
                     />
                     <Route 
                       path="/projects/:id/assistant" 
-                      element={<ProtectedRoute><ProjectLayout><AIAssistantPage /></ProjectLayout></ProtectedRoute>} 
+                      element={<ProtectedRoute><AssistantRedirect /></ProtectedRoute>} 
                     />
                     <Route 
                       path="/projects/:id/members" 
