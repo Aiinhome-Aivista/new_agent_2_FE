@@ -11,26 +11,7 @@ import { BaselineTimeline } from "../components/baseline/BaselineTimeline";
 import { BaselineScopeItems } from "../components/baseline/BaselineScopeItems";
 import { Step10AnalysisView } from "../components/baseline/Step10AnalysisView";
 
-const formatDate = (dateStr: string | null | undefined) => {
-  if (!dateStr) return "N/A";
-  try {
-    if (typeof dateStr === "string" && /^\d{4}-\d{2}-\d{2}/.test(dateStr)) {
-      const parts = dateStr.substring(0, 10).split("-");
-      const year = parseInt(parts[0], 10);
-      const month = parseInt(parts[1], 10) - 1;
-      const day = parseInt(parts[2], 10);
-      const d = new Date(year, month, day);
-      return d.toLocaleDateString(undefined, { dateStyle: "medium" });
-    }
-    const cleanStr =
-      typeof dateStr === "string" ? dateStr.replace(" ", "T") : dateStr;
-    const d = new Date(cleanStr);
-    if (isNaN(d.getTime())) return "N/A";
-    return d.toLocaleDateString(undefined, { dateStyle: "medium" });
-  } catch (e) {
-    return "N/A";
-  }
-};
+import { formatDate } from "../utils";
 import {
   Layers,
   Loader2,
@@ -556,9 +537,6 @@ export const BaselineReviewPage: React.FC = () => {
   const [extracting, setExtracting] = useState(false);
   const [completedDocIds, setCompletedDocIds] = useState<number[]>([]);
   const [selectedDocIds, setSelectedDocIds] = useState<number[]>([]);
-  const [extractionMode, setExtractionMode] = useState<"QUICK" | "DEEP_SCAN">(
-    "QUICK",
-  );
 
   const toggleDocSelection = (docId: number) => {
     setSelectedDocIds([docId]);
@@ -906,7 +884,7 @@ export const BaselineReviewPage: React.FC = () => {
       for (const doc of docsToExtract) {
         setExtractingDocId(doc.id);
         await apiClient.post(API_ENDPOINTS.BASELINE.EXTRACT(id!, doc.id), {
-          mode: extractionMode,
+          mode: "DEEP_SCAN",
           execution_mode: "PERSIST_DRAFT",
         });
         // Start polling immediately in the global context
@@ -1942,8 +1920,6 @@ export const BaselineReviewPage: React.FC = () => {
           completedDocIds={completedDocIds}
           selectedDocIds={selectedDocIds}
           toggleDocSelection={toggleDocSelection}
-          extractionMode={extractionMode}
-          setExtractionMode={setExtractionMode}
           showAddItemModal={showAddItemModal}
           setShowAddItemModal={setShowAddItemModal}
           handleAddItem={handleAddItem}

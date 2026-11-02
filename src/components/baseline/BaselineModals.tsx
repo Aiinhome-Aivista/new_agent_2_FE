@@ -7,7 +7,6 @@ import {
   X,
   Trash2,
   Zap,
-  ScanSearch,
   Info,
   Calendar,
   AlertTriangle,
@@ -26,8 +25,6 @@ export interface BaselineModalsProps {
   toggleDocSelection: (id: number) => void;
   extracting: boolean;
   confirmExtractAll: () => void;
-  extractionMode: "QUICK" | "DEEP_SCAN";
-  setExtractionMode: (mode: "QUICK" | "DEEP_SCAN") => void;
 
   // Add Item Modal Props
   showAddItemModal: boolean;
@@ -79,8 +76,6 @@ export const BaselineModals: React.FC<BaselineModalsProps> = ({
   toggleDocSelection,
   extracting,
   confirmExtractAll,
-  extractionMode,
-  setExtractionMode,
 
   showAddItemModal,
   setShowAddItemModal,
@@ -153,72 +148,6 @@ export const BaselineModals: React.FC<BaselineModalsProps> = ({
               >
                 <X className="w-5 h-5" />
               </button>
-            </div>
-
-            {/* Extraction mode selector */}
-            <div className="mb-5">
-              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-gray-400 mb-2">
-                Extraction Mode
-              </label>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={() => setExtractionMode("QUICK")}
-                  disabled={extracting}
-                  className={`flex flex-col items-start gap-1 p-3.5 rounded-2xl border text-left transition-all disabled:opacity-50 cursor-pointer ${
-                    extractionMode === "QUICK"
-                      ? isDark
-                        ? "border-[#FF5A14] bg-[#FF5A14]/15 ring-1 ring-[#FF5A14]"
-                        : "border-[#FF5A14] bg-orange-50/80 ring-1 ring-[#FF5A14]"
-                      : isDark
-                      ? "border-white/10 bg-white/5 hover:border-white/20"
-                      : "border-slate-200 bg-slate-50 hover:border-slate-300"
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <Zap
-                      className={`h-4 w-4 ${
-                        extractionMode === "QUICK"
-                          ? "text-[#FF5A14]"
-                          : "text-slate-400 dark:text-gray-400"
-                      }`}
-                    />
-                    <span className="text-xs font-bold">Quick Extract</span>
-                  </div>
-                  <span className="text-[11px] text-slate-500 dark:text-gray-400 leading-snug">
-                    Fast &amp; token-efficient. Best for standard contracts.
-                  </span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setExtractionMode("DEEP_SCAN")}
-                  disabled={extracting}
-                  className={`flex flex-col items-start gap-1 p-3.5 rounded-2xl border text-left transition-all disabled:opacity-50 cursor-pointer ${
-                    extractionMode === "DEEP_SCAN"
-                      ? isDark
-                        ? "border-[#FF5A14] bg-[#FF5A14]/15 ring-1 ring-[#FF5A14]"
-                        : "border-[#FF5A14] bg-orange-50/80 ring-1 ring-[#FF5A14]"
-                      : isDark
-                      ? "border-white/10 bg-white/5 hover:border-white/20"
-                      : "border-slate-200 bg-slate-50 hover:border-slate-300"
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <ScanSearch
-                      className={`h-4 w-4 ${
-                        extractionMode === "DEEP_SCAN"
-                          ? "text-[#FF5A14]"
-                          : "text-slate-400 dark:text-gray-400"
-                      }`}
-                    />
-                    <span className="text-xs font-bold">Deep Scan</span>
-                  </div>
-                  <span className="text-[11px] text-slate-500 dark:text-gray-400 leading-snug">
-                    Thorough Map-Reduce sweep for dense documents.
-                  </span>
-                </button>
-              </div>
             </div>
 
             {/* Document list */}

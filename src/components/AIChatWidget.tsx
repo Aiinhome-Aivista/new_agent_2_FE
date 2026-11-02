@@ -169,8 +169,17 @@ export const AIChatWidget: React.FC = () => {
 
     fetchSessions(activeProjectId);
     fetchProjectDetails(activeProjectId);
-    fetchSuggestions(activeProjectId);
-  }, [activeProjectId]);
+    if (isOpen) {
+      fetchSuggestions(activeProjectId);
+    }
+  }, [activeProjectId, isOpen]);
+
+  // Fetch suggestions lazily only when chat is opened
+  useEffect(() => {
+    if (isOpen && activeProjectId && suggestions.length === 0) {
+      fetchSuggestions(activeProjectId);
+    }
+  }, [isOpen, activeProjectId]);
 
   // Fetch messages when current session changes
   useEffect(() => {
