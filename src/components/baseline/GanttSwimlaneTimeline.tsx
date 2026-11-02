@@ -17,6 +17,7 @@ import {
 interface GanttSwimlaneTimelineProps {
   items: any[];
   milestones?: any[];
+  project?: any;
   selectedId: number | null;
   onSelect: (id: number) => void;
   formatDate: (dateStr: string | null | undefined) => string;
@@ -25,6 +26,7 @@ interface GanttSwimlaneTimelineProps {
 export const GanttSwimlaneTimeline: React.FC<GanttSwimlaneTimelineProps> = ({
   items,
   milestones = [],
+  project,
   selectedId,
   onSelect,
   formatDate,
@@ -34,10 +36,36 @@ export const GanttSwimlaneTimeline: React.FC<GanttSwimlaneTimelineProps> = ({
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState<string>("");
 
-  // Timeline anchors
-  const CONTRACT_START = new Date("2027-01-22").getTime();
-  const CONTRACT_END = new Date("2027-04-30").getTime();
-  const SUPPORT_END = new Date("2027-07-31").getTime();
+  // Dynamic Timeline Anchors
+  const CONTRACT_START = useMemo(() => {
+    if (project?.start_date && !isNaN(new Date(project.start_date).getTime())) {
+      return new Date(project.start_date).getTime();
+    }
+    const validStarts = (items || [])
+      .map((i) => i.estimated_start_date || i.predicted_start_date || i.start_date)
+      .filter(Boolean)
+      .map((d) => new Date(d).getTime())
+      .filter((t) => !isNaN(t));
+    if (validStarts.length > 0) return Math.min(...validStarts);
+    return new Date("2027-01-22").getTime();
+  }, [project?.start_date, items]);
+
+  const CONTRACT_END = useMemo(() => {
+    if (project?.end_date && !isNaN(new Date(project.end_date).getTime())) {
+      return new Date(project.end_date).getTime();
+    }
+    const validEnds = (items || [])
+      .map((i) => i.deadline || i.estimated_deadline || i.predicted_deadline)
+      .filter(Boolean)
+      .map((d) => new Date(d).getTime())
+      .filter((t) => !isNaN(t));
+    if (validEnds.length > 0) return Math.max(...validEnds);
+    return CONTRACT_START + 98 * 86400000;
+  }, [project?.end_date, items, CONTRACT_START]);
+
+  const SUPPORT_END = useMemo(() => {
+    return CONTRACT_END + 92 * 86400000;
+  }, [CONTRACT_END]);
 
   // Normalize item dates and modules
   const processedItems = useMemo(() => {
@@ -46,7 +74,7 @@ export const GanttSwimlaneTimeline: React.FC<GanttSwimlaneTimelineProps> = ({
         item.estimated_start_date ||
         item.predicted_start_date ||
         item.start_date ||
-        "2027-01-22";
+        new Date(CONTRACT_START).toISOString().split("T")[0];
       const rawDeadline =
         item.deadline ||
         item.estimated_deadline ||
@@ -64,26 +92,30 @@ export const GanttSwimlaneTimeline: React.FC<GanttSwimlaneTimelineProps> = ({
       const nameLower = name.toLowerCase();
       const descLower = (item.description || "").toLowerCase();
 
-      // Module lane grouping
-      let moduleName = "General / Foundation";
-      if (
-        nameLower.includes("employee collaboration") ||
-        nameLower.includes("landing page") ||
-        nameLower.includes("announcement") ||
-        nameLower.includes("notification") ||
-        nameLower.includes("vconnect") ||
-        descLower.includes("employee collaboration")
-      ) {
-        moduleName = "Employee Collaboration";
-      } else if (
-        nameLower.includes("internal job posting") ||
-        nameLower.includes("job requisition") ||
-        nameLower.includes("candidate view") ||
-        nameLower.includes("applicant") ||
-        nameLower.includes("hiring") ||
-        descLower.includes("internal job posting")
-      ) {
-        moduleName = "Internal Job Posting";
+      // Dynamic Module grouping with intelligent fallback
+      let moduleName = item.module || item.system_module || item.functional_area || item.section_name;
+      if (!moduleName) {
+        if (
+          nameLower.includes("employee collaboration") ||
+          nameLower.includes("landing page") ||
+          nameLower.includes("announcement") ||
+          nameLower.includes("notification") ||
+          nameLower.includes("vconnect") ||
+          descLower.includes("employee collaboration")
+        ) {
+          moduleName = "Employee Collaboration";
+        } else if (
+          nameLower.includes("internal job posting") ||
+          nameLower.includes("job requisition") ||
+          nameLower.includes("candidate view") ||
+          nameLower.includes("applicant") ||
+          nameLower.includes("hiring") ||
+          descLower.includes("internal job posting")
+        ) {
+          moduleName = "Internal Job Posting";
+        } else {
+          moduleName = "General / Foundation";
+        }
       }
 
       // Check if exceeds contract end date
@@ -103,7 +135,16 @@ export const GanttSwimlaneTimeline: React.FC<GanttSwimlaneTimelineProps> = ({
         _isContractConfirmed: isContractConfirmed,
       };
     });
-  }, [items]);
+  }, [items, CONTRACT_START, CONTRACT_END]);
+
+  // Dynamic modules list for dropdown filter
+  const availableModules = useMemo(() => {
+    const set = new Set<string>();
+    processedItems.forEach((i) => {
+      if (i._module) set.add(i._module);
+    });
+    return Array.from(set).sort();
+  }, [processedItems]);
 
   // Filter items
   const filteredItems = useMemo(() => {
@@ -149,8 +190,10 @@ export const GanttSwimlaneTimeline: React.FC<GanttSwimlaneTimelineProps> = ({
   // Month header markers
   const months = useMemo(() => {
     const list: { name: string; pct: number }[] = [];
-    const cur = new Date("2027-01-01T00:00:00");
-    const end = new Date("2027-08-01T00:00:00");
+    const cur = new Date(minMs);
+    cur.setDate(1);
+    cur.setHours(0, 0, 0, 0);
+    const end = new Date(maxMs);
     while (cur <= end) {
       const ms = cur.getTime();
       if (ms >= minMs && ms <= maxMs) {
@@ -200,9 +243,9 @@ export const GanttSwimlaneTimeline: React.FC<GanttSwimlaneTimelineProps> = ({
             className="px-3 py-1.5 text-xs bg-bg-base border border-border-subtle rounded-lg text-text-primary focus:outline-none focus:border-indigo-500"
           >
             <option value="ALL">All Modules</option>
-            <option value="Employee Collaboration">Employee Collaboration</option>
-            <option value="Internal Job Posting">Internal Job Posting</option>
-            <option value="General / Foundation">General / Foundation</option>
+            {availableModules.map((m) => (
+              <option key={m} value={m}>{m}</option>
+            ))}
           </select>
 
           {/* Status Filter */}
@@ -212,8 +255,8 @@ export const GanttSwimlaneTimeline: React.FC<GanttSwimlaneTimelineProps> = ({
             className="px-3 py-1.5 text-xs bg-bg-base border border-border-subtle rounded-lg text-text-primary focus:outline-none focus:border-indigo-500"
           >
             <option value="ALL">All Statuses</option>
-            <option value="ON_TRACK">On Track (≤ April 30)</option>
-            <option value="OVERRUN">Overrun (&gt; April 30)</option>
+            <option value="ON_TRACK">On Track (≤ Contract End)</option>
+            <option value="OVERRUN">Forecast Overruns (&gt; Contract End)</option>
             <option value="CONTRACT_CONFIRMED">Contract Confirmed</option>
           </select>
 
@@ -264,23 +307,23 @@ export const GanttSwimlaneTimeline: React.FC<GanttSwimlaneTimelineProps> = ({
             </div>
 
             {/* Vertical Anchor Reference Lines */}
-            {/* Contract Validity End (April 30, 2027) */}
+            {/* Contract Validity End */}
             <div
               className="absolute top-0 bottom-0 w-0.5 border-r-2 border-dashed border-rose-500/60 z-10 pointer-events-none"
               style={{ left: `${contractEndPct}%` }}
             >
               <span className="absolute top-0 -translate-x-1/2 -translate-y-full bg-rose-500/20 text-rose-300 border border-rose-500/40 text-[10px] font-bold px-2 py-0.5 rounded shadow-sm whitespace-nowrap">
-                Contract Validity (30 Apr 2027)
+                Contract Validity ({formatDate(new Date(CONTRACT_END).toISOString().split("T")[0])})
               </span>
             </div>
 
-            {/* Production Support End (July 31, 2027) */}
+            {/* Production Support End */}
             <div
               className="absolute top-0 bottom-0 w-0.5 border-r-2 border-dashed border-sky-500/50 z-10 pointer-events-none"
               style={{ left: `${supportEndPct}%` }}
             >
               <span className="absolute top-0 -translate-x-1/2 -translate-y-full bg-sky-500/20 text-sky-300 border border-sky-500/30 text-[10px] font-bold px-2 py-0.5 rounded shadow-sm whitespace-nowrap">
-                Support End (31 Jul 2027)
+                Support End ({formatDate(new Date(SUPPORT_END).toISOString().split("T")[0])})
               </span>
             </div>
 

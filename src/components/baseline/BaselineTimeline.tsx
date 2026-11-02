@@ -371,6 +371,7 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
                       <GanttSwimlaneTimeline
                         items={timelineItems}
                         milestones={Array.from(milestoneMap.values())}
+                        project={project}
                         selectedId={selectedItem?.id ?? null}
                         onSelect={(id) => setSelectedDeliverableId(id)}
                         formatDate={formatDate}

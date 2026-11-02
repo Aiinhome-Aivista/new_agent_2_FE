@@ -38,25 +38,34 @@ export const DeliverableCompletionModal: React.FC<DeliverableCompletionModalProp
   targetStatus,
   deliverableName,
   deliverableId,
-  prerequisites,
-  incompletePredecessors,
+  prerequisites = [],
+  incompletePredecessors = [],
   onConfirm,
 }) => {
-  if (!isOpen) return null;
-
   const isCompletedMode = targetStatus === "COMPLETED";
   const isRevertMode = targetStatus === "ACTIVE";
 
   // Filter pending prerequisites
-  const pendingPrereqs = prerequisites.filter((p) => !p.isDone);
+  const pendingPrereqs = (prerequisites || []).filter((p) => !p.isDone);
 
-  // States
+  // States - MUST be unconditionally declared before any return to uphold React Rules of Hooks
   const [notes, setNotes] = useState("");
-  const [selectedPrereqIds, setSelectedPrereqIds] = useState<number[]>(
-    pendingPrereqs.map((p, idx) => p.id || idx).filter((id): id is number => typeof id === "number")
-  );
+  const [selectedPrereqIds, setSelectedPrereqIds] = useState<number[]>([]);
   const [resolveUpstream, setResolveUpstream] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Sync state when modal opens or prerequisites change
+  React.useEffect(() => {
+    if (isOpen) {
+      setNotes("");
+      setResolveUpstream(false);
+      setSelectedPrereqIds(
+        pendingPrereqs.map((p, idx) => p.id || idx).filter((id): id is number => typeof id === "number")
+      );
+    }
+  }, [isOpen, prerequisites]);
+
+  if (!isOpen) return null;
 
   const togglePrereq = (id: number) => {
     setSelectedPrereqIds((prev) =>
