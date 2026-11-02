@@ -19,16 +19,14 @@ import {
   Layers,
   Plus,
   Sparkles,
-  // Check,
+  Check,
   FileCheck,
   AlertTriangle,
   CloudDownload,
   RefreshCw,
   SkipForward,
   RotateCcw,
-  FileCode,
 } from "lucide-react";
-import { MarkdownViewerModal } from "../components/MarkdownViewerModal";
 
 export const ProjectDashboardPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -93,7 +91,6 @@ export const ProjectDashboardPage: React.FC = () => {
   const [deletingDocId, setDeletingDocId] = useState<number | null>(null);
   const [deleteReason, setDeleteReason] = useState("");
   const [processingDocId, setProcessingDocId] = useState<number | null>(null);
-  const [viewingMarkdownDoc, setViewingMarkdownDoc] = useState<{ id: number; name: string } | null>(null);
 
   const [isDragging, setIsDragging] = useState(false);
   const baselineFileInputRef = useRef<HTMLInputElement>(null);
@@ -949,14 +946,7 @@ export const ProjectDashboardPage: React.FC = () => {
                               >
                                 {doc.processing_status}
                               </span>
-                              <button
-                                onClick={() => setViewingMarkdownDoc({ id: doc.id, name: doc.document_name })}
-                                title="View Markdown format"
-                                className="p-1.5 bg-blue-600/15 hover:bg-blue-600 border border-blue-500/30 text-blue-400 hover:text-white rounded-lg transition-all cursor-pointer flex items-center gap-1 text-[10px] font-bold"
-                              >
-                                <FileCode className="h-3 w-3" />
-                                <span>MD</span>
-                              </button>
+
                               {user?.role === "ENGAGEMENT_MANAGER" &&
                                 project.monitoring_status !== "CLOSED" &&
                                 doc.processing_status !== "COMPLETED" && (
@@ -965,7 +955,7 @@ export const ProjectDashboardPage: React.FC = () => {
                                     title="Extract and process document"
                                     className="p-1.5 bg-green-600/20 hover:bg-green-600 border border-green-500/30 text-green-400 hover:text-text-primary rounded-lg transition-all cursor-pointer"
                                   >
-                                    <Play className="h-3 w-3" />
+                                    <Check className="h-3.5 w-3.5" />
                                   </button>
                                 )}
 
@@ -1315,7 +1305,7 @@ export const ProjectDashboardPage: React.FC = () => {
                                     {isProcessing ? (
                                       <Loader2 className="w-3 h-3 animate-spin" />
                                     ) : (
-                                      <Play className="w-3 h-3" />
+                                      <Check className="w-3.5 h-3.5" />
                                     )}
                                   </button>
                                   <button
@@ -1548,14 +1538,7 @@ export const ProjectDashboardPage: React.FC = () => {
                                 {doc.processing_status}
                               </span>
 
-                              <button
-                                onClick={() => setViewingMarkdownDoc({ id: doc.id, name: doc.document_name })}
-                                title="View Markdown format"
-                                className="p-1.5 bg-blue-600/15 hover:bg-blue-600 border border-blue-500/30 text-blue-400 hover:text-white rounded-lg transition-all cursor-pointer flex items-center gap-1 text-[10px] font-bold"
-                              >
-                                <FileCode className="h-3 w-3" />
-                                <span>MD</span>
-                              </button>
+
                               {(user?.role === "PROJECT_LEAD" ||
                                 user?.role === "ENGAGEMENT_MANAGER" ||
                                 user?.role === "ADMIN") &&
@@ -1565,7 +1548,7 @@ export const ProjectDashboardPage: React.FC = () => {
                                     title="Extract and process document"
                                     className="p-1.5 bg-green-600/20 hover:bg-green-600 border border-green-500/30 text-green-400 hover:text-text-primary rounded-lg transition-all cursor-pointer"
                                   >
-                                    <Play className="h-3 w-3" />
+                                    <Check className="h-3.5 w-3.5" />
                                   </button>
                                 )}
 
@@ -1874,14 +1857,7 @@ export const ProjectDashboardPage: React.FC = () => {
           </button>
         </div>
       )}
-      {/* Markdown Viewer Modal */}
-      <MarkdownViewerModal
-        isOpen={!!viewingMarkdownDoc}
-        onClose={() => setViewingMarkdownDoc(null)}
-        projectId={id!}
-        documentId={viewingMarkdownDoc?.id || null}
-        documentName={viewingMarkdownDoc?.name}
-      />
+
     </div>
   );
 };
