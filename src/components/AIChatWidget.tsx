@@ -192,19 +192,31 @@ export const AIChatWidget: React.FC = () => {
 
   const fetchProjectDetails = async (projId: string) => {
     try {
-      const res = await apiClient.get(API_ENDPOINTS.PROJECTS.DETAIL(projId));
+      const res = await apiClient.get(API_ENDPOINTS.PROJECTS.DETAIL(projId), {
+        headers: { 'X-Skip-Auth-Redirect': 'true' },
+      });
       if (res.data?.success) {
         setProject(res.data.data);
       }
-    } catch {
-      // ignore
+    } catch (err: any) {
+      if (err?.response?.status === 404 || err?.response?.status === 403) {
+        try {
+          localStorage.removeItem('lastActiveProjectId');
+        } catch {}
+        if (!projectIdFromUrl) {
+          setActiveProjectId(null);
+          setProject(null);
+        }
+      }
     }
   };
 
   const fetchSuggestions = async (projId: string) => {
     setLoadingSuggestions(true);
     try {
-      const res = await apiClient.get(`/projects/${projId}/rag/suggestions`);
+      const res = await apiClient.get(`/projects/${projId}/rag/suggestions`, {
+        headers: { 'X-Skip-Auth-Redirect': 'true' },
+      });
       if (res.data?.success && Array.isArray(res.data.data) && res.data.data.length > 0) {
         setSuggestions(res.data.data);
       } else {
@@ -230,7 +242,9 @@ export const AIChatWidget: React.FC = () => {
   const fetchSessions = async (projId: string) => {
     setLoadingSessions(true);
     try {
-      const res = await apiClient.get(API_ENDPOINTS.RAG.SESSIONS(projId));
+      const res = await apiClient.get(API_ENDPOINTS.RAG.SESSIONS(projId), {
+        headers: { 'X-Skip-Auth-Redirect': 'true' },
+      });
       if (res.data?.success) {
         const list = res.data.data || [];
         setSessions(list);
@@ -238,8 +252,11 @@ export const AIChatWidget: React.FC = () => {
           setCurrentSessionId(list[0].id);
         }
       }
-    } catch (err) {
-      console.error('Failed to fetch chat sessions:', err);
+    } catch (err: any) {
+      if (err?.response?.status === 404 || err?.response?.status === 403) {
+        setSessions([]);
+        setCurrentSessionId(null);
+      }
     } finally {
       setLoadingSessions(false);
     }
