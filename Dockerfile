@@ -6,10 +6,7 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 # Install dependencies
-# COPY package.json package-lock.json ./
-# RUN npm ci
-
-COPY package.json ./
+COPY package.json package-lock.json* ./
 RUN npm install
 
 # API URL available during Vite build (defaults to VPS backend, or overridden by .env / build-arg)

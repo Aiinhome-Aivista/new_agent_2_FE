@@ -57,7 +57,7 @@ const inFlightGetMap = new Map<string, Promise<any>>();
 const originalGet: AxiosGetSignature = <T = any, R = AxiosResponse<T>, D = any>(
   url: string,
   config?: AxiosRequestConfig<D>
-): Promise<R> => apiClient.request<T, R, D>({ ...config, method: "GET", url });
+): Promise<R> => (apiClient.request as any)({ ...config, method: "GET", url }) as Promise<R>;
 
 /**
  * Safely serialize query parameters without throwing on circular structures or URLSearchParams.
@@ -91,7 +91,7 @@ export function clearInFlightCache(): void {
 /**
  * Enhanced apiClient.get with in-flight deduplication and preserved Axios typing.
  */
-apiClient.get = function <T = any, R = AxiosResponse<T>, D = any>(
+(apiClient as any).get = function <T = any, R = AxiosResponse<T>, D = any>(
   url: string,
   config?: ExtendedRequestConfig<D>
 ): Promise<R> {
