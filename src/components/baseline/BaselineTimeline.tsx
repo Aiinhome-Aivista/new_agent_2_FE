@@ -554,7 +554,7 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
                   }`}
                 >
                   <Calendar className="w-3.5 h-3.5 text-[#FF5A14]" />
-                  <span>{showFullTimeline ? "Hide Detailed Gantt View" : "View Full Timeline"}</span>
+                  <span>{showFullTimeline ? "Hide Detailed Delivery Plan" : "View Full Timeline & Delivery Plan"}</span>
                   <ChevronDown
                     className={`w-4 h-4 transition-transform duration-200 ${
                       showFullTimeline ? "rotate-180" : ""
@@ -562,20 +562,6 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
                   />
                 </button>
               </div>
-
-              {/* Collapsible Gantt Swimlane Timeline */}
-              {showFullTimeline && (
-                <div className="mt-6 pt-6 border-t border-slate-200/80 dark:border-white/10 animate-fadeIn">
-                  <GanttSwimlaneTimeline
-                    items={timelineItems}
-                    milestones={Array.from(milestoneMap.values())}
-                    project={project}
-                    selectedId={selectedItem?.id ?? null}
-                    onSelect={(id) => setSelectedDeliverableId(id)}
-                    formatDate={formatDate}
-                  />
-                </div>
-              )}
             </div>
 
             {/* ── RIGHT COLUMN: Deliverable Details Panel (5 cols) ── */}
@@ -917,6 +903,20 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
                 </div>
               )}
             </div>
+          </div>
+        )}
+
+        {/* Collapsible Detailed Gantt Swimlane / Contract Work-Items & Delivery Plan (Full 12-Column Width) */}
+        {showFullTimeline && (
+          <div className="mt-8 pt-8 border-t border-slate-200/80 dark:border-white/10 animate-fadeIn">
+            <GanttSwimlaneTimeline
+              items={timelineItems}
+              milestones={Array.from(milestoneMap.values())}
+              project={project}
+              selectedId={selectedItem?.id ?? null}
+              onSelect={(id) => setSelectedDeliverableId(id)}
+              formatDate={formatDate}
+            />
           </div>
         )}
       </div>
