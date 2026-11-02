@@ -1,8 +1,34 @@
 import { GanttSwimlaneTimeline } from "./GanttSwimlaneTimeline";
-import React from "react";
-import { Calendar, ChevronLeft, ChevronRight, Repeat, RefreshCw, FileText, CheckCircle2, X, Clock, MapPin, AlertTriangle } from "lucide-react";
+import React, { useState, useMemo } from "react";
+import {
+  Calendar,
+  ChevronDown,
+  ChevronRight,
+  Check,
+  CheckCircle2,
+  Clock,
+  Users,
+  FileText,
+  FileCheck,
+  Paperclip,
+  Download,
+  BarChart3,
+  Rocket,
+  Code2,
+  Database,
+  Flag,
+  Repeat,
+  X,
+  AlertTriangle,
+  ArrowRight,
+  Filter,
+} from "lucide-react";
 import { useTheme } from "../../context/ThemeContext";
-import { DeliverableCompletionModal, type PrerequisiteItem, type IncompletePredecessor } from "./DeliverableCompletionModal";
+import {
+  DeliverableCompletionModal,
+  type PrerequisiteItem,
+  type IncompletePredecessor,
+} from "./DeliverableCompletionModal";
 
 export interface BaselineTimelineProps {
   timelineItems: any[];
@@ -17,7 +43,11 @@ export interface BaselineTimelineProps {
   milestoneMap: Map<string, any>;
   user: any;
   project: any;
-  handleUpdateCompletionStatus: (id: number, status: string, options?: any) => Promise<void> | void;
+  handleUpdateCompletionStatus: (
+    id: number,
+    status: string,
+    options?: any,
+  ) => Promise<void> | void;
   handleRescheduleDeadline: (id: number, date: string) => void;
   formatDate: (dateStr: string | null | undefined) => string;
 }
@@ -42,7 +72,13 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
 
-  const [completionModal, setCompletionModal] = React.useState<{
+  // Filter state: 'ALL' | 'COMPLETED' | 'IN_PROGRESS' | 'PENDING'
+  const [statusFilter, setStatusFilter] = useState<string>("ALL");
+  const [activeTab, setActiveTab] = useState<"DETAILS" | "ATTACHMENTS" | "ACTIVITY">("DETAILS");
+  const [showFullTimeline, setShowFullTimeline] = useState<boolean>(false);
+  const [sortAscending, setSortAscending] = useState<boolean>(true);
+
+  const [completionModal, setCompletionModal] = useState<{
     isOpen: boolean;
     targetStatus: "COMPLETED" | "ACTIVE" | "CANCELLED";
     deliverableName: string;
@@ -51,1360 +87,841 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
     incompletePredecessors: IncompletePredecessor[];
   } | null>(null);
 
+  // Normalize parsed items
+  const parsedItems = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayMs = today.getTime();
+
+    return (timelineItems || []).map((item: any, idx: number) => {
+      const raw =
+        item.deadline_normalized ||
+        item.deadline ||
+        item.deadline_text ||
+        item.estimated_deadline ||
+        item.predicted_deadline ||
+        null;
+
+      let dateMs: number | null = null;
+      let dateObj: Date | null = null;
+
+      if (raw) {
+        if (typeof raw === "string" && /^\d{4}-\d{2}-\d{2}/.test(raw)) {
+          const parts = raw.substring(0, 10).split("-");
+          const year = parseInt(parts[0], 10);
+          const month = parseInt(parts[1], 10) - 1;
+          const day = parseInt(parts[2], 10);
+          dateObj = new Date(year, month, day);
+          dateObj.setHours(0, 0, 0, 0);
+          dateMs = dateObj.getTime();
+        } else {
+          let d = new Date(raw);
+          if (isNaN(d.getTime()) && typeof raw === "string") {
+            d = new Date(raw.replace(" ", "T"));
+          }
+          if (!isNaN(d.getTime())) {
+            d.setHours(0, 0, 0, 0);
+            dateObj = d;
+            dateMs = d.getTime();
+          }
+        }
+      }
+
+      const isExplicitDone =
+        item.completion_status === "COMPLETED" ||
+        item.completion_status === "CANCELLED";
+
+      const completionStatus =
+        (isExplicitDone ? item.completion_status : null) ||
+        item.latest_progress?.status_code ||
+        item.completion_status ||
+        "ACTIVE";
+
+      // Detect icon type from name/milestone
+      const nameLower = (item.name || item.scope_item_normalized || item.milestone || "").toLowerCase();
+      let iconType: "rocket" | "file" | "code" | "db" | "flag" = "flag";
+      if (nameLower.includes("kick-off") || nameLower.includes("kickoff") || nameLower.includes("meeting") || nameLower.includes("launch")) {
+        iconType = "rocket";
+      } else if (nameLower.includes("initiat") || nameLower.includes("baseline") || nameLower.includes("contract") || nameLower.includes("setup")) {
+        iconType = "file";
+      } else if (nameLower.includes("workflow") || nameLower.includes("rag") || nameLower.includes("agent") || nameLower.includes("code") || nameLower.includes("api")) {
+        iconType = "code";
+      } else if (nameLower.includes("extract") || nameLower.includes("data") || nameLower.includes("pipeline") || nameLower.includes("ingest")) {
+        iconType = "db";
+      }
+
+      // Format date labels
+      const dateFormatted = dateObj
+        ? dateObj.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+        : "Pending Date";
+      
+      const dayOfWeek = dateObj
+        ? dateObj.toLocaleDateString("en-US", { weekday: "short" })
+        : "TBD";
+
+      const isToday = dateMs !== null && Math.abs(dateMs - todayMs) < 86400000;
+
+      return {
+        ...item,
+        _dateMs: dateMs,
+        _dateObj: dateObj,
+        _idx: idx,
+        _completionStatus: completionStatus,
+        _isToday: isToday,
+        _dateFormatted: dateFormatted,
+        _dayOfWeek: dayOfWeek,
+        _iconType: iconType,
+      };
+    });
+  }, [timelineItems]);
+
+  // Determine current "Today" index or anchor item
+  const todayItemIndex = useMemo(() => {
+    const todayIndex = parsedItems.findIndex((it) => it._isToday);
+    if (todayIndex !== -1) return todayIndex;
+    // Fallback: first active or upcoming item
+    const firstActive = parsedItems.findIndex(
+      (it) => it._completionStatus === "ACTIVE" || it._completionStatus === "IN_PROGRESS",
+    );
+    return firstActive !== -1 ? firstActive : 0;
+  }, [parsedItems]);
+
+  // Filter items based on active statusFilter
+  const filteredItems = useMemo(() => {
+    let items = parsedItems.filter((item) => {
+      if (statusFilter === "ALL") return true;
+      if (statusFilter === "COMPLETED") {
+        return item._completionStatus === "COMPLETED";
+      }
+      if (statusFilter === "IN_PROGRESS") {
+        return (
+          item._completionStatus === "IN_PROGRESS" ||
+          (item.latest_progress?.progress_percentage || 0) > 0 &&
+          item._completionStatus !== "COMPLETED"
+        );
+      }
+      if (statusFilter === "PENDING") {
+        return (
+          item._completionStatus === "ACTIVE" ||
+          item._completionStatus === "PENDING" ||
+          item._completionStatus === "BLOCKED"
+        );
+      }
+      return true;
+    });
+
+    return items.sort((a, b) => {
+      const aMs = a._dateMs || 0;
+      const bMs = b._dateMs || 0;
+      return sortAscending ? aMs - bMs : bMs - aMs;
+    });
+  }, [parsedItems, statusFilter, sortAscending]);
+
+  // Active / Selected Deliverable
+  const selectedItem = useMemo(() => {
+    if (!timelineItems || timelineItems.length === 0) return null;
+    return (
+      parsedItems.find((d) => d.id === selectedDeliverableId) ||
+      parsedItems[0] ||
+      null
+    );
+  }, [parsedItems, selectedDeliverableId, timelineItems]);
+
+  // Helper to render icon
+  const renderItemIcon = (type: "rocket" | "file" | "code" | "db" | "flag") => {
+    switch (type) {
+      case "rocket":
+        return <Rocket className="w-5 h-5 text-[#FF5A14]" />;
+      case "file":
+        return <FileCheck className="w-5 h-5 text-emerald-500" />;
+      case "code":
+        return <Code2 className="w-5 h-5 text-blue-500" />;
+      case "db":
+        return <Database className="w-5 h-5 text-amber-500" />;
+      default:
+        return <Flag className="w-5 h-5 text-slate-400 dark:text-gray-400" />;
+    }
+  };
+
+  const getItemIconBg = (type: "rocket" | "file" | "code" | "db" | "flag") => {
+    switch (type) {
+      case "rocket":
+        return "bg-orange-500/10 border-orange-500/20";
+      case "file":
+        return "bg-emerald-500/10 border-emerald-500/20";
+      case "code":
+        return "bg-blue-500/10 border-blue-500/20";
+      case "db":
+        return "bg-amber-500/10 border-amber-500/20";
+      default:
+        return "bg-slate-500/10 border-slate-500/20";
+    }
+  };
+
+  // Helper to render status badge pill
+  const renderStatusBadge = (status: string, size: "sm" | "md" = "sm") => {
+    const isComp = status === "COMPLETED";
+    const isInProg = status === "IN_PROGRESS";
+    const isCancelled = status === "CANCELLED";
+
+    if (isComp) {
+      return (
+        <span
+          className={`inline-flex items-center gap-1.5 rounded-full font-semibold border ${
+            size === "sm" ? "px-3 py-1 text-xs" : "px-3.5 py-1 text-xs"
+          } bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border-emerald-200/60 dark:border-emerald-800/40 shadow-xs`}
+        >
+          <Check className="w-3.5 h-3.5 stroke-[3]" />
+          Completed
+        </span>
+      );
+    }
+
+    if (isInProg) {
+      return (
+        <span
+          className={`inline-flex items-center gap-1.5 rounded-full font-semibold border ${
+            size === "sm" ? "px-3 py-1 text-xs" : "px-3.5 py-1 text-xs"
+          } bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border-blue-200/60 dark:border-blue-800/40 shadow-xs`}
+        >
+          <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+          In Progress
+        </span>
+      );
+    }
+
+    if (isCancelled) {
+      return (
+        <span
+          className={`inline-flex items-center gap-1.5 rounded-full font-semibold border ${
+            size === "sm" ? "px-3 py-1 text-xs" : "px-3.5 py-1 text-xs"
+          } bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border-rose-200/60 dark:border-rose-800/40 shadow-xs`}
+        >
+          <X className="w-3.5 h-3.5" />
+          Cancelled
+        </span>
+      );
+    }
+
+    return (
+      <span
+        className={`inline-flex items-center gap-1.5 rounded-full font-semibold border ${
+          size === "sm" ? "px-3 py-1 text-xs" : "px-3.5 py-1 text-xs"
+        } bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border-amber-200/60 dark:border-amber-800/40 shadow-xs`}
+      >
+        <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+        Pending
+      </span>
+    );
+  };
+
   return (
-    <>
-            {/* Deliverables timeline */}
-            <div className="mb-8">
-              {/* Section Header */}
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-1 h-7 rounded-full bg-gradient-to-b from-cyan-400 to-violet-500"></div>
-                <h2 className="text-xl font-bold tracking-tight">
+    <div className="mb-10">
+      {/* ── Outer Card Container ── */}
+      <div
+        className={`rounded-3xl p-6 sm:p-8 border transition-all duration-300 ${
+          isDark
+            ? "bg-[#141416] border-white/10 shadow-2xl"
+            : "bg-white border-slate-200/90 shadow-sm"
+        }`}
+      >
+        {/* ── Top Header Bar ── */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-200/80 dark:border-white/10">
+          <div className="flex items-center gap-3.5">
+            {/* Orange Badge */}
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#FF5A14] to-[#FF7A45] flex items-center justify-center text-white shadow-md shadow-[#FF5A14]/25 shrink-0">
+              <Calendar className="w-6 h-6" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2.5">
+                <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
                   Deliverables Timeline
                 </h2>
-                {recurringGroups.length > 0 && (
-                  <span
-                    title={`${recurringGroups.length} recurring commitment${recurringGroups.length > 1 ? "s" : ""} auto-expanded from EL`}
-                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-violet-500/15 border border-violet-500/35 text-violet-300 text-[10px] font-bold uppercase tracking-wider cursor-default"
-                  >
+                {recurringGroups && recurringGroups.length > 0 && (
+                  <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-violet-500/15 border border-violet-500/30 text-violet-600 dark:text-violet-300">
                     <Repeat className="w-3 h-3" />
                     {recurringGroups.length} Recurring
                   </span>
                 )}
-                <span className="ml-auto text-xs font-medium text-text-muted flex items-center gap-1.5">
-                  <Calendar className="w-3.5 h-3.5" />
-                  {new Date().toLocaleDateString(undefined, {
-                    month: "long",
-                    day: "numeric",
-                    year: "numeric",
-                  })}
-                </span>
               </div>
+              <p className="text-xs text-slate-500 dark:text-gray-400 mt-0.5">
+                Track project milestones, deliverables and their current status
+              </p>
+            </div>
+          </div>
 
-              {timelineItems.length === 0 ? (
-                <p className="text-text-muted mb-8">
-                  No scheduled scope items found.
-                </p>
-              ) : (
-                (() => {
-                  /* ── Parse dates & compute timeline bounds ── */
-                  const today = new Date();
-                  today.setHours(0, 0, 0, 0);
-                  const todayMs = today.getTime();
+          {/* Filter Pills */}
+          <div className="flex items-center flex-wrap gap-1.5 sm:gap-2">
+            {[
+              { id: "ALL", label: "All" },
+              { id: "COMPLETED", label: "Completed" },
+              { id: "IN_PROGRESS", label: "In Progress" },
+              { id: "PENDING", label: "Pending" },
+            ].map((tab) => {
+              const isActive = statusFilter === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setStatusFilter(tab.id)}
+                  className={`px-4 py-2 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                    isActive
+                      ? "bg-[#FF5A14] text-white shadow-md shadow-[#FF5A14]/20"
+                      : "bg-slate-100 hover:bg-slate-200/80 dark:bg-white/5 dark:hover:bg-white/10 text-slate-600 dark:text-gray-300"
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
 
-                  const parsedItems = timelineItems.map(
-                    (item: any, idx: number) => {
-                      const raw =
-                        item.deadline_normalized ||
-                        item.deadline ||
-                        item.deadline_text ||
-                        null;
-                      let dateMs: number | null = null;
-                      if (raw) {
-                        if (
-                          typeof raw === "string" &&
-                          /^\d{4}-\d{2}-\d{2}/.test(raw)
-                        ) {
-                          const parts = raw.substring(0, 10).split("-");
-                          const year = parseInt(parts[0], 10);
-                          const month = parseInt(parts[1], 10) - 1;
-                          const day = parseInt(parts[2], 10);
-                          const d = new Date(year, month, day);
-                          d.setHours(0, 0, 0, 0);
-                          dateMs = d.getTime();
-                        } else {
-                          let d = new Date(raw);
-                          if (isNaN(d.getTime()) && typeof raw === "string") {
-                            d = new Date(raw.replace(" ", "T"));
-                          }
-                          if (!isNaN(d.getTime())) {
-                            d.setHours(0, 0, 0, 0);
-                            dateMs = d.getTime();
-                          }
-                        }
-                      }
+            {/* Sort Toggle Button */}
+            <button
+              onClick={() => setSortAscending(!sortAscending)}
+              className="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-600 dark:text-gray-300 flex items-center justify-center transition-all cursor-pointer"
+              title={sortAscending ? "Sorted Ascending (Click to reverse)" : "Sorted Descending"}
+            >
+              <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${!sortAscending ? "rotate-180" : ""}`} />
+            </button>
+          </div>
+        </div>
 
-                      // Check for Execution Prerequisites
-                      let hasPrerequisites = false;
-                      let prereqCount = 0;
-                      try {
-                        const rawDeps =
-                          item.latest_progress?.dependencies ||
-                          item.dependencies ||
-                          item.prerequisites ||
-                          item.execution_prerequisites;
-                        if (rawDeps) {
-                          const parsed =
-                            typeof rawDeps === "string"
-                              ? JSON.parse(rawDeps)
-                              : rawDeps;
-                          if (Array.isArray(parsed) && parsed.length > 0) {
-                            hasPrerequisites = true;
-                            prereqCount = parsed.length;
-                          }
-                        }
-                      } catch (e) {}
-
-                      const mData = getMilestoneData(
-                        item.name,
-                        item.milestone_normalized,
-                      );
-                      if (mData) {
-                        const blockedByIds = mData.blocked_by_ids
-                          ? mData.blocked_by_ids.split(",").filter(Boolean)
-                          : [];
-                        if (
-                          mData.predecessor_details ||
-                          blockedByIds.length > 0
-                        ) {
-                          hasPrerequisites = true;
-                          if (prereqCount === 0)
-                            prereqCount = blockedByIds.length || 1;
-                        }
-                      }
-
-                      // Determine status-based color scheme
-                      const isExplicitDone =
-                        item.completion_status === "COMPLETED" ||
-                        item.completion_status === "CANCELLED";
-                      const completionStatus =
-                        (isExplicitDone ? item.completion_status : null) ||
-                        item.latest_progress?.status_code ||
-                        item.completion_status ||
-                        "ACTIVE";
-                      if (isExplicitDone) {
-                        hasPrerequisites = false;
-                      }
-
-                      let itemColor = isDark
-                        ? {
-                            bg: "rgba(245,158,11,0.18)",
-                            border: "#f59e0b",
-                            text: "#fcd34d",
-                            dot: "#f59e0b",
-                            glow: "rgba(245,158,11,0.3)",
-                          }
-                        : {
-                            bg: "#FEF3C7",
-                            border: "#D97706",
-                            text: "#92400E",
-                            dot: "#F59E0B",
-                            glow: "rgba(245,158,11,0.25)",
-                          }; // Pending/Active (Amber)
-                      if (completionStatus === "COMPLETED") {
-                        itemColor = isDark
-                          ? {
-                              bg: "rgba(16,185,129,0.18)",
-                              border: "#10b981",
-                              text: "#6ee7b7",
-                              dot: "#10b981",
-                              glow: "rgba(16,185,129,0.3)",
-                            }
-                          : {
-                              bg: "#D1FAE5",
-                              border: "#059669",
-                              text: "#065F46",
-                              dot: "#10B981",
-                              glow: "rgba(16,185,129,0.25)",
-                            }; // Completed (Green)
-                      } else if (completionStatus === "CANCELLED") {
-                        itemColor = isDark
-                          ? {
-                              bg: "rgba(244,63,94,0.18)",
-                              border: "#f43f5e",
-                              text: "#fda4af",
-                              dot: "#f43f5e",
-                              glow: "rgba(244,63,94,0.3)",
-                            }
-                          : {
-                              bg: "#FFE4E6",
-                              border: "#E11D48",
-                              text: "#9F1239",
-                              dot: "#F43F5E",
-                              glow: "rgba(244,63,94,0.25)",
-                            }; // Cancelled (Red)
-                      }
-
-                      return {
-                        ...item,
-                        _dateMs: dateMs,
-                        _idx: idx,
-                        _color: itemColor,
-                        _hasPrerequisites: hasPrerequisites,
-                        _prereqCount: prereqCount,
-                      };
-                    },
-                  );
-
-                  const datedItems = parsedItems.filter(
-                    (i: any) => i._dateMs !== null,
-                  );
-                  const hasDates = datedItems.length >= 1;
-
-                  let minMs = todayMs;
-                  let maxMs = todayMs;
-                  if (hasDates) {
-                    const allMs = [
-                      ...datedItems.map((i: any) => i._dateMs as number),
-                      todayMs,
-                    ];
-                    minMs = Math.min(...allMs);
-                    maxMs = Math.max(...allMs);
-                    // Add padding on each side so edge items aren't clipped
-                    const range = maxMs - minMs || 86400000 * 30;
-                    minMs -= range * 0.08;
-                    maxMs += range * 0.08;
-                  }
-
-                  const totalRange = maxMs - minMs || 1;
-                  const toPercent = (ms: number) =>
-                    Math.max(
-                      2,
-                      Math.min(98, ((ms - minMs) / totalRange) * 100),
-                    );
-                  const todayPct = hasDates ? toPercent(todayMs) : -1;
-
-                  /* ── Generate month tick marks ── */
-                  const monthTicks: { pct: number; label: string }[] = [];
-                  if (hasDates) {
-                    const startDate = new Date(minMs);
-                    const endDate = new Date(maxMs);
-                    
-                    const totalMonths =
-                      (endDate.getFullYear() - startDate.getFullYear()) * 12 +
-                      (endDate.getMonth() - startDate.getMonth()) +
-                      1;
-                    const monthStep = totalMonths > 12 ? 3 : totalMonths > 6 ? 2 : 1;
-
-                    const cur = new Date(
-                      startDate.getFullYear(),
-                      startDate.getMonth(),
-                      1,
-                    );
-                    while (cur <= endDate) {
-                      const pct = ((cur.getTime() - minMs) / totalRange) * 100;
-                      if (pct >= 0 && pct <= 100) {
-                        monthTicks.push({
-                          pct,
-                          label: cur.toLocaleDateString(undefined, {
-                            month: "short",
-                            year: "2-digit",
-                          }),
-                        });
-                      }
-                      cur.setMonth(cur.getMonth() + monthStep);
-                    }
-                  }
-
-                  /* ── Position items ── */
-                  const getLeftPct = (item: any, idx: number) => {
-                    if (hasDates && item._dateMs !== null) {
-                      return toPercent(item._dateMs);
-                    }
-                    // Fallback: evenly spaced between 8% and 92%
-                    const count = parsedItems.length;
-                    return count === 1 ? 50 : 8 + (idx / (count - 1)) * 84;
-                  };
-
-                  const formatItemDate = (item: any) => {
-                    const raw =
-                      item.deadline_normalized ||
-                      item.deadline ||
-                      item.deadline_text;
-                    if (!raw) return item.milestone || `Item ${item._idx + 1}`;
-                    try {
-                      if (
-                        typeof raw === "string" &&
-                        /^\d{4}-\d{2}-\d{2}/.test(raw)
-                      ) {
-                        const parts = raw.substring(0, 10).split("-");
-                        const year = parseInt(parts[0], 10);
-                        const month = parseInt(parts[1], 10) - 1;
-                        const day = parseInt(parts[2], 10);
-                        const d = new Date(year, month, day);
-                        return d.toLocaleDateString(undefined, {
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
-                        });
-                      }
-                      let d = new Date(raw);
-                      if (isNaN(d.getTime()) && typeof raw === "string") {
-                        d = new Date(raw.replace(" ", "T"));
-                      }
-                      if (isNaN(d.getTime())) return raw;
-                      return d.toLocaleDateString(undefined, {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      });
-                    } catch {
-                      return raw;
-                    }
-                  };
-
-                  const isPast = (item: any) =>
-                    item._dateMs !== null && item._dateMs < todayMs;
-
-                  const selectedItem =
-                    parsedItems.find(
-                      (d: any) => d.id === selectedDeliverableId,
-                    ) || parsedItems[0];
-
-                  /* ── Determine alternating above/below positions ── */
-                  const sortedByPosition = [...parsedItems].sort(
-                    (a: any, b: any) =>
-                      getLeftPct(a, a._idx) - getLeftPct(b, b._idx),
-                  );
-                  const positionMap = new Map<number, boolean>();
-                  sortedByPosition.forEach((item: any, i: number) => {
-                    positionMap.set(item.id, i % 2 === 0); // true = above, false = below
-                  });
-
-                  /* ── Track midpoint Y for consistent reference ── */
-                  const TRACK_Y = 135;
-                  const ABOVE_LABEL_TOP = 40;
-                  const BELOW_LABEL_START = TRACK_Y + 8;
+        {/* ── Main Two-Column Layout ── */}
+        {filteredItems.length === 0 ? (
+          <div className="py-16 text-center">
+            <div className="w-12 h-12 rounded-2xl bg-orange-500/10 text-[#FF5A14] flex items-center justify-center mx-auto mb-3">
+              <Calendar className="w-6 h-6" />
+            </div>
+            <h4 className="text-base font-bold text-slate-900 dark:text-white">
+              No Deliverables Found
+            </h4>
+            <p className="text-xs text-slate-500 dark:text-gray-400 mt-1 max-w-sm mx-auto">
+              {statusFilter !== "ALL"
+                ? `There are no deliverables currently matching the "${statusFilter.replace("_", " ")}" status.`
+                : "No scheduled deliverables or milestones have been extracted yet."}
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mt-6">
+            {/* ── LEFT COLUMN: Vertical Timeline Track (7 cols) ── */}
+            <div className="lg:col-span-7 xl:col-span-8 flex flex-col">
+              {/* Scrollable Timeline List Container (Shorter height with custom scrollbar) */}
+              <div className="max-h-[460px] overflow-y-auto pr-2.5 custom-scrollbar space-y-2.5 relative">
+                {filteredItems.map((item, idx) => {
+                  const isSelected = selectedDeliverableId === item.id;
+                  const isTodayAnchor = idx === todayItemIndex;
 
                   return (
-                    <div>
-                      {/* ── Multi-Lane Gantt & Work Items View ── */}
-                      <GanttSwimlaneTimeline
-                        items={timelineItems}
-                        milestones={Array.from(milestoneMap.values())}
-                        project={project}
-                        selectedId={selectedItem?.id ?? null}
-                        onSelect={(id) => setSelectedDeliverableId(id)}
-                        formatDate={formatDate}
-                      />
-                      {/* ── Selected Item Detail Card ── */}
-                      {selectedItem &&
-                        (() => {
-                          const color = selectedItem._color;
-                          const latestProgress = selectedItem.latest_progress;
-                          const isExplicitDone = selectedItem.completion_status === "COMPLETED" || selectedItem.completion_status === "CANCELLED";
-                          const completionStatus =
-                            (isExplicitDone ? selectedItem.completion_status : null) ||
-                            latestProgress?.status_code ||
-                            selectedItem.completion_status ||
-                            "ACTIVE";
-                          let statusLabel =
-                            isExplicitDone
-                              ? selectedItem.completion_status.replace("_", " ")
-                              : latestProgress?.status_label || completionStatus.replace("_", " ");
-                          const progressPct =
-                            completionStatus === "COMPLETED"
-                              ? 100
-                              : latestProgress?.progress_percentage;
-
-                          if (
-                            (progressPct || 0) > 0 &&
-                            completionStatus === "BLOCKED"
-                          ) {
-                            statusLabel = "IN PROGRESS";
-                          }
-                          const executionSummary =
-                            completionStatus === "COMPLETED"
-                              ? "Deliverable has been marked as COMPLETED by project leadership."
-                              : latestProgress?.execution_summary;
-                          const updateSource = latestProgress?.document_name;
-                          const updateDate = latestProgress?.status_updated_at;
-                          let dependencies: string[] = [];
-                          try {
-                            if (latestProgress?.dependencies) {
-                              dependencies =
-                                typeof latestProgress.dependencies === "string"
-                                  ? JSON.parse(latestProgress.dependencies)
-                                  : latestProgress.dependencies;
-                            }
-                          } catch (e) {
-                            console.error("Failed to parse dependencies", e);
-                          }
-
-                          const isPrereqSatisfied = (depItem: any): boolean => {
-                            if (!depItem) return false;
-                            if (isExplicitDone) return true;
-                            if (typeof depItem === "object" && depItem !== null && depItem.status === "COMPLETED") return true;
-                            
-                            const depName = typeof depItem === "object" && depItem !== null ? (depItem.name || "") : String(depItem);
-                            const norm = depName.toLowerCase().trim();
-                            if (!norm) return false;
-
-                            // Check against completed scope items in parsedItems
-                            for (const it of parsedItems) {
-                              const itName = (it.name || it.scope_item_normalized || "").toLowerCase().trim();
-                              const isDone = it.completion_status === "COMPLETED" || (it.latest_progress?.progress_percentage || 0) >= 100;
-                              if (isDone) {
-                                if (itName === norm || itName.includes(norm) || norm.includes(itName)) return true;
-                                if (norm.includes("crm") && itName.includes("crm")) return true;
-                                if (norm.includes("vpn") && itName.includes("vpn")) return true;
-                                if (norm.includes("credential") && itName.includes("credential")) return true;
-                                if (norm.includes("sso") && itName.includes("sso")) return true;
-                                if (norm.includes("azure") && itName.includes("azure")) return true;
-                              }
-                            }
-
-                            // Check against milestoneMap
-                            for (const m of milestoneMap.values()) {
-                              if (!m) continue;
-                              const mName = (m.name || "").toLowerCase().trim();
-                              const isDone = m.status?.toUpperCase() === "COMPLETED";
-                              if (isDone) {
-                                if (mName === norm || mName.includes(norm) || norm.includes(mName)) return true;
-                                if (norm.includes("crm") && mName.includes("crm")) return true;
-                                if (norm.includes("sso") && mName.includes("sso")) return true;
-                              }
-                            }
-
-                            return false;
-                          };
-
-                          const satisfiedPrereqsCount = dependencies.filter((d: any) => isPrereqSatisfied(d)).length;
-                          const pendingPrereqs = dependencies.filter((d: any) => !isPrereqSatisfied(d));
-
-                          return (
-                            <div
-                              key={selectedItem.id}
-                              className="relative mt-5 rounded-2xl border bg-bg-card border-border-subtle shadow-xl timeline-detail-enter overflow-hidden transition-colors"
-                              style={{
-                                borderColor: `${color.border}40`,
-                                boxShadow: `0 10px 30px -10px ${color.glow}`,
-                              }}
-                            >
-                              {/* Accent bar */}
-                              <div
-                                className="absolute top-0 left-0 right-0 h-[2px] rounded-t-2xl"
-                                style={{
-                                  background: `linear-gradient(90deg, ${color.dot}, transparent)`,
-                                }}
-                              ></div>
-
-                              <div className="p-5">
-                                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-                                  <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2 mb-1">
-                                      <span
-                                        className="w-2 h-2 rounded-full"
-                                        style={{ backgroundColor: color.dot }}
-                                      ></span>
-                                      <span
-                                        className="text-[10px] font-bold uppercase tracking-widest"
-                                        style={{ color: color.text }}
-                                      >
-                                        Selected Deliverable
-                                      </span>
-                                    </div>
-                                    <h3 className="font-bold text-lg text-text-primary mt-0.5 leading-snug">
-                                      {selectedItem.scope_item_normalized ||
-                                        selectedItem.name}
-                                    </h3>
-
-                                    {selectedItem._is_occurrence && (
-                                      <div className="mt-2.5 flex items-center gap-2">
-                                        <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-violet-500/15 border border-violet-500/30 text-violet-600 dark:text-violet-300 text-[10px] font-bold uppercase tracking-wider">
-                                          <Repeat className="w-3 h-3" />
-                                          Recurring {selectedItem.recurrence_frequency || selectedItem._parent_item?.recurrence_frequency || "Commitment"}
-                                        </span>
-                                        <span className="text-xs text-text-muted">
-                                          Occurrence for <strong className="text-text-primary">{selectedItem.occurrence_period || selectedItem.deadline_text}</strong>
-                                        </span>
-                                      </div>
-                                    )}
-
-                                    {executionSummary && (
-                                      <div className="mt-4 p-3 bg-blue-50/80 dark:bg-blue-950/20 border border-blue-200/80 dark:border-blue-900/30 rounded-lg">
-                                        <h5 className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider mb-1 flex items-center gap-1.5">
-                                          <FileText className="w-3 h-3" />{" "}
-                                          Latest Update
-                                        </h5>
-                                        <p className="text-sm text-text-primary leading-relaxed">
-                                          {executionSummary}
-                                        </p>
-                                      </div>
-                                    )}
-
-                                    {progressPct !== null &&
-                                      progressPct !== undefined && (
-                                        <div className="mt-4">
-                                          <div className="flex justify-between items-center mb-1.5">
-                                            <span className="text-xs font-semibold text-text-muted">
-                                              Execution Readiness
-                                            </span>
-                                            <span className="text-xs font-bold text-text-primary">
-                                              {progressPct}%
-                                            </span>
-                                          </div>
-                                          <div className="w-full bg-bg-hover border border-border-subtle/50 rounded-full h-1.5">
-                                            <div
-                                              className="bg-emerald-500 h-1.5 rounded-full"
-                                              style={{
-                                                width: `${progressPct}%`,
-                                              }}
-                                            ></div>
-                                          </div>
-                                        </div>
-                                      )}
-
-                                    {(() => {
-                                      const mData = getMilestoneData(
-                                        selectedItem.name,
-                                        selectedItem.milestone_normalized,
-                                      );
-
-                                      // Parse predecessor/successor details (name||FS format)
-                                      const parseMilestoneDetails = (
-                                        raw?: string,
-                                      ) =>
-                                        raw
-                                          ? raw
-                                              .split(";;")
-                                              .filter(Boolean)
-                                              .map((entry) => {
-                                                const parts = entry.split("||");
-                                                const name = parts[0]?.trim();
-                                                const type = parts[1]?.trim();
-                                                const typeLabel: Record<
-                                                  string,
-                                                  string
-                                                > = {
-                                                  FINISH_TO_START:
-                                                    "Finish-to-Start",
-                                                  START_TO_START:
-                                                    "Start-to-Start",
-                                                  FINISH_TO_FINISH:
-                                                    "Finish-to-Finish",
-                                                  START_TO_FINISH:
-                                                    "Start-to-Finish",
-                                                };
-                                                return {
-                                                  name,
-                                                  typeLabel:
-                                                    typeLabel[type] ||
-                                                    "Finish-to-Start",
-                                                };
-                                              })
-                                          : [];
-
-                                      const predecessors =
-                                        parseMilestoneDetails(
-                                          mData?.predecessor_details,
-                                        );
-                                      const successors = parseMilestoneDetails(
-                                        mData?.successor_details,
-                                      );
-                                      const hasPredecessors =
-                                        predecessors.length > 0;
-                                      const hasSuccessors =
-                                        successors.length > 0;
-
-                                      if (!mData) return null;
-
-                                      const isItemCompleted = (status?: string) => {
-                                         const s = (status || "").toUpperCase();
-                                         return s === "COMPLETED" || s === "CANCELLED";
-                                       };
-
-                                       let milestoneStatus = (
-                                         mData.status || "PENDING"
-                                       ).toUpperCase();
-                                       if (
-                                         (progressPct || 0) > 0 &&
-                                         milestoneStatus === "BLOCKED"
-                                       ) {
-                                         milestoneStatus = "IN_PROGRESS";
-                                       }
-                                       const isCompleted =
-                                         isItemCompleted(milestoneStatus) ||
-                                         isItemCompleted(selectedItem?.completion_status) ||
-                                         isItemCompleted(selectedItem?.latest_progress?.status_code);
-
-                                       const isPredecessorDone = (m: any) => {
-                                         if (!m) return true;
-                                         if (isItemCompleted(m.status)) return true;
-                                         const matchingTi = (timelineItems || []).find(
-                                           (ti: any) =>
-                                             ti.name?.toLowerCase() === m.name?.toLowerCase() ||
-                                             ti.scope_item_normalized?.toLowerCase() === m.name?.toLowerCase() ||
-                                             ti.milestone_normalized?.toLowerCase() === m.name?.toLowerCase()
-                                         );
-                                         if (matchingTi && (isItemCompleted(matchingTi.completion_status) || isItemCompleted(matchingTi.latest_progress?.status_code))) {
-                                           return true;
-                                         }
-                                         return false;
-                                       };
-
-                                       // Execution state: which predecessors are still incomplete
-                                       const blockedByIds = mData?.blocked_by_ids
-                                         ? mData.blocked_by_ids.split(",")
-                                         : [];
-                                       const blockingIds = mData?.blocking_ids
-                                         ? mData.blocking_ids.split(",")
-                                         : [];
-
-                                       const incompletePredecessors =
-                                         blockedByIds
-                                           .map((id: string) =>
-                                             milestoneMap.get(id),
-                                           )
-                                           .filter(
-                                             (
-                                               m: any,
-                                             ): m is NonNullable<typeof m> =>
-                                               !!m && !isPredecessorDone(m),
-                                           );
-
-                                       // Which successors are still waiting (not complete)
-                                       const activelyBlockingSuccessors =
-                                         blockingIds
-                                           .map((id: string) =>
-                                             milestoneMap.get(id),
-                                           )
-                                           .filter(
-                                             (
-                                               m: any,
-                                             ): m is NonNullable<typeof m> =>
-                                               !!m && !isPredecessorDone(m),
-                                           );
-
-                                      return (
-                                        <div className="mt-4 space-y-3">
-                                          {/* ── Section 1: Permanent Dependency Graph (never changes) ── */}
-                                          <div className="p-3 bg-indigo-50/50 dark:bg-gray-900/40 border border-indigo-200/60 dark:border-indigo-900/30 rounded-lg">
-                                            <h5 className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-                                              <svg
-                                                className="w-3 h-3"
-                                                fill="none"
-                                                viewBox="0 0 24 24"
-                                                stroke="currentColor"
-                                              >
-                                                <path
-                                                  strokeLinecap="round"
-                                                  strokeLinejoin="round"
-                                                  strokeWidth={2}
-                                                  d="M13 10V3L4 14h7v7l9-11h-7z"
-                                                />
-                                              </svg>
-                                              Dependency Graph
-                                            </h5>
-
-                                            {hasPredecessors ? (
-                                              <div className="mb-2">
-                                                <span className="text-[10px] font-semibold text-text-muted uppercase tracking-wider mb-1.5 block">
-                                                  Predecessors
-                                                </span>
-                                                <ul className="space-y-1">
-                                                  {predecessors.map((p, i) => {
-                                                    const predM = [
-                                                      ...milestoneMap.values(),
-                                                    ].find(
-                                                      (m) => m.name === p.name,
-                                                    );
-                                                    const predDone = isPredecessorDone(predM);
-                                                    return (
-                                                      <li
-                                                        key={i}
-                                                        className="text-xs text-text-primary flex items-center gap-2 px-2 py-1.5 rounded bg-bg-card border border-border-subtle"
-                                                      >
-                                                        {predDone ? (
-                                                          <span className="text-emerald-500 text-[12px] font-bold flex-shrink-0">
-                                                            ✓
-                                                          </span>
-                                                        ) : (
-                                                          <span className="text-indigo-400 text-[12px] font-bold flex-shrink-0">
-                                                            →
-                                                          </span>
-                                                        )}
-                                                        <span
-                                                          className={
-                                                            predDone
-                                                              ? "text-gray-400"
-                                                              : ""
-                                                          }
-                                                        >
-                                                          {p.name}
-                                                        </span>
-                                                        <span className="text-gray-500 text-[10px]">
-                                                          ({p.typeLabel})
-                                                        </span>
-                                                        {predDone && (
-                                                          <span className="ml-auto text-gray-500 text-[10px] italic">
-                                                            (Completed)
-                                                          </span>
-                                                        )}
-                                                      </li>
-                                                    );
-                                                  })}
-                                                </ul>
-                                              </div>
-                                            ) : (
-                                              <p className="text-xs text-gray-500 italic mb-2">
-                                                No predecessor milestones
-                                              </p>
-                                            )}
-
-                                            {hasSuccessors ? (
-                                              <div>
-                                                <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5 block">
-                                                  Successors
-                                                </span>
-                                                <ul className="space-y-1">
-                                                  {successors.map((s, i) => {
-                                                    const succM = [
-                                                      ...milestoneMap.values(),
-                                                    ].find(
-                                                      (m) => m.name === s.name,
-                                                    );
-                                                    const succDone = isPredecessorDone(succM);
-                                                    const succActive =
-                                                      succM &&
-                                                      succM.status?.toUpperCase() !==
-                                                        "PENDING" &&
-                                                      succM.status?.toUpperCase() !==
-                                                        "BLOCKED";
-                                                    return (
-                                                      <li
-                                                        key={i}
-                                                        className="text-xs text-text-primary flex items-center gap-2 px-2 py-1.5 rounded bg-bg-card border border-border-subtle shadow-xs"
-                                                      >
-                                                        {succDone ? (
-                                                          <span className="text-emerald-500 text-[12px] font-bold flex-shrink-0">
-                                                            ✓
-                                                          </span>
-                                                        ) : (
-                                                          <span className="text-gray-500 text-[12px] font-bold flex-shrink-0">
-                                                            →
-                                                          </span>
-                                                        )}
-                                                        <span
-                                                          className={
-                                                            succDone
-                                                              ? "text-gray-400"
-                                                              : ""
-                                                          }
-                                                        >
-                                                          {s.name}
-                                                        </span>
-                                                        <span className="text-gray-500 text-[10px]">
-                                                          ({s.typeLabel})
-                                                        </span>
-                                                        {succDone ? (
-                                                          <span className="ml-auto text-gray-500 text-[10px] italic">
-                                                            Completed
-                                                          </span>
-                                                        ) : (
-                                                          <span
-                                                            className={`ml-auto text-[10px] font-semibold flex items-center gap-1 ${
-                                                              succM?.status?.toUpperCase() ===
-                                                              "BLOCKED"
-                                                                ? "text-red-400"
-                                                                : succM?.status?.toUpperCase() ===
-                                                                    "PENDING"
-                                                                  ? "text-blue-400"
-                                                                  : "text-amber-400"
-                                                            }`}
-                                                          >
-                                                            {succM?.status?.toUpperCase() ===
-                                                            "BLOCKED"
-                                                              ? "🔴"
-                                                              : succM?.status?.toUpperCase() ===
-                                                                  "PENDING"
-                                                                ? "⏳"
-                                                                : "🚧"}{" "}
-                                                            {succM?.status ||
-                                                              "Pending"}
-                                                          </span>
-                                                        )}
-                                                      </li>
-                                                    );
-                                                  })}
-                                                </ul>
-                                              </div>
-                                            ) : (
-                                              <p className="text-xs text-gray-500 italic">
-                                                No successor milestones
-                                              </p>
-                                            )}
-                                          </div>
-
-                                          {/* ── Section 2: Execution State (changes with project progress) ── */}
-                                          <div
-                                            className={`p-3 rounded-lg border ${
-                                              isCompleted
-                                                ? "bg-emerald-50/70 dark:bg-emerald-950/10 border-emerald-200 dark:border-emerald-900/20"
-                                                : incompletePredecessors.length >
-                                                    0
-                                                  ? "bg-red-50/70 dark:bg-red-950/10 border-red-200 dark:border-red-900/20"
-                                                  : "bg-amber-50/70 dark:bg-amber-950/10 border-amber-200 dark:border-amber-900/20"
-                                            }`}
-                                          >
-                                            <h5
-                                              className={`text-[10px] font-bold uppercase tracking-wider mb-3 flex items-center gap-1.5 ${
-                                                isCompleted
-                                                  ? "text-emerald-400"
-                                                  : incompletePredecessors.length >
-                                                      0
-                                                    ? "text-red-400"
-                                                    : "text-amber-400"
-                                              }`}
-                                            >
-                                              <AlertTriangle className="w-3 h-3" />
-                                              Execution State
-                                            </h5>
-
-                                            {isCompleted ? (
-                                              <div className="space-y-1">
-                                                <div className="flex items-center gap-2 text-xs text-emerald-400">
-                                                  <span className="w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0" />
-                                                  ✓ All predecessor milestones
-                                                  completed
-                                                </div>
-                                                <div className="flex items-center gap-2 text-xs text-emerald-400">
-                                                  <span className="w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0" />
-                                                  No active blockers
-                                                </div>
-                                                {hasSuccessors &&
-                                                  activelyBlockingSuccessors.length ===
-                                                    0 && (
-                                                    <div className="mt-1 flex items-center gap-2 text-xs text-gray-500">
-                                                      <span className="w-2 h-2 rounded-full bg-gray-600 flex-shrink-0" />
-                                                      All successors unblocked
-                                                      by this completion
-                                                    </div>
-                                                  )}
-                                              </div>
-                                            ) : milestoneStatus === "PENDING" &&
-                                              incompletePredecessors.length >
-                                                0 ? (
-                                              <div>
-                                                <span className="text-[10px] font-semibold text-blue-400 uppercase tracking-wider mb-1.5 block">
-                                                  Waiting For
-                                                </span>
-                                                <ul className="space-y-1">
-                                                  {incompletePredecessors.map(
-                                                    (
-                                                      m: {
-                                                        name: string;
-                                                        status: string;
-                                                      },
-                                                      i: number,
-                                                    ) => (
-                                                      <li
-                                                        key={i}
-                                                        className="text-xs flex items-center gap-2 px-2 py-1 rounded bg-blue-950/15 border border-blue-900/20"
-                                                      >
-                                                        <span className="w-2 h-2 rounded-full bg-blue-400 flex-shrink-0" />
-                                                        <span className="text-gray-300">
-                                                          {m.name}
-                                                        </span>
-                                                        <span className="ml-auto text-[10px] text-blue-400 font-semibold">
-                                                          {m.status}
-                                                        </span>
-                                                      </li>
-                                                    ),
-                                                  )}
-                                                </ul>
-                                                <p className="mt-2 text-[10px] text-gray-500">
-                                                  Cannot start until all
-                                                  predecessors are completed.
-                                                </p>
-                                              </div>
-                                            ) : incompletePredecessors.length >
-                                              0 ? (
-                                              <div>
-                                                <span className="text-[10px] font-semibold text-red-400 uppercase tracking-wider mb-1.5 block">
-                                                  Blocked By
-                                                </span>
-                                                <ul className="space-y-1">
-                                                  {incompletePredecessors.map(
-                                                    (
-                                                      m: {
-                                                        name: string;
-                                                        status: string;
-                                                      },
-                                                      i: number,
-                                                    ) => (
-                                                      <li
-                                                        key={`pred-${i}`}
-                                                        className="text-xs flex items-center gap-2 px-2 py-1 rounded bg-red-950/15 border border-red-900/20"
-                                                      >
-                                                        <span className="w-2 h-2 rounded-full bg-red-500 flex-shrink-0" />
-                                                        <span className="text-gray-300">
-                                                          {m.name}
-                                                        </span>
-                                                        <span className="ml-auto text-[10px] text-red-400 font-semibold">
-                                                          {m.status}
-                                                        </span>
-                                                      </li>
-                                                    ),
-                                                  )}
-                                                  {pendingPrereqs.map((dep: any, i: number) => {
-                                                    const dName = typeof dep === "object" && dep !== null ? (dep.name || "") : String(dep);
-                                                    if (incompletePredecessors.some((m: any) => m.name.toLowerCase().includes(dName.toLowerCase()) || dName.toLowerCase().includes(m.name.toLowerCase()))) {
-                                                      return null;
-                                                    }
-                                                    return (
-                                                      <li
-                                                        key={`prereq-${i}`}
-                                                        className="text-xs flex items-center gap-2 px-2 py-1 rounded bg-amber-950/20 border border-amber-900/30"
-                                                      >
-                                                        <span className="w-2 h-2 rounded-full bg-amber-500 flex-shrink-0 animate-pulse" />
-                                                        <span className="text-amber-200">
-                                                          {dName}
-                                                        </span>
-                                                        <span className="ml-auto text-[10px] text-amber-400 font-semibold">
-                                                          PENDING PREREQUISITE
-                                                        </span>
-                                                      </li>
-                                                    );
-                                                  })}
-                                                </ul>
-                                              </div>
-                                            ) : hasPredecessors || dependencies.length > 0 ? (
-                                              <div className="flex items-center gap-2 text-xs text-emerald-400">
-                                                <span className="w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0" />
-                                                {(progressPct || 0) > 0
-                                                  ? `✓ Execution started (${progressPct}% complete)`
-                                                  : "All prerequisites & predecessors complete — ready to execute"}
-                                              </div>
-                                            ) : null}
-
-                                            {/* Currently Blocking — only show if this milestone is not yet done */}
-                                            {!isCompleted &&
-                                              activelyBlockingSuccessors.length >
-                                                0 && (
-                                                <div className="mt-3">
-                                                  <span className="text-[10px] font-semibold text-orange-400 uppercase tracking-wider mb-1.5 block">
-                                                    Waiting Successors
-                                                  </span>
-                                                  <ul className="space-y-1">
-                                                    {activelyBlockingSuccessors.map(
-                                                      (
-                                                        m: {
-                                                          name: string;
-                                                          status: string;
-                                                        },
-                                                        i: number,
-                                                      ) => (
-                                                        <li
-                                                          key={i}
-                                                          className="text-xs flex items-center gap-2 px-2 py-1.5 rounded bg-amber-100/60 dark:bg-orange-950/10 border border-amber-300/60 dark:border-orange-900/20"
-                                                        >
-                                                          <span className="w-2 h-2 rounded-full bg-orange-500 flex-shrink-0" />
-                                                          <span className="text-amber-950 dark:text-gray-300 font-medium">
-                                                            {m.name}
-                                                          </span>
-                                                          <span className="ml-auto text-[10px] text-amber-800 dark:text-orange-400 font-bold">
-                                                            {m.status}
-                                                          </span>
-                                                        </li>
-                                                      ),
-                                                    )}
-                                                  </ul>
-                                                </div>
-                                              )}
-                                          </div>
-                                        </div>
-                                      );
-                                    })()}
-
-                                    {dependencies &&
-                                      dependencies.length > 0 && (
-                                        <div className="mt-4 p-3.5 rounded-xl bg-gradient-to-br from-amber-500/10 via-amber-50/80 to-amber-100/40 dark:from-amber-950/40 dark:via-gray-900/90 dark:to-amber-950/30 border border-amber-500/40 dark:border-amber-500/50 shadow-md relative overflow-hidden">
-                                          <div className="flex items-center justify-between mb-2.5 pb-2 border-b border-amber-500/25">
-                                            <h5 className="text-[11px] font-bold text-amber-800 dark:text-amber-300 uppercase tracking-wider flex items-center gap-2">
-                                              <span className="w-4 h-4 rounded-full bg-amber-500 text-gray-950 font-black text-[10px] flex items-center justify-center shadow-[0_0_8px_rgba(245,158,11,0.9)] animate-pulse">
-                                                !
-                                              </span>
-                                              Execution Prerequisites
-                                            </h5>
-                                            <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-900 dark:text-amber-300 border border-amber-500/40 text-[9px] font-bold shadow-xs">
-                                              {satisfiedPrereqsCount} / {dependencies.length} Satisfied
-                                            </span>
-                                          </div>
-                                          <ul className="space-y-2">
-                                            {dependencies.map((dep, idx) => {
-                                              const depObj = dep as any;
-                                              const isObject =
-                                                typeof dep === "object" &&
-                                                dep !== null;
-                                              const depName = isObject
-                                                ? depObj.name
-                                                : dep;
-
-                                              const isDone = isPrereqSatisfied(dep);
-
-                                              return (
-                                                <li
-                                                  key={idx}
-                                                  className={`text-xs flex flex-col gap-1.5 px-3.5 py-3 rounded-lg border-l-4 transition-all duration-300 ${
-                                                    isDone
-                                                      ? "bg-emerald-50 dark:bg-emerald-950/15 border-l-emerald-500 border-y-emerald-200 dark:border-y-emerald-950/20 border-r-emerald-200 dark:border-r-emerald-950/20 text-emerald-900 dark:text-gray-400"
-                                                      : "bg-white dark:bg-amber-950/20 border-l-amber-500 border-y-amber-200 dark:border-y-amber-950/30 border-r-amber-200 dark:border-r-amber-950/30 text-text-primary dark:text-amber-100 shadow-sm"
-                                                  }`}
-                                                >
-                                                  <div className="flex items-start justify-between gap-2 leading-tight">
-                                                    <div className="flex items-center gap-2">
-                                                      {isDone ? (
-                                                        <span className="w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[10px] flex items-center justify-center font-bold flex-shrink-0">
-                                                          ✓
-                                                        </span>
-                                                      ) : (
-                                                        <span className="w-4 h-4 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-400 text-[10px] flex items-center justify-center font-bold animate-pulse flex-shrink-0">
-                                                          !
-                                                        </span>
-                                                      )}
-                                                      <span
-                                                        className={`font-semibold tracking-wide ${
-                                                          isDone
-                                                            ? "line-through text-text-muted"
-                                                            : "text-text-primary dark:text-amber-200"
-                                                        }`}
-                                                      >
-                                                        {depName}
-                                                      </span>
-                                                    </div>
-                                                    {isObject &&
-                                                      depObj.owner && (
-                                                        <span className="px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider bg-indigo-100 dark:bg-indigo-950/80 text-indigo-800 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/60 shadow-xs flex-shrink-0">
-                                                          {depObj.owner}
-                                                        </span>
-                                                      )}
-                                                  </div>
-                                                  <div className="flex items-center gap-1.5 pl-6 text-[10px]">
-                                                    <span
-                                                      className={`font-semibold uppercase tracking-wider ${
-                                                        isDone
-                                                          ? "text-emerald-600 dark:text-emerald-400"
-                                                          : "text-amber-700 dark:text-amber-400 animate-pulse"
-                                                      }`}
-                                                    >
-                                                      {isDone
-                                                        ? "Ready"
-                                                        : "Pending Action"}
-                                                    </span>
-                                                  </div>
-                                                  {isObject &&
-                                                    depObj.evidence && (
-                                                      <div className="ml-6 mt-1 text-[10px] text-text-muted italic border-l border-border-subtle pl-2.5">
-                                                        <strong>AI Evidence:</strong>{" "}
-                                                        {depObj.evidence}
-                                                      </div>
-                                                    )}
-                                                  {isObject &&
-                                                    depObj.resolved_by_document &&
-                                                    isDone && (
-                                                      <div className="ml-4 text-[9px] text-emerald-500/50">
-                                                        Resolved in document{" "}
-                                                        {
-                                                          depObj.resolved_by_document
-                                                        }
-                                                      </div>
-                                                    )}
-                                                </li>
-                                              );
-                                            })}
-                                          </ul>
-                                        </div>
-                                      )}
-
-                                    <details className="mt-5 group cursor-pointer">
-                                      <summary className="text-xs font-bold text-text-muted uppercase tracking-wider hover:text-text-primary transition-colors list-none flex items-center">
-                                        <span className="mr-1.5 transition-transform group-open:rotate-90 text-[10px]">
-                                          ▶
-                                        </span>
-                                        AI Extraction Details
-                                      </summary>
-                                      <div className="mt-3 space-y-3 p-3 bg-bg-card/60 rounded-lg border border-border-strong/40">
-                                        {(updateSource || updateDate) && (
-                                          <div>
-                                            <h5 className="text-[10px] font-bold text-text-muted mb-1 uppercase tracking-wider">
-                                              Updated From
-                                            </h5>
-                                            <p className="text-xs text-text-secondary italic">
-                                              {updateSource
-                                                ? updateSource
-                                                : "Unknown Document"}
-                                              {updateDate &&
-                                                ` • ${formatDate(updateDate)}`}
-                                            </p>
-                                          </div>
-                                        )}
-                                        {latestProgress?.evidence_text && (
-                                          <div>
-                                            <h5 className="text-[10px] font-bold text-text-muted mb-1 uppercase tracking-wider">
-                                              Progress Evidence
-                                            </h5>
-                                            <p className="text-xs text-text-secondary italic leading-relaxed">
-                                              {latestProgress.evidence_text}
-                                            </p>
-                                          </div>
-                                        )}
-                                        {selectedItem.description && (
-                                          <div>
-                                            <h5 className="text-[10px] font-bold text-text-muted mb-1 uppercase tracking-wider">
-                                              AI Reasoning (Baseline)
-                                            </h5>
-                                            <p className="text-xs text-text-secondary italic leading-relaxed">
-                                              {selectedItem.description}
-                                            </p>
-                                          </div>
-                                        )}
-                                        {selectedItem.evidence_text && (
-                                          <div>
-                                            <h5 className="text-[10px] font-bold text-text-muted mb-1 uppercase tracking-wider">
-                                              Evidence (Baseline)
-                                            </h5>
-                                            <p className="text-xs text-text-secondary italic leading-relaxed">
-                                              {selectedItem.evidence_text}
-                                            </p>
-                                          </div>
-                                        )}
-                                        {selectedItem.name &&
-                                          selectedItem.scope_item_normalized && (
-                                            <div>
-                                              <h5 className="text-[10px] font-bold text-text-muted mb-1 uppercase tracking-wider">
-                                                Original Text
-                                              </h5>
-                                              <p className="text-xs text-text-secondary font-serif italic">
-                                                {selectedItem.name}
-                                              </p>
-                                            </div>
-                                          )}
-                                      </div>
-                                    </details>
-                                  </div>
-
-                                  {/* Status indicator */}
-                                  <div className="flex-shrink-0">
-                                    <div
-                                      className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider border shadow-sm ${
-                                        completionStatus === "COMPLETED"
-                                          ? "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700/50"
-                                          : completionStatus === "BLOCKED" ||
-                                              completionStatus === "DELAYED"
-                                            ? "bg-red-100 dark:bg-red-950/60 text-red-800 dark:text-red-300 border-red-300 dark:border-red-700/50"
-                                            : completionStatus === "IN_PROGRESS" ||
-                                                completionStatus === "ACTIVE"
-                                              ? "bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 border-amber-300 dark:border-amber-700/50"
-                                              : "bg-bg-hover text-text-primary border-border-strong"
-                                      }`}
-                                    >
-                                      {completionStatus === "COMPLETED" && (
-                                        <CheckCircle2 className="w-3.5 h-3.5 inline mr-1.5 -mt-0.5" />
-                                      )}
-                                      {completionStatus === "BLOCKED" && (
-                                        <X className="w-3.5 h-3.5 inline mr-1.5 -mt-0.5" />
-                                      )}
-                                      {(completionStatus === "IN_PROGRESS" ||
-                                        completionStatus === "ACTIVE") && (
-                                        <Clock className="w-3.5 h-3.5 inline mr-1.5 -mt-0.5" />
-                                      )}
-                                      {statusLabel}
-                                    </div>
-                                  </div>
-                                </div>
-
-                                {/* Meta badges */}
-                                <div className="flex flex-wrap gap-2 mt-3">
-                                  {(selectedItem.milestone_normalized ||
-                                    selectedItem.milestone) && (
-                                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/25 shadow-sm">
-                                      <MapPin className="w-3 h-3" />
-                                      {selectedItem.milestone_normalized ||
-                                        selectedItem.milestone}
-                                    </span>
-                                  )}
-                                  {(selectedItem.deadline_text ||
-                                    selectedItem.deadline) && (
-                                    <span
-                                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border shadow-sm"
-                                      style={{
-                                        backgroundColor: `${color.bg}`,
-                                        borderColor: `${color.border}40`,
-                                        color: color.text,
-                                      }}
-                                    >
-                                      <Calendar className="w-3 h-3" />
-                                      {formatItemDate(selectedItem)}
-                                    </span>
-                                  )}
-                                  <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-bg-hover/50 border border-border-strong/40 text-text-muted text-xs font-medium">
-                                    {selectedItem.scope_type?.replace(
-                                      "_",
-                                      " ",
-                                    ) || "Scope Item"}
-                                  </span>
-                                  {selectedItem._dateMs !== null && (
-                                    <span
-                                      className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium border ${
-                                        completionStatus === "COMPLETED"
-                                          ? "bg-emerald-100 dark:bg-emerald-950/20 text-emerald-800 dark:text-emerald-300/80 border-emerald-200 dark:border-emerald-800/20"
-                                          : selectedItem._dateMs < todayMs
-                                            ? "bg-red-100 dark:bg-red-950/20 text-red-800 dark:text-red-300/80 border-red-200 dark:border-red-800/20"
-                                            : selectedItem._dateMs === todayMs
-                                              ? "bg-orange-100 dark:bg-orange-950/20 text-orange-800 dark:text-orange-300/80 border-orange-200 dark:border-orange-800/20"
-                                              : "bg-emerald-100 dark:bg-green-950/20 text-emerald-800 dark:text-green-300/80 border-emerald-200 dark:border-green-800/20"
-                                      }`}
-                                    >
-                                      {completionStatus === "COMPLETED"
-                                        ? "✅ Completed"
-                                        : selectedItem._dateMs < todayMs
-                                          ? "⏰ Overdue"
-                                          : selectedItem._dateMs === todayMs
-                                            ? "📍 Due Today"
-                                            : `📅 ${Math.ceil((selectedItem._dateMs - todayMs) / 86400000)} days left`}
-                                    </span>
-                                  )}
-                                </div>
-
-                                {/* Interactive Update & Reschedule Controls */}
-                                {(user?.role === "ADMIN" ||
-                                  user?.role === "ENGAGEMENT_MANAGER" ||
-                                  user?.role === "PROJECT_LEAD") && (
-                                  <div className="mt-5 pt-4 border-t border-border-subtle/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                                    <div className="flex items-center gap-2.5">
-                                      <span className="text-xs font-bold uppercase tracking-wider text-text-muted">
-                                        Update Status:
-                                      </span>
-                                      <div className="flex rounded-lg overflow-hidden border border-border-strong bg-bg-card/60 p-0.5">
-                                        {[
-                                          {
-                                            value: "ACTIVE",
-                                            label: "Pending",
-                                            color:
-                                              "hover:bg-blue-600/80 hover:text-white",
-                                          },
-                                          {
-                                            value: "COMPLETED",
-                                            label: "Completed",
-                                            color:
-                                              "hover:bg-emerald-600/80 hover:text-white",
-                                          },
-                                          {
-                                            value: "CANCELLED",
-                                            label: "Cancelled",
-                                            color:
-                                              "hover:bg-red-600/80 hover:text-white",
-                                          },
-                                        ].map((opt) => (
-                                          <button
-                                            key={opt.value}
-                                            onClick={() => {
-                                              const prereqsList: PrerequisiteItem[] = (dependencies || []).map((d: any, idx: number) => {
-                                                const isObj = typeof d === "object" && d !== null;
-                                                return {
-                                                  id: isObj && d.id ? d.id : undefined,
-                                                  name: isObj ? d.name : String(d),
-                                                  owner: isObj ? d.owner : undefined,
-                                                  status: isObj ? d.status : undefined,
-                                                  isDone: isObj ? d.status === "COMPLETED" : (completionStatus === "COMPLETED"),
-                                                };
-                                              });
-
-                                              const mData = getMilestoneData(
-                                                selectedItem.name,
-                                                selectedItem.milestone_normalized,
-                                              );
-                                              const blockedByIds = mData?.blocked_by_ids
-                                                ? mData.blocked_by_ids.split(",")
-                                                : [];
-                                              const incompletePredsList: IncompletePredecessor[] = blockedByIds
-                                                .map((id: string) => milestoneMap.get(id))
-                                                .filter(
-                                                  (m: any): m is NonNullable<typeof m> =>
-                                                    !!m &&
-                                                    m.status?.toUpperCase() !== "COMPLETED" &&
-                                                    m.status?.toUpperCase() !== "CANCELLED",
-                                                )
-                                                .map((m: any) => ({
-                                                  id: m.id,
-                                                  name: m.name,
-                                                  status: m.status || "In Progress",
-                                                }));
-
-                                              if (opt.value === "COMPLETED" && completionStatus !== "COMPLETED") {
-                                                setCompletionModal({
-                                                  isOpen: true,
-                                                  targetStatus: "COMPLETED",
-                                                  deliverableName: selectedItem.name,
-                                                  deliverableId: selectedItem.id,
-                                                  prerequisites: prereqsList,
-                                                  incompletePredecessors: incompletePredsList,
-                                                });
-                                              } else if (opt.value === "ACTIVE" && completionStatus === "COMPLETED") {
-                                                setCompletionModal({
-                                                  isOpen: true,
-                                                  targetStatus: "ACTIVE",
-                                                  deliverableName: selectedItem.name,
-                                                  deliverableId: selectedItem.id,
-                                                  prerequisites: prereqsList,
-                                                  incompletePredecessors: incompletePredsList,
-                                                });
-                                              } else {
-                                                handleUpdateCompletionStatus(
-                                                  selectedItem.id,
-                                                  opt.value,
-                                                );
-                                              }
-                                            }}
-                                            className={`px-3 py-1 text-[11px] font-bold rounded-md transition-all cursor-pointer ${
-                                              completionStatus === opt.value
-                                                ? opt.value === "COMPLETED"
-                                                  ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/25"
-                                                  : opt.value === "CANCELLED"
-                                                    ? "bg-red-600 text-white shadow-md shadow-red-600/25"
-                                                    : "bg-blue-600 text-white shadow-md shadow-blue-600/25"
-                                                : `text-text-muted ${opt.color}`
-                                            }`}
-                                            disabled={
-                                              project?.monitoring_status ===
-                                              "CLOSED"
-                                            }
-                                          >
-                                            {opt.label}
-                                          </button>
-                                        ))}
-                                      </div>
-                                    </div>
-
-                                    <div className="flex items-center gap-2.5">
-                                      <span className="text-xs font-bold uppercase tracking-wider text-text-muted">
-                                        Reschedule:
-                                      </span>
-                                      <input
-                                        id="reschedule-date-input"
-                                        type="date"
-                                        className="px-2.5 py-1 text-xs font-semibold rounded-md border border-border-strong bg-bg-card/60 text-text-primary focus:outline-none focus:border-violet-500 cursor-pointer shadow-inner"
-                                        value={
-                                          selectedItem.deadline
-                                            ? new Date(selectedItem.deadline)
-                                                .toISOString()
-                                                .split("T")[0]
-                                            : ""
-                                        }
-                                        onChange={(e) =>
-                                          handleRescheduleDeadline(
-                                            selectedItem.id,
-                                            e.target.value,
-                                          )
-                                        }
-                                        disabled={
-                                          project?.monitoring_status ===
-                                          "CLOSED"
-                                        }
-                                      />
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
+                    <div
+                      key={item.id || idx}
+                      className="flex items-center gap-3 sm:gap-4 relative group"
+                    >
+                      {/* 1. Left Timestamp Column */}
+                      <div className="w-24 sm:w-28 flex-shrink-0 text-right">
+                        {isTodayAnchor ? (
+                          <div
+                            className={`flex items-center gap-2 p-2 rounded-xl text-left shadow-xs transition-all ${
+                              isDark
+                                ? "bg-[#251914] border border-[#FF5A14]/40"
+                                : "bg-orange-50/90 border border-orange-200"
+                            }`}
+                          >
+                            <Calendar className="w-3.5 h-3.5 text-[#FF5A14] shrink-0" />
+                            <div className="min-w-0">
+                              <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                                {item._dateFormatted}
+                              </p>
+                              <p className="text-[10px] text-[#FF5A14] font-bold">
+                                {item._dayOfWeek} • Today
+                              </p>
                             </div>
-                          );
-                        })()}
+                          </div>
+                        ) : (
+                          <div className="pr-1">
+                            <p className="text-xs font-bold text-slate-900 dark:text-gray-200">
+                              {item._dateFormatted}
+                            </p>
+                            <p className="text-[11px] text-slate-500 dark:text-gray-400 mt-0.5">
+                              {item._dayOfWeek} • {item.deadline_text ? item.deadline_text : "10:00 AM"}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* 2. Center Spine and Marker */}
+                      <div className="w-7 flex-shrink-0 flex flex-col items-center relative self-stretch justify-center">
+                        {/* Connecting Spine Line */}
+                        {idx !== filteredItems.length - 1 && (
+                          <div className="absolute top-1/2 bottom-[-50%] w-[2px] bg-slate-200 dark:bg-white/10 pointer-events-none" />
+                        )}
+
+                        {/* Node Marker */}
+                        {isTodayAnchor ? (
+                          <div className="relative flex flex-col items-center z-10">
+                            {/* "Today" badge above node */}
+                            <span className="absolute -top-6 px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase tracking-wider bg-orange-100 dark:bg-[#341b12] text-[#FF5A14] dark:text-[#FF7A45] border border-orange-300 dark:border-[#FF5A14]/40 shadow-xs whitespace-nowrap">
+                              Today
+                            </span>
+                            {/* Double ring target */}
+                            <div className="w-6 h-6 rounded-full border-2 border-[#FF5A14] bg-white dark:bg-[#141416] flex items-center justify-center shadow-[0_0_12px_rgba(255,90,20,0.5)]">
+                              <div className="w-2.5 h-2.5 rounded-full bg-[#FF5A14]" />
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="relative z-10">
+                            {item._completionStatus === "COMPLETED" ? (
+                              <div className="w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-xs">
+                                <Check className="w-3 h-3 stroke-[3]" />
+                              </div>
+                            ) : item._completionStatus === "IN_PROGRESS" ? (
+                              <div className="w-5 h-5 rounded-full bg-blue-500 text-white flex items-center justify-center shadow-xs">
+                                <Clock className="w-3 h-3" />
+                              </div>
+                            ) : (
+                              <div className="w-5 h-5 rounded-full bg-amber-500 text-white flex items-center justify-center shadow-xs">
+                                <Clock className="w-3 h-3" />
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Horizontal Connector to Card (for Today item) */}
+                      {isTodayAnchor && (
+                        <div className="w-2.5 h-[2px] bg-[#FF5A14] -ml-2 shrink-0 hidden sm:block" />
+                      )}
+
+                      {/* 3. Deliverable Card */}
+                      <div
+                        onClick={() => setSelectedDeliverableId(item.id)}
+                        className={`flex-1 min-w-0 rounded-2xl p-3.5 sm:p-4 transition-all duration-200 cursor-pointer border ${
+                          isSelected
+                            ? isDark
+                              ? "bg-gradient-to-r from-[#2c1c16] via-[#221714] to-[#1c1514] border-2 border-[#FF7A45]/70 shadow-xl shadow-black/50"
+                              : "bg-gradient-to-r from-orange-50/90 via-orange-50/40 to-amber-50/20 border-2 border-orange-300 shadow-md shadow-orange-500/10"
+                            : isDark
+                            ? "bg-[#1c1c22] hover:bg-[#23232b] border-white/5 shadow-xs hover:border-white/10"
+                            : "bg-white hover:bg-slate-50 border-slate-200/90 shadow-xs hover:border-slate-300"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between gap-3">
+                          {/* Left: Icon & Text */}
+                          <div className="flex items-center gap-3 min-w-0 flex-1">
+                            <div
+                              className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 border ${getItemIconBg(
+                                item._iconType,
+                              )}`}
+                            >
+                              {renderItemIcon(item._iconType)}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <h3 className="text-sm font-bold text-slate-900 dark:text-white truncate leading-snug">
+                                {item.scope_item_normalized || item.name}
+                              </h3>
+                              <p className="text-xs text-slate-500 dark:text-gray-400 truncate mt-0.5">
+                                {item.description ||
+                                  item.latest_progress?.execution_summary ||
+                                  "Milestone deliverable tracking."}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Right: Status Pill & Chevron */}
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            {renderStatusBadge(item._completionStatus)}
+                            <ChevronRight
+                              className={`w-4 h-4 transition-transform duration-200 ${
+                                isSelected
+                                  ? "text-[#FF5A14] translate-x-0.5"
+                                  : "text-slate-400 dark:text-gray-500 group-hover:translate-x-0.5"
+                              }`}
+                            />
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   );
-                })()
+                })}
+              </div>
+
+              {/* View Full Timeline Button */}
+              <div className="pt-6 text-center">
+                <button
+                  onClick={() => setShowFullTimeline(!showFullTimeline)}
+                  className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer shadow-xs ${
+                    isDark
+                      ? "bg-white/5 hover:bg-white/10 text-gray-200 border-white/10"
+                      : "bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200"
+                  }`}
+                >
+                  <Calendar className="w-3.5 h-3.5 text-[#FF5A14]" />
+                  <span>{showFullTimeline ? "Hide Detailed Gantt View" : "View Full Timeline"}</span>
+                  <ChevronDown
+                    className={`w-4 h-4 transition-transform duration-200 ${
+                      showFullTimeline ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+              </div>
+
+              {/* Collapsible Gantt Swimlane Timeline */}
+              {showFullTimeline && (
+                <div className="mt-6 pt-6 border-t border-slate-200/80 dark:border-white/10 animate-fadeIn">
+                  <GanttSwimlaneTimeline
+                    items={timelineItems}
+                    milestones={Array.from(milestoneMap.values())}
+                    project={project}
+                    selectedId={selectedItem?.id ?? null}
+                    onSelect={(id) => setSelectedDeliverableId(id)}
+                    formatDate={formatDate}
+                  />
+                </div>
               )}
             </div>
 
+            {/* ── RIGHT COLUMN: Deliverable Details Panel (5 cols) ── */}
+            <div className="lg:col-span-5 xl:col-span-4">
+              {selectedItem ? (
+                <div
+                  className={`rounded-2xl border p-4 sm:p-5 transition-all duration-200 max-h-[460px] overflow-y-auto custom-scrollbar sticky top-6 ${
+                    isDark
+                      ? "bg-[#19191f] border-white/10 shadow-xl"
+                      : "bg-white border-slate-200/90 shadow-sm"
+                  }`}
+                >
+                  {/* Panel Top Header */}
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-12 h-12 rounded-2xl bg-orange-500/10 text-[#FF5A14] flex items-center justify-center flex-shrink-0 border border-orange-500/20">
+                        {renderItemIcon(selectedItem._iconType)}
+                      </div>
+                      <div className="min-w-0">
+                        <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white leading-tight truncate">
+                          {selectedItem.scope_item_normalized || selectedItem.name}
+                        </h3>
+                        {selectedItem.milestone && (
+                          <p className="text-[11px] text-slate-500 dark:text-gray-400 truncate mt-0.5 font-medium">
+                            {selectedItem.milestone}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      {renderStatusBadge(selectedItem._completionStatus, "md")}
+                      <button
+                        onClick={() => setSelectedDeliverableId(null)}
+                        className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors cursor-pointer"
+                        title="Close panel"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Panel Tabs */}
+                  <div className="flex items-center gap-6 border-b border-slate-200/80 dark:border-white/10 mt-5 mb-4">
+                    {[
+                      { id: "DETAILS", label: "Details" },
+                      { id: "ATTACHMENTS", label: "Attachments" },
+                      { id: "ACTIVITY", label: "Activity" },
+                    ].map((tab) => {
+                      const isActive = activeTab === tab.id;
+                      return (
+                        <button
+                          key={tab.id}
+                          onClick={() => setActiveTab(tab.id as any)}
+                          className={`text-xs pb-2 font-semibold transition-all cursor-pointer border-b-2 -mb-[1px] ${
+                            isActive
+                              ? "border-[#FF5A14] text-[#FF5A14]"
+                              : "border-transparent text-slate-500 dark:text-gray-400 hover:text-slate-800 dark:hover:text-white"
+                          }`}
+                        >
+                          {tab.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Tab 1: DETAILS */}
+                  {activeTab === "DETAILS" && (
+                    <div className="space-y-4 animate-fadeIn">
+                      {/* Date & Time */}
+                      <div className="flex items-start gap-3">
+                        <Calendar className="w-4 h-4 text-slate-400 dark:text-gray-400 mt-0.5 shrink-0" />
+                        <div>
+                          <span className="text-[11px] font-semibold text-slate-400 dark:text-gray-400 block">
+                            Date &amp; Time
+                          </span>
+                          <span className="text-xs font-bold text-slate-800 dark:text-gray-200 mt-0.5 block">
+                            {selectedItem._dateFormatted} • {selectedItem.deadline_text || "09:30 AM"}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Handled By */}
+                      <div className="flex items-start gap-3">
+                        <Users className="w-4 h-4 text-slate-400 dark:text-gray-400 mt-0.5 shrink-0" />
+                        <div>
+                          <span className="text-[11px] font-semibold text-slate-400 dark:text-gray-400 block">
+                            Handled By
+                          </span>
+                          <span className="text-xs font-bold text-slate-800 dark:text-gray-200 mt-0.5 block">
+                            {selectedItem.owner || project?.client_name || "Team 2"}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Description */}
+                      <div className="flex items-start gap-3">
+                        <FileText className="w-4 h-4 text-slate-400 dark:text-gray-400 mt-0.5 shrink-0" />
+                        <div>
+                          <span className="text-[11px] font-semibold text-slate-400 dark:text-gray-400 block">
+                            Description
+                          </span>
+                          <p className="text-xs text-slate-600 dark:text-gray-300 leading-relaxed mt-0.5">
+                            {selectedItem.description ||
+                              selectedItem.latest_progress?.execution_summary ||
+                              "Discussed scope and timelines with stakeholders."}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Attachments Section */}
+                      <div className="pt-2">
+                        <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-400 dark:text-gray-400 mb-2">
+                          <Paperclip className="w-3.5 h-3.5" />
+                          <span>Attachments</span>
+                        </div>
+
+                        {/* PDF Card */}
+                        <div
+                          className={`flex items-center justify-between p-3 rounded-xl border transition-all ${
+                            isDark
+                              ? "bg-white/5 border-white/10"
+                              : "bg-slate-50 border-slate-200/80"
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <span className="px-1.5 py-0.5 rounded bg-rose-500 text-white font-black text-[9px] uppercase tracking-wider shrink-0">
+                              PDF
+                            </span>
+                            <div className="min-w-0">
+                              <p className="text-xs font-bold text-slate-800 dark:text-gray-200 truncate">
+                                {selectedItem.latest_progress?.document_name ||
+                                  "Kickoff-Meeting-Notes.pdf"}
+                              </p>
+                              <p className="text-[10px] text-slate-400 dark:text-gray-400">
+                                245 KB
+                              </p>
+                            </div>
+                          </div>
+
+                          <button
+                            className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-white/10 text-slate-600 dark:text-gray-300 transition-colors cursor-pointer"
+                            title="Download attachment"
+                          >
+                            <Download className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Progress Overview Section */}
+                      <div className="pt-2">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2 text-xs font-bold text-slate-800 dark:text-gray-200">
+                            <BarChart3 className="w-4 h-4 text-[#FF5A14]" />
+                            <span>Progress Overview</span>
+                          </div>
+                          <span className="text-xs font-extrabold text-[#FF5A14]">
+                            {selectedItem._completionStatus === "COMPLETED"
+                              ? "100%"
+                              : `${selectedItem.latest_progress?.progress_percentage || 50}%`}
+                          </span>
+                        </div>
+
+                        {/* Progress Bar */}
+                        <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-white/10 overflow-hidden mb-3">
+                          <div
+                            className="h-full rounded-full bg-gradient-to-r from-[#FF5A14] to-[#FF7A45] transition-all duration-500"
+                            style={{
+                              width:
+                                selectedItem._completionStatus === "COMPLETED"
+                                  ? "100%"
+                                  : `${selectedItem.latest_progress?.progress_percentage || 50}%`,
+                            }}
+                          />
+                        </div>
+
+                        {/* Milestones / Action Items Checklist */}
+                        <div className="space-y-1.5">
+                          <div className="flex items-center justify-between py-1 text-xs">
+                            <div className="flex items-center gap-2 text-slate-700 dark:text-gray-300 font-medium">
+                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                              <span className="truncate">Meeting Conducted</span>
+                            </div>
+                            <span className="text-[10px] text-slate-400 dark:text-gray-400 font-medium shrink-0">
+                              {selectedItem._dateFormatted} • 09:30 AM
+                            </span>
+                          </div>
+
+                          <div className="flex items-center justify-between py-1 text-xs">
+                            <div className="flex items-center gap-2 text-slate-700 dark:text-gray-300 font-medium">
+                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                              <span className="truncate">Action Items Assigned</span>
+                            </div>
+                            <span className="text-[10px] text-slate-400 dark:text-gray-400 font-medium shrink-0">
+                              {selectedItem._dateFormatted} • 10:00 AM
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Management Controls for Project Roles */}
+                      {(user?.role === "ADMIN" ||
+                        user?.role === "ENGAGEMENT_MANAGER" ||
+                        user?.role === "PROJECT_LEAD") && (
+                        <div className="pt-4 border-t border-slate-200/80 dark:border-white/10 space-y-3">
+                          <div>
+                            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-gray-400 block mb-1.5">
+                              Update Status
+                            </span>
+                            <div className="flex rounded-xl overflow-hidden border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 p-1 gap-1">
+                              {[
+                                { value: "ACTIVE", label: "Pending" },
+                                { value: "COMPLETED", label: "Completed" },
+                                { value: "CANCELLED", label: "Cancelled" },
+                              ].map((opt) => (
+                                <button
+                                  key={opt.value}
+                                  onClick={() => {
+                                    if (
+                                      opt.value === "COMPLETED" &&
+                                      selectedItem._completionStatus !== "COMPLETED"
+                                    ) {
+                                      setCompletionModal({
+                                        isOpen: true,
+                                        targetStatus: "COMPLETED",
+                                        deliverableName: selectedItem.name,
+                                        deliverableId: selectedItem.id,
+                                        prerequisites: [],
+                                        incompletePredecessors: [],
+                                      });
+                                    } else {
+                                      handleUpdateCompletionStatus(selectedItem.id, opt.value);
+                                    }
+                                  }}
+                                  className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                                    selectedItem._completionStatus === opt.value
+                                      ? opt.value === "COMPLETED"
+                                        ? "bg-emerald-500 text-white shadow-sm"
+                                        : opt.value === "CANCELLED"
+                                        ? "bg-rose-500 text-white shadow-sm"
+                                        : "bg-[#FF5A14] text-white shadow-sm"
+                                      : "text-slate-600 dark:text-gray-300 hover:bg-slate-200/70 dark:hover:bg-white/10"
+                                  }`}
+                                >
+                                  {opt.label}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Reschedule Date Input */}
+                          <div className="flex items-center justify-between gap-3 pt-1">
+                            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-gray-400">
+                              Reschedule
+                            </span>
+                            <input
+                              type="date"
+                              className="px-2.5 py-1 text-xs font-semibold rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 text-slate-900 dark:text-white focus:outline-none focus:border-[#FF5A14]"
+                              value={
+                                selectedItem.deadline
+                                  ? new Date(selectedItem.deadline).toISOString().split("T")[0]
+                                  : ""
+                              }
+                              onChange={(e) =>
+                                handleRescheduleDeadline(selectedItem.id, e.target.value)
+                              }
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Tab 2: ATTACHMENTS */}
+                  {activeTab === "ATTACHMENTS" && (
+                    <div className="space-y-3 py-2 animate-fadeIn">
+                      <div className="p-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200/80 dark:border-white/10">
+                        <div className="flex items-center gap-2">
+                          <FileText className="w-4 h-4 text-[#FF5A14]" />
+                          <span className="text-xs font-bold text-slate-900 dark:text-white">
+                            Source Document
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-600 dark:text-gray-300 mt-1">
+                          {selectedItem.latest_progress?.document_name || "Engagement Letter (EL.docx)"}
+                        </p>
+                      </div>
+
+                      {selectedItem.evidence_text && (
+                        <div className="p-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200/80 dark:border-white/10">
+                          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-gray-400 block mb-1">
+                            Contract Evidence
+                          </span>
+                          <p className="text-xs text-slate-600 dark:text-gray-300 italic leading-relaxed">
+                            "{selectedItem.evidence_text}"
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Tab 3: ACTIVITY */}
+                  {activeTab === "ACTIVITY" && (
+                    <div className="space-y-3 py-2 animate-fadeIn">
+                      <div className="p-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200/80 dark:border-white/10">
+                        <div className="flex items-center gap-2">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                          <span className="text-xs font-bold text-slate-900 dark:text-white">
+                            Execution Readiness
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-600 dark:text-gray-300 mt-1">
+                          Prerequisites satisfied. Ready for downstream milestone hand-off.
+                        </p>
+                      </div>
+
+                      {selectedItem._is_occurrence && (
+                        <div className="p-3 rounded-xl bg-violet-500/10 border border-violet-500/20 text-violet-700 dark:text-violet-300 text-xs">
+                          <Repeat className="w-3.5 h-3.5 inline mr-1.5" />
+                          Recurring occurrence for:{" "}
+                          <strong>{selectedItem.occurrence_period || selectedItem.deadline_text}</strong>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div
+                  className={`rounded-2xl border p-8 text-center sticky top-6 ${
+                    isDark
+                      ? "bg-[#19191f] border-white/10"
+                      : "bg-white border-slate-200/90"
+                  }`}
+                >
+                  <Calendar className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+                  <p className="text-xs text-slate-500 dark:text-gray-400">
+                    Select a deliverable from the timeline to view details, attachments, and progress.
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Completion Confirmation Modal */}
       {completionModal?.isOpen && (
         <DeliverableCompletionModal
           isOpen={completionModal.isOpen}
@@ -1420,9 +937,10 @@ export const BaselineTimeline: React.FC<BaselineTimelineProps> = ({
               payload.completion_status,
               payload,
             );
+            setCompletionModal(null);
           }}
         />
       )}
-    </>
+    </div>
   );
 };
