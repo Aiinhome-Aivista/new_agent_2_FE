@@ -300,6 +300,37 @@ export const Step10AnalysisView: React.FC<Step10AnalysisViewProps> = ({
 
   const isProvisional = uiState === "PROVISIONAL";
 
+  const getProvenanceBadgeInfo = (provenance: string) => {
+    switch (provenance) {
+      case "CONTRACT_CONFIRMED":
+        return {
+          label: "Contract-Confirmed",
+          badgeClass: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
+        };
+      case "DURATION_DERIVED":
+        return {
+          label: "Duration-Derived",
+          badgeClass: "bg-blue-500/10 text-blue-400 border-blue-500/30",
+        };
+      case "AI_ESTIMATED":
+        return {
+          label: "AI-Estimated",
+          badgeClass: "bg-amber-500/10 text-amber-400 border-amber-500/30",
+        };
+      case "EVIDENCE_UNVERIFIED":
+        return {
+          label: "Evidence-Unverified",
+          badgeClass: "bg-rose-500/10 text-rose-400 border-rose-500/30",
+        };
+      case "UNRESOLVED":
+      default:
+        return {
+          label: "Unresolved",
+          badgeClass: "bg-gray-500/10 text-gray-400 border-gray-500/30",
+        };
+    }
+  };
+
   // Filtered Work Items for Deadline Planner
   const filteredWorkItems = scopeItems.filter((item: any) => {
     const matchesSearch =
@@ -885,34 +916,100 @@ export const Step10AnalysisView: React.FC<Step10AnalysisViewProps> = ({
             </div>
           </div>
 
-          {/* Contract Anchors */}
-          <div className="bg-bg-card/60 border border-border-subtle rounded-2xl p-6">
-            <h3 className="text-sm font-bold text-text-primary mb-3">
-              Contractual Timeline Anchors & Execution Period
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-              <div className="p-3 bg-surface/50 border border-border-subtle rounded-xl">
-                <span className="text-text-muted block mb-1">Services Commencement Date:</span>
-                <span className="font-mono font-bold text-emerald-400">
-                  {contract.contract_start_date || "2027-01-22"}
-                </span>
-                <span className="block text-[10px] text-text-muted mt-1">Contract-confirmed (Chunk 3)</span>
+          {/* Contract Anchors & Timeline Provenance */}
+          <div className="bg-bg-card/60 border border-border-subtle rounded-2xl p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-bold text-text-primary">
+                  Contractual Timeline Anchors & Execution Period
+                </h3>
+                <p className="text-xs text-text-muted">
+                  Strict lifecycle separation: {contract.project_duration_weeks ? `${contract.project_duration_weeks}-week delivery` : "Contractual delivery"} ending {contract.contract_end_date || "target date"}; separate warranty & support window ending {contract.production_support_end_date || "support end"}.
+                </p>
               </div>
+              <span className="text-[11px] font-mono px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                {contract.duration_cross_validation?.status === "DURATION_DATE_VALIDATED" ? "Duration Cross-Validated" : "Timeline Anchor Verified"}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3 text-xs">
               <div className="p-3 bg-surface/50 border border-border-subtle rounded-xl">
-                <span className="text-text-muted block mb-1">Target Completion & Handover:</span>
-                <span className="font-mono font-bold text-indigo-400">
-                  {contract.contract_end_date || "2027-04-30"}
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-text-muted">Commencement:</span>
+                  <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    {contract.contract_start_record?.date_type || "CONTRACT_CONFIRMED"}
+                  </span>
+                </div>
+                <span className="font-mono font-bold text-emerald-400 text-sm">
+                  {contract.contract_start_date || "N/A"}
                 </span>
-                <span className="block text-[10px] text-text-muted mt-1">Contract-confirmed (Chunk 10)</span>
+                <span className="block text-[10px] text-text-muted mt-1 truncate" title={contract.contract_start_record?.original_verbatim_quotation || "Verbatim contract commencement"}>
+                  {contract.contract_start_record?.source_locator ? `Loc: ${contract.contract_start_record.source_locator} (Verified)` : "Contract Grounded"}
+                </span>
               </div>
+
               <div className="p-3 bg-surface/50 border border-border-subtle rounded-xl">
-                <span className="text-text-muted block mb-1">Production Support End Date:</span>
-                <span className="font-mono font-bold text-purple-400">
-                  {contract.production_support_end_date || "2027-07-31"}
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-text-muted">Target Completion:</span>
+                  <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    {contract.contract_end_record?.date_type || "CONTRACT_CONFIRMED"}
+                  </span>
+                </div>
+                <span className="font-mono font-bold text-indigo-400 text-sm">
+                  {contract.contract_end_date || "N/A"}
                 </span>
-                <span className="block text-[10px] text-text-muted mt-1">Warranty window (Chunk 23)</span>
+                <span className="block text-[10px] text-text-muted mt-1 truncate" title={contract.contract_end_record?.original_verbatim_quotation || "Verbatim contract completion"}>
+                  {contract.contract_end_record?.source_locator ? `Loc: ${contract.contract_end_record.source_locator} (Verified)` : "Contract Grounded"}
+                </span>
+              </div>
+
+              <div className="p-3 bg-surface/50 border border-border-subtle rounded-xl">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-text-muted">Contract Duration:</span>
+                  <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                    DURATION_DERIVED
+                  </span>
+                </div>
+                <span className="font-mono font-bold text-blue-400 text-sm">
+                  {contract.project_duration_weeks ? `${contract.project_duration_weeks} Weeks` : "Derived Duration"}
+                </span>
+                <span className="block text-[10px] text-text-muted mt-1 truncate" title={contract.duration_cross_validation?.convention_description}>
+                  {contract.duration_cross_validation?.status === "DURATION_DATE_VALIDATED" ? "Duration & End Date Agree" : `${contract.contract_start_date} to ${contract.contract_end_date}`}
+                </span>
+              </div>
+
+              <div className="p-3 bg-surface/50 border border-border-subtle rounded-xl">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-text-muted">Production Support End:</span>
+                  <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20">
+                    {contract.production_support_end_record?.date_type || "CONTRACT_CONFIRMED"}
+                  </span>
+                </div>
+                <span className="font-mono font-bold text-purple-400 text-sm">
+                  {contract.production_support_end_date || "N/A"}
+                </span>
+                <span className="block text-[10px] text-text-muted mt-1 truncate" title={contract.production_support_end_record?.original_verbatim_quotation || "Warranty window"}>
+                  {contract.production_support_end_record?.source_locator ? `Loc: ${contract.production_support_end_record.source_locator}` : "Warranty Window"}
+                </span>
               </div>
             </div>
+
+            {/* Support Period Warning Card (Displayed separately from project completion) */}
+            {contract.support_period_validation?.extends_beyond_project_end && (
+              <div className="p-3.5 bg-amber-500/5 border border-amber-500/20 rounded-xl flex items-start gap-3">
+                <span className="w-5 h-5 rounded-full bg-amber-500/10 text-amber-400 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
+                  !
+                </span>
+                <div className="text-xs">
+                  <span className="font-semibold text-amber-400 block mb-0.5">
+                    SUPPORT_PERIOD_AMBIGUITY Notice: Lifecycle Boundary Separation
+                  </span>
+                  <p className="text-text-muted text-[11px] leading-relaxed">
+                    Contract execution concludes on <strong className="text-text-primary">{contract.contract_end_date}</strong>. Production support extends through <strong className="text-text-primary">{contract.production_support_end_date}</strong> ({contract.support_period_validation?.extension_weeks || 13} weeks / {contract.support_period_validation?.extension_days || 92} days post-delivery warranty window). This extension does not alter or extend the contractual delivery date and requires PM sign-off.
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Source Accounting Invariant Box */}
@@ -1128,21 +1225,55 @@ export const Step10AnalysisView: React.FC<Step10AnalysisViewProps> = ({
         </div>
       )}
 
-      {/* TAB 7: MILESTONES & TIMELINE (8 milestones) */}
+      {/* TAB 7: MILESTONES & TIMELINE */}
       {activeTab === "timeline" && (
         <div className="bg-bg-card/60 border border-border-subtle rounded-2xl p-6 space-y-4">
-          <div>
-            <h3 className="text-sm font-bold text-text-primary">
-              Contractual Milestones & Timeline ({milestones.length})
-            </h3>
-            <p className="text-xs text-text-muted">
-              Four explicitly dated milestones and four duration-only project phases. Genuine contractual DAG dependencies active.
-            </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-bold text-text-primary">
+                Contractual Milestones & Timeline ({milestones.length})
+              </h3>
+              <p className="text-xs text-text-muted">
+                {contract.milestone_validation?.payment_milestone_rows ? `${contract.milestone_validation.payment_milestone_rows} payment milestones across ${contract.milestone_validation.distinct_payment_date_count} distinct dates plus project phases.` : "Contractual payment milestones and project execution phases."}
+              </p>
+            </div>
+            {contract.milestone_validation?.distinct_payment_date_count ? (
+              <div className="flex items-center gap-2 text-[10px] font-mono">
+                <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                  {contract.milestone_validation.distinct_payment_date_count} Payment Dates
+                </span>
+                <span className="px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                  {contract.milestone_validation.payment_milestone_rows} Payment Rows
+                </span>
+              </div>
+            ) : null}
+          </div>
+
+          {/* Provenance Category Legend */}
+          <div className="flex flex-wrap items-center gap-2 p-2.5 bg-surface/30 border border-border-subtle rounded-xl text-[10px]">
+            <span className="text-text-muted">Date Provenance Categories:</span>
+            <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+              Contract-Confirmed
+            </span>
+            <span className="px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">
+              Duration-Derived
+            </span>
+            <span className="px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">
+              AI-Estimated
+            </span>
+            <span className="px-2 py-0.5 rounded bg-rose-500/10 text-rose-400 border border-rose-500/20">
+              Evidence-Unverified
+            </span>
+            <span className="px-2 py-0.5 rounded bg-gray-500/10 text-gray-400 border border-gray-500/20">
+              Unresolved
+            </span>
           </div>
 
           <div className="space-y-3">
             {milestones.map((m: any, idx: number) => {
               const hasDate = Boolean(m.planned_date || m.date);
+              const provKey = m.date_provenance || (hasDate ? "CONTRACT_CONFIRMED" : "UNRESOLVED");
+              const provBadge = getProvenanceBadgeInfo(provKey);
               return (
                 <div
                   key={idx}
@@ -1154,9 +1285,21 @@ export const Step10AnalysisView: React.FC<Step10AnalysisViewProps> = ({
                     </span>
                     <div>
                       <h4 className="text-xs font-semibold text-text-primary">{m.name}</h4>
-                      <span className="text-[10px] font-mono text-text-muted">
-                        Provenance: {m.date_provenance || (hasDate ? "CONTRACT_CONFIRMED" : "UNRESOLVED")}
-                      </span>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded border ${provBadge.badgeClass}`}>
+                          {provBadge.label}
+                        </span>
+                        {m.fee_amount_inr && (
+                          <span className="text-[10px] font-mono text-text-muted">
+                            Fee: INR {m.fee_amount_inr} ({m.percentage})
+                          </span>
+                        )}
+                        {m.source_locator && (
+                          <span className="text-[10px] text-text-muted">
+                            Loc: {m.source_locator}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                   <span
@@ -1172,6 +1315,23 @@ export const Step10AnalysisView: React.FC<Step10AnalysisViewProps> = ({
               );
             })}
           </div>
+
+          {/* Support Period Warning (Displayed separately from milestone completion) */}
+          {contract.support_period_validation?.extends_beyond_project_end ? (
+            <div className="p-3.5 bg-purple-500/5 border border-purple-500/20 rounded-xl flex items-start gap-3">
+              <span className="w-5 h-5 rounded-full bg-purple-500/10 text-purple-400 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
+                i
+              </span>
+              <div className="text-xs">
+                <span className="font-semibold text-purple-400 block mb-0.5">
+                  Support Window Separation Notice
+                </span>
+                <p className="text-text-muted text-[11px]">
+                  {contract.milestone_validation?.last_payment_date ? `The last payment milestone (${contract.milestone_validation.last_payment_date}) does not represent project completion.` : "Payment milestones do not represent overall project completion."} Final contractual handover is scheduled for <strong>{contract.contract_end_date}</strong>, followed by production support through <strong>{contract.production_support_end_date}</strong>.
+                </p>
+              </div>
+            </div>
+          ) : null}
         </div>
       )}
 
