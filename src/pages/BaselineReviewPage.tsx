@@ -10,6 +10,7 @@ import { BaselineModals } from "../components/baseline/BaselineModals";
 import { BaselineTimeline } from "../components/baseline/BaselineTimeline";
 import { BaselineScopeItems } from "../components/baseline/BaselineScopeItems";
 import { Step10AnalysisView } from "../components/baseline/Step10AnalysisView";
+import { TimelineConflictResolver } from "../components/baseline/TimelineConflictResolver";
 
 import { formatDate } from "../utils";
 import {
@@ -40,90 +41,7 @@ import {
   Square,
   UploadCloud,
 } from "lucide-react";
-
-const baselineSteps = [
-  {
-    key: "Detect Scope Sections",
-    name: "Detect Scope Sections",
-    desc: "Scanning contract scope sections, deliverables, and clauses.",
-  },
-  {
-    key: "Extract Deliverables",
-    name: "Extract Deliverables & Scope Items",
-    desc: "Extracting candidate deliverables and contract obligations.",
-  },
-  {
-    key: "Classify Scope Items",
-    name: "Classify In-Scope & Out-of-Scope",
-    desc: "Classifying deliverables into in-scope and out-of-scope boundaries.",
-  },
-  {
-    key: "Extract Milestones & Dates",
-    name: "Extract Milestones & Deadlines",
-    desc: "Detecting target milestone dates, delivery deadlines, and dependencies.",
-  },
-  {
-    key: "Finalize Baseline Draft",
-    name: "Finalize Baseline Draft",
-    desc: "Generating structured baseline version ready for management review.",
-  },
-];
-
-const mapStageToBaselineStepIndex = (stage: string, progress?: number): number => {
-  if (!stage) return 0;
-  const s = stage.toLowerCase();
-  if (
-    s.includes("save") ||
-    s.includes("saving") ||
-    s.includes("draft") ||
-    s.includes("finalize") ||
-    s.includes("complete") ||
-    s.includes("recurring") ||
-    s.includes("building") ||
-    s.includes("commitments")
-  ) {
-    return 4;
-  }
-  if (
-    s.includes("milestone") ||
-    s.includes("deadline") ||
-    s.includes("date") ||
-    s.includes("enrich") ||
-    s.includes("dependenc")
-  ) {
-    return 3;
-  }
-  if (
-    s.includes("classif") ||
-    s.includes("deduplicat") ||
-    s.includes("merge")
-  ) {
-    return 2;
-  }
-  if (
-    s.includes("extract") ||
-    s.includes("candidate") ||
-    s.includes("deliverable") ||
-    s.includes("clause")
-  ) {
-    return 1;
-  }
-  if (
-    s.includes("detect") ||
-    s.includes("section") ||
-    s.includes("scan")
-  ) {
-    return 0;
-  }
-
-  // Safety progress fallbacks so later stages never revert back to 0
-  if (progress !== undefined && progress >= 85) return 4;
-  if (progress !== undefined && progress >= 65) return 3;
-  if (progress !== undefined && progress >= 45) return 2;
-  if (progress !== undefined && progress >= 20) return 1;
-
-  return 0;
-};
+import { BASELINE_STEPS as baselineSteps, mapStageToBaselineStepIndex } from "../constants/pipelineSteps";
 
 export const BaselineReviewPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -395,7 +313,10 @@ export const BaselineReviewPage: React.FC = () => {
       pendingReviewItems.length > 0 ||
       (baseline.milestones && baseline.milestones.length > 0) ||
       (baseline.scope_items && baseline.scope_items.length > 0) ||
-      (baseline.all_records && baseline.all_records.length > 0))
+      (baseline.all_records && baseline.all_records.length > 0) ||
+      // Also count contextual and governance records as evidence of an extracted baseline
+      (baseline.contextual_records && baseline.contextual_records.length > 0) ||
+      (baseline.governance_obligations && baseline.governance_obligations.length > 0))
   );
 
   const hasArtifactBaseline = !!(
@@ -407,6 +328,15 @@ export const BaselineReviewPage: React.FC = () => {
   );
 
   const isBaselineExtracted = hasDbBaseline || hasArtifactBaseline;
+
+  // ── HITL state: detect timeline contradiction that blocks approval ──
+  const hitlConflict = baseline?.hitl_conflict ?? finalArtifact?.hitl_conflict ?? null;
+  const requiresHitl = !!(
+    hitlConflict &&
+    hitlConflict.has_contradiction === true &&
+    !hitlConflict.resolution // cleared once manager resolves
+  );
+  const isHitlBlocked = requiresHitl; // alias for clarity in JSX
 
   // Compute timelineItems early so handlers can reference it
   // Recurring parent items expand their occurrences; each occurrence becomes
@@ -1410,6 +1340,12 @@ export const BaselineReviewPage: React.FC = () => {
               (user?.role === "ENGAGEMENT_MANAGER" || user?.role === "ADMIN") &&
               project?.monitoring_status !== "CLOSED" && (
                 <div className="flex items-center gap-2">
+                  {isHitlBlocked && (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-500/15 border border-red-500/40 text-red-400 animate-pulse" title="Timeline contradiction detected — resolve below before approving">
+                      <AlertTriangle className="w-3.5 h-3.5 text-red-400" />
+                      Timeline Conflict — Resolve First
+                    </span>
+                  )}
                   {pendingReviewItems.length > 0 && (
                     <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-500/15 border border-amber-500/40 text-amber-400" title="Approval is blocked until pending review items are resolved or audited override is provided">
                       <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
@@ -1419,10 +1355,16 @@ export const BaselineReviewPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={handleApprove}
-                    disabled={isApproving || pendingReviewItems.length > 0}
-                    title={pendingReviewItems.length > 0 ? "Approval blocked: 3 scope items remain in PENDING_REVIEW status" : "Approve Baseline"}
+                    disabled={isApproving || pendingReviewItems.length > 0 || isHitlBlocked}
+                    title={
+                      isHitlBlocked
+                        ? "Approval blocked: Timeline contradiction must be resolved first. See the alert below."
+                        : pendingReviewItems.length > 0
+                        ? "Approval blocked: 3 scope items remain in PENDING_REVIEW status"
+                        : "Approve Baseline"
+                    }
                     className={`group relative inline-flex items-center justify-center gap-2 px-6 py-2.5 font-semibold text-white transition-all duration-300 rounded-lg ${
-                      pendingReviewItems.length > 0
+                      pendingReviewItems.length > 0 || isHitlBlocked
                         ? "bg-gray-700/60 text-gray-400 opacity-60 cursor-not-allowed shadow-none border border-gray-600/30"
                         : "bg-gradient-to-r from-emerald-500 via-teal-500 to-green-600 hover:from-emerald-400 hover:via-teal-400 hover:to-green-500 shadow-[0_0_15px_rgba(16,185,129,0.4)] hover:shadow-[0_0_25px_rgba(20,184,166,0.6)] hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
                     }`}
@@ -1499,6 +1441,28 @@ export const BaselineReviewPage: React.FC = () => {
           </div>
         ) : (
           <div>
+            {/* ── HITL: Timeline Contradiction Resolution Banner ── */}
+            {isHitlBlocked && hitlConflict && (
+              <div className="mb-6">
+                <TimelineConflictResolver
+                  projectId={id!}
+                  conflict={hitlConflict}
+                  onResolved={async () => {
+                    // Reload baseline data after resolution
+                    try {
+                      const [baselineRes, projectRes] = await Promise.all([
+                        apiClient.get(API_ENDPOINTS.BASELINE.LIST(id!)).catch(() => ({ data: { success: false } })),
+                        apiClient.get(API_ENDPOINTS.PROJECTS.DETAIL(id!)).catch(() => ({ data: { success: false } })),
+                      ]);
+                      if (baselineRes.data?.success) setBaseline(baselineRes.data.data);
+                      if (projectRes.data?.success) setProject(projectRes.data.data);
+                      showNotification("Timeline conflict resolved — baseline is now ready for approval.", "success");
+                    } catch {/* silent */}
+                  }}
+                />
+              </div>
+            )}
+
             {/* View Switcher Tabs: Scope & Timeline vs Step 10 Analysis */}
             <div className="flex items-center gap-3 mb-6">
               <button

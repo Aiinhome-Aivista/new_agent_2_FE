@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import apiClient from "../../api/apiClient";
 import { API_ENDPOINTS } from "../../api/endpoints";
+import { TimelineConflictResolver } from "./TimelineConflictResolver";
 import {
   FileText,
   ShieldAlert,
@@ -432,6 +433,17 @@ export const Step10AnalysisView: React.FC<Step10AnalysisViewProps> = ({
             <span>{persistNotice.message}</span>
           </div>
           <button onClick={() => setPersistNotice(null)} className="text-text-muted hover:text-text-primary ml-2 font-bold">×</button>
+        </div>
+      )}
+
+      {/* HITL: Timeline Contradiction Resolution Card */}
+      {artifact?.hitl_conflict?.has_contradiction && !artifact?.hitl_conflict?.resolution && (
+        <div className="mb-4">
+          <TimelineConflictResolver
+            projectId={projectId}
+            conflict={artifact.hitl_conflict}
+            onResolved={fetchFinalBaseline}
+          />
         </div>
       )}
 

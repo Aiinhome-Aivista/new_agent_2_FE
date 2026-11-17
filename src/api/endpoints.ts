@@ -42,6 +42,7 @@ export const API_ENDPOINTS = {
     STEP10_ANALYSIS: (projectId: string | number) => `/projects/${projectId}/baseline/step10-analysis`,
     FINAL_BASELINE: (projectId: string | number, docId?: string | number) => docId ? `/projects/${projectId}/documents/${docId}/baseline/final` : `/projects/${projectId}/baseline/final`,
     PERSIST_DRAFT: (projectId: string | number, docId?: string | number) => docId ? `/projects/${projectId}/baseline/persist-draft?document_id=${docId}` : `/projects/${projectId}/baseline/persist-draft`,
+    HITL_RESOLVE: (projectId: string | number) => `/projects/${projectId}/baseline/hitl-resolve`,
   },
 
   TRACKER: {
